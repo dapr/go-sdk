@@ -143,9 +143,15 @@ type Server interface {
 // TODO!!!! These methods are some helpers to get from any.Any to user defined proto.Message
 
 func toAny(in proto.Message) (*any.Any, error) {
-	return nil, errors.New(`TODO: toAny`)
+	data, err := proto.Marshal(in)
+	if err != nil {
+		return nil, err
+	}
+	return &any.Any{
+		Value: data,
+	}, nil
 }
 
 func fromAny(obj proto.Message, stuff *any.Any) error {
-	return errors.New(`TODO: fromAny`)
+	return proto.Unmarshal(stuff.Value, obj)
 }
