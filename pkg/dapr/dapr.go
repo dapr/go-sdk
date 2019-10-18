@@ -2,19 +2,22 @@ package dapr
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"io"
+	"net"
 	"os"
 
 	"github.com/golang/protobuf/proto"
+	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/any"
+	"github.com/golang/protobuf/ptypes/empty"
 	"google.golang.org/grpc"
 
 	"github.com/dapr/go-sdk/dapr"
+	"github.com/dapr/go-sdk/daprclient"
 )
 
-// NewClient ... TODO
+// NewClient creates a new Dapr Client object for consuming Dapr.
 func NewClient(opts ...grpc.DialOption) (*Client, error) {
 	daprPort := os.Getenv("DAPR_GRPC_PORT")
 	daprAddress := fmt.Sprintf("localhost:%s", daprPort)
@@ -36,7 +39,7 @@ type Client struct {
 
 // Invoke ... TODO
 func (c *Client) Invoke(ctx context.Context, service, method string, arguments, result proto.Message) error {
-	args, err := toAny(arguments)
+	args, err := ptypes.MarshalAny(arguments)
 	if err != nil {
 		return nil
 	}
@@ -48,12 +51,12 @@ func (c *Client) Invoke(ctx context.Context, service, method string, arguments, 
 	if err != nil {
 		return err
 	}
-	return fromAny(result, res.Data)
+	return ptypes.UnmarshalAny(res.Data, result)
 }
 
 // Publish ... TODO
 func (c *Client) Publish(ctx context.Context, topic string, data proto.Message) error {
-	d, err := toAny(data)
+	d, err := ptypes.MarshalAny(data)
 	if err != nil {
 		return err
 	}
@@ -66,7 +69,7 @@ func (c *Client) Publish(ctx context.Context, topic string, data proto.Message) 
 
 // Binding ... TODO
 func (c *Client) Binding(ctx context.Context, name string, data proto.Message) error {
-	d, err := toAny(data)
+	d, err := ptypes.MarshalAny(data)
 	if err != nil {
 		return err
 	}
@@ -81,7 +84,7 @@ func (c *Client) Binding(ctx context.Context, name string, data proto.Message) e
 func (c *Client) SaveState(ctx context.Context, requests ...*State) error {
 	reqs := make([]*dapr.StateRequest, len(requests))
 	for i, request := range requests {
-		req, err := toAny(request.Value)
+		req, err := ptypes.MarshalAny(request.Value)
 		if err != nil {
 			return err
 		}
@@ -102,7 +105,7 @@ func (c *Client) GetState(ctx context.Context, key string, result proto.Message)
 	if err != nil {
 		return err
 	}
-	return fromAny(result, r.Data)
+	return ptypes.UnmarshalAny(r.Data, result)
 }
 
 // DeleteState ... TODO
@@ -124,34 +127,123 @@ type State struct {
 	Value proto.Message
 }
 
+type wrapper struct{}
+
 // Serve ... TODO
-func Serve(port int, server Server) error {
+func Serve(port string) error {
 	// TODO: read port as env var DAPR_PORT
 	// https://github.com/dapr/dapr/issues/102
-	return errors.New(`TODO`)
+	lis, err := net.Listen(`tcp`, port)
+	if err != nil {
+		return err
+	}
+
+	svr := grpc.NewServer()
+	daprclient.RegisterDaprClientServer(svr, &wrapper{})
+	return svr.Serve(lis)
 }
 
-// Server ... TODO
-type Server interface {
-	Subscriptions() []string
-	Bindings() []string
-	OnBinding(ctx context.Context, args interface{}) (interface{}, error) // TODO: stronger types
-	OnTopic(ctx context.Context, msg proto.Message) error
-	// TODO: use reflection to call additional methods when getting OnInvoke messages
+// --------- INVOCATIONS ---------
+
+var handlers = make(map[string]InvokeHandler, 16) // TODO: concurrent writes
+
+// InvokeHandler ...
+type InvokeHandler func(ctx context.Context, args proto.Message) (result proto.Message, err error)
+
+// AddInvokeHandler ...
+func AddInvokeHandler(name string, handler InvokeHandler) {
+	handlers[name] = handler
 }
 
-// TODO!!!! These methods are some helpers to get from any.Any to user defined proto.Message
-
-func toAny(in proto.Message) (*any.Any, error) {
-	data, err := proto.Marshal(in)
+// This method gets invoked when a remote service has called the app through Dapr
+// The payload carries a Method to identify the method, a set of metadata properties and an optional payload
+func (*wrapper) OnInvoke(ctx context.Context, in *daprclient.InvokeEnvelope) (*any.Any, error) {
+	handler, ok := handlers[in.Method]
+	if !ok {
+		return nil, fmt.Errorf(`handler not available: %v`, in.Method)
+	}
+	res, err := handler(ctx, in.Data)
 	if err != nil {
 		return nil, err
 	}
-	return &any.Any{
-		Value: data,
+	return ptypes.MarshalAny(res)
+}
+
+// --------- BINDINGS ---------
+
+var bindings = make(map[string]BindingHandler, 16) // TODO: concurrent writes
+
+// BindingHandler ...
+type BindingHandler func(ctx context.Context, args proto.Message) (result proto.Message, err error)
+
+// AddBindingHandler ...
+func AddBindingHandler(name string, handler BindingHandler) {
+	bindings[name] = handler
+}
+
+// This method gets invoked every time a new event is fired from a registerd binding. The message carries the binding name, a payload and optional metadata
+func (w *wrapper) OnBindingEvent(ctx context.Context, in *daprclient.BindingEventEnvelope) (*daprclient.BindingResponseEnvelope, error) {
+	handler, ok := bindings[in.Name]
+	if !ok {
+		return nil, fmt.Errorf(`binding not handled: %v`, in.Name)
+	}
+	res, err := handler(ctx, in.Data)
+	if err != nil {
+		return nil, err
+	}
+	var out *any.Any
+	if res != nil {
+		out, err = ptypes.MarshalAny(res)
+	}
+	if err != nil {
+		return nil, err
+	}
+	return &daprclient.BindingResponseEnvelope{Data: out}, nil
+}
+
+// GetBindingsSubscriptions will be called by Dapr to get the list of bindings the app will get invoked by.
+func (w *wrapper) GetBindingsSubscriptions(ctx context.Context, in *empty.Empty) (*daprclient.GetBindingsSubscriptionsEnvelope, error) {
+	names := make([]string, 0, len(bindings))
+	for name := range bindings {
+		names = append(names, name)
+	}
+	return &daprclient.GetBindingsSubscriptionsEnvelope{
+		Bindings: names,
 	}, nil
 }
 
-func fromAny(obj proto.Message, stuff *any.Any) error {
-	return proto.Unmarshal(stuff.Value, obj)
+// --------- TOPICS ---------
+
+var topics = make(map[string]TopicHandler, 16) // TODO: concurrent writes
+
+// TopicHandler ...
+type TopicHandler func(ctx context.Context, data proto.Message) error
+
+// AddTopicHandler ...
+func AddTopicHandler(topic string, handler TopicHandler) {
+	topics[topic] = handler
+}
+
+// This method is fired whenever a message has been published to a topic that has been subscribed. Dapr sends published messages in a CloudEvents 0.3 envelope.
+func (w *wrapper) OnTopicEvent(ctx context.Context, in *daprclient.CloudEventEnvelope) (*empty.Empty, error) {
+	handler, ok := topics[in.Topic]
+	if !ok {
+		return nil, fmt.Errorf(`topic not handled: %v`, in.Topic)
+	}
+	err := handler(ctx, in.Data)
+	if err != nil {
+		return nil, err
+	}
+	return &empty.Empty{}, nil
+}
+
+// GetTopicSubscriptions will be called by Dapr to get the list of topics the app wants to subscribe to.
+func (w *wrapper) GetTopicSubscriptions(ctx context.Context, in *empty.Empty) (*daprclient.GetTopicSubscriptionsEnvelope, error) {
+	names := make([]string, 0, len(topics))
+	for name := range topics {
+		names = append(names, name)
+	}
+	return &daprclient.GetTopicSubscriptionsEnvelope{
+		Topics: names,
+	}, nil
 }
