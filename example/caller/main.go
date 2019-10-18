@@ -3,46 +3,34 @@ package main
 import (
 	"context"
 	"fmt"
-	"os"
 
-	pb "github.com/dapr/go-sdk/dapr"
-	"github.com/golang/protobuf/ptypes/any"
-	"google.golang.org/grpc"
+	"github.com/dapr/go-sdk/pkg/dapr"
+	"github.com/golang/protobuf/ptypes/wrappers"
 )
 
 func main() {
-	// Get the Dapr port and create a connection
-	daprPort := os.Getenv("DAPR_GRPC_PORT")
-	daprAddress := fmt.Sprintf("localhost:%s", daprPort)
-	conn, err := grpc.Dial(daprAddress, grpc.WithInsecure())
+
+	// Create the client
+	client, err := dapr.NewClient()
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	defer conn.Close()
-
-	// Create the client
-	client := pb.NewDaprClient(conn)
+	defer client.Close()
 
 	// Invoke a method called MyMethod on another Dapr enabled service with id client
-	resp, err := client.InvokeService(context.Background(), &pb.InvokeServiceEnvelope{
-		Id:     "client",
-		Data:   &any.Any{Value: []byte("Hello")},
-		Method: "MyMethod",
-	})
+	req := &wrappers.StringValue{Value: `Hello`}
+	resp := &wrappers.StringValue{}
+	err = client.Invoke(context.Background(), `client`, `MyMethod`, req, resp)
 	if err != nil {
 		fmt.Println(err)
 	} else {
-		fmt.Println(string(resp.Data.Value))
+		fmt.Println(resp.Value)
 	}
 
 	// Publish a message to the topic TopicA
-	_, err = client.PublishEvent(context.Background(), &pb.PublishEventEnvelope{
-		Topic: "TopicA",
-		Data: &any.Any{
-			Value: []byte("Hi from Pub Sub"),
-		},
-	})
+	message := &wrappers.StringValue{Value: `Hi from Pub Sub`}
+	err = client.Publish(context.Background(), `TopicA`, message)
 	if err != nil {
 		fmt.Println(err)
 	} else {
@@ -50,15 +38,9 @@ func main() {
 	}
 
 	// Save state with the key myKey
-	_, err = client.SaveState(context.Background(), &pb.SaveStateEnvelope{
-		Requests: []*pb.StateRequest{
-			&pb.StateRequest{
-				Key: "myKey",
-				Value: &any.Any{
-					Value: []byte("My State"),
-				},
-			},
-		},
+	err = client.SaveState(context.Background(), &dapr.State{
+		Key:   `myKey`,
+		Value: &wrappers.StringValue{Value: `My State`},
 	})
 	if err != nil {
 		fmt.Println(err)
@@ -67,20 +49,17 @@ func main() {
 	}
 
 	// Get state for key myKey
-	r, err := client.GetState(context.Background(), &pb.GetStateEnvelope{
-		Key: "myKey",
-	})
+	r := &wrappers.StringValue{}
+	err = client.GetState(context.Background(), `myKey`, r)
 	if err != nil {
 		fmt.Println(err)
 	} else {
 		fmt.Println("Got state!")
-		fmt.Println(string(r.Data.Value))
+		fmt.Println(r.Value)
 	}
 
 	// Delete state for key myKey
-	_, err = client.DeleteState(context.Background(), &pb.DeleteStateEnvelope{
-		Key: "myKey",
-	})
+	err = client.DeleteState(context.Background(), `myKey`)
 	if err != nil {
 		fmt.Println(err)
 	} else {
@@ -88,12 +67,8 @@ func main() {
 	}
 
 	// Invoke output binding named storage. Make sure you set up a Dapr binding, otherwise this will fail
-	_, err = client.InvokeBinding(context.Background(), &pb.InvokeBindingEnvelope{
-		Name: "storage",
-		Data: &any.Any{
-			Value: []byte("some data"),
-		},
-	})
+	data := &wrappers.StringValue{Value: `some data`}
+	err = client.Binding(context.Background(), `storage`, data)
 	if err != nil {
 		fmt.Println(err)
 	} else {
