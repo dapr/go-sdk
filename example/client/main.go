@@ -12,10 +12,6 @@ import (
 	"github.com/dapr/go-sdk/pkg/dapr"
 )
 
-// server is our user app
-type server struct {
-}
-
 func main() {
 	dapr.AddInvokeHandler(`MyMethod`, MyMethod)
 	dapr.AddBindingHandler(`storage`, storage)
