@@ -24,13 +24,13 @@ func main() {
 }
 
 // MyMethod is a sample method to invoke
-func MyMethod(ctx context.Context, args proto.Message) (result proto.Message, err error) {
+func MyMethod(ctx context.Context, args proto.Message, meta map[string]string) (result proto.Message, err error) {
 	return &wrappers.StringValue{Value: `Hi there!`}, nil
 }
 
-func storage(ctx context.Context, args proto.Message) (result proto.Message, err error) {
+func storage(ctx context.Context, args proto.Message, meta map[string]string) (result proto.Message, options []dapr.Option, err error) {
 	fmt.Println("Invoked from binding")
-	return &empty.Empty{}, nil
+	return &empty.Empty{}, nil, nil
 }
 
 // TopicA is a sample topic handler

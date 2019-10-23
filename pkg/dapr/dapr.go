@@ -38,16 +38,21 @@ type Client struct {
 }
 
 // Invoke ... TODO
-func (c *Client) Invoke(ctx context.Context, service, method string, arguments, result proto.Message) error {
+func (c *Client) Invoke(ctx context.Context, service, method string, arguments, result proto.Message, options ...Option) error {
 	args, err := ptypes.MarshalAny(arguments)
 	if err != nil {
 		return nil
 	}
-	res, err := c.client.InvokeService(ctx, &dapr.InvokeServiceEnvelope{
+	req := &dapr.InvokeServiceEnvelope{
 		Id:     service,
 		Method: method,
 		Data:   args,
-	})
+	}
+	callOptions, err := applyOptions(req, options)
+	if err != nil {
+		return err
+	}
+	res, err := c.client.InvokeService(ctx, req, callOptions...)
 	if err != nil {
 		return err
 	}
@@ -55,28 +60,38 @@ func (c *Client) Invoke(ctx context.Context, service, method string, arguments, 
 }
 
 // Publish ... TODO
-func (c *Client) Publish(ctx context.Context, topic string, data proto.Message) error {
+func (c *Client) Publish(ctx context.Context, topic string, data proto.Message, options ...Option) error {
 	d, err := ptypes.MarshalAny(data)
 	if err != nil {
 		return err
 	}
-	_, err = c.client.PublishEvent(context.Background(), &dapr.PublishEventEnvelope{
+	req := &dapr.PublishEventEnvelope{
 		Topic: topic,
 		Data:  d,
-	})
+	}
+	callOptions, err := applyOptions(req, options)
+	if err != nil {
+		return err
+	}
+	_, err = c.client.PublishEvent(context.Background(), req, callOptions...)
 	return err
 }
 
 // Binding ... TODO
-func (c *Client) Binding(ctx context.Context, name string, data proto.Message) error {
+func (c *Client) Binding(ctx context.Context, name string, data proto.Message, options ...Option) error {
 	d, err := ptypes.MarshalAny(data)
 	if err != nil {
 		return err
 	}
-	_, err = c.client.InvokeBinding(context.Background(), &dapr.InvokeBindingEnvelope{
+	req := &dapr.InvokeBindingEnvelope{
 		Name: name,
 		Data: d,
-	})
+	}
+	callOptions, err := applyOptions(req, options)
+	if err != nil {
+		return err
+	}
+	_, err = c.client.InvokeBinding(context.Background(), req, callOptions...)
 	return err
 }
 
@@ -89,8 +104,9 @@ func (c *Client) SaveState(ctx context.Context, requests ...*State) error {
 			return err
 		}
 		reqs[i] = &dapr.StateRequest{
-			Key:   request.Key,
-			Value: req,
+			Key:      request.Key,
+			Value:    req,
+			Metadata: request.Meta,
 		}
 	}
 	_, err := c.client.SaveState(ctx, &dapr.SaveStateEnvelope{Requests: reqs})
@@ -98,10 +114,15 @@ func (c *Client) SaveState(ctx context.Context, requests ...*State) error {
 }
 
 // GetState ... TODO
-func (c *Client) GetState(ctx context.Context, key string, result proto.Message) error {
-	r, err := c.client.GetState(ctx, &dapr.GetStateEnvelope{
+func (c *Client) GetState(ctx context.Context, key string, result proto.Message, options ...Option) error {
+	req := &dapr.GetStateEnvelope{
 		Key: key,
-	})
+	}
+	callOptions, err := applyOptions(req, options)
+	if err != nil {
+		return err
+	}
+	r, err := c.client.GetState(ctx, req, callOptions...)
 	if err != nil {
 		return err
 	}
@@ -109,10 +130,15 @@ func (c *Client) GetState(ctx context.Context, key string, result proto.Message)
 }
 
 // DeleteState ... TODO
-func (c *Client) DeleteState(ctx context.Context, key string) error {
-	_, err := c.client.DeleteState(ctx, &dapr.DeleteStateEnvelope{
+func (c *Client) DeleteState(ctx context.Context, key string, options ...Option) error {
+	req := &dapr.DeleteStateEnvelope{
 		Key: key,
-	})
+	}
+	callOptions, err := applyOptions(req, options)
+	if err != nil {
+		return err
+	}
+	_, err = c.client.DeleteState(ctx, req, callOptions...)
 	return err
 }
 
@@ -125,6 +151,7 @@ func (c *Client) Close() error {
 type State struct {
 	Key   string
 	Value proto.Message
+	Meta  map[string]string
 }
 
 type wrapper struct{}
@@ -148,7 +175,7 @@ func Serve(port string) error {
 var handlers = make(map[string]InvokeHandler, 16) // TODO: concurrent writes
 
 // InvokeHandler ...
-type InvokeHandler func(ctx context.Context, args proto.Message) (result proto.Message, err error)
+type InvokeHandler func(ctx context.Context, args proto.Message, meta map[string]string) (result proto.Message, err error)
 
 // AddInvokeHandler ...
 func AddInvokeHandler(name string, handler InvokeHandler) {
@@ -162,7 +189,7 @@ func (*wrapper) OnInvoke(ctx context.Context, in *daprclient.InvokeEnvelope) (*a
 	if !ok {
 		return nil, fmt.Errorf(`handler not available: %v`, in.Method)
 	}
-	res, err := handler(ctx, in.Data)
+	res, err := handler(ctx, in.Data, in.Metadata)
 	if err != nil {
 		return nil, err
 	}
@@ -174,7 +201,8 @@ func (*wrapper) OnInvoke(ctx context.Context, in *daprclient.InvokeEnvelope) (*a
 var bindings = make(map[string]BindingHandler, 16) // TODO: concurrent writes
 
 // BindingHandler ...
-type BindingHandler func(ctx context.Context, args proto.Message) (result proto.Message, err error)
+// TODO: Returning an array of options here is probably not ideal (change to an interface with different semantics?)
+type BindingHandler func(ctx context.Context, args proto.Message, meta map[string]string) (result proto.Message, options []Option, err error)
 
 // AddBindingHandler ...
 func AddBindingHandler(name string, handler BindingHandler) {
@@ -187,7 +215,7 @@ func (w *wrapper) OnBindingEvent(ctx context.Context, in *daprclient.BindingEven
 	if !ok {
 		return nil, fmt.Errorf(`binding not handled: %v`, in.Name)
 	}
-	res, err := handler(ctx, in.Data)
+	res, options, err := handler(ctx, in.Data, in.Metadata)
 	if err != nil {
 		return nil, err
 	}
@@ -198,7 +226,13 @@ func (w *wrapper) OnBindingEvent(ctx context.Context, in *daprclient.BindingEven
 	if err != nil {
 		return nil, err
 	}
-	return &daprclient.BindingResponseEnvelope{Data: out}, nil
+	req := &daprclient.BindingResponseEnvelope{
+		Data: out,
+	}
+	if _, err = applyOptions(req, options); err != nil {
+		return nil, err
+	}
+	return req, nil
 }
 
 // GetBindingsSubscriptions will be called by Dapr to get the list of bindings the app will get invoked by.
@@ -230,6 +264,7 @@ func (w *wrapper) OnTopicEvent(ctx context.Context, in *daprclient.CloudEventEnv
 	if !ok {
 		return nil, fmt.Errorf(`topic not handled: %v`, in.Topic)
 	}
+	// TODO: provide all the additional metadata to the handler in a clean fashion
 	err := handler(ctx, in.Data)
 	if err != nil {
 		return nil, err
