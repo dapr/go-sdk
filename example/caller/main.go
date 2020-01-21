@@ -51,6 +51,8 @@ func main() {
 
 	// Save state with the key myKey
 	_, err = client.SaveState(context.Background(), &pb.SaveStateEnvelope{
+		// statestore is the name of the default redis state store , set up by Dapr CLI
+		StoreName: "statestore",
 		Requests: []*pb.StateRequest{
 			&pb.StateRequest{
 				Key: "myKey",
@@ -68,7 +70,9 @@ func main() {
 
 	// Get state for key myKey
 	r, err := client.GetState(context.Background(), &pb.GetStateEnvelope{
-		Key: "myKey",
+		// statestore is the name of the default redis state store , set up by Dapr CLI
+		StoreName: "statestore",
+		Key:       "myKey",
 	})
 	if err != nil {
 		fmt.Println(err)
@@ -79,7 +83,9 @@ func main() {
 
 	// Delete state for key myKey
 	_, err = client.DeleteState(context.Background(), &pb.DeleteStateEnvelope{
-		Key: "myKey",
+		// statestore is the name of the default redis state store , set up by Dapr CLI
+		StoreName: "statestore",
+		Key:       "myKey",
 	})
 	if err != nil {
 		fmt.Println(err)
