@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"os"
 
-	pb "github.com/dapr/go-sdk/dapr"
+	commonv1pb "github.com/dapr/go-sdk/dapr/proto/common/v1"
+	pb "github.com/dapr/go-sdk/dapr/proto/dapr/v1"
+	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/any"
 	"google.golang.org/grpc"
 )
@@ -24,17 +26,32 @@ func main() {
 	// Create the client
 	client := pb.NewDaprClient(conn)
 
-	// Invoke a method called MyMethod on another Dapr enabled service with id client
-	resp, err := client.InvokeService(context.Background(), &pb.InvokeServiceEnvelope{
-		Id:     "client",
-		Data:   &any.Any{Value: []byte("Hello")},
-		Method: "MyMethod",
+	d, err := ptypes.MarshalAny(&commonv1pb.DataWithContentType{
+		ContentType: "text/plain; charset=UTF-8",
+		Body:        []byte("Hello"),
 	})
 	if err != nil {
-		fmt.Println(err)
-	} else {
-		fmt.Println(string(resp.Data.Value))
+		panic(err)
 	}
+
+	// Invoke a method called MyMethod on another Dapr enabled service with id client
+	resp, err := client.InvokeService(context.Background(), &pb.InvokeServiceRequest{
+		Id: "client",
+		Message: &commonv1pb.InvokeRequest{
+			Method: "MyMethod",
+			Data:   d,
+		},
+	})
+	if err != nil {
+		panic(err)
+	}
+	var value = &commonv1pb.DataWithContentType{}
+	ptypes.UnmarshalAny(resp.Data, value)
+	if value.GetContentType() != "text/plain; charset=UTF-8" {
+		fmt.Printf("wrong content type: %s", value.GetContentType())
+	}
+
+	fmt.Println(string(value.Body))
 
 	// Publish a message to the topic TopicA
 	_, err = client.PublishEvent(context.Background(), &pb.PublishEventEnvelope{
