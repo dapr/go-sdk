@@ -6,10 +6,11 @@ import (
 	"log"
 	"net"
 
-	"github.com/golang/protobuf/ptypes/any"
+	"github.com/golang/protobuf/ptypes"
 	"github.com/golang/protobuf/ptypes/empty"
 
-	pb "github.com/dapr/go-sdk/daprclient"
+	commonv1pb "github.com/dapr/go-sdk/dapr/proto/common/v1"
+	pb "github.com/dapr/go-sdk/dapr/proto/daprclient/v1"
 	"google.golang.org/grpc"
 )
 
@@ -43,7 +44,7 @@ func (s *server) MyMethod() string {
 
 // This method gets invoked when a remote service has called the app through Dapr
 // The payload carries a Method to identify the method, a set of metadata properties and an optional payload
-func (s *server) OnInvoke(ctx context.Context, in *pb.InvokeEnvelope) (*any.Any, error) {
+func (s *server) OnInvoke(ctx context.Context, in *commonv1pb.InvokeRequest) (*commonv1pb.InvokeResponse, error) {
 	var response string
 
 	fmt.Println(fmt.Sprintf("Got invoked with: %s", string(in.Data.Value)))
@@ -52,9 +53,13 @@ func (s *server) OnInvoke(ctx context.Context, in *pb.InvokeEnvelope) (*any.Any,
 	case "MyMethod":
 		response = s.MyMethod()
 	}
-	return &any.Any{
-		Value: []byte(response),
-	}, nil
+
+	d := &commonv1pb.DataWithContentType{
+		ContentType: "text/plain; charset=UTF-8",
+		Body:        []byte(response),
+	}
+	resp, err := ptypes.MarshalAny(d)
+	return &commonv1pb.InvokeResponse{Data: resp}, err
 }
 
 // Dapr will call this method to get the list of topics the app wants to subscribe to. In this example, we are telling Dapr
