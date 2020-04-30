@@ -6,7 +6,7 @@ import (
 	"log"
 	"net"
 
-	"github.com/golang/protobuf/ptypes"
+	"github.com/golang/protobuf/ptypes/any"
 	"github.com/golang/protobuf/ptypes/empty"
 
 	commonv1pb "github.com/dapr/go-sdk/dapr/proto/common/v1"
@@ -54,12 +54,10 @@ func (s *server) OnInvoke(ctx context.Context, in *commonv1pb.InvokeRequest) (*c
 		response = s.MyMethod()
 	}
 
-	d := &commonv1pb.DataWithContentType{
+	return &commonv1pb.InvokeResponse{
 		ContentType: "text/plain; charset=UTF-8",
-		Body:        []byte(response),
-	}
-	resp, err := ptypes.MarshalAny(d)
-	return &commonv1pb.InvokeResponse{Data: resp}, err
+		Data:        &any.Any{Value: []byte(response)},
+	}, nil
 }
 
 // Dapr will call this method to get the list of topics the app wants to subscribe to. In this example, we are telling Dapr
