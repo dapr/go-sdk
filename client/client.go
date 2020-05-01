@@ -36,7 +36,7 @@ func NewClientWithPort(port string) (client *Client, err error) {
 func NewClientWithAddress(address string) (client *Client, err error) {
 	conn, err := grpc.Dial(address, grpc.WithInsecure())
 	if err != nil {
-		return nil, errors.Wrapf(err, "error creating connection to '%s': %v", err)
+		return nil, errors.Wrapf(err, "error creating connection to '%s': %v", address, err)
 	}
 	client = &Client{
 		Logger:      log.New(os.Stdout, "", 0),

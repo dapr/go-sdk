@@ -10,7 +10,7 @@ import (
 	"github.com/golang/protobuf/ptypes/empty"
 
 	pbc "github.com/dapr/go-sdk/dapr/proto/common/v1"
-	pb "github.com/dapr/go-sdk/dapr/proto/dapr/v1"
+	pb "github.com/dapr/go-sdk/dapr/proto/daprclient/v1"
 
 	"google.golang.org/grpc"
 )
