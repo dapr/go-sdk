@@ -21,7 +21,7 @@ func (c *Client) InvokeBinding(ctx context.Context, name string, in []byte) erro
 		},
 	}
 
-	_, err := c.ProtoClient.InvokeBinding(ctx, envelop)
+	_, err := c.protoClient.InvokeBinding(ctx, envelop)
 	if err != nil {
 		return errors.Wrapf(err, "error invoking binding %s", name)
 	}

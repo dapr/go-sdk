@@ -29,7 +29,7 @@ func (c *Client) SaveState(ctx context.Context, store, key string, in []byte) er
 		},
 	}
 
-	_, err := c.ProtoClient.SaveState(ctx, envelop)
+	_, err := c.protoClient.SaveState(ctx, envelop)
 	if err != nil {
 		return errors.Wrapf(err, "error saving state into %s", store)
 	}
@@ -57,7 +57,7 @@ func (c *Client) GetState(ctx context.Context, store, key string) (out []byte, e
 		Key:       key,
 	}
 
-	result, err := c.ProtoClient.GetState(ctx, envelop)
+	result, err := c.protoClient.GetState(ctx, envelop)
 	if err != nil {
 		return nil, errors.Wrapf(err, "error getting state from %s for %s key", store, key)
 	}
@@ -77,7 +77,7 @@ func (c *Client) DeleteState(ctx context.Context, store, key string) error {
 		Key:       key,
 	}
 
-	_, err := c.ProtoClient.DeleteState(ctx, envelop)
+	_, err := c.protoClient.DeleteState(ctx, envelop)
 	if err != nil {
 		return errors.Wrapf(err, "error deleting state from %s for %s key", store, key)
 	}

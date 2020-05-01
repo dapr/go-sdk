@@ -18,7 +18,7 @@ func (c *Client) InvokeService(ctx context.Context, serviceID, method string, in
 		return nil, errors.New("nil method")
 	}
 
-	resp, err := c.ProtoClient.InvokeService(ctx, &pb.InvokeServiceRequest{
+	resp, err := c.protoClient.InvokeService(ctx, &pb.InvokeServiceRequest{
 		Id: serviceID,
 		Message: &v1.InvokeRequest{
 			Method: method,

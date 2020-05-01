@@ -21,7 +21,7 @@ func (c *Client) PublishEvent(ctx context.Context, topic string, in []byte) erro
 		},
 	}
 
-	_, err := c.ProtoClient.PublishEvent(ctx, envelop)
+	_, err := c.protoClient.PublishEvent(ctx, envelop)
 	if err != nil {
 		return errors.Wrapf(err, "error publishing event unto %s topic", topic)
 	}

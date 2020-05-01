@@ -2,7 +2,6 @@ package client
 
 import (
 	"context"
-	"log"
 	"net"
 	"os"
 
@@ -39,23 +38,21 @@ func NewClientWithAddress(address string) (client *Client, err error) {
 		return nil, errors.Wrapf(err, "error creating connection to '%s': %v", address, err)
 	}
 	client = &Client{
-		Logger:      log.New(os.Stdout, "", 0),
-		Connection:  conn,
-		ProtoClient: pb.NewDaprClient(conn),
+		connection:  conn,
+		protoClient: pb.NewDaprClient(conn),
 	}
 	return
 }
 
 // Client is the dapr client
 type Client struct {
-	Logger      *log.Logger
-	Connection  *grpc.ClientConn
-	ProtoClient pb.DaprClient
+	connection  *grpc.ClientConn
+	protoClient pb.DaprClient
 }
 
 // Close cleans up all resources created by the client
 func (c *Client) Close(ctx context.Context) {
-	if c.Connection != nil {
-		c.Connection.Close()
+	if c.connection != nil {
+		c.connection.Close()
 	}
 }
