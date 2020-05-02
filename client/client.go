@@ -2,6 +2,7 @@ package client
 
 import (
 	"context"
+	"fmt"
 	"net"
 	"os"
 
@@ -33,6 +34,7 @@ func NewClientWithPort(port string) (client *Client, err error) {
 
 // NewClientWithAddress instantiates dapr client configured for the specific address
 func NewClientWithAddress(address string) (client *Client, err error) {
+	fmt.Printf("dapr client initializing for: %s", address)
 	conn, err := grpc.Dial(address, grpc.WithInsecure())
 	if err != nil {
 		return nil, errors.Wrapf(err, "error creating connection to '%s': %v", address, err)

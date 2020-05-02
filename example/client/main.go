@@ -26,37 +26,37 @@ func main() {
 	}
 	fmt.Println(string(resp))
 
-	// publish a message to the topic example-topic
-	err = client.PublishEvent(ctx, "example-topic", data)
+	// publish a message to the topic messagebus
+	err = client.PublishEvent(ctx, "messagebus", data)
 	if err != nil {
 		panic(err)
 	}
 	fmt.Println("data published")
 
 	// save state with the key key1
-	err = client.SaveState(ctx, "example-store", "key1", data)
+	err = client.SaveState(ctx, "statestore", "key1", data)
 	if err != nil {
 		panic(err)
 	}
 	fmt.Println("data saved")
 
 	// get state for key key1
-	dataOut, err := client.GetState(ctx, "example-store", "key1")
+	dataOut, err := client.GetState(ctx, "statestore", "key1")
 	if err != nil {
 		panic(err)
 	}
 	fmt.Println(string(dataOut))
 
 	// delete state for key key1
-	err = client.DeleteState(ctx, "example-store", "key1")
+	err = client.DeleteState(ctx, "statestore", "key1")
 	if err != nil {
 		panic(err)
 	}
 	fmt.Println("data deleted")
 
-	// invoke output binding named 'kafka-topic'.
+	// invoke output binding named 'example-binding'.
 	// make sure you set up a dapr binding, otherwise this will fail
-	err = client.InvokeBinding(ctx, "kafka-topic", data)
+	err = client.InvokeBinding(ctx, "example-binding", data)
 	if err != nil {
 		panic(err)
 	}
