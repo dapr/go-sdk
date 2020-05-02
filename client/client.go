@@ -11,12 +11,12 @@ import (
 )
 
 const (
-	daprPortDefault    = "50005"
+	daprPortDefault    = "4000"
 	daprPortEnvVarName = "DAPR_GRPC_PORT"
 )
 
 // NewClientWithAddress instantiates dapr client locally using port from DAPR_GRPC_PORT env var
-// When DAPR_GRPC_PORT client defaults to 50005
+// When DAPR_GRPC_PORT client defaults to 4000
 func NewClient() (client *Client, err error) {
 	port := os.Getenv(daprPortEnvVarName)
 	if port == "" {
