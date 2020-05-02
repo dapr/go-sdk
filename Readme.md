@@ -25,5 +25,3 @@ dapr run --app-id serving --protocol grpc --app-port 4000 go run main.go
 cd example/client
 dapr run --app-id caller go run main.go
 ```
-
-> If you don't setup a Dapr binding, expect the error message `rpc error: code = Unknown desc = ERR_INVOKE_OUTPUT_BINDING: couldn't find output binding storage`

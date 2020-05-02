@@ -1,0 +1,12 @@
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: example-http-binding
+spec:
+  type: bindings.http
+  metadata:
+  - name: url
+    value: https://http2.pro/api/v1
+  - name: method
+    value: GET
+

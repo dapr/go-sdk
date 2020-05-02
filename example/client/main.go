@@ -19,13 +19,6 @@ func main() {
 	}
 	defer client.Close(ctx)
 
-	// invoke a method called MyMethod on another dapr enabled service with id client
-	resp, err := client.InvokeService(ctx, "serving", "MyMethod", data)
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println(string(resp))
-
 	// publish a message to the topic messagebus
 	err = client.PublishEvent(ctx, "messagebus", data)
 	if err != nil {
@@ -54,9 +47,16 @@ func main() {
 	}
 	fmt.Println("data deleted")
 
-	// invoke output binding named 'example-binding'.
-	// make sure you set up a dapr binding, otherwise this will fail
-	err = client.InvokeBinding(ctx, "example-binding", data)
+	// invoke a method called MyMethod on another dapr enabled service with id client
+	resp, err := client.InvokeService(ctx, "serving", "MyMethod", data)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(string(resp))
+
+	// invoke output binding named 'example-http-binding'
+	// uses https://http2.pro/doc/api to check for HTTP/2
+	err = client.InvokeBinding(ctx, "example-http-binding", data)
 	if err != nil {
 		panic(err)
 	}
