@@ -6,7 +6,7 @@ import (
 	"os"
 
 	commonv1pb "github.com/dapr/go-sdk/dapr/proto/common/v1"
-	pb "github.com/dapr/go-sdk/dapr/proto/dapr/v1"
+	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
 	"github.com/golang/protobuf/ptypes/any"
 	"google.golang.org/grpc"
 )
@@ -45,11 +45,9 @@ func main() {
 	fmt.Println(string(resp.GetData().GetValue()))
 
 	// Publish a message to the topic TopicA
-	_, err = client.PublishEvent(context.Background(), &pb.PublishEventEnvelope{
+	_, err = client.PublishEvent(context.Background(), &pb.PublishEventRequest{
 		Topic: "TopicA",
-		Data: &any.Any{
-			Value: []byte("Hi from Pub Sub"),
-		},
+		Data:  []byte("Hi from Pub Sub"),
 	})
 	if err != nil {
 		fmt.Println(err)
@@ -58,15 +56,13 @@ func main() {
 	}
 
 	// Save state with the key myKey
-	_, err = client.SaveState(context.Background(), &pb.SaveStateEnvelope{
+	_, err = client.SaveState(context.Background(), &pb.SaveStateRequest{
 		// statestore is the name of the default redis state store , set up by Dapr CLI
 		StoreName: "statestore",
-		Requests: []*pb.StateRequest{
+		Requests: []*commonv1pb.StateSaveRequest{
 			{
-				Key: "myKey",
-				Value: &any.Any{
-					Value: []byte("My State"),
-				},
+				Key:   "myKey",
+				Value: []byte("My State"),
 			},
 		},
 	})
@@ -77,7 +73,7 @@ func main() {
 	}
 
 	// Get state for key myKey
-	r, err := client.GetState(context.Background(), &pb.GetStateEnvelope{
+	r, err := client.GetState(context.Background(), &pb.GetStateRequest{
 		// statestore is the name of the default redis state store , set up by Dapr CLI
 		StoreName: "statestore",
 		Key:       "myKey",
@@ -86,11 +82,11 @@ func main() {
 		fmt.Println(err)
 	} else {
 		fmt.Println("Got state!")
-		fmt.Println(string(r.Data.Value))
+		fmt.Println(string(r.Data))
 	}
 
 	// Delete state for key myKey
-	_, err = client.DeleteState(context.Background(), &pb.DeleteStateEnvelope{
+	_, err = client.DeleteState(context.Background(), &pb.DeleteStateRequest{
 		// statestore is the name of the default redis state store , set up by Dapr CLI
 		StoreName: "statestore",
 		Key:       "myKey",
@@ -102,11 +98,9 @@ func main() {
 	}
 
 	// Invoke output binding named storage. Make sure you set up a Dapr binding, otherwise this will fail
-	_, err = client.InvokeBinding(context.Background(), &pb.InvokeBindingEnvelope{
+	_, err = client.InvokeBinding(context.Background(), &pb.InvokeBindingRequest{
 		Name: "storage",
-		Data: &any.Any{
-			Value: []byte("some data"),
-		},
+		Data: []byte("some data"),
 	})
 	if err != nil {
 		fmt.Println(err)
