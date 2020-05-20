@@ -4,6 +4,12 @@ This is the Dapr SDK for Go, based on the auto-generated proto client.<br>
 
 For more info on Dapr and gRPC, visit [this link](https://github.com/dapr/docs/tree/master/howto/create-grpc-app).
 
+## Update the latest gRPC proto clients
+
+```sh
+./protogen.sh
+```
+
 ## Installation
 
 ```
