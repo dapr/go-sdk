@@ -4,21 +4,21 @@ import (
 	"context"
 	"encoding/json"
 
-	pb "github.com/dapr/go-sdk/dapr/proto/dapr/v1"
-	"github.com/golang/protobuf/ptypes/any"
+	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
 	"github.com/pkg/errors"
 )
 
-func (c *Client) InvokeBinding(ctx context.Context, name string, in []byte) error {
+// InvokeBinding invokes specific operation on the configured Dapr binding
+func (c *Client) InvokeBinding(ctx context.Context, name, op string, in []byte, meta map[string]string) error {
 	if name == "" {
 		return errors.New("nil topic")
 	}
 
-	envelop := &pb.InvokeBindingEnvelope{
-		Name: name,
-		Data: &any.Any{
-			Value: in,
-		},
+	envelop := &pb.InvokeBindingRequest{
+		Name:      name,
+		Operation: op,
+		Data:      in,
+		Metadata:  meta,
 	}
 
 	_, err := c.protoClient.InvokeBinding(ctx, envelop)
@@ -29,10 +29,11 @@ func (c *Client) InvokeBinding(ctx context.Context, name string, in []byte) erro
 	return nil
 }
 
-func (c *Client) InvokeBindingJSON(ctx context.Context, name string, in interface{}) error {
+// InvokeBindingJSON invokes configured Dapr binding with an instance
+func (c *Client) InvokeBindingJSON(ctx context.Context, name, operation string, in interface{}) error {
 	b, err := json.Marshal(in)
 	if err != nil {
 		return errors.Wrap(err, "error marshaling content")
 	}
-	return c.InvokeBinding(ctx, name, b)
+	return c.InvokeBinding(ctx, name, operation, b, nil)
 }

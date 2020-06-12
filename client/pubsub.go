@@ -4,21 +4,19 @@ import (
 	"context"
 	"encoding/json"
 
-	pb "github.com/dapr/go-sdk/dapr/proto/dapr/v1"
-	"github.com/golang/protobuf/ptypes/any"
+	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
 	"github.com/pkg/errors"
 )
 
+// PublishEvent is the message to publish event data to pubsub topic
 func (c *Client) PublishEvent(ctx context.Context, topic string, in []byte) error {
 	if topic == "" {
 		return errors.New("nil topic")
 	}
 
-	envelop := &pb.PublishEventEnvelope{
+	envelop := &pb.PublishEventRequest{
 		Topic: topic,
-		Data: &any.Any{
-			Value: in,
-		},
+		Data:  in,
 	}
 
 	_, err := c.protoClient.PublishEvent(ctx, envelop)
@@ -29,6 +27,7 @@ func (c *Client) PublishEvent(ctx context.Context, topic string, in []byte) erro
 	return nil
 }
 
+// PublishEventJSON is the message to publish event data to pubsub topic with identity
 func (c *Client) PublishEventJSON(ctx context.Context, topic string, in interface{}) error {
 	b, err := json.Marshal(in)
 	if err != nil {

@@ -5,11 +5,12 @@ import (
 	"encoding/json"
 
 	v1 "github.com/dapr/go-sdk/dapr/proto/common/v1"
-	pb "github.com/dapr/go-sdk/dapr/proto/dapr/v1"
+	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
 	"github.com/golang/protobuf/ptypes/any"
 	"github.com/pkg/errors"
 )
 
+// InvokeService represents the request message for Service invocation
 func (c *Client) InvokeService(ctx context.Context, serviceID, method string, in []byte) (out []byte, err error) {
 	if serviceID == "" {
 		return nil, errors.New("nil serviceID")
@@ -33,6 +34,7 @@ func (c *Client) InvokeService(ctx context.Context, serviceID, method string, in
 	return
 }
 
+// InvokeServiceJSON represents the request message for Service invocation with identity parameter
 func (c *Client) InvokeServiceJSON(ctx context.Context, serviceID, method string, in interface{}) (out []byte, err error) {
 	b, err := json.Marshal(in)
 	if err != nil {

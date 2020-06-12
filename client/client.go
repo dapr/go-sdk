@@ -6,9 +6,10 @@ import (
 	"net"
 	"os"
 
-	pb "github.com/dapr/go-sdk/dapr/proto/dapr/v1"
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
+
+	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
 )
 
 const (
@@ -20,7 +21,7 @@ var (
 	logger = log.New(os.Stdout, "", 0)
 )
 
-// NewClientWithAddress instantiates dapr client locally using port from DAPR_GRPC_PORT env var
+// NewClient instantiates dapr client locally using port from DAPR_GRPC_PORT env var
 // When DAPR_GRPC_PORT client defaults to 4000
 func NewClient() (client *Client, err error) {
 	port := os.Getenv(daprPortEnvVarName)
@@ -30,7 +31,7 @@ func NewClient() (client *Client, err error) {
 	return NewClientWithPort(port)
 }
 
-// NewClientWithAddress instantiates dapr client locally for the specific port
+// NewClientWithPort instantiates dapr client locally for the specific port
 func NewClientWithPort(port string) (client *Client, err error) {
 	address := net.JoinHostPort("127.0.0.1", port)
 	return NewClientWithAddress(address)

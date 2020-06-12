@@ -54,9 +54,7 @@ func main() {
 	}
 	fmt.Println(string(resp))
 
-	// invoke output binding named 'example-http-binding'
-	// uses https://http2.pro/doc/api to check for HTTP/2
-	err = client.InvokeBinding(ctx, "example-http-binding", data)
+	err = client.InvokeBinding(ctx, "example-http-binding", "create", data, nil)
 	if err != nil {
 		panic(err)
 	}

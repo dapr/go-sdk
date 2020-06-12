@@ -1,0 +1,41 @@
+#!/bin/sh
+
+DAPR_PROTO_ROOT="https://raw.githubusercontent.com/dapr/dapr/master/pkg/proto"
+LOCAL_PROTO_ROOT=./dapr/proto
+
+DAPR_COMMON="common/v1/common.pb.go"
+DAPR_CALLBACK="runtime/v1/appcallback.pb.go"
+DAPR_RUNTIME="runtime/v1/dapr.pb.go"
+
+rm -f ${LOCAL_PROTO_ROOT}/common/v1/*.go
+rm -f ${LOCAL_PROTO_ROOT}/runtime/v1/*.go
+
+go install github.com/gogo/protobuf/gogoreplace
+
+wget -q "${DAPR_PROTO_ROOT}/${DAPR_COMMON}" \
+     -O "${LOCAL_PROTO_ROOT}/${DAPR_COMMON}"
+
+gogoreplace 'v1 "github.com/dapr/dapr/pkg/proto/common/v1"' \
+            'v1 "github.com/dapr/go-sdk/dapr/proto/common/v1"' \
+            "${LOCAL_PROTO_ROOT}/${DAPR_COMMON}"
+
+wget -q "${DAPR_PROTO_ROOT}/${DAPR_CALLBACK}" \
+     -O "${LOCAL_PROTO_ROOT}/${DAPR_CALLBACK}"
+
+gogoreplace 'v1 "github.com/dapr/dapr/pkg/proto/common/v1"' \
+            'v1 "github.com/dapr/go-sdk/dapr/proto/common/v1"' \
+            "${LOCAL_PROTO_ROOT}/${DAPR_CALLBACK}"
+
+wget -q "${DAPR_PROTO_ROOT}/${DAPR_RUNTIME}" \
+     -O "${LOCAL_PROTO_ROOT}/${DAPR_RUNTIME}"
+
+gogoreplace 'v1 "github.com/dapr/dapr/pkg/proto/common/v1"' \
+            'v1 "github.com/dapr/go-sdk/dapr/proto/common/v1"' \
+            "${LOCAL_PROTO_ROOT}/${DAPR_RUNTIME}"
+
+
+
+
+
+
+

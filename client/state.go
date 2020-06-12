@@ -4,11 +4,12 @@ import (
 	"context"
 	"encoding/json"
 
-	pb "github.com/dapr/go-sdk/dapr/proto/dapr/v1"
-	"github.com/golang/protobuf/ptypes/any"
+	v1 "github.com/dapr/go-sdk/dapr/proto/common/v1"
+	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
 	"github.com/pkg/errors"
 )
 
+// SaveState is the message to save multiple states into state store
 func (c *Client) SaveState(ctx context.Context, store, key string, in []byte) error {
 	if store == "" {
 		return errors.New("nil store")
@@ -17,14 +18,12 @@ func (c *Client) SaveState(ctx context.Context, store, key string, in []byte) er
 		return errors.New("nil key")
 	}
 
-	envelop := &pb.SaveStateEnvelope{
+	envelop := &pb.SaveStateRequest{
 		StoreName: store,
-		Requests: []*pb.StateRequest{
+		States: []*v1.StateItem{
 			{
-				Key: key,
-				Value: &any.Any{
-					Value: in,
-				},
+				Key:   key,
+				Value: in,
 			},
 		},
 	}
@@ -37,6 +36,7 @@ func (c *Client) SaveState(ctx context.Context, store, key string, in []byte) er
 	return nil
 }
 
+// SaveStateJSON is the message to save multiple states into state store with identity
 func (c *Client) SaveStateJSON(ctx context.Context, store, key string, in interface{}) error {
 	b, err := json.Marshal(in)
 	if err != nil {
@@ -45,6 +45,7 @@ func (c *Client) SaveStateJSON(ctx context.Context, store, key string, in interf
 	return c.SaveState(ctx, store, key, b)
 }
 
+// GetState is the message to get key-value states from specific state store
 func (c *Client) GetState(ctx context.Context, store, key string) (out []byte, err error) {
 	if store == "" {
 		return nil, errors.New("nil store")
@@ -52,7 +53,7 @@ func (c *Client) GetState(ctx context.Context, store, key string) (out []byte, e
 	if key == "" {
 		return nil, errors.New("nil key")
 	}
-	envelop := &pb.GetStateEnvelope{
+	envelop := &pb.GetStateRequest{
 		StoreName: store,
 		Key:       key,
 	}
@@ -62,9 +63,10 @@ func (c *Client) GetState(ctx context.Context, store, key string) (out []byte, e
 		return nil, errors.Wrapf(err, "error getting state from %s for %s key", store, key)
 	}
 
-	return result.Data.Value, nil
+	return result.Data, nil
 }
 
+// DeleteState is the message to delete key-value states from specific state store
 func (c *Client) DeleteState(ctx context.Context, store, key string) error {
 	if store == "" {
 		return errors.New("nil store")
@@ -72,7 +74,7 @@ func (c *Client) DeleteState(ctx context.Context, store, key string) error {
 	if key == "" {
 		return errors.New("nil key")
 	}
-	envelop := &pb.DeleteStateEnvelope{
+	envelop := &pb.DeleteStateRequest{
 		StoreName: store,
 		Key:       key,
 	}
