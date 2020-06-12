@@ -8,6 +8,7 @@ import (
 
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/metadata"
 
 	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
 )
@@ -62,4 +63,13 @@ func (c *Client) Close(ctx context.Context) {
 	if c.connection != nil {
 		c.connection.Close()
 	}
+}
+
+func authContext(ctx context.Context) context.Context {
+	token := os.Getenv("DAPR_API_TOKEN")
+	if token == "" {
+		return ctx
+	}
+	md := metadata.Pairs("dapr-api-token", token)
+	return metadata.NewOutgoingContext(ctx, md)
 }

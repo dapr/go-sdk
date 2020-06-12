@@ -21,7 +21,7 @@ func (c *Client) InvokeBinding(ctx context.Context, name, op string, in []byte, 
 		Metadata:  meta,
 	}
 
-	_, err := c.protoClient.InvokeBinding(ctx, envelop)
+	_, err := c.protoClient.InvokeBinding(authContext(ctx), envelop)
 	if err != nil {
 		return errors.Wrapf(err, "error invoking binding %s", name)
 	}

@@ -28,7 +28,7 @@ func (c *Client) SaveState(ctx context.Context, store, key string, in []byte) er
 		},
 	}
 
-	_, err := c.protoClient.SaveState(ctx, envelop)
+	_, err := c.protoClient.SaveState(authContext(ctx), envelop)
 	if err != nil {
 		return errors.Wrapf(err, "error saving state into %s", store)
 	}
@@ -42,7 +42,7 @@ func (c *Client) SaveStateJSON(ctx context.Context, store, key string, in interf
 	if err != nil {
 		return errors.Wrap(err, "error marshaling content")
 	}
-	return c.SaveState(ctx, store, key, b)
+	return c.SaveState(authContext(ctx), store, key, b)
 }
 
 // GetState is the message to get key-value states from specific state store
@@ -58,7 +58,7 @@ func (c *Client) GetState(ctx context.Context, store, key string) (out []byte, e
 		Key:       key,
 	}
 
-	result, err := c.protoClient.GetState(ctx, envelop)
+	result, err := c.protoClient.GetState(authContext(ctx), envelop)
 	if err != nil {
 		return nil, errors.Wrapf(err, "error getting state from %s for %s key", store, key)
 	}
@@ -79,7 +79,7 @@ func (c *Client) DeleteState(ctx context.Context, store, key string) error {
 		Key:       key,
 	}
 
-	_, err := c.protoClient.DeleteState(ctx, envelop)
+	_, err := c.protoClient.DeleteState(authContext(ctx), envelop)
 	if err != nil {
 		return errors.Wrapf(err, "error deleting state from %s for %s key", store, key)
 	}
