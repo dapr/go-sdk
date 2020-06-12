@@ -47,8 +47,6 @@ func (s *server) MyMethod() string {
 func (s *server) OnInvoke(ctx context.Context, in *commonv1pb.InvokeRequest) (*commonv1pb.InvokeResponse, error) {
 	var response string
 
-	fmt.Printf("Got invoked with: %s", string(in.Data.Value))
-
 	switch in.Method {
 	case "MyMethod":
 		response = s.MyMethod()
