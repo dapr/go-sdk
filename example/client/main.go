@@ -2,9 +2,14 @@ package main
 
 import (
 	"context"
-	"fmt"
+	"log"
+	"os"
 
 	dapr "github.com/dapr/go-sdk/client"
+)
+
+var (
+	logger = log.New(os.Stdout, "", 0)
 )
 
 func main() {
@@ -15,48 +20,49 @@ func main() {
 	// create the client
 	client, err := dapr.NewClient()
 	if err != nil {
-		panic(err)
+		logger.Panic(err)
 	}
 	defer client.Close(ctx)
 
 	// publish a message to the topic messagebus
 	err = client.PublishEvent(ctx, "messagebus", data)
 	if err != nil {
-		panic(err)
+		logger.Panic(err)
 	}
-	fmt.Println("data published")
+	logger.Println("data published")
 
 	// save state with the key key1
-	err = client.SaveState(ctx, "statestore", "key1", data)
+	err = client.SaveStateWithData(ctx, "statestore", "key1", data)
 	if err != nil {
-		panic(err)
+		logger.Panic(err)
 	}
-	fmt.Println("data saved")
+	logger.Println("data saved")
 
 	// get state for key key1
 	dataOut, err := client.GetState(ctx, "statestore", "key1")
 	if err != nil {
-		panic(err)
+		logger.Panic(err)
 	}
-	fmt.Println(string(dataOut))
+	logger.Printf("data out: %s", string(dataOut))
 
 	// delete state for key key1
 	err = client.DeleteState(ctx, "statestore", "key1")
 	if err != nil {
-		panic(err)
+		logger.Panic(err)
 	}
-	fmt.Println("data deleted")
+	logger.Println("data deleted")
 
-	// invoke a method called MyMethod on another dapr enabled service with id client
-	resp, err := client.InvokeService(ctx, "serving", "MyMethod", data)
+	// invoke a method called MyMethod on another dapr enabled service
+	resp, err := client.InvokeServiceWithContent(ctx, "serving", "MyMethod",
+		"text/plain; charset=UTF-8", data)
+	if err != nil {
+		logger.Panic(err)
+	}
+	logger.Printf("service method invoked, response: %s", string(resp))
+
+	err = client.InvokeOutputBinding(ctx, "example-http-binding", "create", nil)
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println(string(resp))
-
-	err = client.InvokeBinding(ctx, "example-http-binding", "create", data, nil)
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println("binding invoked")
+	logger.Println("binding invoked")
 }

@@ -9,8 +9,61 @@ import (
 	"github.com/pkg/errors"
 )
 
-// SaveState is the message to save multiple states into state store
-func (c *Client) SaveState(ctx context.Context, store, key string, in []byte) error {
+var (
+	// StateOptionConsistencyDefault is strong
+	StateOptionConsistencyDefault = v1.StateOptions_CONSISTENCY_STRONG
+
+	// StateOptionConcurrencyDefault is last write
+	StateOptionConcurrencyDefault = v1.StateOptions_CONCURRENCY_LAST_WRITE
+
+	// StateOptionRetryPolicyDefault is threshold 3
+	StateOptionRetryPolicyDefault = &v1.StateRetryPolicy{
+		Threshold: 3,
+	}
+
+	// StateOptionDefault is the optimistic state option (last write concurency and strong consistency)
+	StateOptionDefault = &v1.StateOptions{
+		Concurrency: StateOptionConcurrencyDefault,
+		Consistency: StateOptionConsistencyDefault,
+		RetryPolicy: StateOptionRetryPolicyDefault,
+	}
+)
+
+// *** Save State ***
+
+// SaveState saves the fully loaded save state request
+func (c *Client) SaveState(ctx context.Context, req *pb.SaveStateRequest) error {
+	if req == nil {
+		return errors.New("nil request")
+	}
+
+	_, err := c.protoClient.SaveState(authContext(ctx), req)
+	if err != nil {
+		return errors.Wrap(err, "error saving state")
+	}
+
+	return nil
+}
+
+// SaveStateItem saves a single state item
+func (c *Client) SaveStateItem(ctx context.Context, store string, item *v1.StateItem) error {
+	if store == "" {
+		return errors.New("nil store")
+	}
+	if item == nil {
+		return errors.New("nil item")
+	}
+
+	req := &pb.SaveStateRequest{
+		StoreName: store,
+		States:    []*v1.StateItem{item},
+	}
+
+	return c.SaveState(ctx, req)
+}
+
+// SaveStateWithData saves the data into store using default state options
+func (c *Client) SaveStateWithData(ctx context.Context, store, key string, data []byte) error {
 	if store == "" {
 		return errors.New("nil store")
 	}
@@ -18,34 +71,49 @@ func (c *Client) SaveState(ctx context.Context, store, key string, in []byte) er
 		return errors.New("nil key")
 	}
 
-	envelop := &pb.SaveStateRequest{
+	req := &pb.SaveStateRequest{
 		StoreName: store,
 		States: []*v1.StateItem{
 			{
-				Key:   key,
-				Value: in,
+				Key:     key,
+				Value:   data,
+				Options: StateOptionDefault,
 			},
 		},
 	}
 
-	_, err := c.protoClient.SaveState(authContext(ctx), envelop)
-	if err != nil {
-		return errors.Wrapf(err, "error saving state into %s", store)
-	}
-
-	return nil
+	return c.SaveState(ctx, req)
 }
 
-// SaveStateJSON is the message to save multiple states into state store with identity
+// SaveStateJSON saves the JSON serialized in into store using default state options
 func (c *Client) SaveStateJSON(ctx context.Context, store, key string, in interface{}) error {
+	if in == nil {
+		return errors.New("nil data to save")
+	}
 	b, err := json.Marshal(in)
 	if err != nil {
 		return errors.Wrap(err, "error marshaling content")
 	}
-	return c.SaveState(authContext(ctx), store, key, b)
+	return c.SaveStateWithData(ctx, store, key, b)
 }
 
-// GetState is the message to get key-value states from specific state store
+// *** Get State ***
+
+// GetStateWithRequest retreaves state from specific store using provided request
+func (c *Client) GetStateWithRequest(ctx context.Context, req *pb.GetStateRequest) (out []byte, err error) {
+	if req == nil {
+		return nil, errors.New("nil request")
+	}
+
+	result, err := c.protoClient.GetState(authContext(ctx), req)
+	if err != nil {
+		return nil, errors.Wrap(err, "error getting state")
+	}
+
+	return result.Data, nil
+}
+
+// GetState retreaves state from specific store using default consistency option
 func (c *Client) GetState(ctx context.Context, store, key string) (out []byte, err error) {
 	if store == "" {
 		return nil, errors.New("nil store")
@@ -53,20 +121,32 @@ func (c *Client) GetState(ctx context.Context, store, key string) (out []byte, e
 	if key == "" {
 		return nil, errors.New("nil key")
 	}
-	envelop := &pb.GetStateRequest{
-		StoreName: store,
-		Key:       key,
+	req := &pb.GetStateRequest{
+		StoreName:   store,
+		Key:         key,
+		Consistency: StateOptionConsistencyDefault,
 	}
 
-	result, err := c.protoClient.GetState(authContext(ctx), envelop)
-	if err != nil {
-		return nil, errors.Wrapf(err, "error getting state from %s for %s key", store, key)
-	}
-
-	return result.Data, nil
+	return c.GetStateWithRequest(ctx, req)
 }
 
-// DeleteState is the message to delete key-value states from specific state store
+// *** Delete State ***
+
+// DeleteStateWithRequest deletes content from store using provided request
+func (c *Client) DeleteStateWithRequest(ctx context.Context, req *pb.DeleteStateRequest) error {
+	if req == nil {
+		return errors.New("nil request")
+	}
+
+	_, err := c.protoClient.DeleteState(authContext(ctx), req)
+	if err != nil {
+		return errors.Wrap(err, "error deleting state")
+	}
+
+	return nil
+}
+
+// DeleteState deletes content from store using default state options
 func (c *Client) DeleteState(ctx context.Context, store, key string) error {
 	if store == "" {
 		return errors.New("nil store")
@@ -74,15 +154,11 @@ func (c *Client) DeleteState(ctx context.Context, store, key string) error {
 	if key == "" {
 		return errors.New("nil key")
 	}
-	envelop := &pb.DeleteStateRequest{
+	req := &pb.DeleteStateRequest{
 		StoreName: store,
 		Key:       key,
+		Options:   StateOptionDefault,
 	}
 
-	_, err := c.protoClient.DeleteState(authContext(ctx), envelop)
-	if err != nil {
-		return errors.Wrapf(err, "error deleting state from %s for %s key", store, key)
-	}
-
-	return nil
+	return c.DeleteStateWithRequest(ctx, req)
 }

@@ -13,6 +13,9 @@ func (c *Client) PublishEvent(ctx context.Context, topic string, in []byte) erro
 	if topic == "" {
 		return errors.New("nil topic")
 	}
+	if in == nil {
+		return errors.New("nil in")
+	}
 
 	envelop := &pb.PublishEventRequest{
 		Topic: topic,
@@ -29,6 +32,9 @@ func (c *Client) PublishEvent(ctx context.Context, topic string, in []byte) erro
 
 // PublishEventJSON is the message to publish event data to pubsub topic with identity
 func (c *Client) PublishEventJSON(ctx context.Context, topic string, in interface{}) error {
+	if in == nil {
+		return errors.New("nil in")
+	}
 	b, err := json.Marshal(in)
 	if err != nil {
 		return errors.Wrap(err, "error marshaling content")

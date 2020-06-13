@@ -37,8 +37,8 @@ func main() {
 	}
 }
 
-// Sample method to invoke
-func (s *server) MyMethod() string {
+// EchoMethod is a simple demo method to invoke
+func (s *server) EchoMethod() string {
 	return "pong"
 }
 
@@ -48,8 +48,8 @@ func (s *server) OnInvoke(ctx context.Context, in *commonv1pb.InvokeRequest) (*c
 	var response string
 
 	switch in.Method {
-	case "MyMethod":
-		response = s.MyMethod()
+	case "EchoMethod":
+		response = s.EchoMethod()
 	}
 
 	return &commonv1pb.InvokeResponse{

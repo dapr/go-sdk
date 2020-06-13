@@ -9,31 +9,47 @@ import (
 )
 
 // InvokeBinding invokes specific operation on the configured Dapr binding
-func (c *Client) InvokeBinding(ctx context.Context, name, op string, in []byte, meta map[string]string) error {
+func (c *Client) InvokeBinding(ctx context.Context, name, op string, in []byte, inm map[string]string) (out []byte, outm map[string]string, err error) {
 	if name == "" {
-		return errors.New("nil topic")
+		return nil, nil, errors.New("nil topic")
 	}
 
-	envelop := &pb.InvokeBindingRequest{
+	req := &pb.InvokeBindingRequest{
 		Name:      name,
 		Operation: op,
 		Data:      in,
-		Metadata:  meta,
+		Metadata:  inm,
 	}
 
-	_, err := c.protoClient.InvokeBinding(authContext(ctx), envelop)
+	resp, err := c.protoClient.InvokeBinding(authContext(ctx), req)
 	if err != nil {
-		return errors.Wrapf(err, "error invoking binding %s", name)
+		return nil, nil, errors.Wrapf(err, "error invoking binding %s", name)
 	}
 
-	return nil
+	if resp != nil {
+		return resp.Data, resp.Metadata, nil
+	}
+
+	return nil, nil, nil
 }
 
 // InvokeBindingJSON invokes configured Dapr binding with an instance
-func (c *Client) InvokeBindingJSON(ctx context.Context, name, operation string, in interface{}) error {
+func (c *Client) InvokeBindingJSON(ctx context.Context, name, operation string, in interface{}) (out []byte, outm map[string]string, err error) {
+	if in == nil {
+		return nil, nil, errors.New("nil in")
+	}
 	b, err := json.Marshal(in)
 	if err != nil {
-		return errors.Wrap(err, "error marshaling content")
+		return nil, nil, errors.Wrap(err, "error marshaling content")
 	}
 	return c.InvokeBinding(ctx, name, operation, b, nil)
+}
+
+// InvokeOutputBinding invokes configured Dapr binding with data (allows nil)
+func (c *Client) InvokeOutputBinding(ctx context.Context, name, operation string, data []byte) error {
+	_, _, err := c.InvokeBinding(ctx, name, operation, data, nil)
+	if err != nil {
+		return errors.Wrap(err, "error invoking output binding")
+	}
+	return nil
 }
