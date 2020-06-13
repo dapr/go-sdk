@@ -22,7 +22,7 @@ func main() {
 	if err != nil {
 		logger.Panic(err)
 	}
-	defer client.Close(ctx)
+	defer client.Close()
 
 	// publish a message to the topic messagebus
 	err = client.PublishEvent(ctx, "messagebus", data)
@@ -52,8 +52,8 @@ func main() {
 	}
 	logger.Println("data deleted")
 
-	// invoke a method called MyMethod on another dapr enabled service
-	resp, err := client.InvokeServiceWithContent(ctx, "serving", "MyMethod",
+	// invoke a method called EchoMethod on another dapr enabled service
+	resp, err := client.InvokeServiceWithContent(ctx, "serving", "EchoMethod",
 		"text/plain; charset=UTF-8", data)
 	if err != nil {
 		logger.Panic(err)

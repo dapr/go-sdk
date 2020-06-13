@@ -20,7 +20,7 @@ type server struct {
 
 func main() {
 	// create listener
-	lis, err := net.Listen("tcp", ":4000")
+	lis, err := net.Listen("tcp", ":50001")
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}

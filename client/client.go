@@ -33,16 +33,31 @@ func NewClient() (client *Client, err error) {
 
 // NewClientWithPort instantiates dapr client locally for the specific port
 func NewClientWithPort(port string) (client *Client, err error) {
+	if port == "" {
+		return nil, errors.New("nil port")
+	}
 	return NewClientWithAddress(net.JoinHostPort("127.0.0.1", port))
 }
 
 // NewClientWithAddress instantiates dapr client configured for the specific address
 func NewClientWithAddress(address string) (client *Client, err error) {
+	if address == "" {
+		return nil, errors.New("nil address")
+	}
 	logger.Printf("dapr client initializing for: %s", address)
 	conn, err := grpc.Dial(address, grpc.WithInsecure())
 	if err != nil {
 		return nil, errors.Wrapf(err, "error creating connection to '%s': %v", address, err)
 	}
+	client = &Client{
+		connection:  conn,
+		protoClient: pb.NewDaprClient(conn),
+	}
+	return
+}
+
+// NewClientWithConnection instantiates dapr client configured for the specific connection
+func NewClientWithConnection(conn *grpc.ClientConn) (client *Client, err error) {
 	client = &Client{
 		connection:  conn,
 		protoClient: pb.NewDaprClient(conn),
@@ -57,7 +72,7 @@ type Client struct {
 }
 
 // Close cleans up all resources created by the client
-func (c *Client) Close(ctx context.Context) {
+func (c *Client) Close() {
 	if c.connection != nil {
 		c.connection.Close()
 	}
