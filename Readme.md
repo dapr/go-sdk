@@ -1,4 +1,4 @@
-# dapr SDK for Go
+# Dapr SDK for Go
 
 This is the dapr SDK (client) for Go.
 
@@ -10,7 +10,7 @@ go get github.com/dapr/go-sdk
 
 ## Usage
 
-The `example` folder contains a Dapr enabled `serving` app a `client` app that uses this SDK to invoke dapr API for state and events, `serving` app for service to service invocation, and a simple HTTP binding to illustrate output binding. To run the example:
+The `example` folder contains a Dapr enabled `serving` app a `client` app that uses this SDK to invoke Dapr API for state and events, `serving` app for service to service invocation, and a simple HTTP binding to illustrate output binding. To run the example:
 
 1. Start the `serving` app in the `example/serving` directory 
 
