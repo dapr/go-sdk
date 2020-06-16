@@ -49,15 +49,15 @@ func (c *Client) InvokeService(ctx context.Context, serviceID, method string) (o
 }
 
 // InvokeServiceWithContent invokes service without content
-func (c *Client) InvokeServiceWithContent(ctx context.Context, serviceID, method, contentTpe string, data []byte) (out []byte, err error) {
+func (c *Client) InvokeServiceWithContent(ctx context.Context, serviceID, method, contentType string, data []byte) (out []byte, err error) {
 	if serviceID == "" {
 		return nil, errors.New("nil serviceID")
 	}
 	if method == "" {
 		return nil, errors.New("nil method")
 	}
-	if contentTpe == "" {
-		return nil, errors.New("nil contentTpe")
+	if contentType == "" {
+		return nil, errors.New("nil contentType")
 	}
 
 	req := &pb.InvokeServiceRequest{
@@ -65,7 +65,7 @@ func (c *Client) InvokeServiceWithContent(ctx context.Context, serviceID, method
 		Message: &v1.InvokeRequest{
 			Method:      method,
 			Data:        &anypb.Any{Value: data},
-			ContentType: contentTpe,
+			ContentType: contentType,
 		},
 	}
 

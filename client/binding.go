@@ -9,7 +9,7 @@ import (
 )
 
 // InvokeBinding invokes specific operation on the configured Dapr binding
-func (c *Client) InvokeBinding(ctx context.Context, name, op string, in []byte, inm map[string]string) (out []byte, outm map[string]string, err error) {
+func (c *Client) InvokeBinding(ctx context.Context, name, op string, in []byte, min map[string]string) (out []byte, mout map[string]string, err error) {
 	if name == "" {
 		return nil, nil, errors.New("nil topic")
 	}
@@ -18,7 +18,7 @@ func (c *Client) InvokeBinding(ctx context.Context, name, op string, in []byte, 
 		Name:      name,
 		Operation: op,
 		Data:      in,
-		Metadata:  inm,
+		Metadata:  min,
 	}
 
 	resp, err := c.protoClient.InvokeBinding(authContext(ctx), req)
