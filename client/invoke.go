@@ -2,17 +2,11 @@ package client
 
 import (
 	"context"
-	"encoding/json"
 
 	v1 "github.com/dapr/go-sdk/dapr/proto/common/v1"
 	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
 	anypb "github.com/golang/protobuf/ptypes/any"
 	"github.com/pkg/errors"
-)
-
-const (
-	// JSONContentType defines the JSON content type
-	JSONContentType = "application/json"
 )
 
 func (c *Client) invokeServiceWithRequest(ctx context.Context, req *pb.InvokeServiceRequest) (out []byte, err error) {
@@ -70,28 +64,6 @@ func (c *Client) InvokeServiceWithContent(ctx context.Context, serviceID, method
 			Method:      method,
 			Data:        &anypb.Any{Value: data},
 			ContentType: contentType,
-		},
-	}
-
-	return c.invokeServiceWithRequest(ctx, req)
-}
-
-// InvokeServiceJSON represents the request message for Service invocation with identity parameter
-func (c *Client) InvokeServiceJSON(ctx context.Context, serviceID, method string, in interface{}) (out []byte, err error) {
-	if in == nil {
-		return c.InvokeService(ctx, serviceID, method)
-	}
-	b, err := json.Marshal(in)
-	if err != nil {
-		return nil, errors.Wrap(err, "error marshaling in parameter")
-	}
-
-	req := &pb.InvokeServiceRequest{
-		Id: serviceID,
-		Message: &v1.InvokeRequest{
-			Method:      method,
-			Data:        &anypb.Any{Value: b},
-			ContentType: JSONContentType,
 		},
 	}
 

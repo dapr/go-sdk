@@ -32,7 +32,7 @@ func main() {
 	logger.Println("data published")
 
 	// save state with the key key1
-	err = client.SaveStateWithData(ctx, "statestore", "key1", data)
+	err = client.SaveStateData(ctx, "statestore", "key1", data)
 	if err != nil {
 		logger.Panic(err)
 	}

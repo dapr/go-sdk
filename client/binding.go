@@ -2,7 +2,6 @@ package client
 
 import (
 	"context"
-	"encoding/json"
 
 	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
 	"github.com/pkg/errors"
@@ -32,18 +31,6 @@ func (c *Client) InvokeBinding(ctx context.Context, name, op string, in []byte, 
 	}
 
 	return nil, nil, nil
-}
-
-// InvokeBindingJSON invokes configured Dapr binding with an instance
-func (c *Client) InvokeBindingJSON(ctx context.Context, name, operation string, in interface{}) (out []byte, outm map[string]string, err error) {
-	if in == nil {
-		return nil, nil, errors.New("nil in")
-	}
-	b, err := json.Marshal(in)
-	if err != nil {
-		return nil, nil, errors.Wrap(err, "error marshaling content")
-	}
-	return c.InvokeBinding(ctx, name, operation, b, nil)
 }
 
 // InvokeOutputBinding invokes configured Dapr binding with data (allows nil)

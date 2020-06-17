@@ -2,7 +2,6 @@ package client
 
 import (
 	"context"
-	"encoding/json"
 	"time"
 
 	v1 "github.com/dapr/go-sdk/dapr/proto/common/v1"
@@ -211,8 +210,8 @@ func (c *Client) SaveStateItem(ctx context.Context, store string, item *StateIte
 	return c.SaveState(ctx, req)
 }
 
-// SaveStateWithData saves the data into store using default state options
-func (c *Client) SaveStateWithData(ctx context.Context, store, key string, data []byte) error {
+// SaveStateData saves the data into store using default state options
+func (c *Client) SaveStateData(ctx context.Context, store, key string, data []byte) error {
 	if store == "" {
 		return errors.New("nil store")
 	}
@@ -231,18 +230,6 @@ func (c *Client) SaveStateWithData(ctx context.Context, store, key string, data 
 	}
 
 	return c.SaveState(ctx, req)
-}
-
-// SaveStateJSON saves the JSON serialized in into store using default state options
-func (c *Client) SaveStateJSON(ctx context.Context, store, key string, in interface{}) error {
-	if in == nil {
-		return errors.New("nil data to save")
-	}
-	b, err := json.Marshal(in)
-	if err != nil {
-		return errors.Wrap(err, "error marshaling content")
-	}
-	return c.SaveStateWithData(ctx, store, key, b)
 }
 
 // *** Get State ***
