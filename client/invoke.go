@@ -10,8 +10,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-// InvokeServiceWithRequest invokes service with input request
-func (c *Client) InvokeServiceWithRequest(ctx context.Context, req *pb.InvokeServiceRequest) (out []byte, err error) {
+func (c *Client) invokeServiceWithRequest(ctx context.Context, req *pb.InvokeServiceRequest) (out []byte, err error) {
 	if req == nil {
 		return nil, errors.New("nil request")
 	}
@@ -45,7 +44,7 @@ func (c *Client) InvokeService(ctx context.Context, serviceID, method string) (o
 			Method: method,
 		},
 	}
-	return c.InvokeServiceWithRequest(ctx, req)
+	return c.invokeServiceWithRequest(ctx, req)
 }
 
 // InvokeServiceWithContent invokes service without content
@@ -69,7 +68,7 @@ func (c *Client) InvokeServiceWithContent(ctx context.Context, serviceID, method
 		},
 	}
 
-	return c.InvokeServiceWithRequest(ctx, req)
+	return c.invokeServiceWithRequest(ctx, req)
 }
 
 // InvokeServiceJSON represents the request message for Service invocation with identity parameter
@@ -91,5 +90,5 @@ func (c *Client) InvokeServiceJSON(ctx context.Context, serviceID, method string
 		},
 	}
 
-	return c.InvokeServiceWithRequest(ctx, req)
+	return c.invokeServiceWithRequest(ctx, req)
 }
