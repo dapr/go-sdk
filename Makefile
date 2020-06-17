@@ -3,7 +3,7 @@ RELEASE_VERSION  =v0.8.0
 .PHONY: mod test service client lint protps tag lint clean, help
 all: test
 
-protps: ## Downloads proto files from dapr/dapr, generates gRPC clients
+protos: ## Downloads proto files from dapr/dapr, generates gRPC clients
 	bin/protogen
 
 mod: ## Updates the go modules

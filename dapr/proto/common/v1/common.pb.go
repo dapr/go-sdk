@@ -15,14 +15,10 @@ import (
 	proto "github.com/golang/protobuf/proto"
 	any "github.com/golang/protobuf/ptypes/any"
 	duration "github.com/golang/protobuf/ptypes/duration"
-<<<<<<< HEAD
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
 	sync "sync"
-=======
-	math "math"
->>>>>>> upstream/master
 )
 
 const (
@@ -255,93 +251,6 @@ func (StateRetryPolicy_RetryPattern) EnumDescriptor() ([]byte, []int) {
 	return file_dapr_proto_common_v1_common_proto_rawDescGZIP(), []int{5, 0}
 }
 
-// Enum describing the supported concurrency for state.
-type StateOptions_StateConcurrency int32
-
-const (
-	StateOptions_CONCURRENCY_UNSPECIFIED StateOptions_StateConcurrency = 0
-	StateOptions_CONCURRENCY_FIRST_WRITE StateOptions_StateConcurrency = 1
-	StateOptions_CONCURRENCY_LAST_WRITE  StateOptions_StateConcurrency = 2
-)
-
-var StateOptions_StateConcurrency_name = map[int32]string{
-	0: "CONCURRENCY_UNSPECIFIED",
-	1: "CONCURRENCY_FIRST_WRITE",
-	2: "CONCURRENCY_LAST_WRITE",
-}
-
-var StateOptions_StateConcurrency_value = map[string]int32{
-	"CONCURRENCY_UNSPECIFIED": 0,
-	"CONCURRENCY_FIRST_WRITE": 1,
-	"CONCURRENCY_LAST_WRITE":  2,
-}
-
-func (x StateOptions_StateConcurrency) String() string {
-	return proto.EnumName(StateOptions_StateConcurrency_name, int32(x))
-}
-
-func (StateOptions_StateConcurrency) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_0c448f683ad359d5, []int{4, 0}
-}
-
-// Enum describing the supported consistency for state.
-type StateOptions_StateConsistency int32
-
-const (
-	StateOptions_CONSISTENCY_UNSPECIFIED StateOptions_StateConsistency = 0
-	StateOptions_CONSISTENCY_EVENTUAL    StateOptions_StateConsistency = 1
-	StateOptions_CONSISTENCY_STRONG      StateOptions_StateConsistency = 2
-)
-
-var StateOptions_StateConsistency_name = map[int32]string{
-	0: "CONSISTENCY_UNSPECIFIED",
-	1: "CONSISTENCY_EVENTUAL",
-	2: "CONSISTENCY_STRONG",
-}
-
-var StateOptions_StateConsistency_value = map[string]int32{
-	"CONSISTENCY_UNSPECIFIED": 0,
-	"CONSISTENCY_EVENTUAL":    1,
-	"CONSISTENCY_STRONG":      2,
-}
-
-func (x StateOptions_StateConsistency) String() string {
-	return proto.EnumName(StateOptions_StateConsistency_name, int32(x))
-}
-
-func (StateOptions_StateConsistency) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_0c448f683ad359d5, []int{4, 1}
-}
-
-// Enum describing the support retry pattern
-type StateRetryPolicy_RetryPattern int32
-
-const (
-	StateRetryPolicy_RETRY_UNSPECIFIED StateRetryPolicy_RetryPattern = 0
-	StateRetryPolicy_RETRY_LINEAR      StateRetryPolicy_RetryPattern = 1
-	StateRetryPolicy_RETRY_EXPONENTIAL StateRetryPolicy_RetryPattern = 2
-)
-
-var StateRetryPolicy_RetryPattern_name = map[int32]string{
-	0: "RETRY_UNSPECIFIED",
-	1: "RETRY_LINEAR",
-	2: "RETRY_EXPONENTIAL",
-}
-
-var StateRetryPolicy_RetryPattern_value = map[string]int32{
-	"RETRY_UNSPECIFIED": 0,
-	"RETRY_LINEAR":      1,
-	"RETRY_EXPONENTIAL": 2,
-}
-
-func (x StateRetryPolicy_RetryPattern) String() string {
-	return proto.EnumName(StateRetryPolicy_RetryPattern_name, int32(x))
-}
-
-func (StateRetryPolicy_RetryPattern) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_0c448f683ad359d5, []int{5, 0}
-}
-
 // HTTPExtension includes HTTP verb and querystring
 // when Dapr runtime delivers HTTP content.
 //
@@ -350,13 +259,10 @@ func (StateRetryPolicy_RetryPattern) EnumDescriptor() ([]byte, []int) {
 //
 // Dapr runtime will parse POST as a verb and extract querystring to quersytring map.
 type HTTPExtension struct {
-<<<<<<< HEAD
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-=======
->>>>>>> upstream/master
 	// Required. HTTP verb.
 	Verb HTTPExtension_Verb `protobuf:"varint,1,opt,name=verb,proto3,enum=dapr.proto.common.v1.HTTPExtension_Verb" json:"verb,omitempty"`
 	// querystring includes HTTP querystring.
@@ -413,13 +319,10 @@ func (x *HTTPExtension) GetQuerystring() map[string]string {
 // This message is used in InvokeService of Dapr gRPC Service and OnInvoke
 // of AppCallback gRPC service.
 type InvokeRequest struct {
-<<<<<<< HEAD
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-=======
->>>>>>> upstream/master
 	// Required. method is a method name which will be invoked by caller.
 	Method string `protobuf:"bytes,1,opt,name=method,proto3" json:"method,omitempty"`
 	// Required. Bytes value or Protobuf message which caller sent.
@@ -434,14 +337,7 @@ type InvokeRequest struct {
 	//
 	// This field is required for http-compatible request. Otherwise,
 	// this field is optional.
-<<<<<<< HEAD
 	HttpExtension *HTTPExtension `protobuf:"bytes,4,opt,name=http_extension,json=httpExtension,proto3" json:"http_extension,omitempty"`
-=======
-	HttpExtension        *HTTPExtension `protobuf:"bytes,4,opt,name=http_extension,json=httpExtension,proto3" json:"http_extension,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}       `json:"-"`
-	XXX_unrecognized     []byte         `json:"-"`
-	XXX_sizecache        int32          `json:"-"`
->>>>>>> upstream/master
 }
 
 func (x *InvokeRequest) Reset() {
@@ -509,7 +405,6 @@ func (x *InvokeRequest) GetHttpExtension() *HTTPExtension {
 // This message is used in InvokeService of Dapr gRPC Service and OnInvoke
 // of AppCallback gRPC service.
 type InvokeResponse struct {
-<<<<<<< HEAD
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
@@ -545,15 +440,6 @@ func (x *InvokeResponse) ProtoReflect() protoreflect.Message {
 		return ms
 	}
 	return mi.MessageOf(x)
-=======
-	// Required. The content body of InvokeService response.
-	Data *any.Any `protobuf:"bytes,1,opt,name=data,proto3" json:"data,omitempty"`
-	// Required. The type of data content.
-	ContentType          string   `protobuf:"bytes,2,opt,name=content_type,json=contentType,proto3" json:"content_type,omitempty"`
-	XXX_NoUnkeyedLiteral struct{} `json:"-"`
-	XXX_unrecognized     []byte   `json:"-"`
-	XXX_sizecache        int32    `json:"-"`
->>>>>>> upstream/master
 }
 
 // Deprecated: Use InvokeResponse.ProtoReflect.Descriptor instead.
@@ -647,7 +533,6 @@ func (x *StateItem) GetEtag() string {
 	return ""
 }
 
-<<<<<<< HEAD
 func (x *StateItem) GetMetadata() map[string]string {
 	if x != nil {
 		return x.Metadata
@@ -708,169 +593,35 @@ func (*StateOptions) Descriptor() ([]byte, []int) {
 func (x *StateOptions) GetConcurrency() StateOptions_StateConcurrency {
 	if x != nil {
 		return x.Concurrency
-=======
-// StateSaveRequest represents state and options to save the state value.
-type StateSaveRequest struct {
-	// Required. The state key
-	Key string `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
-	// Required. The state data for key
-	Value []byte `protobuf:"bytes,2,opt,name=value,proto3" json:"value,omitempty"`
-	// The entity tag which represents the specific version of data.
-	// The exact ETag format is defined by the corresponding data store.
-	Etag string `protobuf:"bytes,3,opt,name=etag,proto3" json:"etag,omitempty"`
-	// The metadata which will be passed to state store component.
-	Metadata map[string]string `protobuf:"bytes,4,rep,name=metadata,proto3" json:"metadata,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
-	// Options for concurrency, consistency, and retry_policy to save the state.
-	Options              *StateOptions `protobuf:"bytes,5,opt,name=options,proto3" json:"options,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}      `json:"-"`
-	XXX_unrecognized     []byte        `json:"-"`
-	XXX_sizecache        int32         `json:"-"`
-}
-
-func (m *StateSaveRequest) Reset()         { *m = StateSaveRequest{} }
-func (m *StateSaveRequest) String() string { return proto.CompactTextString(m) }
-func (*StateSaveRequest) ProtoMessage()    {}
-func (*StateSaveRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0c448f683ad359d5, []int{3}
-}
-
-func (m *StateSaveRequest) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_StateSaveRequest.Unmarshal(m, b)
-}
-func (m *StateSaveRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_StateSaveRequest.Marshal(b, m, deterministic)
-}
-func (m *StateSaveRequest) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_StateSaveRequest.Merge(m, src)
-}
-func (m *StateSaveRequest) XXX_Size() int {
-	return xxx_messageInfo_StateSaveRequest.Size(m)
-}
-func (m *StateSaveRequest) XXX_DiscardUnknown() {
-	xxx_messageInfo_StateSaveRequest.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_StateSaveRequest proto.InternalMessageInfo
-
-func (m *StateSaveRequest) GetKey() string {
-	if m != nil {
-		return m.Key
-	}
-	return ""
-}
-
-func (m *StateSaveRequest) GetValue() []byte {
-	if m != nil {
-		return m.Value
-	}
-	return nil
-}
-
-func (m *StateSaveRequest) GetEtag() string {
-	if m != nil {
-		return m.Etag
-	}
-	return ""
-}
-
-func (m *StateSaveRequest) GetMetadata() map[string]string {
-	if m != nil {
-		return m.Metadata
-	}
-	return nil
-}
-
-func (m *StateSaveRequest) GetOptions() *StateOptions {
-	if m != nil {
-		return m.Options
-	}
-	return nil
-}
-
-// StateOptions configures concurrency, consistency, and retry policy for state operations
-type StateOptions struct {
-	Concurrency          StateOptions_StateConcurrency `protobuf:"varint,1,opt,name=concurrency,proto3,enum=dapr.proto.common.v1.StateOptions_StateConcurrency" json:"concurrency,omitempty"`
-	Consistency          StateOptions_StateConsistency `protobuf:"varint,2,opt,name=consistency,proto3,enum=dapr.proto.common.v1.StateOptions_StateConsistency" json:"consistency,omitempty"`
-	RetryPolicy          *StateRetryPolicy             `protobuf:"bytes,3,opt,name=retry_policy,json=retryPolicy,proto3" json:"retry_policy,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}                      `json:"-"`
-	XXX_unrecognized     []byte                        `json:"-"`
-	XXX_sizecache        int32                         `json:"-"`
-}
-
-func (m *StateOptions) Reset()         { *m = StateOptions{} }
-func (m *StateOptions) String() string { return proto.CompactTextString(m) }
-func (*StateOptions) ProtoMessage()    {}
-func (*StateOptions) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0c448f683ad359d5, []int{4}
-}
-
-func (m *StateOptions) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_StateOptions.Unmarshal(m, b)
-}
-func (m *StateOptions) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_StateOptions.Marshal(b, m, deterministic)
-}
-func (m *StateOptions) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_StateOptions.Merge(m, src)
-}
-func (m *StateOptions) XXX_Size() int {
-	return xxx_messageInfo_StateOptions.Size(m)
-}
-func (m *StateOptions) XXX_DiscardUnknown() {
-	xxx_messageInfo_StateOptions.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_StateOptions proto.InternalMessageInfo
-
-func (m *StateOptions) GetConcurrency() StateOptions_StateConcurrency {
-	if m != nil {
-		return m.Concurrency
->>>>>>> upstream/master
 	}
 	return StateOptions_CONCURRENCY_UNSPECIFIED
 }
 
-<<<<<<< HEAD
 func (x *StateOptions) GetConsistency() StateOptions_StateConsistency {
 	if x != nil {
 		return x.Consistency
-=======
-func (m *StateOptions) GetConsistency() StateOptions_StateConsistency {
-	if m != nil {
-		return m.Consistency
->>>>>>> upstream/master
 	}
 	return StateOptions_CONSISTENCY_UNSPECIFIED
 }
 
-<<<<<<< HEAD
 func (x *StateOptions) GetRetryPolicy() *StateRetryPolicy {
 	if x != nil {
 		return x.RetryPolicy
-=======
-func (m *StateOptions) GetRetryPolicy() *StateRetryPolicy {
-	if m != nil {
-		return m.RetryPolicy
->>>>>>> upstream/master
 	}
 	return nil
 }
 
 // StateRetryPolicy represents retry policy to set and delete state operations.
 type StateRetryPolicy struct {
-<<<<<<< HEAD
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-=======
->>>>>>> upstream/master
 	// Maximum number of retries.
 	Threshold int32 `protobuf:"varint,1,opt,name=threshold,proto3" json:"threshold,omitempty"`
 	// Retry pattern.
 	Pattern StateRetryPolicy_RetryPattern `protobuf:"varint,2,opt,name=pattern,proto3,enum=dapr.proto.common.v1.StateRetryPolicy_RetryPattern" json:"pattern,omitempty"`
 	// Initial delay between retries.
-<<<<<<< HEAD
 	Interval *duration.Duration `protobuf:"bytes,3,opt,name=interval,proto3" json:"interval,omitempty"`
 }
 
@@ -909,73 +660,24 @@ func (*StateRetryPolicy) Descriptor() ([]byte, []int) {
 func (x *StateRetryPolicy) GetThreshold() int32 {
 	if x != nil {
 		return x.Threshold
-=======
-	Interval             *duration.Duration `protobuf:"bytes,3,opt,name=interval,proto3" json:"interval,omitempty"`
-	XXX_NoUnkeyedLiteral struct{}           `json:"-"`
-	XXX_unrecognized     []byte             `json:"-"`
-	XXX_sizecache        int32              `json:"-"`
-}
-
-func (m *StateRetryPolicy) Reset()         { *m = StateRetryPolicy{} }
-func (m *StateRetryPolicy) String() string { return proto.CompactTextString(m) }
-func (*StateRetryPolicy) ProtoMessage()    {}
-func (*StateRetryPolicy) Descriptor() ([]byte, []int) {
-	return fileDescriptor_0c448f683ad359d5, []int{5}
-}
-
-func (m *StateRetryPolicy) XXX_Unmarshal(b []byte) error {
-	return xxx_messageInfo_StateRetryPolicy.Unmarshal(m, b)
-}
-func (m *StateRetryPolicy) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
-	return xxx_messageInfo_StateRetryPolicy.Marshal(b, m, deterministic)
-}
-func (m *StateRetryPolicy) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_StateRetryPolicy.Merge(m, src)
-}
-func (m *StateRetryPolicy) XXX_Size() int {
-	return xxx_messageInfo_StateRetryPolicy.Size(m)
-}
-func (m *StateRetryPolicy) XXX_DiscardUnknown() {
-	xxx_messageInfo_StateRetryPolicy.DiscardUnknown(m)
-}
-
-var xxx_messageInfo_StateRetryPolicy proto.InternalMessageInfo
-
-func (m *StateRetryPolicy) GetThreshold() int32 {
-	if m != nil {
-		return m.Threshold
->>>>>>> upstream/master
 	}
 	return 0
 }
 
-<<<<<<< HEAD
 func (x *StateRetryPolicy) GetPattern() StateRetryPolicy_RetryPattern {
 	if x != nil {
 		return x.Pattern
-=======
-func (m *StateRetryPolicy) GetPattern() StateRetryPolicy_RetryPattern {
-	if m != nil {
-		return m.Pattern
->>>>>>> upstream/master
 	}
 	return StateRetryPolicy_RETRY_UNSPECIFIED
 }
 
-<<<<<<< HEAD
 func (x *StateRetryPolicy) GetInterval() *duration.Duration {
 	if x != nil {
 		return x.Interval
-=======
-func (m *StateRetryPolicy) GetInterval() *duration.Duration {
-	if m != nil {
-		return m.Interval
->>>>>>> upstream/master
 	}
 	return nil
 }
 
-<<<<<<< HEAD
 var File_dapr_proto_common_v1_common_proto protoreflect.FileDescriptor
 
 var file_dapr_proto_common_v1_common_proto_rawDesc = []byte{
@@ -1246,78 +948,4 @@ func file_dapr_proto_common_v1_common_proto_init() {
 	file_dapr_proto_common_v1_common_proto_rawDesc = nil
 	file_dapr_proto_common_v1_common_proto_goTypes = nil
 	file_dapr_proto_common_v1_common_proto_depIdxs = nil
-=======
-func init() {
-	proto.RegisterEnum("dapr.proto.common.v1.HTTPExtension_Verb", HTTPExtension_Verb_name, HTTPExtension_Verb_value)
-	proto.RegisterEnum("dapr.proto.common.v1.StateOptions_StateConcurrency", StateOptions_StateConcurrency_name, StateOptions_StateConcurrency_value)
-	proto.RegisterEnum("dapr.proto.common.v1.StateOptions_StateConsistency", StateOptions_StateConsistency_name, StateOptions_StateConsistency_value)
-	proto.RegisterEnum("dapr.proto.common.v1.StateRetryPolicy_RetryPattern", StateRetryPolicy_RetryPattern_name, StateRetryPolicy_RetryPattern_value)
-	proto.RegisterType((*HTTPExtension)(nil), "dapr.proto.common.v1.HTTPExtension")
-	proto.RegisterMapType((map[string]string)(nil), "dapr.proto.common.v1.HTTPExtension.QuerystringEntry")
-	proto.RegisterType((*InvokeRequest)(nil), "dapr.proto.common.v1.InvokeRequest")
-	proto.RegisterType((*InvokeResponse)(nil), "dapr.proto.common.v1.InvokeResponse")
-	proto.RegisterType((*StateSaveRequest)(nil), "dapr.proto.common.v1.StateSaveRequest")
-	proto.RegisterMapType((map[string]string)(nil), "dapr.proto.common.v1.StateSaveRequest.MetadataEntry")
-	proto.RegisterType((*StateOptions)(nil), "dapr.proto.common.v1.StateOptions")
-	proto.RegisterType((*StateRetryPolicy)(nil), "dapr.proto.common.v1.StateRetryPolicy")
-}
-
-func init() { proto.RegisterFile("dapr/proto/common/v1/common.proto", fileDescriptor_0c448f683ad359d5) }
-
-var fileDescriptor_0c448f683ad359d5 = []byte{
-	// 840 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x94, 0x55, 0x5d, 0x6e, 0xdb, 0x46,
-	0x17, 0x0d, 0x29, 0xc9, 0xb2, 0xaf, 0x64, 0x63, 0xbe, 0x81, 0x3f, 0x57, 0x51, 0x8a, 0x22, 0x61,
-	0x81, 0xc2, 0x2f, 0xa5, 0x60, 0xa5, 0x05, 0x8a, 0x26, 0x28, 0xa0, 0x50, 0x13, 0x87, 0x85, 0x42,
-	0xb2, 0x43, 0xca, 0xfd, 0x01, 0x0a, 0x81, 0x92, 0xa6, 0x12, 0x61, 0x99, 0x64, 0x86, 0x23, 0xa2,
-	0xdc, 0x40, 0x37, 0xd1, 0x1d, 0x74, 0x15, 0x5d, 0x41, 0x9f, 0xba, 0xa0, 0x82, 0x43, 0x4a, 0x62,
-	0x14, 0xc3, 0xb1, 0xdf, 0xee, 0xdf, 0x39, 0x73, 0xee, 0xbd, 0x43, 0x0e, 0x3c, 0x9b, 0xfb, 0x31,
-	0xef, 0xc5, 0x3c, 0x12, 0x51, 0x6f, 0x16, 0xdd, 0xdc, 0x44, 0x61, 0x2f, 0xbd, 0x28, 0x2d, 0x5d,
-	0x86, 0xf1, 0x69, 0x5e, 0x52, 0xd8, 0x7a, 0x99, 0x48, 0x2f, 0xba, 0x8f, 0x17, 0x51, 0xb4, 0x58,
-	0xb1, 0x02, 0x3a, 0x5d, 0xff, 0xd6, 0xf3, 0xc3, 0xac, 0x28, 0xea, 0x7e, 0xb6, 0x9f, 0x9a, 0xaf,
-	0xb9, 0x2f, 0x82, 0x0d, 0xa1, 0xf6, 0x8f, 0x0a, 0xc7, 0x6f, 0x3c, 0xcf, 0x21, 0xbf, 0x0b, 0x16,
-	0x26, 0x41, 0x14, 0xe2, 0x97, 0x50, 0x4f, 0x19, 0x9f, 0x76, 0x94, 0xa7, 0xca, 0xf9, 0x49, 0xff,
-	0x5c, 0xbf, 0xed, 0x44, 0xfd, 0x3d, 0x88, 0x7e, 0xc5, 0xf8, 0x94, 0x4a, 0x14, 0xbe, 0x82, 0xd6,
-	0xbb, 0x35, 0xe3, 0x59, 0x22, 0x78, 0x10, 0x2e, 0x3a, 0xea, 0xd3, 0xda, 0x79, 0xab, 0xff, 0xd5,
-	0x7d, 0x48, 0x7e, 0xd8, 0xc1, 0x48, 0x28, 0x78, 0x46, 0xab, 0x44, 0xdd, 0xef, 0x00, 0xed, 0x17,
-	0x60, 0x04, 0xb5, 0x6b, 0x96, 0x49, 0xa1, 0x47, 0x34, 0x37, 0xf1, 0x29, 0x34, 0x52, 0x7f, 0xb5,
-	0x66, 0x1d, 0x55, 0xc6, 0x0a, 0xe7, 0x5b, 0xf5, 0x1b, 0x45, 0x5b, 0x40, 0x3d, 0x57, 0x89, 0x0f,
-	0xa1, 0x6e, 0xd9, 0x16, 0x41, 0x8f, 0x70, 0x13, 0x6a, 0x97, 0xc4, 0x43, 0x4a, 0x1e, 0x7a, 0x43,
-	0x06, 0x43, 0xa4, 0xe6, 0x96, 0x63, 0xbb, 0x1e, 0xaa, 0xe5, 0x49, 0x67, 0xec, 0xa1, 0x3a, 0x06,
-	0x38, 0x18, 0x92, 0x11, 0xf1, 0x08, 0x6a, 0xe0, 0x16, 0x34, 0x0d, 0xdb, 0xb2, 0x88, 0xe1, 0xa1,
-	0x83, 0xdc, 0xb1, 0x1d, 0xcf, 0xb4, 0x2d, 0x17, 0x35, 0xf1, 0x11, 0x34, 0x3c, 0x3a, 0x30, 0x08,
-	0x3a, 0xd4, 0xfe, 0x56, 0xe0, 0xd8, 0x0c, 0xd3, 0xe8, 0x9a, 0x51, 0xf6, 0x6e, 0xcd, 0x12, 0x81,
-	0xcf, 0xe0, 0xe0, 0x86, 0x89, 0x65, 0x34, 0x2f, 0x95, 0x96, 0x1e, 0x3e, 0x87, 0xfa, 0xdc, 0x17,
-	0xbe, 0xd4, 0xda, 0xea, 0x9f, 0xea, 0xc5, 0xa6, 0xf4, 0xcd, 0xa6, 0xf4, 0x41, 0x98, 0x51, 0x59,
-	0x81, 0x9f, 0x41, 0x7b, 0x16, 0x85, 0x82, 0x85, 0x62, 0x22, 0xb2, 0x98, 0x75, 0x6a, 0x92, 0xa7,
-	0x55, 0xc6, 0xbc, 0x2c, 0x66, 0xf8, 0x7b, 0x38, 0x59, 0x0a, 0x11, 0x4f, 0xd8, 0x66, 0x9e, 0x9d,
-	0xba, 0xa4, 0xfd, 0xfc, 0x1e, 0xa3, 0xa7, 0xc7, 0x39, 0x74, 0xeb, 0x6a, 0xbf, 0xc2, 0xc9, 0xa6,
-	0x83, 0x24, 0x8e, 0xc2, 0x84, 0x6d, 0xa5, 0x2a, 0x0f, 0x96, 0xaa, 0x7e, 0x20, 0x55, 0xfb, 0x53,
-	0x05, 0xe4, 0x0a, 0x5f, 0x30, 0xd7, 0x4f, 0xb7, 0x43, 0xfa, 0xc8, 0x2e, 0xdb, 0xe5, 0x2e, 0x31,
-	0x86, 0x3a, 0x13, 0xfe, 0xa2, 0x1c, 0x81, 0xb4, 0xb1, 0x03, 0x87, 0x37, 0x4c, 0xf8, 0x52, 0x61,
-	0xfd, 0xae, 0x0b, 0xb7, 0x7f, 0xaa, 0xfe, 0xb6, 0x84, 0x15, 0x17, 0x6e, 0xcb, 0x82, 0x5f, 0x42,
-	0x33, 0x8a, 0xf3, 0xaf, 0x24, 0xe9, 0x34, 0x64, 0xcb, 0xda, 0x1d, 0x84, 0x76, 0x51, 0x49, 0x37,
-	0x90, 0xee, 0x0b, 0x38, 0x7e, 0x8f, 0xf8, 0x41, 0x17, 0xf5, 0xdf, 0x1a, 0xb4, 0xab, 0xb4, 0x78,
-	0x0c, 0xf9, 0xf4, 0x66, 0x6b, 0xce, 0x59, 0x38, 0xcb, 0xca, 0xcf, 0xf2, 0xf9, 0xc7, 0xf5, 0x14,
-	0x8e, 0xb1, 0x83, 0xd2, 0x2a, 0x4f, 0x49, 0x9b, 0x04, 0x89, 0x90, 0xb4, 0xea, 0x83, 0x69, 0x37,
-	0x50, 0x5a, 0xe5, 0xc1, 0x26, 0xb4, 0x39, 0x13, 0x3c, 0x9b, 0xc4, 0xd1, 0x2a, 0x98, 0x65, 0x72,
-	0x4f, 0xad, 0xfe, 0x17, 0x77, 0xf0, 0xd2, 0xbc, 0xdc, 0x91, 0xd5, 0xb4, 0xc5, 0x77, 0x8e, 0xb6,
-	0x2c, 0xaf, 0x49, 0xa5, 0x05, 0xfc, 0x04, 0x3e, 0x31, 0x6c, 0xcb, 0x18, 0x53, 0x4a, 0x2c, 0xe3,
-	0xe7, 0xc9, 0xd8, 0x72, 0x1d, 0x62, 0x98, 0xaf, 0x4d, 0x32, 0x44, 0x8f, 0xf6, 0x93, 0xaf, 0x4d,
-	0xea, 0x7a, 0x93, 0x1f, 0xa9, 0xe9, 0x11, 0xa4, 0xe0, 0x2e, 0x9c, 0x55, 0x93, 0xa3, 0xc1, 0x36,
-	0xa7, 0x6a, 0xfe, 0xee, 0xa4, 0x6d, 0x23, 0x05, 0x99, 0x6b, 0xba, 0xde, 0x2d, 0x27, 0x75, 0xe0,
-	0xb4, 0x9a, 0x24, 0x57, 0xc4, 0xf2, 0xc6, 0x83, 0x11, 0x52, 0xf0, 0x19, 0xe0, 0x6a, 0xc6, 0xf5,
-	0xa8, 0x6d, 0x5d, 0x22, 0x55, 0xfb, 0x63, 0x73, 0xe9, 0x2b, 0xed, 0xe2, 0x4f, 0xe1, 0x48, 0x2c,
-	0x39, 0x4b, 0x96, 0xd1, 0xaa, 0xf8, 0x39, 0x34, 0xe8, 0x2e, 0x80, 0xdf, 0x42, 0x33, 0xf6, 0x85,
-	0x60, 0x3c, 0xbc, 0xc7, 0x76, 0x2a, 0xb4, 0x7a, 0x61, 0x17, 0x50, 0xba, 0xe1, 0xc0, 0x5f, 0xc3,
-	0x61, 0x10, 0x0a, 0xc6, 0x53, 0x7f, 0x55, 0x6e, 0xe5, 0xf1, 0x07, 0xdf, 0xf1, 0xb0, 0x7c, 0x1c,
-	0xe8, 0xb6, 0x54, 0xb3, 0xa0, 0x5d, 0xe5, 0xc3, 0xff, 0x87, 0xff, 0x51, 0xe2, 0xd1, 0xfd, 0x89,
-	0x20, 0x68, 0x17, 0xe1, 0x91, 0x69, 0x91, 0x01, 0x45, 0xca, 0xae, 0x90, 0xfc, 0xe4, 0xd8, 0x16,
-	0xb1, 0x3c, 0x73, 0x30, 0x42, 0xea, 0xab, 0x15, 0x40, 0x10, 0x15, 0x8d, 0xa4, 0x17, 0xaf, 0xda,
-	0x86, 0x6c, 0xc3, 0xc9, 0x05, 0x24, 0xbf, 0xf4, 0x17, 0x81, 0x58, 0xae, 0xa7, 0x79, 0x6f, 0x3d,
-	0xf9, 0x16, 0x2e, 0xa2, 0x2f, 0x93, 0xf9, 0x75, 0xef, 0xb6, 0x77, 0xf1, 0x45, 0x61, 0xfd, 0xa5,
-	0x3e, 0x19, 0xe6, 0x5c, 0xc6, 0x2a, 0x60, 0xa1, 0xd0, 0x07, 0x6b, 0x11, 0x2d, 0x58, 0xa8, 0x5f,
-	0xf2, 0x78, 0xa6, 0xa7, 0x17, 0xd3, 0x03, 0x89, 0x7a, 0xfe, 0x5f, 0x00, 0x00, 0x00, 0xff, 0xff,
-	0x32, 0xdd, 0xec, 0xee, 0x5b, 0x07, 0x00, 0x00,
->>>>>>> upstream/master
 }
