@@ -248,12 +248,12 @@ func (c *Client) SaveStateJSON(ctx context.Context, store, key string, in interf
 // *** Get State ***
 
 // GetStateWithConsistency retreaves state from specific store using provided request
-func (c *Client) GetStateWithConsistency(ctx context.Context, store, key string, sc StateConsistency) (out []byte, err error) {
+func (c *Client) GetStateWithConsistency(ctx context.Context, store, key string, sc StateConsistency) (out []byte, etag string, err error) {
 	if store == "" {
-		return nil, errors.New("nil store")
+		return nil, "", errors.New("nil store")
 	}
 	if key == "" {
-		return nil, errors.New("nil key")
+		return nil, "", errors.New("nil key")
 	}
 
 	req := &pb.GetStateRequest{
@@ -264,14 +264,14 @@ func (c *Client) GetStateWithConsistency(ctx context.Context, store, key string,
 
 	result, err := c.protoClient.GetState(authContext(ctx), req)
 	if err != nil {
-		return nil, errors.Wrap(err, "error getting state")
+		return nil, "", errors.Wrap(err, "error getting state")
 	}
 
-	return result.Data, nil
+	return result.Data, result.Etag, nil
 }
 
 // GetState retreaves state from specific store using default consistency option
-func (c *Client) GetState(ctx context.Context, store, key string) (out []byte, err error) {
+func (c *Client) GetState(ctx context.Context, store, key string) (out []byte, etag string, err error) {
 	return c.GetStateWithConsistency(ctx, store, key, StateConsistencyStrong)
 }
 

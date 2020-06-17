@@ -39,11 +39,11 @@ func main() {
 	logger.Println("data saved")
 
 	// get state for key key1
-	dataOut, err := client.GetState(ctx, "statestore", "key1")
+	dataOut, etag, err := client.GetState(ctx, "statestore", "key1")
 	if err != nil {
 		logger.Panic(err)
 	}
-	logger.Printf("data out: %s", string(dataOut))
+	logger.Printf("data out [etag:%s]: %s", etag, string(dataOut))
 
 	// delete state for key key1
 	err = client.DeleteState(ctx, "statestore", "key1")

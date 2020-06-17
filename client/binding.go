@@ -9,6 +9,7 @@ import (
 )
 
 // InvokeBinding invokes specific operation on the configured Dapr binding
+// This method covers both the input, output, and bi-directional bindings
 func (c *Client) InvokeBinding(ctx context.Context, name, op string, in []byte, min map[string]string) (out []byte, mout map[string]string, err error) {
 	if name == "" {
 		return nil, nil, errors.New("nil topic")
