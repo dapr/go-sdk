@@ -2,6 +2,12 @@
 
 This is the dapr SDK (client) for Go.
 
+## Update the latest gRPC proto clients
+
+```sh
+./protogen.sh
+```
+
 ## Installation
 
 ```
