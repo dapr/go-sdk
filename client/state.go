@@ -277,8 +277,8 @@ func (c *Client) GetState(ctx context.Context, store, key string) (out []byte, e
 
 // *** Delete State ***
 
-// DeleteStateWithOptions deletes content from store using provided state options and etag
-func (c *Client) DeleteStateWithOptions(ctx context.Context, store, key, etag string, opts *StateOptions) error {
+// DeleteStateVersion deletes content from store using provided state options and etag
+func (c *Client) DeleteStateVersion(ctx context.Context, store, key, etag string, opts *StateOptions) error {
 	if store == "" {
 		return errors.New("nil store")
 	}
@@ -303,5 +303,5 @@ func (c *Client) DeleteStateWithOptions(ctx context.Context, store, key, etag st
 
 // DeleteState deletes content from store using default state options
 func (c *Client) DeleteState(ctx context.Context, store, key string) error {
-	return c.DeleteStateWithOptions(ctx, store, key, "", nil)
+	return c.DeleteStateVersion(ctx, store, key, "", nil)
 }
