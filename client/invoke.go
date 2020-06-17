@@ -10,6 +10,11 @@ import (
 	"github.com/pkg/errors"
 )
 
+const (
+	// JSONContentType defines the JSON content type
+	JSONContentType = "application/json"
+)
+
 func (c *Client) invokeServiceWithRequest(ctx context.Context, req *pb.InvokeServiceRequest) (out []byte, err error) {
 	if req == nil {
 		return nil, errors.New("nil request")
@@ -86,7 +91,7 @@ func (c *Client) InvokeServiceJSON(ctx context.Context, serviceID, method string
 		Message: &v1.InvokeRequest{
 			Method:      method,
 			Data:        &anypb.Any{Value: b},
-			ContentType: "application/json",
+			ContentType: JSONContentType,
 		},
 	}
 
