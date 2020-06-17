@@ -16,12 +16,17 @@ The `example` folder contains a Dapr enabled `serving` app a `client` app that u
 
 ```
 cd example/serving
-dapr run --app-id serving --protocol grpc --app-port 50001 go run main.go
+dapr run --app-id serving \
+         --protocol grpc \
+         --app-port 50001 \
+         go run main.go
 ```
 
 2. Start the `client` app in the `example/client` directory
 
 ```
 cd example/client
-dapr run --app-id caller go run main.go --components-path ./components
+dapr run --app-id caller \
+         --components-path ./comp \
+         go run main.go 
 ```
