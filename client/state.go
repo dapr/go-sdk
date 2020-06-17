@@ -211,7 +211,7 @@ func (c *Client) SaveStateItem(ctx context.Context, store string, item *StateIte
 }
 
 // SaveStateData saves the data into store using default state options
-func (c *Client) SaveStateData(ctx context.Context, store, key string, data []byte) error {
+func (c *Client) SaveStateData(ctx context.Context, store, key, etag string, data []byte) error {
 	if store == "" {
 		return errors.New("nil store")
 	}
@@ -225,6 +225,7 @@ func (c *Client) SaveStateData(ctx context.Context, store, key string, data []by
 			{
 				Key:   key,
 				Value: data,
+				Etag:  etag,
 			},
 		},
 	}
