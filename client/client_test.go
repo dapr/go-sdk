@@ -5,8 +5,8 @@ import (
 	"net"
 	"testing"
 
-	"github.com/golang/protobuf/ptypes/any"
 	"github.com/golang/protobuf/ptypes/empty"
+	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 
 	"google.golang.org/grpc"
@@ -15,35 +15,6 @@ import (
 	commonv1pb "github.com/dapr/go-sdk/dapr/proto/common/v1"
 	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
 )
-
-func getTestClient(ctx context.Context) (*Client, func()) {
-	buffer := 1024 * 1024
-	listener := bufconn.Listen(buffer)
-
-	s := grpc.NewServer()
-	pb.RegisterAppCallbackServer(s, &testServer{})
-	go func() {
-		if err := s.Serve(listener); err != nil {
-			panic(err)
-		}
-	}()
-
-	conn, _ := grpc.DialContext(ctx, "", grpc.WithContextDialer(func(context.Context, string) (net.Conn, error) {
-		return listener.Dial()
-	}), grpc.WithInsecure())
-
-	closer := func() {
-		listener.Close()
-		s.Stop()
-	}
-
-	client, err := NewClientWithConnection(conn)
-	if err != nil {
-		panic(err)
-	}
-
-	return client, closer
-}
 
 func TestNewClientWithConnection(t *testing.T) {
 	ctx := context.Background()
@@ -60,45 +31,79 @@ func TestNewClientWithoutArgs(t *testing.T) {
 	assert.NotNil(t, err)
 }
 
-type testServer struct {
-}
+func getTestClient(ctx context.Context) (client *Client, closer func()) {
+	l := bufconn.Listen(1024 * 1024)
+	s := grpc.NewServer()
 
-func (s *testServer) EchoMethod() string {
-	return "pong"
-}
-
-func (s *testServer) OnInvoke(ctx context.Context, in *commonv1pb.InvokeRequest) (*commonv1pb.InvokeResponse, error) {
-	var response string
-
-	switch in.Method {
-	case "EchoMethod":
-		response = s.EchoMethod()
+	server := &testDaprServer{
+		state: make(map[string][]byte, 0),
 	}
 
-	return &commonv1pb.InvokeResponse{
-		ContentType: "text/plain; charset=UTF-8",
-		Data:        &any.Any{Value: []byte(response)},
+	pb.RegisterDaprServer(s, server)
+	go func() {
+		if err := s.Serve(l); err != nil {
+			panic(err)
+		}
+	}()
+
+	d := grpc.WithContextDialer(func(context.Context, string) (net.Conn, error) {
+		return l.Dial()
+	})
+
+	c, _ := grpc.DialContext(ctx, "", d, grpc.WithInsecure())
+
+	closer = func() {
+		l.Close()
+		s.Stop()
+	}
+
+	client = NewClientWithConnection(c)
+	return
+}
+
+type testDaprServer struct {
+	state map[string][]byte
+}
+
+func (s *testDaprServer) InvokeService(ctx context.Context, req *pb.InvokeServiceRequest) (*commonv1pb.InvokeResponse, error) {
+	r := &commonv1pb.InvokeResponse{
+		ContentType: req.Message.ContentType,
+		Data:        req.GetMessage().Data,
+	}
+	return r, nil
+}
+
+func (s *testDaprServer) GetState(ctx context.Context, req *pb.GetStateRequest) (*pb.GetStateResponse, error) {
+	return &pb.GetStateResponse{
+		Data: s.state[req.Key],
+		Etag: "v1",
 	}, nil
 }
 
-func (s *testServer) ListTopicSubscriptions(ctx context.Context, in *empty.Empty) (*pb.ListTopicSubscriptionsResponse, error) {
-	return &pb.ListTopicSubscriptionsResponse{
-		Subscriptions: []*pb.TopicSubscription{
-			{Topic: "TopicA"},
-		},
-	}, nil
-}
-
-func (s *testServer) ListInputBindings(ctx context.Context, in *empty.Empty) (*pb.ListInputBindingsResponse, error) {
-	return &pb.ListInputBindingsResponse{
-		Bindings: []string{"storage"},
-	}, nil
-}
-
-func (s *testServer) OnBindingEvent(ctx context.Context, in *pb.BindingEventRequest) (*pb.BindingEventResponse, error) {
-	return &pb.BindingEventResponse{}, nil
-}
-
-func (s *testServer) OnTopicEvent(ctx context.Context, in *pb.TopicEventRequest) (*empty.Empty, error) {
+func (s *testDaprServer) SaveState(ctx context.Context, req *pb.SaveStateRequest) (*empty.Empty, error) {
+	for _, item := range req.States {
+		s.state[item.Key] = item.Value
+	}
 	return &empty.Empty{}, nil
+}
+
+func (s *testDaprServer) DeleteState(ctx context.Context, req *pb.DeleteStateRequest) (*empty.Empty, error) {
+	delete(s.state, req.Key)
+	return &empty.Empty{}, nil
+}
+
+func (s *testDaprServer) PublishEvent(ctx context.Context, req *pb.PublishEventRequest) (*empty.Empty, error) {
+	return &empty.Empty{}, nil
+}
+
+func (s *testDaprServer) InvokeBinding(ctx context.Context, req *pb.InvokeBindingRequest) (*pb.InvokeBindingResponse, error) {
+	r := &pb.InvokeBindingResponse{
+		Data:     req.Data,
+		Metadata: req.Metadata,
+	}
+	return r, nil
+}
+
+func (s *testDaprServer) GetSecret(ctx context.Context, req *pb.GetSecretRequest) (*pb.GetSecretResponse, error) {
+	return nil, errors.New("method InvokeService not implemented")
 }

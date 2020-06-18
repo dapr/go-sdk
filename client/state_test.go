@@ -1,6 +1,7 @@
 package client
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -33,4 +34,23 @@ func TestStateOptionsConverter(t *testing.T) {
 	assert.Equal(t, p.RetryPolicy.Threshold, int32(3))
 	assert.Equal(t, p.RetryPolicy.Interval.Seconds, int64(10))
 	assert.Equal(t, p.RetryPolicy.Pattern, v1.StateRetryPolicy_RETRY_EXPONENTIAL)
+}
+
+func TestSaveStateData(t *testing.T) {
+	ctx := context.Background()
+	data := "test"
+	client, closer := getTestClient(ctx)
+	defer closer()
+
+	err := client.SaveStateData(ctx, "store", "key1", "", []byte(data))
+	assert.Nil(t, err)
+
+	out, etag, err := client.GetState(ctx, "store", "key1")
+	assert.Nil(t, err)
+	assert.NotEmpty(t, etag)
+	assert.NotNil(t, out)
+	assert.Equal(t, string(out), data)
+
+	err = client.DeleteState(ctx, "store", "key1")
+	assert.Nil(t, err)
 }

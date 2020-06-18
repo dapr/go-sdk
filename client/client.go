@@ -57,12 +57,11 @@ func NewClientWithAddress(address string) (client *Client, err error) {
 }
 
 // NewClientWithConnection instantiates dapr client configured for the specific connection
-func NewClientWithConnection(conn *grpc.ClientConn) (client *Client, err error) {
-	client = &Client{
+func NewClientWithConnection(conn *grpc.ClientConn) *Client {
+	return &Client{
 		connection:  conn,
 		protoClient: pb.NewDaprClient(conn),
 	}
-	return
 }
 
 // Client is the dapr client

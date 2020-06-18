@@ -10,13 +10,21 @@ import (
 func TestInvokeServiceWithContent(t *testing.T) {
 	ctx := context.Background()
 	client, closer := getTestClient(ctx)
-	assert.NotNil(t, closer)
 	defer closer()
-	assert.NotNil(t, client)
 
-	// TODO: fails with rpc error: code = Unimplemented desc = unknown service dapr.proto.runtime.v1.Dapr
-	// resp, err := client.InvokeServiceWithContent(ctx, "serving", "EchoMethod",
-	// 	"text/plain; charset=UTF-8", []byte("ping"))
-	// assert.Nil(t, err)
-	// assert.NotNil(t, resp)
+	resp, err := client.InvokeServiceWithContent(ctx, "serving", "EchoMethod",
+		"text/plain; charset=UTF-8", []byte("ping"))
+	assert.Nil(t, err)
+	assert.NotNil(t, resp)
+	assert.Equal(t, string(resp), "ping")
+}
+
+func TestInvokeService(t *testing.T) {
+	ctx := context.Background()
+	client, closer := getTestClient(ctx)
+	defer closer()
+
+	resp, err := client.InvokeService(ctx, "serving", "EchoMethod")
+	assert.Nil(t, err)
+	assert.Nil(t, resp)
 }
