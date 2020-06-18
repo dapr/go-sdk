@@ -4,6 +4,7 @@ import (
 	"context"
 	"net"
 	"testing"
+	"time"
 
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/pkg/errors"
@@ -40,11 +41,15 @@ func getTestClient(ctx context.Context) (client *Client, closer func()) {
 	}
 
 	pb.RegisterDaprServer(s, server)
+
 	go func() {
 		if err := s.Serve(l); err != nil {
 			logger.Fatalf("error starting test server: %s", err)
 		}
 	}()
+
+	// wait for the server to start
+	time.Sleep(100 * time.Millisecond)
 
 	d := grpc.WithContextDialer(func(context.Context, string) (net.Conn, error) {
 		return l.Dial()
