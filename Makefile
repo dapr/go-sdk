@@ -24,8 +24,12 @@ client: mod ## Runs the uncompiled example client code
            --components-path example/client/comp \
            go run example/client/main.go 
 
-lint: ## Lints the entire project 
-	golangci-lint run --timeout=3m
+lint: ## Lints the entire project using GitHub super-linter
+	docker run -e RUN_LOCAL=true \
+	           -e VALIDATE_ALL_CODEBASE=false \
+						 -e VALIDATE_GO=true \
+						 -v $(PWD):/tmp/lint admiralawkbar/super-linter
+	# golangci-lint run --timeout=3m
 
 tag: ## Creates release tag 
 	git tag $(RELEASE_VERSION)

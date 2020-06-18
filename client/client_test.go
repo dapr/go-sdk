@@ -42,7 +42,7 @@ func getTestClient(ctx context.Context) (client *Client, closer func()) {
 	pb.RegisterDaprServer(s, server)
 	go func() {
 		if err := s.Serve(l); err != nil {
-			panic(err)
+			logger.Fatalf("error starting test server: %s", err)
 		}
 	}()
 
