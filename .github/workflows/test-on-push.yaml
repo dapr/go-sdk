@@ -24,12 +24,6 @@ jobs:
       run: |
         go mod tidy 
         go mod vendor
-    
-    - name: Lint
-      uses: github/super-linter@v2.0.0
-      env:
-        VALIDATE_ALL_CODEBASE: false
-        VALIDATE_GO: true
 
     - name: Test
       run: go test -v -count=1 -race ./...
