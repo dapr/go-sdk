@@ -1,6 +1,7 @@
 RELEASE_VERSION  =v0.8.0
+GDOC_PORT        =8888
 
-.PHONY: mod test service client lint protps tag lint clean, help
+.PHONY: mod test service client lint protps tag lint docs clean help
 all: test
 
 protos: ## Downloads proto files from dapr/dapr, generates gRPC clients
@@ -26,6 +27,16 @@ client: mod ## Runs the uncompiled example client code
 
 lint: ## Lints the entire project
 	golangci-lint run --timeout=3m
+
+docs: ## Runs godoc (in container due to mod support)
+	docker run \
+			--rm \
+			-e "GOPATH=/tmp/go" \
+			-p 127.0.0.1:$(GDOC_PORT):$(GDOC_PORT) \
+			-v $(PWD):/tmp/go/src/ \
+			--name godoc golang \
+			bash -c "go get golang.org/x/tools/cmd/godoc && echo http://localhost:$(GDOC_PORT)/pkg/ && /tmp/go/bin/godoc -http=:$(GDOC_PORT)"
+	open http://localhost:8888/pkg/client/
 
 tag: ## Creates release tag 
 	git tag $(RELEASE_VERSION)
