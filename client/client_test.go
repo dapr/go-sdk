@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/golang/protobuf/ptypes/empty"
-	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 
 	"google.golang.org/grpc"
@@ -71,11 +70,10 @@ type testDaprServer struct {
 }
 
 func (s *testDaprServer) InvokeService(ctx context.Context, req *pb.InvokeServiceRequest) (*commonv1pb.InvokeResponse, error) {
-	r := &commonv1pb.InvokeResponse{
+	return &commonv1pb.InvokeResponse{
 		ContentType: req.Message.ContentType,
 		Data:        req.GetMessage().Data,
-	}
-	return r, nil
+	}, nil
 }
 
 func (s *testDaprServer) GetState(ctx context.Context, req *pb.GetStateRequest) (*pb.GetStateResponse, error) {
@@ -102,13 +100,16 @@ func (s *testDaprServer) PublishEvent(ctx context.Context, req *pb.PublishEventR
 }
 
 func (s *testDaprServer) InvokeBinding(ctx context.Context, req *pb.InvokeBindingRequest) (*pb.InvokeBindingResponse, error) {
-	r := &pb.InvokeBindingResponse{
+	return &pb.InvokeBindingResponse{
 		Data:     req.Data,
 		Metadata: req.Metadata,
-	}
-	return r, nil
+	}, nil
 }
 
 func (s *testDaprServer) GetSecret(ctx context.Context, req *pb.GetSecretRequest) (*pb.GetSecretResponse, error) {
-	return nil, errors.New("method InvokeService not implemented")
+	d := make(map[string]string, 0)
+	d["test"] = "value"
+	return &pb.GetSecretResponse{
+		Data: d,
+	}, nil
 }
