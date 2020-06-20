@@ -7,8 +7,8 @@ import (
 	"github.com/pkg/errors"
 )
 
-// InvokeBinding invokes specific operation on the configured Dapr binding
-// This method covers both the input, output, and bi-directional bindings
+// InvokeBinding invokes specific operation on the configured Dapr binding.
+// This method covers input, output, and bi-directional bindings.
 func (c *Client) InvokeBinding(ctx context.Context, name, op string, in []byte, min map[string]string) (out []byte, mout map[string]string, err error) {
 	if name == "" {
 		return nil, nil, errors.New("nil topic")
@@ -33,7 +33,8 @@ func (c *Client) InvokeBinding(ctx context.Context, name, op string, in []byte, 
 	return nil, nil, nil
 }
 
-// InvokeOutputBinding invokes configured Dapr binding with data (allows nil)
+// InvokeOutputBinding invokes configured Dapr binding with data (allows nil).InvokeOutputBinding
+// This method differs from InvokeBinding in that it doesn't expect any content being returned from the invoked method.
 func (c *Client) InvokeOutputBinding(ctx context.Context, name, operation string, data []byte) error {
 	_, _, err := c.InvokeBinding(ctx, name, operation, data, nil)
 	if err != nil {

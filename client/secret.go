@@ -7,7 +7,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-// GetSecret gets secret by key from specified store
+// GetSecret retreaves preconfigred secret from specified store using key.
 func (c *Client) GetSecret(ctx context.Context, store, key string, meta map[string]string) (out map[string]string, err error) {
 	if store == "" {
 		return nil, errors.New("nil store")

@@ -11,37 +11,38 @@ import (
 )
 
 const (
-	// StateConsistencyUndefined is the undefined value for state consistency
+	// StateConsistencyUndefined is the undefined value for state consistency.
 	StateConsistencyUndefined StateConsistency = 0
-	// StateConsistencyEventual represents eventual state consistency value
+	// StateConsistencyEventual represents eventual state consistency value.
 	StateConsistencyEventual StateConsistency = 1
-	// StateConsistencyStrong represents strong state consistency value
+	// StateConsistencyStrong represents strong state consistency value.
 	StateConsistencyStrong StateConsistency = 2
 
-	// StateConcurrencyUndefined is the undefined value for state concurrency
+	// StateConcurrencyUndefined is the undefined value for state concurrency.
 	StateConcurrencyUndefined StateConcurrency = 0
-	// StateConcurrencyFirstWrite represents first write concurrency value
+	// StateConcurrencyFirstWrite represents first write concurrency value.
 	StateConcurrencyFirstWrite StateConcurrency = 1
-	// StateConcurrencyLastWrite represents last write concurrency value
+	// StateConcurrencyLastWrite represents last write concurrency value.
 	StateConcurrencyLastWrite StateConcurrency = 2
 
-	// RetryPatternUndefined is the undefined value for retry pattern
+	// RetryPatternUndefined is the undefined value for retry pattern.
 	RetryPatternUndefined RetryPattern = 0
-	// RetryPatternLinear represents the linear retry pattern value
+	// RetryPatternLinear represents the linear retry pattern value.
 	RetryPatternLinear RetryPattern = 1
-	// RetryPatternExponential represents the exponential retry pattern value
+	// RetryPatternExponential represents the exponential retry pattern value.
 	RetryPatternExponential RetryPattern = 2
 )
 
 type (
-	// StateConsistency is the consistency enum type
+	// StateConsistency is the consistency enum type.
 	StateConsistency int
-	// StateConcurrency is the concurrency enum type
+	// StateConcurrency is the concurrency enum type.
 	StateConcurrency int
-	// RetryPattern is the retry pattern enum type
+	// RetryPattern is the retry pattern enum type.
 	RetryPattern int
 )
 
+// String returns the string value of the StateConsistency.
 func (c StateConsistency) String() string {
 	names := [...]string{
 		"Undefined",
@@ -55,8 +56,7 @@ func (c StateConsistency) String() string {
 	return names[c]
 }
 
-// End Consistency
-
+// String returns the string value of the StateConcurrency.
 func (c StateConcurrency) String() string {
 	names := [...]string{
 		"Undefined",
@@ -70,7 +70,7 @@ func (c StateConcurrency) String() string {
 	return names[c]
 }
 
-// END Concurrency
+// String returns the string value of the RetryPattern.
 func (c RetryPattern) String() string {
 	names := [...]string{
 		"Undefined",
@@ -83,8 +83,6 @@ func (c RetryPattern) String() string {
 
 	return names[c]
 }
-
-// END Retry Pattern
 
 var (
 	stateOptionRetryPolicyDefault = &v1.StateRetryPolicy{
@@ -99,13 +97,13 @@ var (
 	}
 )
 
-// State is a collection of StateItems with a store name
+// State is a collection of StateItems with a store name.
 type State struct {
 	StoreName string
 	States    []*StateItem
 }
 
-// StateItem represents the state to be persisted
+// StateItem represents a single state to be persisted.
 type StateItem struct {
 	Key      string
 	Value    []byte
@@ -114,21 +112,19 @@ type StateItem struct {
 	Options  *StateOptions
 }
 
-// StateOptions represents the state store persistence policy
+// StateOptions represents the state store persistence policy.
 type StateOptions struct {
 	Concurrency StateConcurrency
 	Consistency StateConsistency
 	RetryPolicy *StateRetryPolicy
 }
 
-// StateRetryPolicy represents the state store invocation retry policy
+// StateRetryPolicy represents the state store invocation retry policy.
 type StateRetryPolicy struct {
 	Threshold int32
 	Pattern   RetryPattern
 	Interval  time.Duration
 }
-
-// *** Converters
 
 func toProtoSaveStateRequest(s *State) (req *pb.SaveStateRequest) {
 	r := &pb.SaveStateRequest{
@@ -178,9 +174,7 @@ func toProtoDuration(d time.Duration) *duration.Duration {
 	}
 }
 
-// *** Save State ***
-
-// SaveState saves the fully loaded save state request
+// SaveState saves the fully loaded state to store.
 func (c *Client) SaveState(ctx context.Context, s *State) error {
 	if s == nil || s.StoreName == "" || s.States == nil || len(s.States) < 1 {
 		return errors.New("nil or invalid state")
@@ -193,7 +187,7 @@ func (c *Client) SaveState(ctx context.Context, s *State) error {
 	return nil
 }
 
-// SaveStateItem saves a single state item
+// SaveStateItem saves the single state item to store.
 func (c *Client) SaveStateItem(ctx context.Context, store string, item *StateItem) error {
 	if store == "" {
 		return errors.New("nil store")
@@ -210,7 +204,7 @@ func (c *Client) SaveStateItem(ctx context.Context, store string, item *StateIte
 	return c.SaveState(ctx, req)
 }
 
-// SaveStateData saves the data into store using default state options
+// SaveStateData saves the raw data into store using default state options.
 func (c *Client) SaveStateData(ctx context.Context, store, key, etag string, data []byte) error {
 	if store == "" {
 		return errors.New("nil store")
@@ -233,9 +227,7 @@ func (c *Client) SaveStateData(ctx context.Context, store, key, etag string, dat
 	return c.SaveState(ctx, req)
 }
 
-// *** Get State ***
-
-// GetStateWithConsistency retreaves state from specific store using provided request
+// GetStateWithConsistency retreaves state from specific store using provided state consistency.
 func (c *Client) GetStateWithConsistency(ctx context.Context, store, key string, sc StateConsistency) (out []byte, etag string, err error) {
 	if store == "" {
 		return nil, "", errors.New("nil store")
@@ -258,14 +250,12 @@ func (c *Client) GetStateWithConsistency(ctx context.Context, store, key string,
 	return result.Data, result.Etag, nil
 }
 
-// GetState retreaves state from specific store using default consistency option
+// GetState retreaves state from specific store using default consistency option.
 func (c *Client) GetState(ctx context.Context, store, key string) (out []byte, etag string, err error) {
 	return c.GetStateWithConsistency(ctx, store, key, StateConsistencyStrong)
 }
 
-// *** Delete State ***
-
-// DeleteStateVersion deletes content from store using provided state options and etag
+// DeleteStateVersion deletes content from store using provided state options and etag.
 func (c *Client) DeleteStateVersion(ctx context.Context, store, key, etag string, opts *StateOptions) error {
 	if store == "" {
 		return errors.New("nil store")
@@ -289,7 +279,7 @@ func (c *Client) DeleteStateVersion(ctx context.Context, store, key, etag string
 	return nil
 }
 
-// DeleteState deletes content from store using default state options
+// DeleteState deletes content from store using default state options.
 func (c *Client) DeleteState(ctx context.Context, store, key string) error {
 	return c.DeleteStateVersion(ctx, store, key, "", nil)
 }

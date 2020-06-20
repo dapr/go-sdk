@@ -22,7 +22,7 @@ var (
 	logger = log.New(os.Stdout, "", 0)
 )
 
-// NewClient instantiates dapr client locally using port from DAPR_GRPC_PORT env var
+// NewClient instantiates Dapr client using DAPR_GRPC_PORT environment variable as port.
 func NewClient() (client *Client, err error) {
 	port := os.Getenv(daprPortEnvVarName)
 	if port == "" {
@@ -31,7 +31,7 @@ func NewClient() (client *Client, err error) {
 	return NewClientWithPort(port)
 }
 
-// NewClientWithPort instantiates dapr client locally for the specific port
+// NewClientWithPort instantiates Dapr using specific port.
 func NewClientWithPort(port string) (client *Client, err error) {
 	if port == "" {
 		return nil, errors.New("nil port")
@@ -39,7 +39,7 @@ func NewClientWithPort(port string) (client *Client, err error) {
 	return NewClientWithAddress(net.JoinHostPort("127.0.0.1", port))
 }
 
-// NewClientWithAddress instantiates dapr client configured for the specific address
+// NewClientWithAddress instantiates Dapr using specific address (inclding port).
 func NewClientWithAddress(address string) (client *Client, err error) {
 	if address == "" {
 		return nil, errors.New("nil address")
@@ -49,14 +49,10 @@ func NewClientWithAddress(address string) (client *Client, err error) {
 	if err != nil {
 		return nil, errors.Wrapf(err, "error creating connection to '%s': %v", address, err)
 	}
-	client = &Client{
-		connection:  conn,
-		protoClient: pb.NewDaprClient(conn),
-	}
-	return
+	return NewClientWithConnection(conn), nil
 }
 
-// NewClientWithConnection instantiates dapr client configured for the specific connection
+// NewClientWithConnection instantiates Dapr client using specific connection.
 func NewClientWithConnection(conn *grpc.ClientConn) *Client {
 	return &Client{
 		connection:  conn,
@@ -64,13 +60,13 @@ func NewClientWithConnection(conn *grpc.ClientConn) *Client {
 	}
 }
 
-// Client is the dapr client
+// Client is the Dapr client.
 type Client struct {
 	connection  *grpc.ClientConn
 	protoClient pb.DaprClient
 }
 
-// Close cleans up all resources created by the client
+// Close cleans up all resources created by the client.
 func (c *Client) Close() {
 	if c.connection != nil {
 		c.connection.Close()

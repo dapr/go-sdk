@@ -7,7 +7,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-// PublishEvent is the message to publish event data to pubsub topic
+// PublishEvent pubishes data onto specific pubsub topic.
 func (c *Client) PublishEvent(ctx context.Context, topic string, in []byte) error {
 	if topic == "" {
 		return errors.New("nil topic")

@@ -29,7 +29,7 @@ func (c *Client) invokeServiceWithRequest(ctx context.Context, req *pb.InvokeSer
 	return
 }
 
-// InvokeService invokes service without data
+// InvokeService invokes service without raw data ([]byte).
 func (c *Client) InvokeService(ctx context.Context, serviceID, method string) (out []byte, err error) {
 	if serviceID == "" {
 		return nil, errors.New("nil serviceID")
@@ -46,7 +46,7 @@ func (c *Client) InvokeService(ctx context.Context, serviceID, method string) (o
 	return c.invokeServiceWithRequest(ctx, req)
 }
 
-// InvokeServiceWithContent invokes service without content
+// InvokeServiceWithContent invokes service without content (data + content type).
 func (c *Client) InvokeServiceWithContent(ctx context.Context, serviceID, method, contentType string, data []byte) (out []byte, err error) {
 	if serviceID == "" {
 		return nil, errors.New("nil serviceID")
