@@ -67,7 +67,7 @@ handleErrors(err)
 The `StateItem` type exposed by Dapr client provides more granular control options:
 
 ```go     
-data := &StateItem{
+data := &client.StateItem{
     Etag:     "v1",
     Key:      "k1",
     Metadata: map[string]string{
@@ -75,12 +75,12 @@ data := &StateItem{
         "key2": "value2",
     },
     Value:    []byte("hello"),
-    Options:  &StateOptions{
-        Concurrency: StateConcurrencyLastWrite,
-        Consistency: StateConsistencyStrong,
-        RetryPolicy: &StateRetryPolicy{
+    Options:  &client.StateOptions{
+        Concurrency: client.StateConcurrencyLastWrite,
+        Consistency: client.StateConsistencyStrong,
+        RetryPolicy: &client.StateRetryPolicy{
             Threshold: 3,
-            Pattern: RetryPatternExponential,
+            Pattern: client.RetryPatternExponential,
             Interval: time.Duration(5 * time.Second),
         },
     },
@@ -91,9 +91,9 @@ err = client.SaveStateItem(ctx, store, data)
 Similar `StateOptions` exist on `GetDate` and `DeleteState` methods. Additionally, Dapr client also provides a method to save multiple state items at once:
 
 ```go 
-data := &State{
+data := &client.State{
     StoreName: "my-store",
-    States: []*StateItem{
+    States: []*client.StateItem{
         {
             Key:   "k1",
             Value: []byte("message 1"),
