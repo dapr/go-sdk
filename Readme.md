@@ -16,16 +16,15 @@ import "github.com/dapr/go-sdk/client"
 package main
 
 import (
-	dapr "github.com/dapr/go-sdk/client"
+    dapr "github.com/dapr/go-sdk/client"
 )
 
 func main() {
-	client, err := dapr.NewClient()
-	if err != nil {
-		panic(err)
-	}
+    client, err := dapr.NewClient()
+    if err != nil {
+        panic(err)
+    }
     defer client.Close()
-    
     //TODO: use the client here 
 }
 ```
@@ -47,7 +46,7 @@ Few common Dapr client usage examples
 
 For simple use-cases, Dapr client provides easy to use methods: 
 
-```go 
+```go
 ctx := context.Background()
 data := []byte("hello")
 store := "my-store" // defined in the component YAML 
