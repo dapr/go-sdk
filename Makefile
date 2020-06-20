@@ -1,11 +1,9 @@
 RELEASE_VERSION  =v0.8.0
 GDOC_PORT        =8888
+PROTO_ROOT       =https://raw.githubusercontent.com/dapr/dapr/master/dapr/proto/
 
-.PHONY: mod test service client lint protps tag lint docs clean help
+.PHONY: mod test service client lint protps tag lint docs clean protos help
 all: test
-
-protos: ## Downloads proto files from dapr/dapr, generates gRPC clients
-	bin/protogen
 
 mod: ## Updates the go modules
 	go mod tidy
@@ -46,6 +44,30 @@ clean: ## Cleans go and generated files in ./dapr/proto/
 	go clean
 	rm -fr ./dapr/proto/common/v1/*
 	rm -fr ./dapr/proto/runtime/v1/*
+
+protos: ## Downloads proto files from dapr/dapr and generats gRPC proto clients
+	go install github.com/gogo/protobuf/gogoreplace
+
+	wget -q $(PROTO_ROOT)/common/v1/common.proto -O ./dapr/proto/common/v1/common.proto
+	gogoreplace 'option go_package = "github.com/dapr/dapr/pkg/proto/common/v1;common";' \
+		'option go_package = "github.com/dapr/go-sdk/dapr/proto/common/v1;common";' \
+		./dapr/proto/common/v1/common.proto
+
+	wget -q $(PROTO_ROOT)/runtime/v1/appcallback.proto -O ./dapr/proto/runtime/v1/appcallback.proto
+	gogoreplace 'option go_package = "github.com/dapr/dapr/pkg/proto/runtime/v1;runtime";' \
+		'option go_package = "github.com/dapr/go-sdk/dapr/proto/runtime/v1;runtime";' \
+		./dapr/proto/runtime/v1/appcallback.proto
+
+	wget -q $(PROTO_ROOT)/runtime/v1/dapr.proto -O ./dapr/proto/runtime/v1/dapr.proto
+	gogoreplace 'option go_package = "github.com/dapr/dapr/pkg/proto/runtime/v1;runtime";' \
+		'option go_package = "github.com/dapr/go-sdk/dapr/proto/runtime/v1;runtime";' \
+		./dapr/proto/runtime/v1/dapr.proto
+
+	protoc -I . --go_out=plugins=grpc:. --go_opt=paths=source_relative  ./dapr/proto/common/v1/*.proto
+	protoc -I . --go_out=plugins=grpc:. --go_opt=paths=source_relative ./dapr/proto/runtime/v1/*.proto
+
+	rm -f ./dapr/proto/common/v1/*.proto
+	rm -f ./dapr/proto/runtime/v1/*.proto
 
 help: ## Display available commands
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk \
