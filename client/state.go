@@ -175,7 +175,7 @@ func toProtoDuration(d time.Duration) *duration.Duration {
 }
 
 // SaveState saves the fully loaded state to store.
-func (c *Client) SaveState(ctx context.Context, s *State) error {
+func (c *GRPCClient) SaveState(ctx context.Context, s *State) error {
 	if s == nil || s.StoreName == "" || s.States == nil || len(s.States) < 1 {
 		return errors.New("nil or invalid state")
 	}
@@ -187,25 +187,8 @@ func (c *Client) SaveState(ctx context.Context, s *State) error {
 	return nil
 }
 
-// SaveStateItem saves the single state item to store.
-func (c *Client) SaveStateItem(ctx context.Context, store string, item *StateItem) error {
-	if store == "" {
-		return errors.New("nil store")
-	}
-	if item == nil {
-		return errors.New("nil item")
-	}
-
-	req := &State{
-		StoreName: store,
-		States:    []*StateItem{item},
-	}
-
-	return c.SaveState(ctx, req)
-}
-
 // SaveStateData saves the raw data into store using default state options.
-func (c *Client) SaveStateData(ctx context.Context, store, key, etag string, data []byte) error {
+func (c *GRPCClient) SaveStateData(ctx context.Context, store, key, etag string, data []byte) error {
 	if store == "" {
 		return errors.New("nil store")
 	}
@@ -227,8 +210,30 @@ func (c *Client) SaveStateData(ctx context.Context, store, key, etag string, dat
 	return c.SaveState(ctx, req)
 }
 
+// SaveStateItem saves the single state item to store.
+func (c *GRPCClient) SaveStateItem(ctx context.Context, store string, item *StateItem) error {
+	if store == "" {
+		return errors.New("nil store")
+	}
+	if item == nil {
+		return errors.New("nil item")
+	}
+
+	req := &State{
+		StoreName: store,
+		States:    []*StateItem{item},
+	}
+
+	return c.SaveState(ctx, req)
+}
+
+// GetState retreaves state from specific store using default consistency option.
+func (c *GRPCClient) GetState(ctx context.Context, store, key string) (out []byte, etag string, err error) {
+	return c.GetStateWithConsistency(ctx, store, key, StateConsistencyStrong)
+}
+
 // GetStateWithConsistency retreaves state from specific store using provided state consistency.
-func (c *Client) GetStateWithConsistency(ctx context.Context, store, key string, sc StateConsistency) (out []byte, etag string, err error) {
+func (c *GRPCClient) GetStateWithConsistency(ctx context.Context, store, key string, sc StateConsistency) (out []byte, etag string, err error) {
 	if store == "" {
 		return nil, "", errors.New("nil store")
 	}
@@ -250,13 +255,13 @@ func (c *Client) GetStateWithConsistency(ctx context.Context, store, key string,
 	return result.Data, result.Etag, nil
 }
 
-// GetState retreaves state from specific store using default consistency option.
-func (c *Client) GetState(ctx context.Context, store, key string) (out []byte, etag string, err error) {
-	return c.GetStateWithConsistency(ctx, store, key, StateConsistencyStrong)
+// DeleteState deletes content from store using default state options.
+func (c *GRPCClient) DeleteState(ctx context.Context, store, key string) error {
+	return c.DeleteStateVersion(ctx, store, key, "", nil)
 }
 
 // DeleteStateVersion deletes content from store using provided state options and etag.
-func (c *Client) DeleteStateVersion(ctx context.Context, store, key, etag string, opts *StateOptions) error {
+func (c *GRPCClient) DeleteStateVersion(ctx context.Context, store, key, etag string, opts *StateOptions) error {
 	if store == "" {
 		return errors.New("nil store")
 	}
@@ -277,9 +282,4 @@ func (c *Client) DeleteStateVersion(ctx context.Context, store, key, etag string
 	}
 
 	return nil
-}
-
-// DeleteState deletes content from store using default state options.
-func (c *Client) DeleteState(ctx context.Context, store, key string) error {
-	return c.DeleteStateVersion(ctx, store, key, "", nil)
 }

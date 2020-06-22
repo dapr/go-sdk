@@ -9,7 +9,7 @@ import (
 
 func TestInvokeBinding(t *testing.T) {
 	ctx := context.Background()
-	client, closer := getTestClient(ctx)
+	client, closer := getTestClient(ctx, t)
 	defer closer()
 
 	mIn := make(map[string]string, 0)
@@ -23,7 +23,7 @@ func TestInvokeBinding(t *testing.T) {
 
 func TestInvokeOutputBinding(t *testing.T) {
 	ctx := context.Background()
-	client, closer := getTestClient(ctx)
+	client, closer := getTestClient(ctx, t)
 	defer closer()
 
 	err := client.InvokeOutputBinding(ctx, "serving", "EchoMethod", []byte("ping"))

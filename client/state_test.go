@@ -39,7 +39,7 @@ func TestStateOptionsConverter(t *testing.T) {
 func TestSaveStateData(t *testing.T) {
 	ctx := context.Background()
 	data := "test"
-	client, closer := getTestClient(ctx)
+	client, closer := getTestClient(ctx, t)
 	defer closer()
 
 	err := client.SaveStateData(ctx, "store", "key1", "", []byte(data))

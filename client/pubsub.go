@@ -8,7 +8,7 @@ import (
 )
 
 // PublishEvent pubishes data onto specific pubsub topic.
-func (c *Client) PublishEvent(ctx context.Context, topic string, in []byte) error {
+func (c *GRPCClient) PublishEvent(ctx context.Context, topic string, in []byte) error {
 	if topic == "" {
 		return errors.New("nil topic")
 	}

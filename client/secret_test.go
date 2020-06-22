@@ -9,7 +9,7 @@ import (
 
 func GetSecret(t *testing.T) {
 	ctx := context.Background()
-	client, closer := getTestClient(ctx)
+	client, closer := getTestClient(ctx, t)
 	defer closer()
 
 	out, err := client.GetSecret(ctx, "store", "key1", nil)

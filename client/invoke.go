@@ -9,7 +9,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-func (c *Client) invokeServiceWithRequest(ctx context.Context, req *pb.InvokeServiceRequest) (out []byte, err error) {
+func (c *GRPCClient) invokeServiceWithRequest(ctx context.Context, req *pb.InvokeServiceRequest) (out []byte, err error) {
 	if req == nil {
 		return nil, errors.New("nil request")
 	}
@@ -30,7 +30,7 @@ func (c *Client) invokeServiceWithRequest(ctx context.Context, req *pb.InvokeSer
 }
 
 // InvokeService invokes service without raw data ([]byte).
-func (c *Client) InvokeService(ctx context.Context, serviceID, method string) (out []byte, err error) {
+func (c *GRPCClient) InvokeService(ctx context.Context, serviceID, method string) (out []byte, err error) {
 	if serviceID == "" {
 		return nil, errors.New("nil serviceID")
 	}
@@ -47,7 +47,7 @@ func (c *Client) InvokeService(ctx context.Context, serviceID, method string) (o
 }
 
 // InvokeServiceWithContent invokes service without content (data + content type).
-func (c *Client) InvokeServiceWithContent(ctx context.Context, serviceID, method, contentType string, data []byte) (out []byte, err error) {
+func (c *GRPCClient) InvokeServiceWithContent(ctx context.Context, serviceID, method, contentType string, data []byte) (out []byte, err error) {
 	if serviceID == "" {
 		return nil, errors.New("nil serviceID")
 	}

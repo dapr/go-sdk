@@ -8,7 +8,7 @@ import (
 )
 
 // GetSecret retreaves preconfigred secret from specified store using key.
-func (c *Client) GetSecret(ctx context.Context, store, key string, meta map[string]string) (out map[string]string, err error) {
+func (c *GRPCClient) GetSecret(ctx context.Context, store, key string, meta map[string]string) (out map[string]string, err error) {
 	if store == "" {
 		return nil, errors.New("nil store")
 	}

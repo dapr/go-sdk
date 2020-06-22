@@ -9,7 +9,7 @@ import (
 
 func TestInvokeServiceWithContent(t *testing.T) {
 	ctx := context.Background()
-	client, closer := getTestClient(ctx)
+	client, closer := getTestClient(ctx, t)
 	defer closer()
 
 	resp, err := client.InvokeServiceWithContent(ctx, "serving", "EchoMethod",
@@ -21,7 +21,7 @@ func TestInvokeServiceWithContent(t *testing.T) {
 
 func TestInvokeService(t *testing.T) {
 	ctx := context.Background()
-	client, closer := getTestClient(ctx)
+	client, closer := getTestClient(ctx, t)
 	defer closer()
 
 	resp, err := client.InvokeService(ctx, "serving", "EchoMethod")
