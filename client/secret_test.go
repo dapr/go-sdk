@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func GetSecret(t *testing.T) {
+func TestGetSecret(t *testing.T) {
 	ctx := context.Background()
 	client, closer := getTestClient(ctx, t)
 	defer closer()
@@ -16,7 +16,7 @@ func GetSecret(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, out)
 
-	in := make(map[string]string, 0)
+	in := make(map[string]string)
 	in["test"] = "value"
 
 	out, err = client.GetSecret(ctx, "store", "key1", in)

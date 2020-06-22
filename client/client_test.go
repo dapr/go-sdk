@@ -39,14 +39,14 @@ func getTestClient(ctx context.Context, t *testing.T) (client Client, closer fun
 	s := grpc.NewServer()
 
 	server := &testDaprServer{
-		state: make(map[string][]byte, 0),
+		state: make(map[string][]byte),
 	}
 
 	pb.RegisterDaprServer(s, server)
 
 	go func() {
 		if err := s.Serve(l); err != nil {
-			t.Fatalf("test server exited with error: %v", err)
+			logger.Fatalf("test server exited with error: %v", err)
 		}
 	}()
 
@@ -110,7 +110,7 @@ func (s *testDaprServer) InvokeBinding(ctx context.Context, req *pb.InvokeBindin
 }
 
 func (s *testDaprServer) GetSecret(ctx context.Context, req *pb.GetSecretRequest) (*pb.GetSecretResponse, error) {
-	d := make(map[string]string, 0)
+	d := make(map[string]string)
 	d["test"] = "value"
 	return &pb.GetSecretResponse{
 		Data: d,

@@ -12,7 +12,7 @@ func TestInvokeBinding(t *testing.T) {
 	client, closer := getTestClient(ctx, t)
 	defer closer()
 
-	mIn := make(map[string]string, 0)
+	mIn := make(map[string]string)
 	mIn["test"] = "value"
 
 	out, mOut, err := client.InvokeBinding(ctx, "serving", "EchoMethod", []byte("ping"), mIn)
