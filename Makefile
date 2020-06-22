@@ -15,13 +15,13 @@ test: mod ## Tests the entire project
 service: mod ## Runs the uncompiled example service code 
 	dapr run --app-id serving \
 	         --protocol grpc \
-					 --app-port 50001 \
-					 go run example/serving/main.go
+			 --app-port 50001 \
+			 go run example/serving/main.go
 
 client: mod ## Runs the uncompiled example client code 
 	dapr run --app-id caller \
-           --components-path example/client/comp \
-           go run example/client/main.go 
+             --components-path example/client/comp \
+             go run example/client/main.go 
 
 lint: ## Lints the entire project
 	golangci-lint run --timeout=3m

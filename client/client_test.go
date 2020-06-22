@@ -54,9 +54,9 @@ func getTestClient(ctx context.Context, t *testing.T) (client Client, closer fun
 		return l.Dial()
 	})
 
-	c, err := grpc.DialContext(ctx, "bufnet", d, grpc.WithInsecure())
+	c, err := grpc.DialContext(ctx, "", d, grpc.WithInsecure())
 	if err != nil {
-		t.Fatalf("failed to dial bufnet: %v", err)
+		t.Fatalf("failed to dial test context: %v", err)
 	}
 
 	closer = func() {
