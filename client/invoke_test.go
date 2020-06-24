@@ -9,10 +9,7 @@ import (
 
 func TestInvokeServiceWithContent(t *testing.T) {
 	ctx := context.Background()
-	client, closer := getTestClient(ctx, t)
-	defer closer()
-
-	resp, err := client.InvokeServiceWithContent(ctx, "serving", "EchoMethod",
+	resp, err := testClient.InvokeServiceWithContent(ctx, "serving", "EchoMethod",
 		"text/plain; charset=UTF-8", []byte("ping"))
 	assert.Nil(t, err)
 	assert.NotNil(t, resp)
@@ -21,10 +18,7 @@ func TestInvokeServiceWithContent(t *testing.T) {
 
 func TestInvokeService(t *testing.T) {
 	ctx := context.Background()
-	client, closer := getTestClient(ctx, t)
-	defer closer()
-
-	resp, err := client.InvokeService(ctx, "serving", "EchoMethod")
+	resp, err := testClient.InvokeService(ctx, "serving", "EchoMethod")
 	assert.Nil(t, err)
 	assert.Nil(t, resp)
 }

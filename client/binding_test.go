@@ -9,13 +9,11 @@ import (
 
 func TestInvokeBinding(t *testing.T) {
 	ctx := context.Background()
-	client, closer := getTestClient(ctx, t)
-	defer closer()
 
 	mIn := make(map[string]string)
 	mIn["test"] = "value"
 
-	out, mOut, err := client.InvokeBinding(ctx, "serving", "EchoMethod", []byte("ping"), mIn)
+	out, mOut, err := testClient.InvokeBinding(ctx, "serving", "EchoMethod", []byte("ping"), mIn)
 	assert.Nil(t, err)
 	assert.NotNil(t, mOut)
 	assert.NotNil(t, out)
@@ -23,9 +21,6 @@ func TestInvokeBinding(t *testing.T) {
 
 func TestInvokeOutputBinding(t *testing.T) {
 	ctx := context.Background()
-	client, closer := getTestClient(ctx, t)
-	defer closer()
-
-	err := client.InvokeOutputBinding(ctx, "serving", "EchoMethod", []byte("ping"))
+	err := testClient.InvokeOutputBinding(ctx, "serving", "EchoMethod", []byte("ping"))
 	assert.Nil(t, err)
 }
