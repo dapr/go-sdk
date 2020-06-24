@@ -1,0 +1,47 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*' # v0.8.1
+
+jobs:
+
+  build:
+    name: Create Release
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Setup
+      id: go
+      uses: actions/setup-go@v2
+      with:
+        go-version: ^1.14
+
+    - name: Checkout
+      id: setup
+      uses: actions/checkout@v2
+
+    - name: Tidy
+      run: |
+        go mod tidy 
+        go mod vendor
+
+    - name: Test
+      run: go test -v -count=1 -race ./...
+
+    - name: Version
+      id: get_version
+      run: echo ::set-env name=RELEASE_VERSION::$(echo ${GITHUB_REF:10})
+      
+    - name: Release
+      id: release-step
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        body: Automatic go Dapr client release 
+        draft: false
+        prerelease: false
