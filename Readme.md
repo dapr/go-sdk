@@ -2,6 +2,8 @@
 
 This is the dapr SDK (client) for go (golang). It covers all of the APIs described in Dapr's [protocol buffers](https://raw.githubusercontent.com/dapr/dapr/master/dapr/proto/) with focus on developer productivity. 
 
+[![Test](https://github.com/dapr/go-sdk/workflows/Test/badge.svg)](https://github.com/dapr/go-sdk/actions?query=workflow%3ATest) [![Release](https://github.com/dapr/go-sdk/workflows/Release/badge.svg)](https://github.com/dapr/go-sdk/actions?query=workflow%3ARelease) [![Go Report Card](https://goreportcard.com/badge/github.com/dapr/go-sdk)](https://goreportcard.com/report/github.com/dapr/go-sdk) ![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/dapr/go-sdk)
+
 ## Installation
 
 To install Dapr client package, you need to first [install go](https://golang.org/doc/install) and set up your development environment. To import Dapr go client in your code:
