@@ -3,6 +3,7 @@ package client
 import (
 	"context"
 	"net"
+	"os"
 	"testing"
 
 	"github.com/golang/protobuf/ptypes/empty"
@@ -19,12 +20,17 @@ const (
 	testBufSize = 1024 * 1024
 )
 
-func TestNewClientWithConnection(t *testing.T) {
+var (
+	testClient Client
+)
+
+func TestMain(m *testing.M) {
 	ctx := context.Background()
-	client, closer := getTestClient(ctx, t)
-	assert.NotNil(t, closer)
-	defer closer()
-	assert.NotNil(t, client)
+	c, f := getTestClient(ctx)
+	testClient = c
+	r := m.Run()
+	f()
+	os.Exit(r)
 }
 
 func TestNewClientWithoutArgs(t *testing.T) {
@@ -34,16 +40,13 @@ func TestNewClientWithoutArgs(t *testing.T) {
 	assert.NotNil(t, err)
 }
 
-func getTestClient(ctx context.Context, t *testing.T) (client Client, closer func()) {
-	l := bufconn.Listen(testBufSize)
+func getTestClient(ctx context.Context) (client Client, closer func()) {
 	s := grpc.NewServer()
-
-	server := &testDaprServer{
+	pb.RegisterDaprServer(s, &testDaprServer{
 		state: make(map[string][]byte),
-	}
+	})
 
-	pb.RegisterDaprServer(s, server)
-
+	l := bufconn.Listen(testBufSize)
 	go func() {
 		if err := s.Serve(l); err != nil {
 			logger.Fatalf("test server exited with error: %v", err)
@@ -56,7 +59,7 @@ func getTestClient(ctx context.Context, t *testing.T) (client Client, closer fun
 
 	c, err := grpc.DialContext(ctx, "", d, grpc.WithInsecure())
 	if err != nil {
-		t.Fatalf("failed to dial test context: %v", err)
+		logger.Fatalf("failed to dial test context: %v", err)
 	}
 
 	closer = func() {

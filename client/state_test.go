@@ -39,18 +39,16 @@ func TestStateOptionsConverter(t *testing.T) {
 func TestSaveStateData(t *testing.T) {
 	ctx := context.Background()
 	data := "test"
-	client, closer := getTestClient(ctx, t)
-	defer closer()
 
-	err := client.SaveStateData(ctx, "store", "key1", "", []byte(data))
+	err := testClient.SaveStateData(ctx, "store", "key1", "", []byte(data))
 	assert.Nil(t, err)
 
-	out, etag, err := client.GetState(ctx, "store", "key1")
+	out, etag, err := testClient.GetState(ctx, "store", "key1")
 	assert.Nil(t, err)
 	assert.NotEmpty(t, etag)
 	assert.NotNil(t, out)
 	assert.Equal(t, string(out), data)
 
-	err = client.DeleteState(ctx, "store", "key1")
+	err = testClient.DeleteState(ctx, "store", "key1")
 	assert.Nil(t, err)
 }

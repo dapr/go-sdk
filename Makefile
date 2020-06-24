@@ -2,7 +2,7 @@ RELEASE_VERSION  =v0.8.0
 GDOC_PORT        =8888
 PROTO_ROOT       =https://raw.githubusercontent.com/dapr/dapr/master/dapr/proto/
 
-.PHONY: mod test service client lint protps tag lint docs clean protos help
+.PHONY: mod test cover service client lint protps tag docs clean help
 all: test
 
 mod: ## Updates the go modules
@@ -11,6 +11,9 @@ mod: ## Updates the go modules
 test: mod ## Tests the entire project 
 	go test -v -count=1 -race ./...
 	# go test -v -count=1 -run NameOfSingleTest ./...
+
+cover: mod ## Displays test coverage in the Client package
+	go test -coverprofile=cover.out ./client && go tool cover -html=cover.out
 
 service: mod ## Runs the uncompiled example service code 
 	dapr run --app-id serving \
