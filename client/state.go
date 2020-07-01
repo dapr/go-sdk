@@ -187,8 +187,8 @@ func (c *GRPCClient) SaveState(ctx context.Context, s *State) error {
 	return nil
 }
 
-// SaveStateData saves the raw data into store using default state options.
-func (c *GRPCClient) SaveStateData(ctx context.Context, store, key, etag string, data []byte) error {
+// SaveStateDataVersion saves the raw data into store using default state options and etag.
+func (c *GRPCClient) SaveStateDataVersion(ctx context.Context, store, key, etag string, data []byte) error {
 	if store == "" {
 		return errors.New("nil store")
 	}
@@ -208,6 +208,11 @@ func (c *GRPCClient) SaveStateData(ctx context.Context, store, key, etag string,
 	}
 
 	return c.SaveState(ctx, req)
+}
+
+// SaveStateData saves the raw data into store using default state options.
+func (c *GRPCClient) SaveStateData(ctx context.Context, store, key string, data []byte) error {
+	return c.SaveStateDataVersion(ctx, store, key, "", data)
 }
 
 // SaveStateItem saves the single state item to store.

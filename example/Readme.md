@@ -18,6 +18,6 @@ dapr run --app-id serving \
 ```
 cd example/client
 dapr run --app-id caller \
-         --components-path ./comp \
+         --components-path ./config \
          go run main.go 
 ```

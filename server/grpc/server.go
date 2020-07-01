@@ -16,7 +16,7 @@ import (
 
 // NewServer creates new Server
 func NewServer(port int) (server *Server, err error) {
-	address := net.JoinHostPort("0.0.0.0", fmt.Sprintf(":%d", port))
+	address := fmt.Sprintf(":%d", port)
 	lis, err := net.Listen("tcp", address)
 	if err != nil {
 		err = errors.Wrapf(err, "failed to TCP listen on: %s", address)
@@ -26,7 +26,7 @@ func NewServer(port int) (server *Server, err error) {
 	server = &Server{
 		listener:           lis,
 		invokeHandlers:     make(map[string]func(contentTypeIn string, dataIn []byte) (contentTypeOut string, dataOut []byte)),
-		topicSubscriptions: make(map[string]func(event *TopicEvent)),
+		topicSubscriptions: make(map[string]func(event *TopicEvent) error),
 		bindingHandlers:    make(map[string]func(in *BindingEvent) error),
 	}
 	return
@@ -36,7 +36,7 @@ func NewServer(port int) (server *Server, err error) {
 type Server struct {
 	listener           net.Listener
 	invokeHandlers     map[string]func(contentTypeIn string, dataIn []byte) (contentTypeOut string, dataOut []byte)
-	topicSubscriptions map[string]func(event *TopicEvent)
+	topicSubscriptions map[string]func(event *TopicEvent) error
 	bindingHandlers    map[string]func(in *BindingEvent) error
 }
 
@@ -49,8 +49,10 @@ func (s *Server) Start() error {
 
 // START INVOKE
 
-// AddInvokeHandler adds provided handler to the local collection before server start
-func (s *Server) AddInvokeHandler(method string, fn func(contentTypeIn string, dataIn []byte) (contentTypeOut string, dataOut []byte)) {
+// Invocation
+
+// AddInvocationHandler adds provided handler to the local collection before server start
+func (s *Server) AddInvocationHandler(method string, fn func(contentTypeIn string, dataIn []byte) (contentTypeOut string, dataOut []byte)) {
 	s.invokeHandlers[method] = fn
 }
 
@@ -68,8 +70,8 @@ func (s *Server) OnInvoke(ctx context.Context, in *commonv1pb.InvokeRequest) (*c
 
 // START TOPIC SUB
 
-// AddTopicSubscription adds provided topic to the list of server subscriptions
-func (s *Server) AddTopicSubscription(topic string, fn func(event *TopicEvent)) {
+// AddTopicEventHandler adds provided topic to the list of server subscriptions
+func (s *Server) AddTopicEventHandler(topic string, fn func(event *TopicEvent) error) {
 	s.topicSubscriptions[topic] = fn
 }
 
@@ -101,15 +103,18 @@ func (s *Server) OnTopicEvent(ctx context.Context, in *pb.TopicEventRequest) (*e
 			SpecVersion:     in.SpecVersion,
 			Type:            in.Type,
 		}
-		val(e)
+		err := val(e)
+		if err != nil {
+			return nil, errors.Wrapf(err, "error handling topic event: %s", in.Topic)
+		}
 	}
 	return &empty.Empty{}, nil
 }
 
 // START BINDING
 
-// AddBindingHandler add the provided handler to the server binding halder collection
-func (s *Server) AddBindingHandler(name string, fn func(in *BindingEvent) error) {
+// AddBindingEventHandler add the provided handler to the server binding halder collection
+func (s *Server) AddBindingEventHandler(name string, fn func(in *BindingEvent) error) {
 	s.bindingHandlers[name] = fn
 }
 

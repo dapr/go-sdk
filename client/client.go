@@ -49,7 +49,10 @@ type Client interface {
 	SaveState(ctx context.Context, s *State) error
 
 	// SaveStateData saves the raw data into store using default state options.
-	SaveStateData(ctx context.Context, store, key, etag string, data []byte) error
+	SaveStateData(ctx context.Context, store, key string, data []byte) error
+
+	// SaveStateDataVersion saves the raw data into store using default state options and etag.
+	SaveStateDataVersion(ctx context.Context, store, key, etag string, data []byte) error
 
 	// SaveStateItem saves the single state item to store.
 	SaveStateItem(ctx context.Context, store string, item *StateItem) error

@@ -40,7 +40,7 @@ func TestSaveStateData(t *testing.T) {
 	ctx := context.Background()
 	data := "test"
 
-	err := testClient.SaveStateData(ctx, "store", "key1", "", []byte(data))
+	err := testClient.SaveStateData(ctx, "store", "key1", []byte(data))
 	assert.Nil(t, err)
 
 	out, etag, err := testClient.GetState(ctx, "store", "key1")
@@ -48,6 +48,9 @@ func TestSaveStateData(t *testing.T) {
 	assert.NotEmpty(t, etag)
 	assert.NotNil(t, out)
 	assert.Equal(t, string(out), data)
+
+	err = testClient.SaveStateDataVersion(ctx, "store", "key1", etag, []byte(data))
+	assert.Nil(t, err)
 
 	err = testClient.DeleteState(ctx, "store", "key1")
 	assert.Nil(t, err)
