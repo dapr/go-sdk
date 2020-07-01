@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 
+	"github.com/dapr/go-sdk/server/event"
 	daprd "github.com/dapr/go-sdk/server/grpc"
 )
 
@@ -40,7 +41,7 @@ func testHandler(contentTypeIn string, dataIn []byte) (contentTypeOut string, da
 
 // Topic Subscriptions
 
-func messageHandler(event *daprd.TopicEvent) error {
+func messageHandler(event *event.TopicEvent) error {
 	log.Printf("event - Topic:%s, ID:%s, Data: %s", event.Topic, event.ID, string(event.Data))
 	return nil
 }

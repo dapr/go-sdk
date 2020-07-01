@@ -11,6 +11,7 @@ import (
 
 	commonv1pb "github.com/dapr/go-sdk/dapr/proto/common/v1"
 	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
+	"github.com/dapr/go-sdk/server/event"
 	"google.golang.org/grpc"
 )
 
@@ -26,8 +27,8 @@ func NewServer(port int) (server *Server, err error) {
 	server = &Server{
 		listener:           lis,
 		invokeHandlers:     make(map[string]func(contentTypeIn string, dataIn []byte) (contentTypeOut string, dataOut []byte)),
-		topicSubscriptions: make(map[string]func(event *TopicEvent) error),
-		bindingHandlers:    make(map[string]func(in *BindingEvent) error),
+		topicSubscriptions: make(map[string]func(event *event.TopicEvent) error),
+		bindingHandlers:    make(map[string]func(in *event.BindingEvent) error),
 	}
 	return
 }
@@ -36,8 +37,8 @@ func NewServer(port int) (server *Server, err error) {
 type Server struct {
 	listener           net.Listener
 	invokeHandlers     map[string]func(contentTypeIn string, dataIn []byte) (contentTypeOut string, dataOut []byte)
-	topicSubscriptions map[string]func(event *TopicEvent) error
-	bindingHandlers    map[string]func(in *BindingEvent) error
+	topicSubscriptions map[string]func(event *event.TopicEvent) error
+	bindingHandlers    map[string]func(in *event.BindingEvent) error
 }
 
 // Start registers the server and starts it
@@ -71,7 +72,7 @@ func (s *Server) OnInvoke(ctx context.Context, in *commonv1pb.InvokeRequest) (*c
 // START TOPIC SUB
 
 // AddTopicEventHandler adds provided topic to the list of server subscriptions
-func (s *Server) AddTopicEventHandler(topic string, fn func(event *TopicEvent) error) {
+func (s *Server) AddTopicEventHandler(topic string, fn func(event *event.TopicEvent) error) {
 	s.topicSubscriptions[topic] = fn
 }
 
@@ -94,7 +95,7 @@ func (s *Server) ListTopicSubscriptions(ctx context.Context, in *empty.Empty) (*
 // OnTopicEvent fired whenever a message has been published to a topic that has been subscribed. Dapr sends published messages in a CloudEvents 0.3 envelope.
 func (s *Server) OnTopicEvent(ctx context.Context, in *pb.TopicEventRequest) (*empty.Empty, error) {
 	if val, ok := s.topicSubscriptions[in.Topic]; ok {
-		e := &TopicEvent{
+		e := &event.TopicEvent{
 			Topic:           in.Topic,
 			Data:            in.Data,
 			DataContentType: in.DataContentType,
@@ -114,7 +115,7 @@ func (s *Server) OnTopicEvent(ctx context.Context, in *pb.TopicEventRequest) (*e
 // START BINDING
 
 // AddBindingEventHandler add the provided handler to the server binding halder collection
-func (s *Server) AddBindingEventHandler(name string, fn func(in *BindingEvent) error) {
+func (s *Server) AddBindingEventHandler(name string, fn func(in *event.BindingEvent) error) {
 	s.bindingHandlers[name] = fn
 }
 
@@ -134,7 +135,7 @@ func (s *Server) ListInputBindings(ctx context.Context, in *empty.Empty) (*pb.Li
 // OnBindingEvent gets invoked every time a new event is fired from a registered binding. The message carries the binding name, a payload and optional metadata
 func (s *Server) OnBindingEvent(ctx context.Context, in *pb.BindingEventRequest) (*pb.BindingEventResponse, error) {
 	if val, ok := s.bindingHandlers[in.Name]; ok {
-		e := &BindingEvent{
+		e := &event.BindingEvent{
 			Name:     in.Name,
 			Data:     in.Data,
 			Metadata: in.Metadata,

@@ -1,28 +1,30 @@
-package grpc
+package event
 
 // TopicEvent is the content of the inbound topic message
 type TopicEvent struct {
-
 	// ID identifies the event.
-	ID string
+	ID string `json:"id"`
 
 	// Source identifies the context in which an event happened.
-	Source string
+	Source string `json:"source"`
 
 	// The type of event related to the originating occurrence.
-	Type string
+	Type string `json:"type"`
 
 	// The version of the CloudEvents specification.
-	SpecVersion string
+	SpecVersion string `json:"specversion"`
 
 	// The content type of data value.
-	DataContentType string
+	DataContentType string `json:"datacontenttype"`
 
 	// The content of the event.
-	Data []byte
+	Data []byte `json:"data"`
 
 	// The pubsub topic which publisher sent to.
 	Topic string
+
+	// Cloud event subject
+	Subject string `json:"subject"`
 }
 
 // BindingEvent represents the input and output of binding invocation
