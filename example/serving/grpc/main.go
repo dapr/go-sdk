@@ -9,7 +9,7 @@ import (
 
 func main() {
 	// create a Dapr service server
-	server, err := daprd.NewServer(50001)
+	server, err := daprd.NewServer("50001")
 	if err != nil {
 		log.Fatalf("failed to start the server: %v", err)
 	}

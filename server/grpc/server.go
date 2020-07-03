@@ -16,8 +16,8 @@ import (
 )
 
 // NewServer creates new Server
-func NewServer(port int) (server *Server, err error) {
-	address := fmt.Sprintf(":%d", port)
+func NewServer(port string) (server *Server, err error) {
+	address := fmt.Sprintf(":%s", port)
 	lis, err := net.Listen("tcp", address)
 	if err != nil {
 		err = errors.Wrapf(err, "failed to TCP listen on: %s", address)
