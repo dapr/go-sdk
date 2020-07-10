@@ -52,13 +52,15 @@ func (s *Server) AddTopicEventHandler(topic, route string, handler func(ctx cont
 				w.WriteHeader(http.StatusBadRequest)
 				return
 			}
-
 			var in event.TopicEvent
 			if err := json.Unmarshal(content, &in); err != nil {
 				w.WriteHeader(http.StatusBadRequest)
 				return
 			}
 
+			if in.Topic == "" {
+				in.Topic = topic
+			}
 			if err := handler(r.Context(), in); err != nil {
 				w.WriteHeader(http.StatusInternalServerError)
 				return
