@@ -44,27 +44,28 @@ func (s *Server) AddTopicEventHandler(topic, route string, handler func(ctx cont
 	}
 	s.topicSubscriptions = append(s.topicSubscriptions, sub)
 
-	s.mux.HandleFunc(route, func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Add("Content-Type", "application/json")
-		content, err := ioutil.ReadAll(r.Body)
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
+	s.mux.Handle(route, optionsHandler(http.HandlerFunc(
+		func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Add("Content-Type", "application/json")
+			content, err := ioutil.ReadAll(r.Body)
+			if err != nil {
+				w.WriteHeader(http.StatusBadRequest)
+				return
+			}
 
-		var in event.TopicEvent
-		if err := json.Unmarshal(content, &in); err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
+			var in event.TopicEvent
+			if err := json.Unmarshal(content, &in); err != nil {
+				w.WriteHeader(http.StatusBadRequest)
+				return
+			}
 
-		if err := handler(r.Context(), in); err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
+			if err := handler(r.Context(), in); err != nil {
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
 
-		w.WriteHeader(http.StatusOK)
-	})
+			w.WriteHeader(http.StatusOK)
+		})))
 
 	return nil
 }
@@ -74,19 +75,25 @@ func (s *Server) HandleSubscriptions() error {
 	s.mux.Handle("/dapr/subscribe", http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
-			w.Header().Set("Access-Control-Allow-Origin", "*")
-			w.Header().Set("Access-Control-Allow-Methods", "POST,OPTIONS")
-			w.Header().Set("Access-Control-Allow-Headers", "authorization, origin, content-type, accept")
-			w.Header().Set("Allow", "POST,OPTIONS")
-			if r.Method == "OPTIONS" {
-				return
-			}
 			if err := json.NewEncoder(w).Encode(s.topicSubscriptions); err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 			}
 		},
 	))
 	return nil
+}
+
+func optionsHandler(h http.Handler) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == "OPTIONS" {
+			w.Header().Set("Access-Control-Allow-Origin", "*")
+			w.Header().Set("Access-Control-Allow-Methods", "POST,OPTIONS")
+			w.Header().Set("Access-Control-Allow-Headers", "authorization, origin, content-type, accept")
+			w.Header().Set("Allow", "POST,OPTIONS")
+		} else {
+			h.ServeHTTP(w, r)
+		}
+	}
 }
 
 type subscription struct {
