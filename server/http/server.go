@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -29,7 +30,7 @@ type Server struct {
 }
 
 // AddTopicEventHandler adds provided handler to the local list subscriptions
-func (s *Server) AddTopicEventHandler(topic, route string, handler func(e event.TopicEvent) error) error {
+func (s *Server) AddTopicEventHandler(topic, route string, handler func(ctx context.Context, e event.TopicEvent) error) error {
 	if topic == "" {
 		return errors.New("nil topic name")
 	}
@@ -57,7 +58,7 @@ func (s *Server) AddTopicEventHandler(topic, route string, handler func(e event.
 			return
 		}
 
-		if err := handler(in); err != nil {
+		if err := handler(r.Context(), in); err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -80,7 +81,9 @@ func (s *Server) HandleSubscriptions() error {
 			if r.Method == "OPTIONS" {
 				return
 			}
-			json.NewEncoder(w).Encode(s.topicSubscriptions)
+			if err := json.NewEncoder(w).Encode(s.topicSubscriptions); err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+			}
 		},
 	))
 	return nil

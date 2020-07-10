@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 
 	"github.com/dapr/go-sdk/server/event"
@@ -29,19 +30,19 @@ func main() {
 
 // Invocation Handlers
 
-func echoHandler(contentTypeIn string, dataIn []byte) (contentTypeOut string, dataOut []byte) {
+func echoHandler(ctx context.Context, contentTypeIn string, dataIn []byte) (contentTypeOut string, dataOut []byte) {
 	content := string(dataIn)
 	log.Printf("content: %s", content)
 	return "text/plain; charset=UTF-8", []byte(content)
 }
 
-func testHandler(contentTypeIn string, dataIn []byte) (contentTypeOut string, dataOut []byte) {
+func testHandler(ctx context.Context, contentTypeIn string, dataIn []byte) (contentTypeOut string, dataOut []byte) {
 	return "text/plain; charset=UTF-8", []byte("tessting")
 }
 
 // Topic Subscriptions
 
-func messageHandler(event *event.TopicEvent) error {
+func messageHandler(ctx context.Context, event *event.TopicEvent) error {
 	log.Printf("event - Topic:%s, ID:%s, Data: %s", event.Topic, event.ID, string(event.Data))
 	return nil
 }

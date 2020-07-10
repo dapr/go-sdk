@@ -26,9 +26,9 @@ func NewServer(port string) (server *Server, err error) {
 
 	server = &Server{
 		listener:           lis,
-		invokeHandlers:     make(map[string]func(contentTypeIn string, dataIn []byte) (contentTypeOut string, dataOut []byte)),
-		topicSubscriptions: make(map[string]func(event *event.TopicEvent) error),
-		bindingHandlers:    make(map[string]func(in *event.BindingEvent) error),
+		invokeHandlers:     make(map[string]func(ctx context.Context, contentTypeIn string, dataIn []byte) (contentTypeOut string, dataOut []byte)),
+		topicSubscriptions: make(map[string]func(ctx context.Context, event *event.TopicEvent) error),
+		bindingHandlers:    make(map[string]func(ctx context.Context, in *event.BindingEvent) error),
 	}
 	return
 }
@@ -36,9 +36,9 @@ func NewServer(port string) (server *Server, err error) {
 // Server is the gRPC server implementation for Dapr
 type Server struct {
 	listener           net.Listener
-	invokeHandlers     map[string]func(contentTypeIn string, dataIn []byte) (contentTypeOut string, dataOut []byte)
-	topicSubscriptions map[string]func(event *event.TopicEvent) error
-	bindingHandlers    map[string]func(in *event.BindingEvent) error
+	invokeHandlers     map[string]func(ctx context.Context, contentTypeIn string, dataIn []byte) (contentTypeOut string, dataOut []byte)
+	topicSubscriptions map[string]func(ctx context.Context, event *event.TopicEvent) error
+	bindingHandlers    map[string]func(ctx context.Context, in *event.BindingEvent) error
 }
 
 // Start registers the server and starts it
@@ -53,14 +53,14 @@ func (s *Server) Start() error {
 // Invocation
 
 // AddInvocationHandler adds provided handler to the local collection before server start
-func (s *Server) AddInvocationHandler(method string, fn func(contentTypeIn string, dataIn []byte) (contentTypeOut string, dataOut []byte)) {
+func (s *Server) AddInvocationHandler(method string, fn func(ctx context.Context, contentTypeIn string, dataIn []byte) (contentTypeOut string, dataOut []byte)) {
 	s.invokeHandlers[method] = fn
 }
 
 // OnInvoke gets invoked when a remote service has called the app through Dapr
 func (s *Server) OnInvoke(ctx context.Context, in *commonv1pb.InvokeRequest) (*commonv1pb.InvokeResponse, error) {
 	if val, ok := s.invokeHandlers[in.Method]; ok {
-		ct, d := val(in.ContentType, in.Data.Value)
+		ct, d := val(ctx, in.ContentType, in.Data.Value)
 		return &commonv1pb.InvokeResponse{
 			ContentType: ct,
 			Data:        &any.Any{Value: d},
@@ -72,7 +72,7 @@ func (s *Server) OnInvoke(ctx context.Context, in *commonv1pb.InvokeRequest) (*c
 // START TOPIC SUB
 
 // AddTopicEventHandler adds provided topic to the list of server subscriptions
-func (s *Server) AddTopicEventHandler(topic string, fn func(event *event.TopicEvent) error) {
+func (s *Server) AddTopicEventHandler(topic string, fn func(ctx context.Context, event *event.TopicEvent) error) {
 	s.topicSubscriptions[topic] = fn
 }
 
@@ -104,7 +104,7 @@ func (s *Server) OnTopicEvent(ctx context.Context, in *pb.TopicEventRequest) (*e
 			SpecVersion:     in.SpecVersion,
 			Type:            in.Type,
 		}
-		err := val(e)
+		err := val(ctx, e)
 		if err != nil {
 			return nil, errors.Wrapf(err, "error handling topic event: %s", in.Topic)
 		}
@@ -115,7 +115,7 @@ func (s *Server) OnTopicEvent(ctx context.Context, in *pb.TopicEventRequest) (*e
 // START BINDING
 
 // AddBindingEventHandler add the provided handler to the server binding halder collection
-func (s *Server) AddBindingEventHandler(name string, fn func(in *event.BindingEvent) error) {
+func (s *Server) AddBindingEventHandler(name string, fn func(ctx context.Context, in *event.BindingEvent) error) {
 	s.bindingHandlers[name] = fn
 }
 
@@ -140,7 +140,7 @@ func (s *Server) OnBindingEvent(ctx context.Context, in *pb.BindingEventRequest)
 			Data:     in.Data,
 			Metadata: in.Metadata,
 		}
-		err := val(e)
+		err := val(ctx, e)
 		if err != nil {
 			return nil, errors.Wrapf(err, "error executing %s binding", in.Name)
 		}

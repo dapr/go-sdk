@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
 
@@ -19,7 +20,10 @@ func main() {
 	}
 
 	// add some topic subscriptions
-	daprServer.AddTopicEventHandler("messages", "/messages", messageHandler)
+	err = daprServer.AddTopicEventHandler("messages", "/messages", messageHandler)
+	if err != nil {
+		log.Fatalf("error adding topic subscription: %v", err)
+	}
 
 	// start the server
 	err = daprServer.HandleSubscriptions()
@@ -37,7 +41,7 @@ func main() {
 	}
 }
 
-func messageHandler(e event.TopicEvent) error {
+func messageHandler(ctx context.Context, e event.TopicEvent) error {
 	log.Printf("event - Topic:%s, ID:%s, Data: %s", e.Topic, e.ID, string(e.Data))
 	return nil
 }
