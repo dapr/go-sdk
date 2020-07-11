@@ -2,6 +2,7 @@ package http
 
 import (
 	"context"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -10,7 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestServer(t *testing.T) {
+func TestEventHandler(t *testing.T) {
 	t.Parallel()
 
 	mux := http.NewServeMux()
@@ -45,4 +46,38 @@ func TestServer(t *testing.T) {
 	rr := httptest.NewRecorder()
 	mux.ServeHTTP(rr, req)
 	assert.Equal(t, http.StatusOK, rr.Code)
+}
+
+func TestInvocationHandler(t *testing.T) {
+	t.Parallel()
+
+	mux := http.NewServeMux()
+	s, err := NewService(mux)
+	assert.NoErrorf(t, err, "error creating service")
+
+	data := `{ "message": "pong" }`
+	contentType := "application/json"
+	err = s.AddInvocationHandler("/", func(ctx context.Context, in *InvocationEvent) (out []byte, err error) {
+		if in == nil {
+			t.Fatal("nil invocation events")
+		}
+
+		if in.ContentType == contentType {
+			return []byte(data), nil
+		}
+		return []byte("test"), nil
+	})
+	assert.NoErrorf(t, err, "error adding event handler")
+
+	req, err := http.NewRequest(http.MethodPost, "/", strings.NewReader(data))
+	assert.NoErrorf(t, err, "error creating request")
+	req.Header.Set("Content-Type", contentType)
+
+	resp := httptest.NewRecorder()
+	mux.ServeHTTP(resp, req)
+	assert.Equal(t, http.StatusOK, resp.Code)
+
+	b, err := ioutil.ReadAll(resp.Body)
+	assert.NoErrorf(t, err, "error reading response body")
+	assert.Equal(t, data, string(b))
 }

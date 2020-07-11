@@ -14,6 +14,7 @@ import (
 type Service interface {
 	AddTopicEventHandler(topic, route string, handler func(ctx context.Context, e TopicEvent) error) error
 	HandleSubscriptions() error
+	AddInvocationHandler(route string, fn func(ctx context.Context, in *InvocationEvent) (out []byte, err error)) error
 }
 
 // NewService creates new Service
@@ -31,6 +32,43 @@ func NewService(mux *http.ServeMux) (h Service, err error) {
 type ServiceImp struct {
 	mux                *http.ServeMux
 	topicSubscriptions []*subscription
+}
+
+// AddInvocationHandler adds provided handler to the local collection before server start
+func (s *ServiceImp) AddInvocationHandler(route string, fn func(ctx context.Context, in *InvocationEvent) (out []byte, err error)) error {
+	if route == "" {
+		return errors.New("nil route name")
+	}
+
+	s.mux.Handle(route, optionsHandler(http.HandlerFunc(
+		func(w http.ResponseWriter, r *http.Request) {
+			content, err := ioutil.ReadAll(r.Body)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusBadRequest)
+				return
+			}
+
+			e := &InvocationEvent{
+				ContentType: r.Header.Get("Content-type"),
+				Data:        content,
+			}
+
+			o, err := fn(r.Context(), e)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			w.Header().Set("Content-Type", e.ContentType)
+			if _, err := w.Write(o); err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			w.WriteHeader(http.StatusOK)
+		})))
+
+	return nil
 }
 
 // AddTopicEventHandler adds provided handler to the local list subscriptions
@@ -53,12 +91,12 @@ func (s *ServiceImp) AddTopicEventHandler(topic, route string, handler func(ctx 
 			w.Header().Add("Content-Type", "application/json")
 			content, err := ioutil.ReadAll(r.Body)
 			if err != nil {
-				w.WriteHeader(http.StatusBadRequest)
+				http.Error(w, err.Error(), http.StatusBadRequest)
 				return
 			}
 			var in TopicEvent
 			if err := json.Unmarshal(content, &in); err != nil {
-				w.WriteHeader(http.StatusBadRequest)
+				http.Error(w, err.Error(), http.StatusBadRequest)
 				return
 			}
 
@@ -66,7 +104,7 @@ func (s *ServiceImp) AddTopicEventHandler(topic, route string, handler func(ctx 
 				in.Topic = topic
 			}
 			if err := handler(r.Context(), in); err != nil {
-				w.WriteHeader(http.StatusInternalServerError)
+				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
 
@@ -83,6 +121,7 @@ func (s *ServiceImp) HandleSubscriptions() error {
 			w.Header().Set("Content-Type", "application/json")
 			if err := json.NewEncoder(w).Encode(s.topicSubscriptions); err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
 			}
 		},
 	))

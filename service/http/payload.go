@@ -21,21 +21,18 @@ type TopicEvent struct {
 	Data interface{} `json:"data"`
 
 	// The pubsub topic which publisher sent to.
-	Topic string
+	Topic string `json:"-"`
 
 	// Cloud event subject
 	Subject string `json:"subject"`
 }
 
-// BindingEvent represents the input and output of binding invocation
-type BindingEvent struct {
+// InvocationEvent represents the input and output of binding invocation
+type InvocationEvent struct {
 
-	// Name of the input binding component.
-	Name string
+	// ContentType of the Data
+	ContentType string
 
 	// Data is the payload that the input bindings sent.
 	Data []byte
-
-	// Metadata is set by the input binging components.
-	Metadata map[string]string
 }

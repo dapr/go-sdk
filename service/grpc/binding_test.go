@@ -38,9 +38,9 @@ func TestBinding(t *testing.T) {
 	stopTestServer(t, server)
 }
 
-func bindingHandler(ctx context.Context, in *BindingEvent) error {
+func bindingHandler(ctx context.Context, in *BindingEvent) (out []byte, err error) {
 	if in == nil {
-		return errors.New("nil event")
+		return nil, errors.New("nil event")
 	}
-	return nil
+	return in.Data, nil
 }

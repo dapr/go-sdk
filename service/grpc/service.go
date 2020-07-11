@@ -15,7 +15,7 @@ type Service interface {
 	Start() error
 	AddInvocationHandler(method string, fn func(ctx context.Context, in *InvocationEvent) (out *InvocationEvent, err error))
 	AddTopicEventHandler(topic string, fn func(ctx context.Context, event *TopicEvent) error)
-	AddBindingEventHandler(name string, fn func(ctx context.Context, in *BindingEvent) error)
+	AddBindingEventHandler(name string, fn func(ctx context.Context, in *BindingEvent) (out []byte, err error))
 	Stop() error
 }
 
@@ -43,7 +43,7 @@ func newService(lis net.Listener) *ServiceImp {
 		listener:           lis,
 		invokeHandlers:     make(map[string]func(ctx context.Context, in *InvocationEvent) (out *InvocationEvent, err error)),
 		topicSubscriptions: make(map[string]func(ctx context.Context, e *TopicEvent) error),
-		bindingHandlers:    make(map[string]func(ctx context.Context, in *BindingEvent) error),
+		bindingHandlers:    make(map[string]func(ctx context.Context, in *BindingEvent) (out []byte, err error)),
 	}
 }
 
@@ -52,7 +52,7 @@ type ServiceImp struct {
 	listener           net.Listener
 	invokeHandlers     map[string]func(ctx context.Context, in *InvocationEvent) (out *InvocationEvent, err error)
 	topicSubscriptions map[string]func(ctx context.Context, e *TopicEvent) error
-	bindingHandlers    map[string]func(ctx context.Context, in *BindingEvent) error
+	bindingHandlers    map[string]func(ctx context.Context, in *BindingEvent) (out []byte, err error)
 }
 
 // Start registers the server and starts it

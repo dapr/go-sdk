@@ -24,7 +24,7 @@ type BindingEvent struct {
 }
 
 // AddBindingEventHandler add the provided handler to the server binding halder collection
-func (s *ServiceImp) AddBindingEventHandler(name string, fn func(ctx context.Context, in *BindingEvent) error) {
+func (s *ServiceImp) AddBindingEventHandler(name string, fn func(ctx context.Context, in *BindingEvent) (out []byte, err error)) {
 	s.bindingHandlers[name] = fn
 }
 
@@ -49,11 +49,13 @@ func (s *ServiceImp) OnBindingEvent(ctx context.Context, in *pb.BindingEventRequ
 			Data:     in.Data,
 			Metadata: in.Metadata,
 		}
-		err := val(ctx, e)
+		data, err := val(ctx, e)
 		if err != nil {
 			return nil, errors.Wrapf(err, "error executing %s binding", in.Name)
 		}
-		return &pb.BindingEventResponse{}, nil
+		return &pb.BindingEventResponse{
+			Data: data,
+		}, nil
 	}
 
 	return nil, fmt.Errorf("binding not implemented: %s", in.Name)
