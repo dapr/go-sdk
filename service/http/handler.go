@@ -64,8 +64,6 @@ func (s *ServiceImp) AddInvocationHandler(route string, fn func(ctx context.Cont
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
-
-			w.WriteHeader(http.StatusOK)
 		})))
 
 	return nil

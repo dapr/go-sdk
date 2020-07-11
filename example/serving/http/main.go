@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"log"
 	"net/http"
 
@@ -13,21 +14,36 @@ func main() {
 	mux := http.NewServeMux()
 
 	// create a Dapr service
-	daprServer, err := daprd.NewService(mux)
+	s, err := daprd.NewService(mux)
 	if err != nil {
 		log.Fatalf("error creating sever: %v", err)
 	}
 
 	// add some topic subscriptions
-	err = daprServer.AddTopicEventHandler("messages", "/messages", messageHandler)
+	err = s.AddTopicEventHandler("messages", "/messages", messageHandler)
 	if err != nil {
 		log.Fatalf("error adding topic subscription: %v", err)
 	}
 
-	// start the server
-	err = daprServer.HandleSubscriptions()
+	// handle all the added topic handlers
+	err = s.HandleSubscriptions()
 	if err != nil {
 		log.Fatalf("error creating topic subscription: %v", err)
+	}
+
+	invokeHandler := func(ctx context.Context, in *daprd.InvocationEvent) (out []byte, err error) {
+		if in == nil {
+			err = errors.New("nil invocation parameter")
+			return
+		}
+		log.Printf("echo handler (%s): %+v", in.ContentType, string(in.Data))
+		out = in.Data
+		return
+	}
+
+	err = s.AddInvocationHandler("/EchoMethod", invokeHandler)
+	if err != nil {
+		log.Fatalf("error adding invocation handler: %v", err)
 	}
 
 	server := &http.Server{

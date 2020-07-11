@@ -53,8 +53,7 @@ func main() {
 	logger.Println("data deleted")
 
 	// invoke a method called EchoMethod on another dapr enabled service
-	resp, err := client.InvokeServiceWithContent(ctx, "serving", "EchoMethod",
-		"text/plain; charset=UTF-8", data)
+	resp, err := client.InvokeServiceWithContent(ctx, "serving", "EchoMethod", "text/plain", data)
 	if err != nil {
 		logger.Panic(err)
 	}

@@ -6,7 +6,7 @@ This is the dapr SDK (client) for go (golang). It covers all of the APIs describ
 
 ## Installation
 
-To install Dapr client package, you need to first [install go](https://golang.org/doc/install) and set up your development environment. To import Dapr go client in your code:
+Assuming you have already [installed go](https://golang.org/doc/install), you can import Dapr go client package:
 
 ```go
 import "github.com/dapr/go-sdk/client"
@@ -34,19 +34,28 @@ func main() {
 Assuming you have Dapr CLI installed locally, you can then launch your app like this:
 
 ```shell
-dapr run --app-id my-app --protocol grpc --app-port 50001 go run main.go
+dapr run --app-id serving \
+         --protocol grpc \
+         --app-port 50001 \
+         --log-level debug \
+         go run main.go
 ```
 
-See [example folder](./example) for complete example. 
+You can find working samples in the [example folder](./example). 
+
+To accelerate your go Dapr development, there are couple GitHub templates you may find helpful. These templates include a complete gRPC solutions for two specific use-cases:
+
+* [gRPC Event Subscriber Template](https://github.com/mchmarny/dapr-grpc-event-subscriber-template) for pub/sub event processing 
+* [gRPC Serving Service Template ](https://github.com/mchmarny/dapr-grpc-service-template) which creates a target for service to service invocations 
 
 
-## Examples
+## Usage
 
-Few common Dapr client usage examples 
+The Dapr go client supports following functionality: 
 
 ### State 
 
-For simple use-cases, Dapr client provides easy to use methods: 
+For simple use-cases, Dapr client provides easy to use methods for `Save`, `Get`, and `Delete`: 
 
 ```go
 ctx := context.Background()
@@ -66,7 +75,7 @@ err = client.DeleteState(ctx, store, "k1")
 handleErrors(err)
 ```
 
-The `StateItem` type exposed by Dapr client provides more granular control options:
+For more granular control, the Dapr go client exposed `StateItem` type which can be use to gain more control over the state operations:
 
 ```go     
 data := &client.StateItem{
@@ -90,7 +99,7 @@ data := &client.StateItem{
 err = client.SaveStateItem(ctx, store, data)
 ```
 
-Similar `StateOptions` exist on `GetDate` and `DeleteState` methods. Additionally, Dapr client also provides a method to save multiple state items at once:
+Similarly, `StateOptions` exist on the `GetDate` and `DeleteState` methods to support multiple item operations at once:
 
 ```go 
 data := &client.State{
@@ -114,7 +123,7 @@ err = client.SaveState(ctx, data)
 To publish data onto a topic the Dapr client provides a simple method:
 
 ```go
-data := []byte("hello")
+data := []byte(`{ "id": "a123", "value": "abcdefg", "valid": true }`)
 err = client.PublishEvent(ctx, "topic-name", data)
 handleErrors(err)
 ```
@@ -131,8 +140,8 @@ handleErrors(err)
 And to invoke a service with data: 
 
 ```go 
-data := []byte("hello")
-resp, err := client.InvokeServiceWithContent(ctx, "service-name", "method-name", "text/plain", data)
+data := []byte(`{ "id": "a123", "value": "abcdefg", "valid": true }`)
+resp, err := client.InvokeServiceWithContent(ctx, "service-name", "method-name", "application/json", data)
 handleErrors(err)
 ```
 
