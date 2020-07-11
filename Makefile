@@ -1,4 +1,4 @@
-RELEASE_VERSION  =v0.8.4
+RELEASE_VERSION  =v0.8.5
 GDOC_PORT        =8888
 PROTO_ROOT       =https://raw.githubusercontent.com/dapr/dapr/master/dapr/proto/
 
@@ -10,7 +10,6 @@ mod: ## Updates the go modules
 
 test: mod ## Tests the entire project 
 	go test -v -count=1 -race ./...
-	# go test -v -count=1 -run NameOfSingleTest ./...
 
 cover: mod ## Displays test coverage in the Client package
 	go test -coverprofile=cover.out ./client && go tool cover -html=cover.out
