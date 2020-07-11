@@ -5,15 +5,15 @@ import (
 	"log"
 	"net/http"
 
-	daprd "github.com/dapr/go-sdk/server/http"
+	daprd "github.com/dapr/go-sdk/service/http"
 )
 
 func main() {
 	// create a regular HTTP server mux
 	mux := http.NewServeMux()
 
-	// create a Dapr service server
-	daprServer, err := daprd.NewServer(mux)
+	// create a Dapr service
+	daprServer, err := daprd.NewService(mux)
 	if err != nil {
 		log.Fatalf("error creating sever: %v", err)
 	}

@@ -10,31 +10,31 @@ import (
 	"github.com/pkg/errors"
 )
 
-// Server is the HTTP server wrapper
-type Server interface {
+// Service is the HTTP service wrapper
+type Service interface {
 	AddTopicEventHandler(topic, route string, handler func(ctx context.Context, e TopicEvent) error) error
 	HandleSubscriptions() error
 }
 
-// NewServer creates new Server
-func NewServer(mux *http.ServeMux) (server Server, err error) {
+// NewService creates new Service
+func NewService(mux *http.ServeMux) (h Service, err error) {
 	if mux == nil {
 		return nil, fmt.Errorf("nil http mux")
 	}
-	return &ServerImp{
+	return &ServiceImp{
 		mux:                mux,
 		topicSubscriptions: make([]*subscription, 0),
 	}, nil
 }
 
-// ServerImp is the HTTP server wrapping gin with many Dapr helpers
-type ServerImp struct {
+// ServiceImp is the HTTP server wrapping mux many Dapr helpers
+type ServiceImp struct {
 	mux                *http.ServeMux
 	topicSubscriptions []*subscription
 }
 
 // AddTopicEventHandler adds provided handler to the local list subscriptions
-func (s *ServerImp) AddTopicEventHandler(topic, route string, handler func(ctx context.Context, e TopicEvent) error) error {
+func (s *ServiceImp) AddTopicEventHandler(topic, route string, handler func(ctx context.Context, e TopicEvent) error) error {
 	if topic == "" {
 		return errors.New("nil topic name")
 	}
@@ -77,7 +77,7 @@ func (s *ServerImp) AddTopicEventHandler(topic, route string, handler func(ctx c
 }
 
 // HandleSubscriptions creates Dapr topic subscriptions
-func (s *ServerImp) HandleSubscriptions() error {
+func (s *ServiceImp) HandleSubscriptions() error {
 	s.mux.Handle("/dapr/subscribe", http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json")

@@ -30,13 +30,13 @@ type TopicEvent struct {
 }
 
 // AddTopicEventHandler adds provided topic to the list of server subscriptions
-func (s *ServerImp) AddTopicEventHandler(topic string, fn func(ctx context.Context, e *TopicEvent) error) {
+func (s *ServiceImp) AddTopicEventHandler(topic string, fn func(ctx context.Context, e *TopicEvent) error) {
 	s.topicSubscriptions[topic] = fn
 }
 
 // ListTopicSubscriptions is called by Dapr to get the list of topics the app wants to subscribe to. In this example, we are telling Dapr
 // To subscribe to a topic named TopicA
-func (s *ServerImp) ListTopicSubscriptions(ctx context.Context, in *empty.Empty) (*pb.ListTopicSubscriptionsResponse, error) {
+func (s *ServiceImp) ListTopicSubscriptions(ctx context.Context, in *empty.Empty) (*pb.ListTopicSubscriptionsResponse, error) {
 	subs := make([]*pb.TopicSubscription, 0)
 	for k := range s.topicSubscriptions {
 		sub := &pb.TopicSubscription{
@@ -51,7 +51,7 @@ func (s *ServerImp) ListTopicSubscriptions(ctx context.Context, in *empty.Empty)
 }
 
 // OnTopicEvent fired whenever a message has been published to a topic that has been subscribed. Dapr sends published messages in a CloudEvents 0.3 envelope.
-func (s *ServerImp) OnTopicEvent(ctx context.Context, in *pb.TopicEventRequest) (*empty.Empty, error) {
+func (s *ServiceImp) OnTopicEvent(ctx context.Context, in *pb.TopicEventRequest) (*empty.Empty, error) {
 	if val, ok := s.topicSubscriptions[in.Topic]; ok {
 		e := &TopicEvent{
 			Topic:           in.Topic,

@@ -14,8 +14,8 @@ func TestServer(t *testing.T) {
 	t.Parallel()
 
 	mux := http.NewServeMux()
-	s, err := NewServer(mux)
-	assert.NoErrorf(t, err, "error creating server")
+	s, err := NewService(mux)
+	assert.NoErrorf(t, err, "error creating service")
 
 	err = s.AddTopicEventHandler("test", "/", func(ctx context.Context, e TopicEvent) error {
 		if e.DataContentType != "application/json" {

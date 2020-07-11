@@ -7,7 +7,6 @@ import (
 	"google.golang.org/grpc/test/bufconn"
 )
 
-// go test -v -count=1 -run TestServer ./server/grpc
 func TestServer(t *testing.T) {
 	t.Parallel()
 	server := getTestServer()
@@ -15,11 +14,11 @@ func TestServer(t *testing.T) {
 	stopTestServer(t, server)
 }
 
-func getTestServer() Server {
-	return NewServerWithListener(bufconn.Listen(1024 * 1024))
+func getTestServer() *ServiceImp {
+	return newService(bufconn.Listen(1024 * 1024))
 }
 
-func startTestServer(server Server) {
+func startTestServer(server *ServiceImp) {
 	go func() {
 		if err := server.Start(); err != nil && err.Error() != "closed" {
 			panic(err)
@@ -27,7 +26,8 @@ func startTestServer(server Server) {
 	}()
 }
 
-func stopTestServer(t *testing.T, server Server) {
+func stopTestServer(t *testing.T, server *ServiceImp) {
+	assert.NotNil(t, server)
 	err := server.Stop()
 	assert.Nilf(t, err, "error stopping server")
 }

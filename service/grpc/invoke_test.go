@@ -39,8 +39,10 @@ func TestInvoke(t *testing.T) {
 	stopTestServer(t, server)
 }
 
-func invocationHandler(ctx context.Context, contentTypeIn string, dataIn []byte) (contentTypeOut string, dataOut []byte) {
-	contentTypeOut = contentTypeIn
-	dataOut = dataIn
+func invocationHandler(ctx context.Context, in *InvocationEvent) (out *InvocationEvent, err error) {
+	out = &InvocationEvent{
+		ContentType: in.ContentType,
+		Data:        in.Data,
+	}
 	return
 }

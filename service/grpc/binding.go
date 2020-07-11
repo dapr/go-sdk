@@ -24,13 +24,13 @@ type BindingEvent struct {
 }
 
 // AddBindingEventHandler add the provided handler to the server binding halder collection
-func (s *ServerImp) AddBindingEventHandler(name string, fn func(ctx context.Context, in *BindingEvent) error) {
+func (s *ServiceImp) AddBindingEventHandler(name string, fn func(ctx context.Context, in *BindingEvent) error) {
 	s.bindingHandlers[name] = fn
 }
 
 // ListInputBindings is called by Dapr to get the list of bindings the app will get invoked by. In this example, we are telling Dapr
 // To invoke our app with a binding named storage
-func (s *ServerImp) ListInputBindings(ctx context.Context, in *empty.Empty) (*pb.ListInputBindingsResponse, error) {
+func (s *ServiceImp) ListInputBindings(ctx context.Context, in *empty.Empty) (*pb.ListInputBindingsResponse, error) {
 	list := make([]string, 0)
 	for k := range s.bindingHandlers {
 		list = append(list, k)
@@ -42,7 +42,7 @@ func (s *ServerImp) ListInputBindings(ctx context.Context, in *empty.Empty) (*pb
 }
 
 // OnBindingEvent gets invoked every time a new event is fired from a registered binding. The message carries the binding name, a payload and optional metadata
-func (s *ServerImp) OnBindingEvent(ctx context.Context, in *pb.BindingEventRequest) (*pb.BindingEventResponse, error) {
+func (s *ServiceImp) OnBindingEvent(ctx context.Context, in *pb.BindingEventRequest) (*pb.BindingEventResponse, error) {
 	if val, ok := s.bindingHandlers[in.Name]; ok {
 		e := &BindingEvent{
 			Name:     in.Name,
