@@ -18,7 +18,7 @@ type TopicEvent struct {
 	DataContentType string `json:"datacontenttype"`
 
 	// The content of the event.
-	Data interface{} `json:"data"`
+	Data []byte `json:"data"`
 
 	// The pubsub topic which publisher sent to.
 	Topic string

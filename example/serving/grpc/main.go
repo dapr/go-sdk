@@ -43,6 +43,6 @@ func testHandler(ctx context.Context, contentTypeIn string, dataIn []byte) (cont
 // Topic Subscriptions
 
 func messageHandler(ctx context.Context, event *event.TopicEvent) error {
-	log.Printf("event - Topic:%s, ID:%s, Data: %v", event.Topic, event.ID, event.Data)
+	log.Printf("event - Topic:%s, ID:%s, Data: %s", event.Topic, event.ID, string(event.Data))
 	return nil
 }
