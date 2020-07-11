@@ -1,12 +1,14 @@
 # Dapr SDK for Go
 
-This is the dapr SDK (client) for go (golang). It covers all of the APIs described in Dapr's [protocol buffers](https://raw.githubusercontent.com/dapr/dapr/master/dapr/proto/) with focus on developer productivity. 
+Client library to accelerate Dapr development in go. This client supports all public [Dapr API](https://github.com/dapr/docs/tree/master/reference/api) and focuses on developer productivity. 
 
 [![Test](https://github.com/dapr/go-sdk/workflows/Test/badge.svg)](https://github.com/dapr/go-sdk/actions?query=workflow%3ATest) [![Release](https://github.com/dapr/go-sdk/workflows/Release/badge.svg)](https://github.com/dapr/go-sdk/actions?query=workflow%3ARelease) [![Go Report Card](https://goreportcard.com/badge/github.com/dapr/go-sdk)](https://goreportcard.com/report/github.com/dapr/go-sdk) ![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/dapr/go-sdk)
 
-## Installation
+## Usage
 
-Assuming you have already [installed go](https://golang.org/doc/install), you can import Dapr go client package:
+> Assuming you already have [installed](https://golang.org/doc/install) go
+
+Import Dapr go client package:
 
 ```go
 import "github.com/dapr/go-sdk/client"
@@ -27,23 +29,22 @@ func main() {
         panic(err)
     }
     defer client.Close()
-    //TODO: use the client here 
+    //TODO: use the client here, see below for examples 
 }
 ```
 
-Assuming you have Dapr CLI installed locally, you can then launch your app like this:
+Assuming you have [Dapr CLI](https://github.com/dapr/docs/blob/master/getting-started/environment-setup.md) installed locally, you can then launch your app locally like this:
 
 ```shell
-dapr run --app-id serving \
+dapr run --app-id example-service \
          --protocol grpc \
          --app-port 50001 \
-         --log-level debug \
          go run main.go
 ```
 
-You can find working samples in the [example folder](./example). 
+Check the [example folder](./example) for working Dapr go client examples.
 
-To accelerate your go Dapr development, there are couple GitHub templates you may find helpful. These templates include a complete gRPC solutions for two specific use-cases:
+To accelerate your Dapr service development even more, consider the GitHub templates with complete gRPC solutions for two common use-cases:
 
 * [gRPC Event Subscriber Template](https://github.com/mchmarny/dapr-grpc-event-subscriber-template) for pub/sub event processing 
 * [gRPC Serving Service Template ](https://github.com/mchmarny/dapr-grpc-service-template) which creates a target for service to service invocations 
