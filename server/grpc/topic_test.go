@@ -6,12 +6,13 @@ import (
 	"testing"
 
 	"github.com/dapr/go-sdk/dapr/proto/runtime/v1"
-	"github.com/dapr/go-sdk/server/event"
 	"github.com/stretchr/testify/assert"
 )
 
 // go test -v -count=1 -run TestTopic ./server/grpc
 func TestTopic(t *testing.T) {
+	t.Parallel()
+
 	topicName := "test"
 	eventID := "1"
 	dataContentType := "text/plain"
@@ -36,7 +37,7 @@ func TestTopic(t *testing.T) {
 	stopTestServer(t, server)
 }
 
-func eventHandler(ctx context.Context, event *event.TopicEvent) error {
+func eventHandler(ctx context.Context, event *TopicEvent) error {
 	if event == nil {
 		return errors.New("nil event")
 	}

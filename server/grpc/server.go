@@ -10,7 +10,6 @@ import (
 
 	cpb "github.com/dapr/go-sdk/dapr/proto/common/v1"
 	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
-	"github.com/dapr/go-sdk/server/event"
 	"google.golang.org/grpc"
 )
 
@@ -20,10 +19,10 @@ type Server interface {
 	Stop() error
 	AddInvocationHandler(method string, fn func(ctx context.Context, contentTypeIn string, dataIn []byte) (contentTypeOut string, dataOut []byte))
 	OnInvoke(ctx context.Context, in *cpb.InvokeRequest) (*cpb.InvokeResponse, error)
-	AddTopicEventHandler(topic string, fn func(ctx context.Context, event *event.TopicEvent) error)
+	AddTopicEventHandler(topic string, fn func(ctx context.Context, event *TopicEvent) error)
 	ListTopicSubscriptions(ctx context.Context, in *empty.Empty) (*pb.ListTopicSubscriptionsResponse, error)
 	OnTopicEvent(ctx context.Context, in *pb.TopicEventRequest) (*empty.Empty, error)
-	AddBindingEventHandler(name string, fn func(ctx context.Context, in *event.BindingEvent) error)
+	AddBindingEventHandler(name string, fn func(ctx context.Context, in *BindingEvent) error)
 	ListInputBindings(ctx context.Context, in *empty.Empty) (*pb.ListInputBindingsResponse, error)
 	OnBindingEvent(ctx context.Context, in *pb.BindingEventRequest) (*pb.BindingEventResponse, error)
 }
@@ -44,18 +43,18 @@ func NewServer(port string) (server Server, err error) {
 func NewServerWithListener(lis net.Listener) Server {
 	return &ServerImp{
 		listener:           lis,
-		invokeHandlers:     make(map[string]func(ctx context.Context, contentTypeIn string, dataIn []byte) (contentTypeOut string, dataOut []byte)),
-		topicSubscriptions: make(map[string]func(ctx context.Context, event *event.TopicEvent) error),
-		bindingHandlers:    make(map[string]func(ctx context.Context, in *event.BindingEvent) error),
+		invokeHandlers:     make(map[string]func(ctx context.Context, typeIn string, dataIn []byte) (typeOut string, dataOut []byte)),
+		topicSubscriptions: make(map[string]func(ctx context.Context, e *TopicEvent) error),
+		bindingHandlers:    make(map[string]func(ctx context.Context, in *BindingEvent) error),
 	}
 }
 
 // ServerImp is the gRPC server implementation for Dapr
 type ServerImp struct {
 	listener           net.Listener
-	invokeHandlers     map[string]func(ctx context.Context, contentTypeIn string, dataIn []byte) (contentTypeOut string, dataOut []byte)
-	topicSubscriptions map[string]func(ctx context.Context, event *event.TopicEvent) error
-	bindingHandlers    map[string]func(ctx context.Context, in *event.BindingEvent) error
+	invokeHandlers     map[string]func(ctx context.Context, typeIn string, dataIn []byte) (typeOut string, dataOut []byte)
+	topicSubscriptions map[string]func(ctx context.Context, e *TopicEvent) error
+	bindingHandlers    map[string]func(ctx context.Context, in *BindingEvent) error
 }
 
 // Start registers the server and starts it

@@ -11,6 +11,8 @@ import (
 
 // go test -v -count=1 -run TestServer ./server/grpc
 func TestInvoke(t *testing.T) {
+	t.Parallel()
+
 	methodName := "test"
 	data := "hello there"
 	dataContentType := "text/plain"

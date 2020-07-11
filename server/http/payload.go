@@ -1,4 +1,4 @@
-package event
+package http
 
 // TopicEvent is the content of the inbound topic message
 type TopicEvent struct {
@@ -18,7 +18,7 @@ type TopicEvent struct {
 	DataContentType string `json:"datacontenttype"`
 
 	// The content of the event.
-	Data []byte `json:"data"`
+	Data interface{} `json:"data"`
 
 	// The pubsub topic which publisher sent to.
 	Topic string

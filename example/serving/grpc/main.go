@@ -4,7 +4,6 @@ import (
 	"context"
 	"log"
 
-	"github.com/dapr/go-sdk/server/event"
 	daprd "github.com/dapr/go-sdk/server/grpc"
 )
 
@@ -30,19 +29,19 @@ func main() {
 
 // Invocation Handlers
 
-func echoHandler(ctx context.Context, contentTypeIn string, dataIn []byte) (contentTypeOut string, dataOut []byte) {
+func echoHandler(ctx context.Context, typeIn string, dataIn []byte) (typeOut string, dataOut []byte) {
 	content := string(dataIn)
 	log.Printf("content: %s", content)
 	return "text/plain; charset=UTF-8", []byte(content)
 }
 
-func testHandler(ctx context.Context, contentTypeIn string, dataIn []byte) (contentTypeOut string, dataOut []byte) {
+func testHandler(ctx context.Context, typeIn string, dataIn []byte) (typeOut string, dataOut []byte) {
 	return "text/plain; charset=UTF-8", []byte("tessting")
 }
 
 // Topic Subscriptions
 
-func messageHandler(ctx context.Context, event *event.TopicEvent) error {
-	log.Printf("event - Topic:%s, ID:%s, Data: %s", event.Topic, event.ID, string(event.Data))
+func messageHandler(ctx context.Context, e *daprd.TopicEvent) error {
+	log.Printf("event - Topic:%s, ID:%s, Data: %v", e.Topic, e.ID, e.Data)
 	return nil
 }

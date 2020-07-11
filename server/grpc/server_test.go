@@ -9,6 +9,7 @@ import (
 
 // go test -v -count=1 -run TestServer ./server/grpc
 func TestServer(t *testing.T) {
+	t.Parallel()
 	server := getTestServer()
 	startTestServer(server)
 	stopTestServer(t, server)

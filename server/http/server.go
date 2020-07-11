@@ -1,4 +1,4 @@
-package server
+package http
 
 import (
 	"context"
@@ -8,29 +8,33 @@ import (
 	"net/http"
 
 	"github.com/pkg/errors"
-
-	"github.com/dapr/go-sdk/server/event"
 )
 
+// Server is the HTTP server wrapper
+type Server interface {
+	AddTopicEventHandler(topic, route string, handler func(ctx context.Context, e TopicEvent) error) error
+	HandleSubscriptions() error
+}
+
 // NewServer creates new Server
-func NewServer(mux *http.ServeMux) (server *Server, err error) {
+func NewServer(mux *http.ServeMux) (server Server, err error) {
 	if mux == nil {
 		return nil, fmt.Errorf("nil http mux")
 	}
-	return &Server{
+	return &ServerImp{
 		mux:                mux,
 		topicSubscriptions: make([]*subscription, 0),
 	}, nil
 }
 
-// Server is the HTTP server wrapping gin with many Dapr helpers
-type Server struct {
+// ServerImp is the HTTP server wrapping gin with many Dapr helpers
+type ServerImp struct {
 	mux                *http.ServeMux
 	topicSubscriptions []*subscription
 }
 
 // AddTopicEventHandler adds provided handler to the local list subscriptions
-func (s *Server) AddTopicEventHandler(topic, route string, handler func(ctx context.Context, e event.TopicEvent) error) error {
+func (s *ServerImp) AddTopicEventHandler(topic, route string, handler func(ctx context.Context, e TopicEvent) error) error {
 	if topic == "" {
 		return errors.New("nil topic name")
 	}
@@ -52,7 +56,7 @@ func (s *Server) AddTopicEventHandler(topic, route string, handler func(ctx cont
 				w.WriteHeader(http.StatusBadRequest)
 				return
 			}
-			var in event.TopicEvent
+			var in TopicEvent
 			if err := json.Unmarshal(content, &in); err != nil {
 				w.WriteHeader(http.StatusBadRequest)
 				return
@@ -73,7 +77,7 @@ func (s *Server) AddTopicEventHandler(topic, route string, handler func(ctx cont
 }
 
 // HandleSubscriptions creates Dapr topic subscriptions
-func (s *Server) HandleSubscriptions() error {
+func (s *ServerImp) HandleSubscriptions() error {
 	s.mux.Handle("/dapr/subscribe", http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json")

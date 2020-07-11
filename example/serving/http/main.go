@@ -5,7 +5,6 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/dapr/go-sdk/server/event"
 	daprd "github.com/dapr/go-sdk/server/http"
 )
 
@@ -41,7 +40,7 @@ func main() {
 	}
 }
 
-func messageHandler(ctx context.Context, e event.TopicEvent) error {
+func messageHandler(ctx context.Context, e daprd.TopicEvent) error {
 	log.Printf("event - Topic:%s, ID:%s, Data: %v", e.Topic, e.ID, e.Data)
 	return nil
 }

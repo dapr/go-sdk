@@ -8,11 +8,23 @@ import (
 	"github.com/pkg/errors"
 
 	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
-	"github.com/dapr/go-sdk/server/event"
 )
 
+// BindingEvent represents the input and output of binding invocation
+type BindingEvent struct {
+
+	// Name of the input binding component.
+	Name string
+
+	// Data is the payload that the input bindings sent.
+	Data []byte
+
+	// Metadata is set by the input binging components.
+	Metadata map[string]string
+}
+
 // AddBindingEventHandler add the provided handler to the server binding halder collection
-func (s *ServerImp) AddBindingEventHandler(name string, fn func(ctx context.Context, in *event.BindingEvent) error) {
+func (s *ServerImp) AddBindingEventHandler(name string, fn func(ctx context.Context, in *BindingEvent) error) {
 	s.bindingHandlers[name] = fn
 }
 
@@ -32,7 +44,7 @@ func (s *ServerImp) ListInputBindings(ctx context.Context, in *empty.Empty) (*pb
 // OnBindingEvent gets invoked every time a new event is fired from a registered binding. The message carries the binding name, a payload and optional metadata
 func (s *ServerImp) OnBindingEvent(ctx context.Context, in *pb.BindingEventRequest) (*pb.BindingEventResponse, error) {
 	if val, ok := s.bindingHandlers[in.Name]; ok {
-		e := &event.BindingEvent{
+		e := &BindingEvent{
 			Name:     in.Name,
 			Data:     in.Data,
 			Metadata: in.Metadata,

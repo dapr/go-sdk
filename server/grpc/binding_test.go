@@ -6,12 +6,13 @@ import (
 	"testing"
 
 	"github.com/dapr/go-sdk/dapr/proto/runtime/v1"
-	"github.com/dapr/go-sdk/server/event"
 	"github.com/stretchr/testify/assert"
 )
 
 // go test -v -count=1 -run TestBinding ./server/grpc
 func TestBinding(t *testing.T) {
+	t.Parallel()
+
 	methodName := "test"
 	data := "hello there"
 
@@ -37,7 +38,7 @@ func TestBinding(t *testing.T) {
 	stopTestServer(t, server)
 }
 
-func bindingHandler(ctx context.Context, in *event.BindingEvent) error {
+func bindingHandler(ctx context.Context, in *BindingEvent) error {
 	if in == nil {
 		return errors.New("nil event")
 	}

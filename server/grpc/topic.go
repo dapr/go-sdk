@@ -7,13 +7,30 @@ import (
 	"github.com/pkg/errors"
 
 	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
-	"github.com/dapr/go-sdk/server/event"
 )
 
-// START TOPIC SUB
+// TopicEvent is the content of the inbound topic message
+type TopicEvent struct {
+	// ID identifies the event.
+	ID string
+	// Source identifies the context in which an event happened.
+	Source string
+	// The type of event related to the originating occurrence.
+	Type string
+	// The version of the CloudEvents specification.
+	SpecVersion string
+	// The content type of data value.
+	DataContentType string
+	// The content of the event.
+	Data []byte
+	// The pubsub topic which publisher sent to.
+	Topic string
+	// Cloud event subject
+	Subject string
+}
 
 // AddTopicEventHandler adds provided topic to the list of server subscriptions
-func (s *ServerImp) AddTopicEventHandler(topic string, fn func(ctx context.Context, event *event.TopicEvent) error) {
+func (s *ServerImp) AddTopicEventHandler(topic string, fn func(ctx context.Context, e *TopicEvent) error) {
 	s.topicSubscriptions[topic] = fn
 }
 
@@ -36,7 +53,7 @@ func (s *ServerImp) ListTopicSubscriptions(ctx context.Context, in *empty.Empty)
 // OnTopicEvent fired whenever a message has been published to a topic that has been subscribed. Dapr sends published messages in a CloudEvents 0.3 envelope.
 func (s *ServerImp) OnTopicEvent(ctx context.Context, in *pb.TopicEventRequest) (*empty.Empty, error) {
 	if val, ok := s.topicSubscriptions[in.Topic]; ok {
-		e := &event.TopicEvent{
+		e := &TopicEvent{
 			Topic:           in.Topic,
 			Data:            in.Data,
 			DataContentType: in.DataContentType,
