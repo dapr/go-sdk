@@ -9,40 +9,56 @@ import (
 	"google.golang.org/protobuf/types/known/anypb"
 )
 
-// go test -v -count=1 -run TestServer ./server/grpc
-func TestInvoke(t *testing.T) {
-	t.Parallel()
-
-	methodName := "test"
-	data := "hello there"
-	dataContentType := "text/plain"
-
-	server := getTestServer()
-	server.AddInvocationHandler(methodName, invocationHandler)
-	startTestServer(server)
-
-	ctx := context.Background()
-	in := &common.InvokeRequest{
-		Method:      methodName,
-		ContentType: dataContentType,
-		Data: &anypb.Any{
-			Value: []byte(data),
-		},
+func testInvokeHandler(ctx context.Context, in *InvocationEvent) (out *InvocationEvent, err error) {
+	if in == nil {
+		return
 	}
-
-	out, err := server.OnInvoke(ctx, in)
-	assert.NoError(t, err)
-	assert.NotNil(t, out)
-	assert.Equal(t, dataContentType, out.ContentType)
-	assert.Equal(t, data, string(out.Data.Value))
-
-	stopTestServer(t, server)
-}
-
-func invocationHandler(ctx context.Context, in *InvocationEvent) (out *InvocationEvent, err error) {
 	out = &InvocationEvent{
 		ContentType: in.ContentType,
 		Data:        in.Data,
 	}
 	return
+}
+
+func TestInvoke(t *testing.T) {
+	t.Parallel()
+
+	methodName := "test"
+	ctx := context.Background()
+
+	server := getTestServer()
+	server.AddInvocationHandler(methodName, testInvokeHandler)
+	startTestServer(server)
+
+	t.Run("invoke without request", func(t *testing.T) {
+		_, err := server.OnInvoke(ctx, nil)
+		assert.Error(t, err)
+	})
+
+	t.Run("invoke request with invalid method name", func(t *testing.T) {
+		in := &common.InvokeRequest{Method: "invalid"}
+		_, err := server.OnInvoke(ctx, in)
+		assert.Error(t, err)
+	})
+
+	t.Run("invoke request without data", func(t *testing.T) {
+		in := &common.InvokeRequest{Method: methodName}
+		_, err := server.OnInvoke(ctx, in)
+		assert.NoError(t, err)
+	})
+
+	t.Run("invoke request with data", func(t *testing.T) {
+		data := "hello there"
+		dataContentType := "text/plain"
+		in := &common.InvokeRequest{Method: methodName}
+		in.Data = &anypb.Any{Value: []byte(data)}
+		in.ContentType = dataContentType
+		out, err := server.OnInvoke(ctx, in)
+		assert.NoError(t, err)
+		assert.NotNil(t, out)
+		assert.Equal(t, dataContentType, out.ContentType)
+		assert.Equal(t, data, string(out.Data.Value))
+	})
+
+	stopTestServer(t, server)
 }

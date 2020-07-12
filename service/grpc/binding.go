@@ -43,13 +43,16 @@ func (s *ServiceImp) ListInputBindings(ctx context.Context, in *empty.Empty) (*p
 
 // OnBindingEvent gets invoked every time a new event is fired from a registered binding. The message carries the binding name, a payload and optional metadata
 func (s *ServiceImp) OnBindingEvent(ctx context.Context, in *pb.BindingEventRequest) (*pb.BindingEventResponse, error) {
-	if val, ok := s.bindingHandlers[in.Name]; ok {
+	if in == nil {
+		return nil, errors.New("nil binding event request")
+	}
+	if fn, ok := s.bindingHandlers[in.Name]; ok {
 		e := &BindingEvent{
 			Name:     in.Name,
 			Data:     in.Data,
 			Metadata: in.Metadata,
 		}
-		data, err := val(ctx, e)
+		data, err := fn(ctx, e)
 		if err != nil {
 			return nil, errors.Wrapf(err, "error executing %s binding", in.Name)
 		}

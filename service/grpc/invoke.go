@@ -27,15 +27,27 @@ func (s *ServiceImp) AddInvocationHandler(method string, fn func(ctx context.Con
 
 // OnInvoke gets invoked when a remote service has called the app through Dapr
 func (s *ServiceImp) OnInvoke(ctx context.Context, in *cpb.InvokeRequest) (*cpb.InvokeResponse, error) {
-	if val, ok := s.invokeHandlers[in.Method]; ok {
-		e := &InvocationEvent{
-			ContentType: in.ContentType,
-			Data:        in.Data.Value,
+	if in == nil {
+		return nil, errors.New("nil invoke request")
+	}
+	if fn, ok := s.invokeHandlers[in.Method]; ok {
+		var e *InvocationEvent
+		if in.Data != nil {
+			e = &InvocationEvent{
+				ContentType: in.ContentType,
+				Data:        in.Data.Value,
+			}
 		}
-		ct, er := val(ctx, e)
+
+		ct, er := fn(ctx, e)
 		if er != nil {
 			return nil, errors.Wrap(er, "error executing handler")
 		}
+
+		if ct == nil {
+			return nil, nil
+		}
+
 		return &cpb.InvokeResponse{
 			ContentType: ct.ContentType,
 			Data: &any.Any{

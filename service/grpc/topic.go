@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/pkg/errors"
@@ -52,7 +53,13 @@ func (s *ServiceImp) ListTopicSubscriptions(ctx context.Context, in *empty.Empty
 
 // OnTopicEvent fired whenever a message has been published to a topic that has been subscribed. Dapr sends published messages in a CloudEvents 0.3 envelope.
 func (s *ServiceImp) OnTopicEvent(ctx context.Context, in *pb.TopicEventRequest) (*empty.Empty, error) {
-	if val, ok := s.topicSubscriptions[in.Topic]; ok {
+	if in == nil {
+		return nil, errors.New("nil event request")
+	}
+	if in.Topic == "" {
+		return nil, errors.New("topic event request has no topic name")
+	}
+	if fn, ok := s.topicSubscriptions[in.Topic]; ok {
 		e := &TopicEvent{
 			Topic:           in.Topic,
 			Data:            in.Data,
@@ -62,10 +69,11 @@ func (s *ServiceImp) OnTopicEvent(ctx context.Context, in *pb.TopicEventRequest)
 			SpecVersion:     in.SpecVersion,
 			Type:            in.Type,
 		}
-		err := val(ctx, e)
+		err := fn(ctx, e)
 		if err != nil {
 			return nil, errors.Wrapf(err, "error handling topic event: %s", in.Topic)
 		}
+		return nil, nil
 	}
-	return &empty.Empty{}, nil
+	return &empty.Empty{}, fmt.Errorf("topic not configured: %s", in.Topic)
 }

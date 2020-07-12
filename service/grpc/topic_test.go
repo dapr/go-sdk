@@ -9,37 +9,48 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// go test -v -count=1 -run TestTopic ./server/grpc
-func TestTopic(t *testing.T) {
-	t.Parallel()
-
-	topicName := "test"
-	eventID := "1"
-	dataContentType := "text/plain"
-
-	server := getTestServer()
-	server.AddTopicEventHandler(topicName, eventHandler)
-	startTestServer(server)
-
-	ctx := context.Background()
-	in := &runtime.TopicEventRequest{
-		Id:              eventID,
-		DataContentType: dataContentType,
-		Source:          "test",
-		SpecVersion:     "v0.3",
-		Topic:           topicName,
-		Type:            "test",
-	}
-
-	_, err := server.OnTopicEvent(ctx, in)
-	assert.NoError(t, err)
-
-	stopTestServer(t, server)
-}
-
 func eventHandler(ctx context.Context, event *TopicEvent) error {
 	if event == nil {
 		return errors.New("nil event")
 	}
 	return nil
+}
+
+func TestTopic(t *testing.T) {
+	t.Parallel()
+
+	topicName := "test"
+	ctx := context.Background()
+
+	server := getTestServer()
+	server.AddTopicEventHandler(topicName, eventHandler)
+	startTestServer(server)
+
+	t.Run("topic event without request", func(t *testing.T) {
+		_, err := server.OnTopicEvent(ctx, nil)
+		assert.Error(t, err)
+	})
+
+	t.Run("topic event for wrong topic", func(t *testing.T) {
+		in := &runtime.TopicEventRequest{
+			Topic: "invlid",
+		}
+		_, err := server.OnTopicEvent(ctx, in)
+		assert.Error(t, err)
+	})
+
+	t.Run("topic event for valid topic", func(t *testing.T) {
+		in := &runtime.TopicEventRequest{
+			Id:              "a123",
+			DataContentType: "text/plain",
+			Source:          "test",
+			SpecVersion:     "v0.3",
+			Topic:           topicName,
+			Type:            "test",
+		}
+		_, err := server.OnTopicEvent(ctx, in)
+		assert.NoError(t, err)
+	})
+
+	stopTestServer(t, server)
 }

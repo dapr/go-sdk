@@ -43,17 +43,17 @@ func TestEventHandler(t *testing.T) {
 	assert.Equal(t, http.StatusOK, rr.Code)
 }
 
-func TestInvocationHandler(t *testing.T) {
+func TestInvocationHandlerWithData(t *testing.T) {
 	t.Parallel()
 
-	s := newService()
 	data := `{ "message": "pong" }`
 	contentType := "application/json"
+
+	s := newService()
 	err := s.AddInvocationHandler("/", func(ctx context.Context, in *InvocationEvent) (out []byte, err error) {
 		if in == nil {
 			t.Fatal("nil invocation events")
 		}
-
 		if in.ContentType == contentType {
 			return []byte(data), nil
 		}
@@ -72,4 +72,44 @@ func TestInvocationHandler(t *testing.T) {
 	b, err := ioutil.ReadAll(resp.Body)
 	assert.NoErrorf(t, err, "error reading response body")
 	assert.Equal(t, data, string(b))
+}
+
+func TestInvocationHandlerWithoutData(t *testing.T) {
+	t.Parallel()
+
+	data := "test"
+	s := newService()
+	err := s.AddInvocationHandler("/", func(ctx context.Context, in *InvocationEvent) (out []byte, err error) {
+		return []byte(data), nil
+	})
+	assert.NoErrorf(t, err, "error adding event handler")
+
+	req, err := http.NewRequest(http.MethodPost, "/", nil)
+	assert.NoErrorf(t, err, "error creating request")
+
+	resp := httptest.NewRecorder()
+	s.Mux.ServeHTTP(resp, req)
+	assert.Equal(t, http.StatusOK, resp.Code)
+
+	b, err := ioutil.ReadAll(resp.Body)
+	assert.NoErrorf(t, err, "error reading response body")
+	assert.NotNil(t, b)
+	assert.Equal(t, data, string(b))
+}
+
+func TestInvocationHandlerWithInvalidRoute(t *testing.T) {
+	t.Parallel()
+
+	s := newService()
+	err := s.AddInvocationHandler("/a", func(ctx context.Context, in *InvocationEvent) (out []byte, err error) {
+		return []byte("test"), nil
+	})
+	assert.NoErrorf(t, err, "error adding event handler")
+
+	req, err := http.NewRequest(http.MethodPost, "/b", nil)
+	assert.NoErrorf(t, err, "error creating request")
+
+	resp := httptest.NewRecorder()
+	s.Mux.ServeHTTP(resp, req)
+	assert.Equal(t, http.StatusNotFound, resp.Code)
 }
