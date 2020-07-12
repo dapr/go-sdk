@@ -73,7 +73,7 @@ func (s *ServiceImp) OnTopicEvent(ctx context.Context, in *pb.TopicEventRequest)
 		if err != nil {
 			return nil, errors.Wrapf(err, "error handling topic event: %s", in.Topic)
 		}
-		return nil, nil
+		return &empty.Empty{}, nil
 	}
 	return &empty.Empty{}, fmt.Errorf("topic not configured: %s", in.Topic)
 }
