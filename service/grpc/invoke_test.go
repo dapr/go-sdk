@@ -20,6 +20,7 @@ func testInvokeHandler(ctx context.Context, in *InvocationEvent) (out *Invocatio
 	return
 }
 
+// go test -timeout 30s ./service/grpc -count 1 -run ^TestInvoke$
 func TestInvoke(t *testing.T) {
 	t.Parallel()
 

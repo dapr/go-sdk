@@ -7,18 +7,24 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// go test -timeout 30s ./client -count 1 -run ^TestInvokeServiceWithContent$
+
 func TestInvokeServiceWithContent(t *testing.T) {
 	ctx := context.Background()
-	resp, err := testClient.InvokeServiceWithContent(ctx, "serving", "EchoMethod",
-		"text/plain; charset=UTF-8", []byte("ping"))
-	assert.Nil(t, err)
-	assert.NotNil(t, resp)
-	assert.Equal(t, string(resp), "ping")
-}
+	data := "ping"
 
-func TestInvokeService(t *testing.T) {
-	ctx := context.Background()
-	resp, err := testClient.InvokeService(ctx, "serving", "EchoMethod")
-	assert.Nil(t, err)
-	assert.Nil(t, resp)
+	t.Run("with content", func(t *testing.T) {
+		resp, err := testClient.InvokeServiceWithContent(ctx, "test", "fn", "text/plain", []byte(data))
+		assert.Nil(t, err)
+		assert.NotNil(t, resp)
+		assert.Equal(t, string(resp), data)
+
+	})
+
+	t.Run("without content", func(t *testing.T) {
+		resp, err := testClient.InvokeService(ctx, "test", "fn")
+		assert.Nil(t, err)
+		assert.Nil(t, resp)
+
+	})
 }

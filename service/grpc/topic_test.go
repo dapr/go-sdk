@@ -16,6 +16,7 @@ func eventHandler(ctx context.Context, event *TopicEvent) error {
 	return nil
 }
 
+// go test -timeout 30s ./service/grpc -count 1 -run ^TestTopic$
 func TestTopic(t *testing.T) {
 	t.Parallel()
 
