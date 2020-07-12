@@ -12,10 +12,15 @@ import (
 
 // Service is the gRPC Dapr service
 type Service interface {
-	Start() error
+	// AddInvocationHandler appends to the service a external invocation handler for specific method name
 	AddInvocationHandler(method string, fn func(ctx context.Context, in *InvocationEvent) (out *InvocationEvent, err error))
+	// AddTopicEventHandler appends to the service a pub/sub event handler for specific topic name
 	AddTopicEventHandler(topic string, fn func(ctx context.Context, event *TopicEvent) error)
+	// AddBindingEventHandler appends to the service a binding invocation handler for specific binding name
 	AddBindingEventHandler(name string, fn func(ctx context.Context, in *BindingEvent) (out []byte, err error))
+	// Start starts gRPC service
+	Start() error
+	// Stop closes the TCP listener and stops the service
 	Stop() error
 }
 

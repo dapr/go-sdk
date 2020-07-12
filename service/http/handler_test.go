@@ -14,20 +14,14 @@ import (
 func TestEventHandler(t *testing.T) {
 	t.Parallel()
 
-	mux := http.NewServeMux()
-	s, err := NewService(mux)
-	assert.NoErrorf(t, err, "error creating service")
-
-	err = s.AddTopicEventHandler("test", "/", func(ctx context.Context, e TopicEvent) error {
+	s := newService()
+	err := s.AddTopicEventHandler("test", "/", func(ctx context.Context, e TopicEvent) error {
 		if e.DataContentType != "application/json" {
 			t.Fatalf("invalid data content type: %s", e.DataContentType)
 		}
 		return nil
 	})
 	assert.NoErrorf(t, err, "error adding event handler")
-
-	err = s.HandleSubscriptions()
-	assert.NoErrorf(t, err, "error handling subscriptions")
 
 	data := `{
 		"specversion" : "0.3",
@@ -44,20 +38,18 @@ func TestEventHandler(t *testing.T) {
 	assert.NoErrorf(t, err, "error creating request")
 
 	rr := httptest.NewRecorder()
-	mux.ServeHTTP(rr, req)
+	s.registerSubscribeHandler()
+	s.Mux.ServeHTTP(rr, req)
 	assert.Equal(t, http.StatusOK, rr.Code)
 }
 
 func TestInvocationHandler(t *testing.T) {
 	t.Parallel()
 
-	mux := http.NewServeMux()
-	s, err := NewService(mux)
-	assert.NoErrorf(t, err, "error creating service")
-
+	s := newService()
 	data := `{ "message": "pong" }`
 	contentType := "application/json"
-	err = s.AddInvocationHandler("/", func(ctx context.Context, in *InvocationEvent) (out []byte, err error) {
+	err := s.AddInvocationHandler("/", func(ctx context.Context, in *InvocationEvent) (out []byte, err error) {
 		if in == nil {
 			t.Fatal("nil invocation events")
 		}
@@ -74,7 +66,7 @@ func TestInvocationHandler(t *testing.T) {
 	req.Header.Set("Content-Type", contentType)
 
 	resp := httptest.NewRecorder()
-	mux.ServeHTTP(resp, req)
+	s.Mux.ServeHTTP(resp, req)
 	assert.Equal(t, http.StatusOK, resp.Code)
 
 	b, err := ioutil.ReadAll(resp.Body)

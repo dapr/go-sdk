@@ -10,50 +10,35 @@ import (
 )
 
 func main() {
-	// create a regular HTTP server mux
-	mux := http.NewServeMux()
-
 	// create a Dapr service
-	s, err := daprd.NewService(mux)
-	if err != nil {
-		log.Fatalf("error creating sever: %v", err)
-	}
+	s := daprd.NewService()
 
 	// add some topic subscriptions
-	err = s.AddTopicEventHandler("messages", "/messages", messageHandler)
+	err := s.AddTopicEventHandler("messages", "/messages", messageHandler)
 	if err != nil {
 		log.Fatalf("error adding topic subscription: %v", err)
 	}
 
-	// handle all the added topic handlers
-	err = s.HandleSubscriptions()
-	if err != nil {
-		log.Fatalf("error creating topic subscription: %v", err)
-	}
-
-	invokeHandler := func(ctx context.Context, in *daprd.InvocationEvent) (out []byte, err error) {
-		if in == nil {
-			err = errors.New("nil invocation parameter")
-			return
-		}
-		log.Printf("echo handler (%s): %+v", in.ContentType, string(in.Data))
-		out = in.Data
-		return
-	}
-
-	err = s.AddInvocationHandler("/EchoMethod", invokeHandler)
+	// add a service to service invocation handler
+	err = s.AddInvocationHandler("/EchoMethod", echoHandler)
 	if err != nil {
 		log.Fatalf("error adding invocation handler: %v", err)
 	}
 
-	server := &http.Server{
-		Addr:    ":8080",
-		Handler: mux,
-	}
-
-	if err = server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+	// start service on address (e.g. ":8080", "0.0.0.0:8080", "10.1.1.1:8080" )
+	if err = s.Start(":8080"); err != nil && err != http.ErrServerClosed {
 		log.Fatalf("error listenning: %v", err)
 	}
+}
+
+func echoHandler(ctx context.Context, in *daprd.InvocationEvent) (out []byte, err error) {
+	if in == nil {
+		err = errors.New("nil invocation parameter")
+		return
+	}
+	log.Printf("echo handler (%s): %+v", in.ContentType, string(in.Data))
+	out = in.Data
+	return
 }
 
 func messageHandler(ctx context.Context, e daprd.TopicEvent) error {

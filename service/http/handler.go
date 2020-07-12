@@ -3,7 +3,6 @@ package http
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 
@@ -12,26 +11,57 @@ import (
 
 // Service is the HTTP service wrapper
 type Service interface {
+	// AddTopicEventHandler appends to the service a pub/sub event handler for specific topic name
 	AddTopicEventHandler(topic, route string, handler func(ctx context.Context, e TopicEvent) error) error
-	HandleSubscriptions() error
+	// AddInvocationHandler appends to the service a external invocation handler for specific method name
 	AddInvocationHandler(route string, fn func(ctx context.Context, in *InvocationEvent) (out []byte, err error)) error
+	// Start starts the HTTP handler. Blocks while serving
+	Start(address string) error
 }
 
 // NewService creates new Service
-func NewService(mux *http.ServeMux) (h Service, err error) {
-	if mux == nil {
-		return nil, fmt.Errorf("nil http mux")
-	}
+func NewService() Service {
+	return newService()
+}
+
+func newService() *ServiceImp {
 	return &ServiceImp{
-		mux:                mux,
-		topicSubscriptions: make([]*subscription, 0),
-	}, nil
+		Mux:                http.NewServeMux(),
+		topicSubscriptions: make([]*Subscription, 0),
+	}
 }
 
 // ServiceImp is the HTTP server wrapping mux many Dapr helpers
 type ServiceImp struct {
-	mux                *http.ServeMux
-	topicSubscriptions []*subscription
+	Mux                *http.ServeMux
+	topicSubscriptions []*Subscription
+}
+
+// Start starts the HTTP handler. Blocks while serving
+func (s *ServiceImp) Start(address string) error {
+	if address == "" {
+		return errors.New("nil address")
+	}
+
+	s.registerSubscribeHandler()
+
+	server := http.Server{
+		Addr:    address,
+		Handler: s.Mux,
+	}
+
+	return server.ListenAndServe()
+}
+
+func (s *ServiceImp) registerSubscribeHandler() {
+	f := func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		if err := json.NewEncoder(w).Encode(s.topicSubscriptions); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+	s.Mux.HandleFunc("/dapr/subscribe", f)
 }
 
 // AddInvocationHandler adds provided handler to the local collection before server start
@@ -40,7 +70,7 @@ func (s *ServiceImp) AddInvocationHandler(route string, fn func(ctx context.Cont
 		return errors.New("nil route name")
 	}
 
-	s.mux.Handle(route, optionsHandler(http.HandlerFunc(
+	s.Mux.Handle(route, optionsHandler(http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
 			content, err := ioutil.ReadAll(r.Body)
 			if err != nil {
@@ -78,20 +108,17 @@ func (s *ServiceImp) AddTopicEventHandler(topic, route string, handler func(ctx 
 		return errors.New("nil route name")
 	}
 
-	sub := &subscription{
-		Topic: topic,
-		Route: route,
-	}
+	sub := &Subscription{Topic: topic, Route: route}
 	s.topicSubscriptions = append(s.topicSubscriptions, sub)
 
-	s.mux.Handle(route, optionsHandler(http.HandlerFunc(
+	s.Mux.Handle(route, optionsHandler(http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Add("Content-Type", "application/json")
 			content, err := ioutil.ReadAll(r.Body)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusBadRequest)
 				return
 			}
+
 			var in TopicEvent
 			if err := json.Unmarshal(content, &in); err != nil {
 				http.Error(w, err.Error(), http.StatusBadRequest)
@@ -101,28 +128,16 @@ func (s *ServiceImp) AddTopicEventHandler(topic, route string, handler func(ctx 
 			if in.Topic == "" {
 				in.Topic = topic
 			}
+
 			if err := handler(r.Context(), in); err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
 
+			w.Header().Add("Content-Type", "application/json")
 			w.WriteHeader(http.StatusOK)
 		})))
 
-	return nil
-}
-
-// HandleSubscriptions creates Dapr topic subscriptions
-func (s *ServiceImp) HandleSubscriptions() error {
-	s.mux.Handle("/dapr/subscribe", http.HandlerFunc(
-		func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set("Content-Type", "application/json")
-			if err := json.NewEncoder(w).Encode(s.topicSubscriptions); err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
-		},
-	))
 	return nil
 }
 
@@ -137,9 +152,4 @@ func optionsHandler(h http.Handler) http.HandlerFunc {
 			h.ServeHTTP(w, r)
 		}
 	}
-}
-
-type subscription struct {
-	Topic string `json:"topic"`
-	Route string `json:"route"`
 }
