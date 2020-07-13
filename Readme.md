@@ -210,12 +210,12 @@ if err != nil {
 
 // start service on address (e.g. ":8080", "0.0.0.0:8080", "10.1.1.1:8080" )
 if err = s.Start(":8080"); err != nil && err != http.ErrServerClosed {
-	log.Fatalf("error listenning: %v", err)
+    log.Fatalf("error listenning: %v", err)
 }
 
 func messageHandler(ctx context.Context, e daprd.TopicEvent) error {
-	log.Printf("event - Topic:%s, ID:%s, Data: %v", e.Topic, e.ID, e.Data)
-	return nil
+    log.Printf("event - Topic:%s, ID:%s, Data: %v", e.Topic, e.ID, e.Data)
+    return nil
 }
 ```
 
@@ -239,13 +239,13 @@ if err = s.Start(":8080"); err != nil && err != http.ErrServerClosed {
 }
 
 func echoHandler(ctx context.Context, in *daprd.InvocationEvent) (out []byte, err error) {
-	if in == nil {
-		err = errors.New("nil invocation parameter")
-		return
-	}
-	log.Printf("echo handler (%s): %+v", in.ContentType, string(in.Data))
-	out = in.Data
-	return
+    if in == nil {
+        err = errors.New("nil invocation parameter")
+        return
+    }
+    log.Printf("echo handler (%s): %+v", in.ContentType, string(in.Data))
+    out = in.Data
+    return
 }
 ```
 
