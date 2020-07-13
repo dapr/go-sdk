@@ -8,13 +8,17 @@ Client library to accelerate Dapr development in go. This client supports all pu
 
 > Assuming you already have [installed](https://golang.org/doc/install) go
 
-Import Dapr go client package:
+Dapr go client includes two packages: `client` (for invoking public Dapr API) and `service` (to create services in go that can be invoked by Dapr). 
+
+### Client 
+
+Import Dapr go `client` package:
 
 ```go
 import "github.com/dapr/go-sdk/client"
 ```
 
-## Quick start
+#### Quick start
 
 ```go
 package main
@@ -50,11 +54,11 @@ To accelerate your Dapr service development even more, consider the GitHub templ
 * [gRPC Serving Service Template ](https://github.com/mchmarny/dapr-grpc-service-template) which creates a target for service to service invocations 
 
 
-## Usage
+#### Usage
 
 The Dapr go client supports following functionality: 
 
-### State 
+##### State 
 
 For simple use-cases, Dapr client provides easy to use methods for `Save`, `Get`, and `Delete`: 
 
@@ -119,7 +123,7 @@ data := &client.State{
 err = client.SaveState(ctx, data)
 ```
 
-### PubSub 
+##### PubSub 
 
 To publish data onto a topic the Dapr client provides a simple method:
 
@@ -129,7 +133,7 @@ err = client.PublishEvent(ctx, "topic-name", data)
 handleErrors(err)
 ```
 
-### Service Invocation 
+##### Service Invocation 
 
 To invoke a specific method on another service running with Dapr sidecar, the Dapr client provides two options. To invoke a service without any data:
 
@@ -146,7 +150,7 @@ resp, err := client.InvokeServiceWithContent(ctx, "service-name", "method-name",
 handleErrors(err)
 ```
 
-### Bindings
+##### Bindings
 
 Similarly to Service, Dapr client provides two methods to invoke an operation on a [Dapr-defined binding](https://github.com/dapr/docs/tree/master/concepts/bindings). Dapr supports input, output, and bidirectional bindings so the first methods supports all of them along with metadata options: 
 
@@ -168,7 +172,7 @@ err = client.InvokeOutputBinding(ctx, "binding-name", "operation-name", data)
 handleErrors(err)
 ```
 
-### Secrets
+##### Secrets
 
 The Dapr client also provides access to the runtime secrets that can be backed by any number of secrete stores (e.g. Kubernetes Secrets, Hashicorp Vault, or Azure KeyVault):
 
@@ -178,6 +182,71 @@ opt := map[string]string{
 }
 secret, err = client.GetSecret(ctx, "store-name", "secret-name", opt)
 handleErrors(err)
+```
+
+## Service 
+
+Dapr go package provides two implementations for `service`: HTTP and gRPC
+
+### HTTP
+
+Import Dapr go `service` package:
+
+```go
+daprd "github.com/dapr/go-sdk/service/http"
+```
+
+#### Event Handling 
+
+To handle events from specific topic in HTTP, first create a Dapr serving server, add topic event handler, and start the service on specific address:
+
+```go
+s := daprd.NewService()
+
+err := s.AddTopicEventHandler("messages", "/messages", messageHandler)
+if err != nil {
+    log.Fatalf("error adding topic subscription: %v", err)
+}
+
+// start service on address (e.g. ":8080", "0.0.0.0:8080", "10.1.1.1:8080" )
+if err = s.Start(":8080"); err != nil && err != http.ErrServerClosed {
+	log.Fatalf("error listenning: %v", err)
+}
+
+func messageHandler(ctx context.Context, e daprd.TopicEvent) error {
+	log.Printf("event - Topic:%s, ID:%s, Data: %v", e.Topic, e.ID, e.Data)
+	return nil
+}
+```
+
+#### Service Invocation Handler 
+
+To handle service invocations in HTTP, first create a Dapr serving server, add invocation handler, and start the service on specific address:
+
+
+
+```go
+s := daprd.NewService()
+
+err = s.AddInvocationHandler("/EchoMethod", echoHandler)
+if err != nil {
+    log.Fatalf("error adding invocation handler: %v", err)
+}
+
+// start service on address (e.g. ":8080", "0.0.0.0:8080", "10.1.1.1:8080" )
+if err = s.Start(":8080"); err != nil && err != http.ErrServerClosed {
+    log.Fatalf("error listenning: %v", err)
+}
+
+func echoHandler(ctx context.Context, in *daprd.InvocationEvent) (out []byte, err error) {
+	if in == nil {
+		err = errors.New("nil invocation parameter")
+		return
+	}
+	log.Printf("echo handler (%s): %+v", in.ContentType, string(in.Data))
+	out = in.Data
+	return
+}
 ```
 
 ## Contributing to Dapr go client 
