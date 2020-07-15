@@ -18,6 +18,9 @@ type InvocationEvent struct {
 
 	// Data is the payload that the input bindings sent.
 	Data []byte
+
+	// DataTypeURL is the resource URL that uniquely identifies the type of the serialized
+	DataTypeURL string
 }
 
 // AddInvocationHandler adds provided handler to the local collection before server start
@@ -36,6 +39,7 @@ func (s *ServiceImp) OnInvoke(ctx context.Context, in *cpb.InvokeRequest) (*cpb.
 			e = &InvocationEvent{
 				ContentType: in.ContentType,
 				Data:        in.Data.Value,
+				DataTypeURL: in.Data.TypeUrl,
 			}
 		}
 
@@ -51,7 +55,8 @@ func (s *ServiceImp) OnInvoke(ctx context.Context, in *cpb.InvokeRequest) (*cpb.
 		return &cpb.InvokeResponse{
 			ContentType: ct.ContentType,
 			Data: &any.Any{
-				Value: ct.Data,
+				Value:   ct.Data,
+				TypeUrl: ct.DataTypeURL,
 			},
 		}, nil
 	}
