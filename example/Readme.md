@@ -13,6 +13,7 @@ dapr run --app-id serving \
          --protocol grpc \
          --app-port 50001 \
          --log-level debug \
+         --components-path ./config \
          go run main.go
 ```
 
