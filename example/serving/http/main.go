@@ -20,9 +20,15 @@ func main() {
 	}
 
 	// add a service to service invocation handler
-	err = s.AddInvocationHandler("/EchoMethod", echoHandler)
+	err = s.AddInvocationEventHandler("/EchoMethod", echoHandler)
 	if err != nil {
 		log.Fatalf("error adding invocation handler: %v", err)
+	}
+
+	// add a binding invocation handler
+	err = s.AddBindingEventHandler("/run", runHandler)
+	if err != nil {
+		log.Fatalf("error adding binding handler: %v", err)
 	}
 
 	// start service on address (e.g. ":8080", "0.0.0.0:8080", "10.1.1.1:8080" )
@@ -43,5 +49,10 @@ func echoHandler(ctx context.Context, in *daprd.InvocationEvent) (out []byte, er
 
 func messageHandler(ctx context.Context, e daprd.TopicEvent) error {
 	log.Printf("event - Topic:%s, ID:%s, Data: %v", e.Topic, e.ID, e.Data)
+	return nil
+}
+
+func runHandler(ctx context.Context, in *daprd.BindingEvent) error {
+	log.Printf("binding - Data:%v, Meta:%v", in.Data, in.Metadata)
 	return nil
 }

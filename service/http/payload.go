@@ -34,7 +34,6 @@ type TopicEvent struct {
 
 // InvocationEvent represents the input and output of binding invocation
 type InvocationEvent struct {
-
 	// ContentType of the Data
 	ContentType string
 
@@ -44,6 +43,16 @@ type InvocationEvent struct {
 
 // Subscription represents single topic subscription
 type Subscription struct {
+	// Topic is the name of the topic
 	Topic string `json:"topic"`
+	// Route is the route of the handler where topic events should be published
 	Route string `json:"route"`
+}
+
+// BindingEvent represents the binding event handler input
+type BindingEvent struct {
+	// Data is the input bindings sent
+	Data []byte `json:"data"`
+	// Metadata is the input binging components
+	Metadata map[string]string `json:"metadata"`
 }

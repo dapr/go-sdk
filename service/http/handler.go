@@ -13,8 +13,10 @@ import (
 type Service interface {
 	// AddTopicEventHandler appends to the service a pub/sub event handler for specific topic name
 	AddTopicEventHandler(topic, route string, handler func(ctx context.Context, e TopicEvent) error) error
-	// AddInvocationHandler appends to the service a external invocation handler for specific method name
-	AddInvocationHandler(route string, fn func(ctx context.Context, in *InvocationEvent) (out []byte, err error)) error
+	// AddInvocationEventHandler appends to the service a external invocation handler for specific method name
+	AddInvocationEventHandler(route string, fn func(ctx context.Context, in *InvocationEvent) (out []byte, err error)) error
+	// AddBindingEventHandler
+	AddBindingEventHandler(route string, fn func(ctx context.Context, in *BindingEvent) error) error
 	// Start starts the HTTP handler. Blocks while serving
 	Start(address string) error
 }
@@ -64,8 +66,8 @@ func (s *ServiceImp) registerSubscribeHandler() {
 	s.Mux.HandleFunc("/dapr/subscribe", f)
 }
 
-// AddInvocationHandler adds provided handler to the local collection before server start
-func (s *ServiceImp) AddInvocationHandler(route string, fn func(ctx context.Context, in *InvocationEvent) (out []byte, err error)) error {
+// AddInvocationEventHandler adds provided handler to the local collection before server start
+func (s *ServiceImp) AddInvocationEventHandler(route string, fn func(ctx context.Context, in *InvocationEvent) (out []byte, err error)) error {
 	if route == "" {
 		return errors.New("nil route name")
 	}
@@ -123,14 +125,15 @@ func (s *ServiceImp) AddTopicEventHandler(topic, route string, handler func(ctx 
 
 	s.Mux.Handle(route, optionsHandler(http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
-			content, err := ioutil.ReadAll(r.Body)
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusBadRequest)
+			// check for post with no data
+			if r.ContentLength == 0 {
+				http.Error(w, "nil content", http.StatusBadRequest)
 				return
 			}
 
+			// deserialize the event
 			var in TopicEvent
-			if err := json.Unmarshal(content, &in); err != nil {
+			if err := json.NewDecoder(r.Body).Decode(&in); err != nil {
 				http.Error(w, err.Error(), http.StatusBadRequest)
 				return
 			}
@@ -146,6 +149,41 @@ func (s *ServiceImp) AddTopicEventHandler(topic, route string, handler func(ctx 
 
 			w.Header().Add("Content-Type", "application/json")
 			w.WriteHeader(http.StatusOK)
+		})))
+
+	return nil
+}
+
+// AddBindingEventHandler adds provided handler to the local collection before server start
+func (s *ServiceImp) AddBindingEventHandler(route string, fn func(ctx context.Context, in *BindingEvent) error) error {
+	if route == "" {
+		return errors.New("nil route name")
+	}
+
+	s.Mux.Handle(route, optionsHandler(http.HandlerFunc(
+		func(w http.ResponseWriter, r *http.Request) {
+			var e BindingEvent
+			if r.ContentLength > 0 {
+				// deserialize the event
+				if err := json.NewDecoder(r.Body).Decode(&e); err != nil {
+					http.Error(w, err.Error(), http.StatusBadRequest)
+					return
+				}
+			} else {
+				e = BindingEvent{}
+			}
+
+			// execute handler
+			if err := fn(r.Context(), &e); err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			w.Header().Add("Content-Type", "application/json")
+			if _, err := w.Write([]byte("{}")); err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
 		})))
 
 	return nil

@@ -25,6 +25,7 @@ dapr run --app-id serving \
          --port 3500 \
          --app-port 8080 \
          --log-level debug \
+         --components-path ./config \
          go run main.go
 ```
 
