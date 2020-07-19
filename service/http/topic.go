@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/dapr/go-sdk/service"
 	"github.com/pkg/errors"
 )
 
@@ -22,13 +21,16 @@ func (s *ServiceImp) registerSubscribeHandler() {
 }
 
 // AddTopicEventHandler appends provided event handler with it's name to the service
-func (s *ServiceImp) AddTopicEventHandler(topic string, fn func(ctx context.Context, event *service.TopicEvent) error) error {
+func (s *ServiceImp) AddTopicEventHandler(topic, route string, fn func(ctx context.Context, e *TopicEvent) error) error {
 	if topic == "" {
-		return errors.New("nil topic name")
+		return errors.New("topic name required")
 	}
-	route := fmt.Sprintf("/%s", topic)
 
-	sub := &service.Subscription{Topic: topic, Route: route}
+	if route == "" {
+		return errors.New("handler route name")
+	}
+
+	sub := &Subscription{Topic: topic, Route: route}
 	s.topicSubscriptions = append(s.topicSubscriptions, sub)
 
 	s.mux.Handle(route, optionsHandler(http.HandlerFunc(
@@ -40,8 +42,9 @@ func (s *ServiceImp) AddTopicEventHandler(topic string, fn func(ctx context.Cont
 			}
 
 			// deserialize the event
-			var in service.TopicEvent
+			var in TopicEvent
 			if err := json.NewDecoder(r.Body).Decode(&in); err != nil {
+				fmt.Println(err.Error())
 				http.Error(w, err.Error(), http.StatusBadRequest)
 				return
 			}

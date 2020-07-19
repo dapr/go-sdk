@@ -8,11 +8,10 @@ import (
 	"github.com/pkg/errors"
 
 	cpb "github.com/dapr/go-sdk/dapr/proto/common/v1"
-	"github.com/dapr/go-sdk/service"
 )
 
-// AddServiceInvocationHandler appends provided service invocation handler with its name to the service
-func (s *ServiceImp) AddServiceInvocationHandler(method string, fn func(ctx context.Context, in *service.InvocationEvent) (our *service.InvocationEvent, err error)) error {
+// AddServiceInvocationHandler appends provided service invocation handler with its method to the service
+func (s *ServiceImp) AddServiceInvocationHandler(method string, fn func(ctx context.Context, in *InvocationEvent) (our *InvocationEvent, err error)) error {
 	if method == "" {
 		return fmt.Errorf("servie name required")
 	}
@@ -26,9 +25,9 @@ func (s *ServiceImp) OnInvoke(ctx context.Context, in *cpb.InvokeRequest) (*cpb.
 		return nil, errors.New("nil invoke request")
 	}
 	if fn, ok := s.invokeHandlers[in.Method]; ok {
-		var e *service.InvocationEvent
+		var e *InvocationEvent
 		if in.Data != nil {
-			e = &service.InvocationEvent{
+			e = &InvocationEvent{
 				ContentType: in.ContentType,
 				Data:        in.Data.Value,
 				DataTypeURL: in.Data.TypeUrl,

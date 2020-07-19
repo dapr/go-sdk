@@ -6,11 +6,10 @@ import (
 	"testing"
 
 	"github.com/dapr/go-sdk/dapr/proto/runtime/v1"
-	"github.com/dapr/go-sdk/service"
 	"github.com/stretchr/testify/assert"
 )
 
-func testBindingHandler(ctx context.Context, in *service.BindingEvent) (out []byte, err error) {
+func testBindingHandler(ctx context.Context, in *BindingEvent) (out []byte, err error) {
 	if in == nil {
 		return nil, errors.New("nil event")
 	}

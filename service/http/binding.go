@@ -5,20 +5,17 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-
-	"github.com/dapr/go-sdk/service"
 )
 
-// AddBindingInvocationHandler appends provided binding invocation handler with its name to the service
-func (s *ServiceImp) AddBindingInvocationHandler(name string, fn func(ctx context.Context, in *service.BindingEvent) (out []byte, err error)) error {
-	if name == "" {
-		return fmt.Errorf("binding name required")
+// AddBindingInvocationHandler appends provided binding invocation handler with its route to the service
+func (s *ServiceImp) AddBindingInvocationHandler(route string, fn func(ctx context.Context, in *BindingEvent) (out []byte, err error)) error {
+	if route == "" {
+		return fmt.Errorf("binding route required")
 	}
 
-	route := fmt.Sprintf("/%s", name)
 	s.mux.Handle(route, optionsHandler(http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
-			var e service.BindingEvent
+			var e BindingEvent
 			if r.ContentLength > 0 {
 				// deserialize the event
 				if err := json.NewDecoder(r.Body).Decode(&e); err != nil {
@@ -26,7 +23,7 @@ func (s *ServiceImp) AddBindingInvocationHandler(name string, fn func(ctx contex
 					return
 				}
 			} else {
-				e = service.BindingEvent{}
+				e = BindingEvent{}
 			}
 
 			// execute handler

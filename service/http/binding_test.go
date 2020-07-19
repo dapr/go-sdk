@@ -8,7 +8,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/dapr/go-sdk/service"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -20,7 +19,7 @@ func TestBindingHandlerWithoutData(t *testing.T) {
 	}`
 
 	s := newService("")
-	err := s.AddBindingInvocationHandler("test", func(ctx context.Context, in *service.BindingEvent) (out []byte, err error) {
+	err := s.AddBindingInvocationHandler("/", func(ctx context.Context, in *BindingEvent) (out []byte, err error) {
 		if in == nil {
 			return nil, errors.New("nil input")
 		}
@@ -31,7 +30,7 @@ func TestBindingHandlerWithoutData(t *testing.T) {
 	})
 	assert.NoErrorf(t, err, "error adding binding event handler")
 
-	req, err := http.NewRequest(http.MethodPost, "/test", strings.NewReader(data))
+	req, err := http.NewRequest(http.MethodPost, "/", strings.NewReader(data))
 	assert.NoErrorf(t, err, "error creating request")
 	req.Header.Set("Content-Type", "application/json")
 

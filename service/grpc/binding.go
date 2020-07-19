@@ -7,17 +7,15 @@ import (
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/pkg/errors"
 
-	"github.com/dapr/go-sdk/service"
-
 	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
 )
 
-// AddBindingInvocationHandler appends provided binding invocation handler with its name to the service
-func (s *ServiceImp) AddBindingInvocationHandler(name string, fn func(ctx context.Context, in *service.BindingEvent) (out []byte, err error)) error {
-	if name == "" {
+// AddBindingInvocationHandler appends provided binding invocation handler with its method to the service
+func (s *ServiceImp) AddBindingInvocationHandler(method string, fn func(ctx context.Context, in *BindingEvent) (out []byte, err error)) error {
+	if method == "" {
 		return fmt.Errorf("binding name required")
 	}
-	s.bindingHandlers[name] = fn
+	s.bindingHandlers[method] = fn
 	return nil
 }
 
@@ -40,7 +38,7 @@ func (s *ServiceImp) OnBindingEvent(ctx context.Context, in *pb.BindingEventRequ
 		return nil, errors.New("nil binding event request")
 	}
 	if fn, ok := s.bindingHandlers[in.Name]; ok {
-		e := &service.BindingEvent{
+		e := &BindingEvent{
 			Data:     in.Data,
 			Metadata: in.Metadata,
 		}

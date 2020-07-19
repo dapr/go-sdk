@@ -10,7 +10,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/dapr/go-sdk/service"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -23,7 +22,7 @@ func TestInvocationHandlerWithData(t *testing.T) {
 	}`, []byte("hellow"))
 
 	s := newService("")
-	err := s.AddServiceInvocationHandler("test", func(ctx context.Context, in *service.InvocationEvent) (out *service.InvocationEvent, err error) {
+	err := s.AddServiceInvocationHandler("/", func(ctx context.Context, in *InvocationEvent) (out *InvocationEvent, err error) {
 		if in == nil {
 			err = errors.New("nil input")
 			return
@@ -32,7 +31,7 @@ func TestInvocationHandlerWithData(t *testing.T) {
 	})
 	assert.NoErrorf(t, err, "error adding event handler")
 
-	req, err := http.NewRequest(http.MethodPost, "/test", strings.NewReader(data))
+	req, err := http.NewRequest(http.MethodPost, "/", strings.NewReader(data))
 	assert.NoErrorf(t, err, "error creating request")
 	req.Header.Set("Content-Type", "application/json")
 
@@ -53,16 +52,16 @@ func TestInvocationHandlerWithoutInputData(t *testing.T) {
 	}`
 
 	s := newService("")
-	err := s.AddServiceInvocationHandler("test", func(ctx context.Context, in *service.InvocationEvent) (out *service.InvocationEvent, err error) {
+	err := s.AddServiceInvocationHandler("/", func(ctx context.Context, in *InvocationEvent) (out *InvocationEvent, err error) {
 		if in == nil {
 			err = errors.New("nil input")
 			return
 		}
-		return &service.InvocationEvent{}, nil
+		return &InvocationEvent{}, nil
 	})
 	assert.NoErrorf(t, err, "error adding event handler")
 
-	req, err := http.NewRequest(http.MethodPost, "/test", strings.NewReader(data))
+	req, err := http.NewRequest(http.MethodPost, "/", strings.NewReader(data))
 	assert.NoErrorf(t, err, "error creating request")
 	req.Header.Set("Content-Type", "application/json")
 
@@ -80,7 +79,7 @@ func TestInvocationHandlerWithInvalidRoute(t *testing.T) {
 	t.Parallel()
 
 	s := newService("")
-	err := s.AddServiceInvocationHandler("/a", func(ctx context.Context, in *service.InvocationEvent) (out *service.InvocationEvent, err error) {
+	err := s.AddServiceInvocationHandler("/a", func(ctx context.Context, in *InvocationEvent) (out *InvocationEvent, err error) {
 		return nil, nil
 	})
 	assert.NoErrorf(t, err, "error adding event handler")

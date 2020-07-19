@@ -5,7 +5,6 @@ import (
 	"errors"
 	"log"
 
-	"github.com/dapr/go-sdk/service"
 	daprd "github.com/dapr/go-sdk/service/grpc"
 )
 
@@ -23,7 +22,7 @@ func main() {
 	}
 
 	// add a service to service invocation handler
-	err = s.AddServiceInvocationHandler("EchoMethod", echoHandler)
+	err = s.AddServiceInvocationHandler("echo", echoHandler)
 	if err != nil {
 		log.Fatalf("error adding invocation handler: %v", err)
 	}
@@ -40,7 +39,7 @@ func main() {
 	}
 }
 
-func echoHandler(ctx context.Context, in *service.InvocationEvent) (out *service.InvocationEvent, err error) {
+func echoHandler(ctx context.Context, in *daprd.InvocationEvent) (out *daprd.InvocationEvent, err error) {
 	if in == nil {
 		err = errors.New("nil invocation parameter")
 		return
@@ -50,12 +49,12 @@ func echoHandler(ctx context.Context, in *service.InvocationEvent) (out *service
 	return
 }
 
-func eventHandler(ctx context.Context, e *service.TopicEvent) error {
+func eventHandler(ctx context.Context, e *daprd.TopicEvent) error {
 	log.Printf("event - Topic:%s, ID:%s, Data: %v", e.Topic, e.ID, e.Data)
 	return nil
 }
 
-func runHandler(ctx context.Context, in *service.BindingEvent) (out []byte, err error) {
+func runHandler(ctx context.Context, in *daprd.BindingEvent) (out []byte, err error) {
 	log.Printf("binding - Data:%v, Meta:%v", in.Data, in.Metadata)
 	return nil, nil
 }

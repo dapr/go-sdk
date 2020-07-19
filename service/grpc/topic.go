@@ -7,13 +7,11 @@ import (
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/pkg/errors"
 
-	"github.com/dapr/go-sdk/service"
-
 	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
 )
 
-// AddTopicEventHandler appends provided event handler with it's name to the service
-func (s *ServiceImp) AddTopicEventHandler(topic string, fn func(ctx context.Context, e *service.TopicEvent) error) error {
+// AddTopicEventHandler appends provided event handler with topic name to the service
+func (s *ServiceImp) AddTopicEventHandler(topic string, fn func(ctx context.Context, e *TopicEvent) error) error {
 	if topic == "" {
 		return fmt.Errorf("topic name required")
 	}
@@ -46,7 +44,7 @@ func (s *ServiceImp) OnTopicEvent(ctx context.Context, in *pb.TopicEventRequest)
 		return nil, errors.New("topic event request has no topic name")
 	}
 	if fn, ok := s.topicSubscriptions[in.Topic]; ok {
-		e := &service.TopicEvent{
+		e := &TopicEvent{
 			Topic:           in.Topic,
 			Data:            in.Data,
 			DataContentType: in.DataContentType,

@@ -53,7 +53,7 @@ func main() {
 	logger.Println("data deleted")
 
 	// invoke a method called EchoMethod on another dapr enabled service
-	resp, err := client.InvokeServiceWithContent(ctx, "serving", "EchoMethod", "text/plain", data)
+	resp, err := client.InvokeServiceWithContent(ctx, "serving", "echo", "text/plain", data)
 	if err != nil {
 		logger.Panic(err)
 	}
@@ -64,4 +64,5 @@ func main() {
 		panic(err)
 	}
 	logger.Println("binding invoked")
+	logger.Println("DONE (ctlr+c to exit)")
 }

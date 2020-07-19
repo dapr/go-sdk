@@ -5,20 +5,17 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-
-	"github.com/dapr/go-sdk/service"
 )
 
-// AddServiceInvocationHandler appends provided service invocation handler with its name to the service
-func (s *ServiceImp) AddServiceInvocationHandler(name string, fn func(ctx context.Context, in *service.InvocationEvent) (out *service.InvocationEvent, err error)) error {
-	if name == "" {
-		return fmt.Errorf("service name required")
+// AddServiceInvocationHandler appends provided service invocation handler with its route to the service
+func (s *ServiceImp) AddServiceInvocationHandler(route string, fn func(ctx context.Context, in *InvocationEvent) (out *InvocationEvent, err error)) error {
+	if route == "" {
+		return fmt.Errorf("service route required")
 	}
 
-	route := fmt.Sprintf("/%s", name)
 	s.mux.Handle(route, optionsHandler(http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
-			var e *service.InvocationEvent
+			var e *InvocationEvent
 
 			// check for post with no data
 			if r.ContentLength > 0 {
@@ -29,7 +26,7 @@ func (s *ServiceImp) AddServiceInvocationHandler(name string, fn func(ctx contex
 				}
 
 				if content != nil {
-					e = &service.InvocationEvent{
+					e = &InvocationEvent{
 						ContentType: r.Header.Get("Content-type"),
 						Data:        content,
 					}
