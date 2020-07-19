@@ -16,8 +16,8 @@ type Service interface {
 	AddServiceInvocationHandler(name string, fn func(ctx context.Context, in *InvocationEvent) (out *InvocationEvent, err error)) error
 	// AddTopicEventHandler appends provided event handler with it's topic to the service
 	AddTopicEventHandler(topic string, fn func(ctx context.Context, e *TopicEvent) error) error
-	// AddBindingInvocationHandler appends provided binding invocation handler with its method to the service
-	AddBindingInvocationHandler(method string, fn func(ctx context.Context, in *BindingEvent) (out []byte, err error)) error
+	// AddBindingInvocationHandler appends provided binding invocation handler with its name to the service
+	AddBindingInvocationHandler(name string, fn func(ctx context.Context, in *BindingEvent) (out []byte, err error)) error
 	// Start starts service
 	Start() error
 	// Stop stops the previously started service
@@ -27,47 +27,51 @@ type Service interface {
 // TopicEvent is the content of the inbound topic message
 type TopicEvent struct {
 	// ID identifies the event.
-	ID string `json:"id"`
+	ID string
 	// The version of the CloudEvents specification.
-	SpecVersion string `json:"specversion"`
+	SpecVersion string
 	// The type of event related to the originating occurrence.
-	Type string `json:"type"`
+	Type string
 	// Source identifies the context in which an event happened.
-	Source string `json:"source"`
+	Source string
 	// The content type of data value.
-	DataContentType string `json:"datacontenttype"`
+	DataContentType string
 	// The content of the event.
-	Data interface{} `json:"data"`
+	Data interface{}
 	// Cloud event subject
-	Subject string `json:"subject"`
+	Subject string
 	// The pubsub topic which publisher sent to.
-	Topic string `json:"topic"`
+	Topic string
 }
 
 // InvocationEvent represents the input and output of binding invocation
 type InvocationEvent struct {
 	// Data is the payload that the input bindings sent.
-	Data []byte `json:"data"`
+	Data []byte
 	// ContentType of the Data
-	ContentType string `json:"contentType"`
-	// DataTypeURL is the resource URL that uniquely identifies the type of the serialized
-	DataTypeURL string `json:"typeUrl,omitempty"`
+	ContentType string
+	// DataTypeURL is the resource URL that uniquely identifies the type of the serialized.
+	DataTypeURL string
+	// Verb is the HTTP verb that was used to invoke this service.
+	Verb string
+	// QueryString is the HTTP query string that was used to invoke this service.
+	QueryString map[string]string
 }
 
 // BindingEvent represents the binding event handler input
 type BindingEvent struct {
 	// Data is the input bindings sent
-	Data []byte `json:"data"`
+	Data []byte
 	// Metadata is the input binging components
-	Metadata map[string]string `json:"metadata,omitempty"`
+	Metadata map[string]string
 }
 
 // Subscription represents single topic subscription
 type Subscription struct {
 	// Topic is the name of the topic
-	Topic string `json:"topic"`
+	Topic string
 	// Route is the route of the handler where topic events should be published
-	Route string `json:"route"`
+	Route string
 }
 
 // NewService creates new Service

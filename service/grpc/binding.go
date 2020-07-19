@@ -10,12 +10,12 @@ import (
 	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
 )
 
-// AddBindingInvocationHandler appends provided binding invocation handler with its method to the service
-func (s *ServiceImp) AddBindingInvocationHandler(method string, fn func(ctx context.Context, in *BindingEvent) (out []byte, err error)) error {
-	if method == "" {
+// AddBindingInvocationHandler appends provided binding invocation handler with its name to the service
+func (s *ServiceImp) AddBindingInvocationHandler(name string, fn func(ctx context.Context, in *BindingEvent) (out []byte, err error)) error {
+	if name == "" {
 		return fmt.Errorf("binding name required")
 	}
-	s.bindingHandlers[method] = fn
+	s.bindingHandlers[name] = fn
 	return nil
 }
 

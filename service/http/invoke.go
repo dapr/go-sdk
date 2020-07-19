@@ -15,7 +15,12 @@ func (s *ServiceImp) AddServiceInvocationHandler(route string, fn func(ctx conte
 
 	s.mux.Handle(route, optionsHandler(http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
-			var e *InvocationEvent
+			// capture http args
+			e := &InvocationEvent{
+				Verb:        r.Method,
+				QueryString: r.URL.Query(),
+				ContentType: r.Header.Get("Content-type"),
+			}
 
 			// check for post with no data
 			if r.ContentLength > 0 {
@@ -24,13 +29,7 @@ func (s *ServiceImp) AddServiceInvocationHandler(route string, fn func(ctx conte
 					http.Error(w, err.Error(), http.StatusBadRequest)
 					return
 				}
-
-				if content != nil {
-					e = &InvocationEvent{
-						ContentType: r.Header.Get("Content-type"),
-						Data:        content,
-					}
-				}
+				e.Data = content
 			}
 
 			// execute handler

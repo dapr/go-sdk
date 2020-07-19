@@ -7,8 +7,8 @@ import (
 	"net/http"
 )
 
-// AddBindingInvocationHandler appends provided binding invocation handler with its route to the service
-func (s *ServiceImp) AddBindingInvocationHandler(route string, fn func(ctx context.Context, in *BindingEvent) (out []byte, err error)) error {
+// AddInputBindingHandler appends provided binding invocation handler with its route to the service
+func (s *ServiceImp) AddInputBindingHandler(route string, fn func(ctx context.Context, in *BindingEvent) (out []byte, err error)) error {
 	if route == "" {
 		return fmt.Errorf("binding route required")
 	}

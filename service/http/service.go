@@ -11,8 +11,8 @@ type Service interface {
 	AddServiceInvocationHandler(name string, fn func(ctx context.Context, in *InvocationEvent) (out *InvocationEvent, err error)) error
 	// AddTopicEventHandler appends provided event handler with it's topic to the service
 	AddTopicEventHandler(topic, route string, fn func(ctx context.Context, e *TopicEvent) error) error
-	// AddBindingInvocationHandler appends provided binding invocation handler with its route to the service
-	AddBindingInvocationHandler(route string, fn func(ctx context.Context, in *BindingEvent) (out []byte, err error)) error
+	// AddInputBindingHandler appends provided binding invocation handler with its route to the service
+	AddInputBindingHandler(route string, fn func(ctx context.Context, in *BindingEvent) (out []byte, err error)) error
 	// Start starts service
 	Start() error
 }
@@ -30,7 +30,7 @@ type TopicEvent struct {
 	// The content type of data value.
 	DataContentType string `json:"datacontenttype"`
 	// The content of the event.
-	Data []byte `json:"data"`
+	Data interface{} `json:"data"`
 	// Cloud event subject
 	Subject string `json:"subject"`
 	// The pubsub topic which publisher sent to.
@@ -45,6 +45,10 @@ type InvocationEvent struct {
 	ContentType string `json:"contentType"`
 	// DataTypeURL is the resource URL that uniquely identifies the type of the serialized
 	DataTypeURL string `json:"typeUrl,omitempty"`
+	// Verb is the HTTP verb that was used to invoke this service.
+	Verb string `json:"-"`
+	// QueryString is the HTTP query string that was used to invoke this service.
+	QueryString map[string][]string `json:"-"`
 }
 
 // BindingEvent represents the binding event handler input

@@ -19,7 +19,7 @@ func TestBindingHandlerWithoutData(t *testing.T) {
 	}`
 
 	s := newService("")
-	err := s.AddBindingInvocationHandler("/", func(ctx context.Context, in *BindingEvent) (out []byte, err error) {
+	err := s.AddInputBindingHandler("/", func(ctx context.Context, in *BindingEvent) (out []byte, err error) {
 		if in == nil {
 			return nil, errors.New("nil input")
 		}

@@ -63,6 +63,6 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	logger.Println("binding invoked")
-	logger.Println("DONE (ctlr+c to exit)")
+	logger.Println("output binding invoked")
+	logger.Println("DONE (CTRL+C to Exit)")
 }

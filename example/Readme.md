@@ -11,6 +11,7 @@ To run this example, start by first launching either `gRPC` or `HTTP` service:
 cd example/serving/grpc
 dapr run --app-id serving \
          --protocol grpc \
+         --port 3500 \
          --app-port 50001 \
          --log-level debug \
          --components-path ./config \
@@ -41,3 +42,60 @@ dapr run --app-id caller \
          --log-level debug \
          go run main.go 
 ```
+
+## API
+
+### PubSub
+
+Publish JSON content
+
+```shell
+curl -d '{ "from": "John", "to": "Lary", "message": "hi" }' \
+     -H "Content-type: application/json" \
+     "http://localhost:3500/v1.0/publish/messages"
+```
+
+Publish XML content (read as text)
+
+```shell
+curl -d '<message><from>John</from><to>Lary</to></message>' \
+     -H "Content-type: application/xml" \
+     "http://localhost:3500/v1.0/publish/messages"
+```
+
+Publish BIN content 
+
+```shell
+curl -d '0x18, 0x2d, 0x44, 0x54, 0xfb, 0x21, 0x09, 0x40' \
+     -H "Content-type: application/octet-stream" \
+     "http://localhost:3500/v1.0/publish/messages"
+```
+
+### Service Invocation 
+
+Invoke service with JSON payload
+
+```shell
+curl -d '{ "from": "John", "to": "Lary", "message": "hi" }' \
+     -H "Content-type: application/json" \
+     "http://localhost:3500/v1.0/invoke/serving/method/echo"
+```
+
+Invoke service with plain text message
+
+```shell
+curl -d "ping" \
+     -H "Content-type: text/plain;charset=UTF-8" \
+     "http://localhost:3500/v1.0/invoke/serving/method/echo"
+```
+
+Invoke service with no content
+
+```shell
+curl -X DELETE \
+    "http://localhost:3500/v1.0/invoke/serving/method/echo?k1=v1&k2=v2"
+```
+
+### Input Binding  
+
+Uses the [config/cron.yaml](config/cron.yaml) component

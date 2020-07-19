@@ -25,8 +25,8 @@ func main() {
 		log.Fatalf("error adding invocation handler: %v", err)
 	}
 
-	// add a binding invocation handler
-	err = s.AddBindingInvocationHandler("/run", runHandler)
+	// add an input binding invocation handler
+	err = s.AddInputBindingHandler("/run", runHandler)
 	if err != nil {
 		log.Fatalf("error adding binding handler: %v", err)
 	}
@@ -46,7 +46,10 @@ func echoHandler(ctx context.Context, in *daprd.InvocationEvent) (out *daprd.Inv
 		err = errors.New("nil invocation parameter")
 		return
 	}
-	log.Printf("echo handler (%s): %+v", in.ContentType, string(in.Data))
+	log.Printf(
+		"echo - ContentType:%s, Verb:%s, QueryString:%s, %+v",
+		in.ContentType, in.Verb, in.QueryString, string(in.Data),
+	)
 	out = in
 	return
 }

@@ -39,19 +39,22 @@ func main() {
 	}
 }
 
+func eventHandler(ctx context.Context, e *daprd.TopicEvent) error {
+	log.Printf("event - Topic:%s, ID:%s, Data: %v", e.Topic, e.ID, e.Data)
+	return nil
+}
+
 func echoHandler(ctx context.Context, in *daprd.InvocationEvent) (out *daprd.InvocationEvent, err error) {
 	if in == nil {
 		err = errors.New("nil invocation parameter")
 		return
 	}
-	log.Printf("echo handler (%s): %+v", in.ContentType, string(in.Data))
+	log.Printf(
+		"echo - ContentType:%s, Verb:%s, QueryString:%s, %+v",
+		in.ContentType, in.Verb, in.QueryString, string(in.Data),
+	)
 	out = in
 	return
-}
-
-func eventHandler(ctx context.Context, e *daprd.TopicEvent) error {
-	log.Printf("event - Topic:%s, ID:%s, Data: %v", e.Topic, e.ID, e.Data)
-	return nil
 }
 
 func runHandler(ctx context.Context, in *daprd.BindingEvent) (out []byte, err error) {
