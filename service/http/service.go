@@ -8,7 +8,7 @@ import (
 // Service represents Dapr callback service
 type Service interface {
 	// AddServiceInvocationHandler appends provided service invocation handler with its name to the service.
-	AddServiceInvocationHandler(name string, fn func(ctx context.Context, in *InvocationEvent) (out *InvocationEvent, err error)) error
+	AddServiceInvocationHandler(name string, fn func(ctx context.Context, in *InvocationEvent) (out *Content, err error)) error
 	// AddTopicEventHandler appends provided event handler with it's topic to the service
 	AddTopicEventHandler(topic, route string, fn func(ctx context.Context, e *TopicEvent) error) error
 	// AddInputBindingHandler appends provided binding invocation handler with its route to the service
@@ -49,6 +49,16 @@ type InvocationEvent struct {
 	Verb string `json:"-"`
 	// QueryString is the HTTP query string that was used to invoke this service.
 	QueryString map[string][]string `json:"-"`
+}
+
+// Content is a generic data content
+type Content struct {
+	// Data is the payload that the input bindings sent.
+	Data []byte `json:"data"`
+	// ContentType of the Data
+	ContentType string `json:"contentType"`
+	// DataTypeURL is the resource URL that uniquely identifies the type of the serialized
+	DataTypeURL string `json:"typeUrl,omitempty"`
 }
 
 // BindingEvent represents the binding event handler input

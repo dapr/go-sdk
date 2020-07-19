@@ -9,11 +9,11 @@ import (
 	"google.golang.org/protobuf/types/known/anypb"
 )
 
-func testInvokeHandler(ctx context.Context, in *InvocationEvent) (out *InvocationEvent, err error) {
+func testInvokeHandler(ctx context.Context, in *InvocationEvent) (out *Content, err error) {
 	if in == nil {
 		return
 	}
-	out = &InvocationEvent{
+	out = &Content{
 		ContentType: in.ContentType,
 		Data:        in.Data,
 	}

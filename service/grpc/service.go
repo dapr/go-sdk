@@ -13,7 +13,7 @@ import (
 // Service represents Dapr callback service
 type Service interface {
 	// AddServiceInvocationHandler appends provided service invocation handler with its name to the service.
-	AddServiceInvocationHandler(name string, fn func(ctx context.Context, in *InvocationEvent) (out *InvocationEvent, err error)) error
+	AddServiceInvocationHandler(name string, fn func(ctx context.Context, in *InvocationEvent) (out *Content, err error)) error
 	// AddTopicEventHandler appends provided event handler with it's topic to the service
 	AddTopicEventHandler(topic string, fn func(ctx context.Context, e *TopicEvent) error) error
 	// AddBindingInvocationHandler appends provided binding invocation handler with its name to the service
@@ -58,6 +58,16 @@ type InvocationEvent struct {
 	QueryString map[string]string
 }
 
+// Content is a generic data content
+type Content struct {
+	// Data is the payload that the input bindings sent.
+	Data []byte
+	// ContentType of the Data
+	ContentType string
+	// DataTypeURL is the resource URL that uniquely identifies the type of the serialized.
+	DataTypeURL string
+}
+
 // BindingEvent represents the binding event handler input
 type BindingEvent struct {
 	// Data is the input bindings sent
@@ -96,7 +106,7 @@ func NewServiceWithListener(lis net.Listener) Service {
 func newService(lis net.Listener) *ServiceImp {
 	return &ServiceImp{
 		listener:           lis,
-		invokeHandlers:     make(map[string]func(ctx context.Context, in *InvocationEvent) (out *InvocationEvent, err error)),
+		invokeHandlers:     make(map[string]func(ctx context.Context, in *InvocationEvent) (out *Content, err error)),
 		topicSubscriptions: make(map[string]func(ctx context.Context, e *TopicEvent) error),
 		bindingHandlers:    make(map[string]func(ctx context.Context, in *BindingEvent) (out []byte, err error)),
 	}
@@ -105,7 +115,7 @@ func newService(lis net.Listener) *ServiceImp {
 // ServiceImp is the gRPC service implementation for Dapr
 type ServiceImp struct {
 	listener           net.Listener
-	invokeHandlers     map[string]func(ctx context.Context, in *InvocationEvent) (out *InvocationEvent, err error)
+	invokeHandlers     map[string]func(ctx context.Context, in *InvocationEvent) (out *Content, err error)
 	topicSubscriptions map[string]func(ctx context.Context, e *TopicEvent) error
 	bindingHandlers    map[string]func(ctx context.Context, in *BindingEvent) (out []byte, err error)
 }

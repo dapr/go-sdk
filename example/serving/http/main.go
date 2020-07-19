@@ -41,7 +41,7 @@ func eventHandler(ctx context.Context, e *daprd.TopicEvent) error {
 	return nil
 }
 
-func echoHandler(ctx context.Context, in *daprd.InvocationEvent) (out *daprd.InvocationEvent, err error) {
+func echoHandler(ctx context.Context, in *daprd.InvocationEvent) (out *daprd.Content, err error) {
 	if in == nil {
 		err = errors.New("nil invocation parameter")
 		return
@@ -50,7 +50,11 @@ func echoHandler(ctx context.Context, in *daprd.InvocationEvent) (out *daprd.Inv
 		"echo - ContentType:%s, Verb:%s, QueryString:%s, %+v",
 		in.ContentType, in.Verb, in.QueryString, string(in.Data),
 	)
-	out = in
+	out = &daprd.Content{
+		Data:        in.Data,
+		ContentType: in.ContentType,
+		DataTypeURL: in.DataTypeURL,
+	}
 	return
 }
 

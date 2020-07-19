@@ -2,6 +2,8 @@ package http
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -29,8 +31,14 @@ func TestEventHandler(t *testing.T) {
 	s := newService("")
 
 	err := s.AddTopicEventHandler("test", "/", func(ctx context.Context, e *TopicEvent) error {
+		if e == nil {
+			return errors.New("nil content")
+		}
 		if e.DataContentType != "application/json" {
-			t.Fatalf("invalid data content type: %s", e.DataContentType)
+			return fmt.Errorf("invalid content type: %s", e.DataContentType)
+		}
+		if e.Data == nil {
+			return errors.New("nil data")
 		}
 		return nil
 	})

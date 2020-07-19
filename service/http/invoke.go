@@ -8,7 +8,7 @@ import (
 )
 
 // AddServiceInvocationHandler appends provided service invocation handler with its route to the service
-func (s *ServiceImp) AddServiceInvocationHandler(route string, fn func(ctx context.Context, in *InvocationEvent) (out *InvocationEvent, err error)) error {
+func (s *ServiceImp) AddServiceInvocationHandler(route string, fn func(ctx context.Context, in *InvocationEvent) (out *Content, err error)) error {
 	if route == "" {
 		return fmt.Errorf("service route required")
 	}

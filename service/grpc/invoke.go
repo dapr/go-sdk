@@ -11,7 +11,7 @@ import (
 )
 
 // AddServiceInvocationHandler appends provided service invocation handler with its method to the service
-func (s *ServiceImp) AddServiceInvocationHandler(method string, fn func(ctx context.Context, in *InvocationEvent) (our *InvocationEvent, err error)) error {
+func (s *ServiceImp) AddServiceInvocationHandler(method string, fn func(ctx context.Context, in *InvocationEvent) (our *Content, err error)) error {
 	if method == "" {
 		return fmt.Errorf("servie name required")
 	}
