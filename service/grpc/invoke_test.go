@@ -5,15 +5,16 @@ import (
 	"testing"
 
 	"github.com/dapr/go-sdk/dapr/proto/common/v1"
+	"github.com/dapr/go-sdk/service"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/types/known/anypb"
 )
 
-func testInvokeHandler(ctx context.Context, in *InvocationEvent) (out *InvocationEvent, err error) {
+func testInvokeHandler(ctx context.Context, in *service.InvocationEvent) (out *service.InvocationEvent, err error) {
 	if in == nil {
 		return
 	}
-	out = &InvocationEvent{
+	out = &service.InvocationEvent{
 		ContentType: in.ContentType,
 		Data:        in.Data,
 	}
@@ -28,7 +29,7 @@ func TestInvoke(t *testing.T) {
 	ctx := context.Background()
 
 	server := getTestServer()
-	server.AddInvocationHandler(methodName, testInvokeHandler)
+	server.AddServiceInvocationHandler(methodName, testInvokeHandler)
 	startTestServer(server)
 
 	t.Run("invoke without request", func(t *testing.T) {

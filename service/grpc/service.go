@@ -7,25 +7,12 @@ import (
 	"github.com/pkg/errors"
 
 	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
+	"github.com/dapr/go-sdk/service"
 	"google.golang.org/grpc"
 )
 
-// Service is the gRPC Dapr service
-type Service interface {
-	// AddInvocationHandler appends to the service a external invocation handler for specific method name
-	AddInvocationHandler(method string, fn func(ctx context.Context, in *InvocationEvent) (out *InvocationEvent, err error))
-	// AddTopicEventHandler appends to the service a pub/sub event handler for specific topic name
-	AddTopicEventHandler(topic string, fn func(ctx context.Context, event *TopicEvent) error)
-	// AddBindingEventHandler appends to the service a binding invocation handler for specific binding name
-	AddBindingEventHandler(name string, fn func(ctx context.Context, in *BindingEvent) (out []byte, err error))
-	// Start starts gRPC service
-	Start() error
-	// Stop closes the TCP listener and stops the service
-	Stop() error
-}
-
 // NewService creates new Service
-func NewService(address string) (server Service, err error) {
+func NewService(address string) (s service.Service, err error) {
 	if address == "" {
 		return nil, errors.New("nil address")
 	}
@@ -34,30 +21,30 @@ func NewService(address string) (server Service, err error) {
 		err = errors.Wrapf(err, "failed to TCP listen on: %s", address)
 		return
 	}
-	server = newService(lis)
+	s = newService(lis)
 	return
 }
 
 // NewServiceWithListener creates new Service with specific listener
-func NewServiceWithListener(lis net.Listener) Service {
+func NewServiceWithListener(lis net.Listener) service.Service {
 	return newService(lis)
 }
 
 func newService(lis net.Listener) *ServiceImp {
 	return &ServiceImp{
 		listener:           lis,
-		invokeHandlers:     make(map[string]func(ctx context.Context, in *InvocationEvent) (out *InvocationEvent, err error)),
-		topicSubscriptions: make(map[string]func(ctx context.Context, e *TopicEvent) error),
-		bindingHandlers:    make(map[string]func(ctx context.Context, in *BindingEvent) (out []byte, err error)),
+		invokeHandlers:     make(map[string]func(ctx context.Context, in *service.InvocationEvent) (out *service.InvocationEvent, err error)),
+		topicSubscriptions: make(map[string]func(ctx context.Context, e *service.TopicEvent) error),
+		bindingHandlers:    make(map[string]func(ctx context.Context, in *service.BindingEvent) (out []byte, err error)),
 	}
 }
 
 // ServiceImp is the gRPC service implementation for Dapr
 type ServiceImp struct {
 	listener           net.Listener
-	invokeHandlers     map[string]func(ctx context.Context, in *InvocationEvent) (out *InvocationEvent, err error)
-	topicSubscriptions map[string]func(ctx context.Context, e *TopicEvent) error
-	bindingHandlers    map[string]func(ctx context.Context, in *BindingEvent) (out []byte, err error)
+	invokeHandlers     map[string]func(ctx context.Context, in *service.InvocationEvent) (out *service.InvocationEvent, err error)
+	topicSubscriptions map[string]func(ctx context.Context, e *service.TopicEvent) error
+	bindingHandlers    map[string]func(ctx context.Context, in *service.BindingEvent) (out []byte, err error)
 }
 
 // Start registers the server and starts it
@@ -67,7 +54,7 @@ func (s *ServiceImp) Start() error {
 	return gs.Serve(s.listener)
 }
 
-// Stop stops the previously started server
+// Stop stops the previously started service
 func (s *ServiceImp) Stop() error {
 	return s.listener.Close()
 }

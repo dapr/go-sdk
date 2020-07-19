@@ -7,25 +7,18 @@ import (
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/pkg/errors"
 
+	"github.com/dapr/go-sdk/service"
+
 	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
 )
 
-// BindingEvent represents the input and output of binding invocation
-type BindingEvent struct {
-
-	// Name of the input binding component.
-	Name string
-
-	// Data is the payload that the input bindings sent.
-	Data []byte
-
-	// Metadata is set by the input binging components.
-	Metadata map[string]string
-}
-
-// AddBindingEventHandler add the provided handler to the server binding halder collection
-func (s *ServiceImp) AddBindingEventHandler(name string, fn func(ctx context.Context, in *BindingEvent) (out []byte, err error)) {
+// AddBindingInvocationHandler appends provided binding invocation handler with its name to the service
+func (s *ServiceImp) AddBindingInvocationHandler(name string, fn func(ctx context.Context, in *service.BindingEvent) (out []byte, err error)) error {
+	if name == "" {
+		return fmt.Errorf("binding name required")
+	}
 	s.bindingHandlers[name] = fn
+	return nil
 }
 
 // ListInputBindings is called by Dapr to get the list of bindings the app will get invoked by. In this example, we are telling Dapr
@@ -47,8 +40,7 @@ func (s *ServiceImp) OnBindingEvent(ctx context.Context, in *pb.BindingEventRequ
 		return nil, errors.New("nil binding event request")
 	}
 	if fn, ok := s.bindingHandlers[in.Name]; ok {
-		e := &BindingEvent{
-			Name:     in.Name,
+		e := &service.BindingEvent{
 			Data:     in.Data,
 			Metadata: in.Metadata,
 		}

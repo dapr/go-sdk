@@ -7,32 +7,18 @@ import (
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/pkg/errors"
 
+	"github.com/dapr/go-sdk/service"
+
 	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
 )
 
-// TopicEvent is the content of the inbound topic message
-type TopicEvent struct {
-	// ID identifies the event.
-	ID string
-	// Source identifies the context in which an event happened.
-	Source string
-	// The type of event related to the originating occurrence.
-	Type string
-	// The version of the CloudEvents specification.
-	SpecVersion string
-	// The content type of data value.
-	DataContentType string
-	// The content of the event.
-	Data []byte
-	// The pubsub topic which publisher sent to.
-	Topic string
-	// Cloud event subject
-	Subject string
-}
-
-// AddTopicEventHandler adds provided topic to the list of server subscriptions
-func (s *ServiceImp) AddTopicEventHandler(topic string, fn func(ctx context.Context, e *TopicEvent) error) {
+// AddTopicEventHandler appends provided event handler with it's name to the service
+func (s *ServiceImp) AddTopicEventHandler(topic string, fn func(ctx context.Context, e *service.TopicEvent) error) error {
+	if topic == "" {
+		return fmt.Errorf("topic name required")
+	}
 	s.topicSubscriptions[topic] = fn
+	return nil
 }
 
 // ListTopicSubscriptions is called by Dapr to get the list of topics the app wants to subscribe to. In this example, we are telling Dapr
@@ -60,7 +46,7 @@ func (s *ServiceImp) OnTopicEvent(ctx context.Context, in *pb.TopicEventRequest)
 		return nil, errors.New("topic event request has no topic name")
 	}
 	if fn, ok := s.topicSubscriptions[in.Topic]; ok {
-		e := &TopicEvent{
+		e := &service.TopicEvent{
 			Topic:           in.Topic,
 			Data:            in.Data,
 			DataContentType: in.DataContentType,

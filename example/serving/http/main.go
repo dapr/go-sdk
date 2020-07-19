@@ -6,53 +6,53 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/dapr/go-sdk/service"
 	daprd "github.com/dapr/go-sdk/service/http"
 )
 
 func main() {
-	// create a Dapr service
-	s := daprd.NewService()
+	// create a Dapr service (e.g. ":8080", "0.0.0.0:8080", "10.1.1.1:8080" )
+	s := daprd.NewService(":8080")
 
 	// add some topic subscriptions
-	err := s.AddTopicEventHandler("messages", "/messages", messageHandler)
+	err := s.AddTopicEventHandler("messages", eventHandler)
 	if err != nil {
 		log.Fatalf("error adding topic subscription: %v", err)
 	}
 
 	// add a service to service invocation handler
-	err = s.AddInvocationEventHandler("/EchoMethod", echoHandler)
+	err = s.AddServiceInvocationHandler("EchoMethod", echoHandler)
 	if err != nil {
 		log.Fatalf("error adding invocation handler: %v", err)
 	}
 
 	// add a binding invocation handler
-	err = s.AddBindingEventHandler("/run", runHandler)
+	err = s.AddBindingInvocationHandler("run", runHandler)
 	if err != nil {
 		log.Fatalf("error adding binding handler: %v", err)
 	}
 
-	// start service on address (e.g. ":8080", "0.0.0.0:8080", "10.1.1.1:8080" )
-	if err = s.Start(":8080"); err != nil && err != http.ErrServerClosed {
+	if err = s.Start(); err != nil && err != http.ErrServerClosed {
 		log.Fatalf("error listenning: %v", err)
 	}
 }
 
-func echoHandler(ctx context.Context, in *daprd.InvocationEvent) (out []byte, err error) {
+func echoHandler(ctx context.Context, in *service.InvocationEvent) (out *service.InvocationEvent, err error) {
 	if in == nil {
 		err = errors.New("nil invocation parameter")
 		return
 	}
 	log.Printf("echo handler (%s): %+v", in.ContentType, string(in.Data))
-	out = in.Data
+	out = in
 	return
 }
 
-func messageHandler(ctx context.Context, e daprd.TopicEvent) error {
+func eventHandler(ctx context.Context, e *service.TopicEvent) error {
 	log.Printf("event - Topic:%s, ID:%s, Data: %v", e.Topic, e.ID, e.Data)
 	return nil
 }
 
-func runHandler(ctx context.Context, in *daprd.BindingEvent) error {
+func runHandler(ctx context.Context, in *service.BindingEvent) (out []byte, err error) {
 	log.Printf("binding - Data:%v, Meta:%v", in.Data, in.Metadata)
-	return nil
+	return nil, nil
 }

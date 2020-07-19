@@ -6,10 +6,11 @@ import (
 	"testing"
 
 	"github.com/dapr/go-sdk/dapr/proto/runtime/v1"
+	"github.com/dapr/go-sdk/service"
 	"github.com/stretchr/testify/assert"
 )
 
-func eventHandler(ctx context.Context, event *TopicEvent) error {
+func eventHandler(ctx context.Context, event *service.TopicEvent) error {
 	if event == nil {
 		return errors.New("nil event")
 	}

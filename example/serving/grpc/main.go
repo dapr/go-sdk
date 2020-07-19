@@ -2,52 +2,60 @@ package main
 
 import (
 	"context"
+	"errors"
 	"log"
 
+	"github.com/dapr/go-sdk/service"
 	daprd "github.com/dapr/go-sdk/service/grpc"
 )
 
 func main() {
 	// create a Dapr service server
-	server, err := daprd.NewService(":50001")
+	s, err := daprd.NewService(":50001")
 	if err != nil {
 		log.Fatalf("failed to start the server: %v", err)
 	}
 
-	// add some invocation handlers
-	server.AddInvocationHandler("EchoMethod", echoHandler)
-
 	// add some topic subscriptions
-	server.AddTopicEventHandler("messages", messageHandler)
+	err = s.AddTopicEventHandler("messages", eventHandler)
+	if err != nil {
+		log.Fatalf("error adding topic subscription: %v", err)
+	}
 
-	// add some binding handler
-	server.AddBindingEventHandler("run", runHandler)
+	// add a service to service invocation handler
+	err = s.AddServiceInvocationHandler("EchoMethod", echoHandler)
+	if err != nil {
+		log.Fatalf("error adding invocation handler: %v", err)
+	}
+
+	// add a binding invocation handler
+	err = s.AddBindingInvocationHandler("run", runHandler)
+	if err != nil {
+		log.Fatalf("error adding binding handler: %v", err)
+	}
 
 	// start the server
-	if err := server.Start(); err != nil {
+	if err := s.Start(); err != nil {
 		log.Fatalf("server error: %v", err)
 	}
 }
 
-// Invocation Handlers
-
-func echoHandler(ctx context.Context, in *daprd.InvocationEvent) (out *daprd.InvocationEvent, err error) {
-	log.Printf("content: %+v", in)
-	out = &daprd.InvocationEvent{
-		ContentType: in.ContentType,
-		Data:        in.Data,
+func echoHandler(ctx context.Context, in *service.InvocationEvent) (out *service.InvocationEvent, err error) {
+	if in == nil {
+		err = errors.New("nil invocation parameter")
+		return
 	}
+	log.Printf("echo handler (%s): %+v", in.ContentType, string(in.Data))
+	out = in
 	return
 }
 
-// Topic Subscriptions
-
-func messageHandler(ctx context.Context, e *daprd.TopicEvent) error {
+func eventHandler(ctx context.Context, e *service.TopicEvent) error {
 	log.Printf("event - Topic:%s, ID:%s, Data: %v", e.Topic, e.ID, e.Data)
 	return nil
 }
 
-func runHandler(ctx context.Context, in *daprd.BindingEvent) (out []byte, err error) {
+func runHandler(ctx context.Context, in *service.BindingEvent) (out []byte, err error) {
 	log.Printf("binding - Data:%v, Meta:%v", in.Data, in.Metadata)
 	return nil, nil
 }

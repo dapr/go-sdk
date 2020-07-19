@@ -8,24 +8,16 @@ import (
 	"github.com/pkg/errors"
 
 	cpb "github.com/dapr/go-sdk/dapr/proto/common/v1"
+	"github.com/dapr/go-sdk/service"
 )
 
-// InvocationEvent represents the input and output of binding invocation
-type InvocationEvent struct {
-
-	// ContentType of the Data
-	ContentType string
-
-	// Data is the payload that the input bindings sent.
-	Data []byte
-
-	// DataTypeURL is the resource URL that uniquely identifies the type of the serialized
-	DataTypeURL string
-}
-
-// AddInvocationHandler adds provided handler to the local collection before server start
-func (s *ServiceImp) AddInvocationHandler(method string, fn func(ctx context.Context, in *InvocationEvent) (our *InvocationEvent, err error)) {
+// AddServiceInvocationHandler appends provided service invocation handler with its name to the service
+func (s *ServiceImp) AddServiceInvocationHandler(method string, fn func(ctx context.Context, in *service.InvocationEvent) (our *service.InvocationEvent, err error)) error {
+	if method == "" {
+		return fmt.Errorf("servie name required")
+	}
 	s.invokeHandlers[method] = fn
+	return nil
 }
 
 // OnInvoke gets invoked when a remote service has called the app through Dapr
@@ -34,9 +26,9 @@ func (s *ServiceImp) OnInvoke(ctx context.Context, in *cpb.InvokeRequest) (*cpb.
 		return nil, errors.New("nil invoke request")
 	}
 	if fn, ok := s.invokeHandlers[in.Method]; ok {
-		var e *InvocationEvent
+		var e *service.InvocationEvent
 		if in.Data != nil {
-			e = &InvocationEvent{
+			e = &service.InvocationEvent{
 				ContentType: in.ContentType,
 				Data:        in.Data.Value,
 				DataTypeURL: in.Data.TypeUrl,
