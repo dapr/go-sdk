@@ -5,6 +5,7 @@ import (
 	"log"
 	"net"
 	"os"
+	"sync"
 
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
@@ -19,8 +20,10 @@ const (
 )
 
 var (
-	logger        = log.New(os.Stdout, "", 0)
-	_      Client = (*GRPCClient)(nil)
+	logger               = log.New(os.Stdout, "", 0)
+	_             Client = (*GRPCClient)(nil)
+	defaultClient Client
+	doOnce        sync.Once
 )
 
 // Client is the interface for Dapr client implementation.
@@ -71,12 +74,25 @@ type Client interface {
 }
 
 // NewClient instantiates Dapr client using DAPR_GRPC_PORT environment variable as port.
+// Note, this default factory function creates Dapr client only once. All subsequent invocations
+// will return the already created instance. To create multiple instances of the Dapr client,
+// use one of the parameterized factory functions:
+//   NewClientWithPort(port string) (client Client, err error)
+//   NewClientWithAddress(address string) (client Client, err error)
+//   NewClientWithConnection(conn *grpc.ClientConn) Client
 func NewClient() (client Client, err error) {
 	port := os.Getenv(daprPortEnvVarName)
 	if port == "" {
 		port = daprPortDefault
 	}
-	return NewClientWithPort(port)
+	var onceErr error
+	doOnce.Do(func() {
+		c, err := NewClientWithPort(port)
+		onceErr = errors.Wrap(err, "error creating default client")
+		defaultClient = c
+	})
+
+	return defaultClient, onceErr
 }
 
 // NewClientWithPort instantiates Dapr using specific port.
