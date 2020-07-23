@@ -5,6 +5,8 @@ The `example` folder contains a Dapr enabled `serving` app and a `client` app th
 
 To run this example, start by first launching either `gRPC` or `HTTP` service:
 
+> Additionally you can export the `DAPR_API_TOKEN` variable to ensure Dapr API authentication 
+
 ## gRPC Service 
 
 ```
