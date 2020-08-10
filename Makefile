@@ -17,7 +17,7 @@ cover: mod ## Displays test coverage in the Client package
 
 service: mod ## Runs the uncompiled example service code 
 	dapr run --app-id serving \
-	         --protocol grpc \
+	         --app-protocol grpc \
 			 --app-port 50001 \
 			 go run example/serving/main.go
 

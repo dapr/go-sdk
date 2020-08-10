@@ -34,7 +34,7 @@ func main() {
 Assuming you have Dapr CLI installed locally, you can then launch your app like this:
 
 ```shell
-dapr run --app-id my-app --protocol grpc --app-port 50001 go run main.go
+dapr run --app-id my-app --app-protocol grpc --app-port 50001 go run main.go
 ```
 
 See [example folder](./example) for complete example. 
