@@ -20,27 +20,18 @@ func TestStateOptionsConverter(t *testing.T) {
 	s := &StateOptions{
 		Concurrency: StateConcurrencyLastWrite,
 		Consistency: StateConsistencyStrong,
-		RetryPolicy: &StateRetryPolicy{
-			Threshold: 3,
-			Interval:  time.Duration(10 * time.Second),
-			Pattern:   RetryPatternExponential,
-		},
 	}
 	p := toProtoStateOptions(s)
 	assert.NotNil(t, p)
 	assert.Equal(t, p.Concurrency, v1.StateOptions_CONCURRENCY_LAST_WRITE)
 	assert.Equal(t, p.Consistency, v1.StateOptions_CONSISTENCY_STRONG)
-	assert.NotNil(t, p.RetryPolicy)
-	assert.Equal(t, p.RetryPolicy.Threshold, int32(3))
-	assert.Equal(t, p.RetryPolicy.Interval.Seconds, int64(10))
-	assert.Equal(t, p.RetryPolicy.Pattern, v1.StateRetryPolicy_RETRY_EXPONENTIAL)
 }
 
 func TestSaveStateData(t *testing.T) {
 	ctx := context.Background()
 	data := "test"
 
-	err := testClient.SaveStateData(ctx, "store", "key1", "", []byte(data))
+	err := testClient.SaveStateData(ctx, "store", "key1", []byte(data))
 	assert.Nil(t, err)
 
 	out, etag, err := testClient.GetState(ctx, "store", "key1")
