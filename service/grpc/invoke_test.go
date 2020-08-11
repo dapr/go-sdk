@@ -28,7 +28,8 @@ func TestInvoke(t *testing.T) {
 	ctx := context.Background()
 
 	server := getTestServer()
-	server.AddServiceInvocationHandler(methodName, testInvokeHandler)
+	err := server.AddServiceInvocationHandler(methodName, testInvokeHandler)
+	assert.Nil(t, err)
 	startTestServer(server)
 
 	t.Run("invoke without request", func(t *testing.T) {

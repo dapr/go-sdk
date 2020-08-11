@@ -5,7 +5,7 @@ PROTO_ROOT       =https://raw.githubusercontent.com/dapr/dapr/master/dapr/proto/
 .PHONY: mod test cover service client lint protps tag docs clean help
 all: test
 
-mod: ## Updates the go modules
+tidy: ## Updates the go modules
 	go mod tidy
 
 test: mod ## Tests the entire project 
@@ -16,7 +16,7 @@ cover: mod ## Displays test coverage in the Client package
 
 service: mod ## Runs the uncompiled example service code 
 	dapr run --app-id serving \
-	         --protocol grpc \
+	         --app-protocol grpc \
 			 --app-port 50001 \
 			 go run example/serving/main.go
 
@@ -47,7 +47,7 @@ clean: ## Cleans go and generated files in ./dapr/proto/
 	rm -fr ./dapr/proto/common/v1/*
 	rm -fr ./dapr/proto/runtime/v1/*
 
-protos: ## Downloads proto files from dapr/dapr and generats gRPC proto clients
+protos: ## Downloads proto files from dapr/dapr master and generats gRPC proto clients
 	go install github.com/gogo/protobuf/gogoreplace
 
 	wget -q $(PROTO_ROOT)/common/v1/common.proto -O ./dapr/proto/common/v1/common.proto

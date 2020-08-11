@@ -10,9 +10,9 @@ To run this example, start by first launching either `gRPC` or `HTTP` service:
 ```
 cd example/serving/grpc
 dapr run --app-id serving \
-         --protocol grpc \
-         --port 3500 \
+         --app-protocol grpc \
          --app-port 50001 \
+         --port 3500 \
          --log-level debug \
          --components-path ./config \
          go run main.go
@@ -23,9 +23,9 @@ dapr run --app-id serving \
 ```
 cd example/serving/http
 dapr run --app-id serving \
-         --protocol http \
-         --port 3500 \
+         --app-protocol http \
          --app-port 8080 \
+         --port 3500 \
          --log-level debug \
          --components-path ./config \
          go run main.go

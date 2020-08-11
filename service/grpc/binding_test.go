@@ -24,7 +24,8 @@ func TestBinding(t *testing.T) {
 	methodName := "test"
 
 	server := getTestServer()
-	server.AddBindingInvocationHandler(methodName, testBindingHandler)
+	err := server.AddBindingInvocationHandler(methodName, testBindingHandler)
+	assert.Nil(t, err)
 	startTestServer(server)
 
 	t.Run("binding without event", func(t *testing.T) {

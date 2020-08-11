@@ -24,7 +24,8 @@ func TestTopic(t *testing.T) {
 	ctx := context.Background()
 
 	server := getTestServer()
-	server.AddTopicEventHandler(topicName, eventHandler)
+	err := server.AddTopicEventHandler(topicName, eventHandler)
+	assert.Nil(t, err)
 	startTestServer(server)
 
 	t.Run("topic event without request", func(t *testing.T) {

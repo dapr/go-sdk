@@ -41,7 +41,7 @@ Assuming you have [Dapr CLI](https://github.com/dapr/docs/blob/master/getting-st
 
 ```shell
 dapr run --app-id example-service \
-         --protocol grpc \
+         --app-protocol grpc \
          --app-port 50001 \
          go run main.go
 ```

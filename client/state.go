@@ -24,13 +24,6 @@ const (
 	StateConcurrencyFirstWrite StateConcurrency = 1
 	// StateConcurrencyLastWrite represents last write concurrency value.
 	StateConcurrencyLastWrite StateConcurrency = 2
-
-	// RetryPatternUndefined is the undefined value for retry pattern.
-	RetryPatternUndefined RetryPattern = 0
-	// RetryPatternLinear represents the linear retry pattern value.
-	RetryPatternLinear RetryPattern = 1
-	// RetryPatternExponential represents the exponential retry pattern value.
-	RetryPatternExponential RetryPattern = 2
 )
 
 type (
@@ -38,8 +31,6 @@ type (
 	StateConsistency int
 	// StateConcurrency is the concurrency enum type.
 	StateConcurrency int
-	// RetryPattern is the retry pattern enum type.
-	RetryPattern int
 )
 
 // String returns the string value of the StateConsistency.
@@ -70,30 +61,10 @@ func (c StateConcurrency) String() string {
 	return names[c]
 }
 
-// String returns the string value of the RetryPattern.
-func (c RetryPattern) String() string {
-	names := [...]string{
-		"Undefined",
-		"Linear",
-		"Exponential",
-	}
-	if c < RetryPatternLinear || c > RetryPatternExponential {
-		return "Undefined"
-	}
-
-	return names[c]
-}
-
 var (
-	stateOptionRetryPolicyDefault = &v1.StateRetryPolicy{
-		Threshold: 3,
-		Pattern:   v1.StateRetryPolicy_RETRY_EXPONENTIAL,
-	}
-
 	stateOptionDefault = &v1.StateOptions{
 		Concurrency: v1.StateOptions_CONCURRENCY_LAST_WRITE,
 		Consistency: v1.StateOptions_CONSISTENCY_STRONG,
-		RetryPolicy: stateOptionRetryPolicyDefault,
 	}
 )
 
@@ -116,14 +87,6 @@ type StateItem struct {
 type StateOptions struct {
 	Concurrency StateConcurrency
 	Consistency StateConsistency
-	RetryPolicy *StateRetryPolicy
-}
-
-// StateRetryPolicy represents the state store invocation retry policy.
-type StateRetryPolicy struct {
-	Threshold int32
-	Pattern   RetryPattern
-	Interval  time.Duration
 }
 
 func toProtoSaveStateRequest(s *State) (req *pb.SaveStateRequest) {
@@ -156,11 +119,6 @@ func toProtoStateOptions(so *StateOptions) (opts *v1.StateOptions) {
 	return &v1.StateOptions{
 		Concurrency: (v1.StateOptions_StateConcurrency(so.Concurrency)),
 		Consistency: (v1.StateOptions_StateConsistency(so.Consistency)),
-		RetryPolicy: &v1.StateRetryPolicy{
-			Interval:  toProtoDuration(so.RetryPolicy.Interval),
-			Pattern:   (v1.StateRetryPolicy_RetryPattern(so.RetryPolicy.Pattern)),
-			Threshold: so.RetryPolicy.Threshold,
-		},
 	}
 }
 
@@ -187,8 +145,8 @@ func (c *GRPCClient) SaveState(ctx context.Context, s *State) error {
 	return nil
 }
 
-// SaveStateDataVersion saves the raw data into store using default state options and etag.
-func (c *GRPCClient) SaveStateDataVersion(ctx context.Context, store, key, etag string, data []byte) error {
+// SaveStateDataWithETag saves the raw data into store using default state options.
+func (c *GRPCClient) SaveStateDataWithETag(ctx context.Context, store, key, etag string, data []byte) error {
 	if store == "" {
 		return errors.New("nil store")
 	}
@@ -212,7 +170,7 @@ func (c *GRPCClient) SaveStateDataVersion(ctx context.Context, store, key, etag 
 
 // SaveStateData saves the raw data into store using default state options.
 func (c *GRPCClient) SaveStateData(ctx context.Context, store, key string, data []byte) error {
-	return c.SaveStateDataVersion(ctx, store, key, "", data)
+	return c.SaveStateDataWithETag(ctx, store, key, "", data)
 }
 
 // SaveStateItem saves the single state item to store.
@@ -262,11 +220,11 @@ func (c *GRPCClient) GetStateWithConsistency(ctx context.Context, store, key str
 
 // DeleteState deletes content from store using default state options.
 func (c *GRPCClient) DeleteState(ctx context.Context, store, key string) error {
-	return c.DeleteStateVersion(ctx, store, key, "", nil)
+	return c.DeleteStateWithETag(ctx, store, key, "", nil)
 }
 
-// DeleteStateVersion deletes content from store using provided state options and etag.
-func (c *GRPCClient) DeleteStateVersion(ctx context.Context, store, key, etag string, opts *StateOptions) error {
+// DeleteStateWithETag deletes content from store using provided state options and etag.
+func (c *GRPCClient) DeleteStateWithETag(ctx context.Context, store, key, etag string, opts *StateOptions) error {
 	if store == "" {
 		return errors.New("nil store")
 	}

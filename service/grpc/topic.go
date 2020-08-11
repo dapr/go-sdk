@@ -36,7 +36,7 @@ func (s *ServiceImp) ListTopicSubscriptions(ctx context.Context, in *empty.Empty
 }
 
 // OnTopicEvent fired whenever a message has been published to a topic that has been subscribed. Dapr sends published messages in a CloudEvents 0.3 envelope.
-func (s *ServiceImp) OnTopicEvent(ctx context.Context, in *pb.TopicEventRequest) (*empty.Empty, error) {
+func (s *ServiceImp) OnTopicEvent(ctx context.Context, in *pb.TopicEventRequest) (*pb.TopicEventResponse, error) {
 	if in == nil {
 		return nil, errors.New("nil event request")
 	}
@@ -57,7 +57,7 @@ func (s *ServiceImp) OnTopicEvent(ctx context.Context, in *pb.TopicEventRequest)
 		if err != nil {
 			return nil, errors.Wrapf(err, "error handling topic event: %s", in.Topic)
 		}
-		return &empty.Empty{}, nil
+		return &pb.TopicEventResponse{}, nil
 	}
-	return &empty.Empty{}, fmt.Errorf("topic not configured: %s", in.Topic)
+	return &pb.TopicEventResponse{}, fmt.Errorf("topic not configured: %s", in.Topic)
 }
