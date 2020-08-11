@@ -1,4 +1,4 @@
-RELEASE_VERSION  =v0.8.17
+RELEASE_VERSION  =v0.9.0
 GDOC_PORT        =8888
 PROTO_ROOT       =https://raw.githubusercontent.com/dapr/dapr/master/dapr/proto/
 
