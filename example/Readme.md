@@ -8,7 +8,7 @@ The `example` folder contains a Dapr enabled `serving` app a `client` app that u
 ```
 cd example/serving
 dapr run --app-id serving \
-         --protocol grpc \
+         --app-protocol grpc \
          --app-port 50001 \
          go run main.go
 ```
