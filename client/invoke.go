@@ -41,6 +41,9 @@ func (c *GRPCClient) InvokeService(ctx context.Context, serviceID, method string
 		Id: serviceID,
 		Message: &v1.InvokeRequest{
 			Method: method,
+			HttpExtension: &v1.HTTPExtension{
+				Verb: v1.HTTPExtension_POST,
+			},
 		},
 	}
 	return c.invokeServiceWithRequest(ctx, req)
@@ -64,6 +67,9 @@ func (c *GRPCClient) InvokeServiceWithContent(ctx context.Context, serviceID, me
 			Method:      method,
 			Data:        &anypb.Any{Value: data},
 			ContentType: contentType,
+			HttpExtension: &v1.HTTPExtension{
+				Verb: v1.HTTPExtension_POST,
+			},
 		},
 	}
 

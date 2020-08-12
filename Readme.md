@@ -1,18 +1,24 @@
 # Dapr SDK for Go
 
-This is the dapr SDK (client) for go (golang). It covers all of the APIs described in Dapr's [protocol buffers](https://raw.githubusercontent.com/dapr/dapr/master/dapr/proto/) with focus on developer productivity. 
+Client library to accelerate Dapr application development in go. This client supports all public [Dapr API](https://github.com/dapr/docs/tree/master/reference/api) and focuses on developer productivity. 
 
 [![Test](https://github.com/dapr/go-sdk/workflows/Test/badge.svg)](https://github.com/dapr/go-sdk/actions?query=workflow%3ATest) [![Release](https://github.com/dapr/go-sdk/workflows/Release/badge.svg)](https://github.com/dapr/go-sdk/actions?query=workflow%3ARelease) [![Go Report Card](https://goreportcard.com/badge/github.com/dapr/go-sdk)](https://goreportcard.com/report/github.com/dapr/go-sdk) ![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/dapr/go-sdk)
 
-## Installation
+## Usage
 
-To install Dapr client package, you need to first [install go](https://golang.org/doc/install) and set up your development environment. To import Dapr go client in your code:
+> Assuming you already have [installed](https://golang.org/doc/install) go
+
+Dapr go client includes two packages: `client` (for invoking public Dapr API) and `service` (to create services in go that can be invoked by Dapr, this is sometimes refereed to as "callback"). 
+
+### Client 
+
+Import Dapr go `client` package:
 
 ```go
 import "github.com/dapr/go-sdk/client"
 ```
 
-## Quick start
+#### Quick start
 
 ```go
 package main
@@ -27,26 +33,34 @@ func main() {
         panic(err)
     }
     defer client.Close()
-    //TODO: use the client here 
+    //TODO: use the client here, see below for examples 
 }
 ```
 
-Assuming you have Dapr CLI installed locally, you can then launch your app like this:
+Assuming you have [Dapr CLI](https://github.com/dapr/docs/blob/master/getting-started/environment-setup.md) installed locally, you can then launch your app locally like this:
 
 ```shell
-dapr run --app-id my-app --app-protocol grpc --app-port 50001 go run main.go
+dapr run --app-id example-service \
+         --app-protocol grpc \
+         --app-port 50001 \
+         go run main.go
 ```
 
-See [example folder](./example) for complete example. 
+Check the [example folder](./example) for working Dapr go client examples.
+
+To accelerate your Dapr service development even more, consider the GitHub templates with complete gRPC solutions for two common use-cases:
+
+* [gRPC Event Subscriber Template](https://github.com/mchmarny/dapr-grpc-event-subscriber-template) for pub/sub event processing 
+* [gRPC Serving Service Template ](https://github.com/mchmarny/dapr-grpc-service-template) which creates a target for service to service invocations 
 
 
-## Examples
+#### Usage
 
-Few common Dapr client usage examples 
+The Dapr go client supports following functionality: 
 
-### State 
+##### State 
 
-For simple use-cases, Dapr client provides easy to use methods: 
+For simple use-cases, Dapr client provides easy to use methods for `Save`, `Get`, and `Delete`: 
 
 ```go
 ctx := context.Background()
@@ -54,7 +68,7 @@ data := []byte("hello")
 store := "my-store" // defined in the component YAML 
 
 // save state with the key
-err = client.SaveStateData(ctx, store, "k1", "v1", data)
+err = client.SaveStateData(ctx, store, "k1", data)
 handleErrors(err)
 
 // get state for key
@@ -66,7 +80,7 @@ err = client.DeleteState(ctx, store, "k1")
 handleErrors(err)
 ```
 
-The `StateItem` type exposed by Dapr client provides more granular control options:
+For more granular control, the Dapr go client exposed `StateItem` type which can be use to gain more control over the state operations:
 
 ```go     
 data := &client.StateItem{
@@ -80,17 +94,12 @@ data := &client.StateItem{
     Options:  &client.StateOptions{
         Concurrency: client.StateConcurrencyLastWrite,
         Consistency: client.StateConsistencyStrong,
-        RetryPolicy: &client.StateRetryPolicy{
-            Threshold: 3,
-            Pattern: client.RetryPatternExponential,
-            Interval: time.Duration(5 * time.Second),
-        },
     },
 }
 err = client.SaveStateItem(ctx, store, data)
 ```
 
-Similar `StateOptions` exist on `GetDate` and `DeleteState` methods. Additionally, Dapr client also provides a method to save multiple state items at once:
+Similarly, `StateOptions` exist on the `GetDate` and `DeleteState` methods to support multiple item operations at once:
 
 ```go 
 data := &client.State{
@@ -109,17 +118,17 @@ data := &client.State{
 err = client.SaveState(ctx, data)
 ```
 
-### PubSub 
+##### PubSub 
 
 To publish data onto a topic the Dapr client provides a simple method:
 
 ```go
-data := []byte("hello")
+data := []byte(`{ "id": "a123", "value": "abcdefg", "valid": true }`)
 err = client.PublishEvent(ctx, "topic-name", data)
 handleErrors(err)
 ```
 
-### Service Invocation 
+##### Service Invocation 
 
 To invoke a specific method on another service running with Dapr sidecar, the Dapr client provides two options. To invoke a service without any data:
 
@@ -131,12 +140,12 @@ handleErrors(err)
 And to invoke a service with data: 
 
 ```go 
-data := []byte("hello")
-resp, err := client.InvokeServiceWithContent(ctx, "service-name", "method-name", "text/plain", data)
+data := []byte(`{ "id": "a123", "value": "abcdefg", "valid": true }`)
+resp, err := client.InvokeServiceWithContent(ctx, "service-name", "method-name", "application/json", data)
 handleErrors(err)
 ```
 
-### Bindings
+##### Bindings
 
 Similarly to Service, Dapr client provides two methods to invoke an operation on a [Dapr-defined binding](https://github.com/dapr/docs/tree/master/concepts/bindings). Dapr supports input, output, and bidirectional bindings so the first methods supports all of them along with metadata options: 
 
@@ -158,7 +167,7 @@ err = client.InvokeOutputBinding(ctx, "binding-name", "operation-name", data)
 handleErrors(err)
 ```
 
-### Secrets
+##### Secrets
 
 The Dapr client also provides access to the runtime secrets that can be backed by any number of secrete stores (e.g. Kubernetes Secrets, Hashicorp Vault, or Azure KeyVault):
 
@@ -169,6 +178,11 @@ opt := map[string]string{
 secret, err = client.GetSecret(ctx, "store-name", "secret-name", opt)
 handleErrors(err)
 ```
+
+## Service (callback)
+
+In addition to a an easy to use client, Dapr go package also provides implementation for `service`. Instructions on how to use it are located [here](./service/grpc/Readme.md)
+
 
 ## Contributing to Dapr go client 
 

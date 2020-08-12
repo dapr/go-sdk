@@ -27,19 +27,33 @@ func TestStateOptionsConverter(t *testing.T) {
 	assert.Equal(t, p.Consistency, v1.StateOptions_CONSISTENCY_STRONG)
 }
 
-func TestSaveStateData(t *testing.T) {
+// go test -timeout 30s ./client -count 1 -run ^TestSaveState$
+func TestSaveState(t *testing.T) {
 	ctx := context.Background()
 	data := "test"
+	store := "test"
+	key := "key1"
 
-	err := testClient.SaveStateData(ctx, "store", "key1", []byte(data))
-	assert.Nil(t, err)
+	t.Run("save data", func(t *testing.T) {
+		err := testClient.SaveStateData(ctx, store, key, []byte(data))
+		assert.Nil(t, err)
+	})
 
-	out, etag, err := testClient.GetState(ctx, "store", "key1")
-	assert.Nil(t, err)
-	assert.NotEmpty(t, etag)
-	assert.NotNil(t, out)
-	assert.Equal(t, string(out), data)
+	t.Run("get saved data", func(t *testing.T) {
+		out, etag, err := testClient.GetState(ctx, store, key)
+		assert.Nil(t, err)
+		assert.NotEmpty(t, etag)
+		assert.NotNil(t, out)
+		assert.Equal(t, string(out), data)
+	})
 
-	err = testClient.DeleteState(ctx, "store", "key1")
-	assert.Nil(t, err)
+	t.Run("save data with version", func(t *testing.T) {
+		err := testClient.SaveStateDataWithETag(ctx, store, key, "1", []byte(data))
+		assert.Nil(t, err)
+	})
+
+	t.Run("delete data", func(t *testing.T) {
+		err := testClient.DeleteState(ctx, store, key)
+		assert.Nil(t, err)
+	})
 }

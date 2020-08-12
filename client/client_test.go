@@ -11,6 +11,7 @@ import (
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/test/bufconn"
+	"google.golang.org/protobuf/types/known/anypb"
 
 	commonv1pb "github.com/dapr/go-sdk/dapr/proto/common/v1"
 	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
@@ -76,9 +77,17 @@ type testDaprServer struct {
 }
 
 func (s *testDaprServer) InvokeService(ctx context.Context, req *pb.InvokeServiceRequest) (*commonv1pb.InvokeResponse, error) {
+	if req.Message == nil {
+		return &commonv1pb.InvokeResponse{
+			ContentType: "text/plain",
+			Data: &anypb.Any{
+				Value: []byte("pong"),
+			},
+		}, nil
+	}
 	return &commonv1pb.InvokeResponse{
 		ContentType: req.Message.ContentType,
-		Data:        req.GetMessage().Data,
+		Data:        req.Message.Data,
 	}, nil
 }
 
@@ -106,6 +115,12 @@ func (s *testDaprServer) PublishEvent(ctx context.Context, req *pb.PublishEventR
 }
 
 func (s *testDaprServer) InvokeBinding(ctx context.Context, req *pb.InvokeBindingRequest) (*pb.InvokeBindingResponse, error) {
+	if req.Data == nil {
+		return &pb.InvokeBindingResponse{
+			Data:     []byte("test"),
+			Metadata: map[string]string{"k1": "v1", "k2": "v2"},
+		}, nil
+	}
 	return &pb.InvokeBindingResponse{
 		Data:     req.Data,
 		Metadata: req.Metadata,

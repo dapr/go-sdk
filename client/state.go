@@ -145,11 +145,6 @@ func (c *GRPCClient) SaveState(ctx context.Context, s *State) error {
 	return nil
 }
 
-// SaveStateData saves the raw data into store using default state options.
-func (c *GRPCClient) SaveStateData(ctx context.Context, store, key string, data []byte) error {
-	return c.SaveStateDataWithETag(ctx, store, key, "", data)
-}
-
 // SaveStateDataWithETag saves the raw data into store using default state options.
 func (c *GRPCClient) SaveStateDataWithETag(ctx context.Context, store, key, etag string, data []byte) error {
 	if store == "" {
@@ -171,6 +166,11 @@ func (c *GRPCClient) SaveStateDataWithETag(ctx context.Context, store, key, etag
 	}
 
 	return c.SaveState(ctx, req)
+}
+
+// SaveStateData saves the raw data into store using default state options.
+func (c *GRPCClient) SaveStateData(ctx context.Context, store, key string, data []byte) error {
+	return c.SaveStateDataWithETag(ctx, store, key, "", data)
 }
 
 // SaveStateItem saves the single state item to store.
@@ -220,11 +220,11 @@ func (c *GRPCClient) GetStateWithConsistency(ctx context.Context, store, key str
 
 // DeleteState deletes content from store using default state options.
 func (c *GRPCClient) DeleteState(ctx context.Context, store, key string) error {
-	return c.DeleteStateVersion(ctx, store, key, "", nil)
+	return c.DeleteStateWithETag(ctx, store, key, "", nil)
 }
 
-// DeleteStateVersion deletes content from store using provided state options and etag.
-func (c *GRPCClient) DeleteStateVersion(ctx context.Context, store, key, etag string, opts *StateOptions) error {
+// DeleteStateWithETag deletes content from store using provided state options and etag.
+func (c *GRPCClient) DeleteStateWithETag(ctx context.Context, store, key, etag string, opts *StateOptions) error {
 	if store == "" {
 		return errors.New("nil store")
 	}

@@ -1,30 +1,64 @@
-RELEASE_VERSION  =v0.9.0
+RELEASE_VERSION  =v0.10.0
 GDOC_PORT        =8888
 PROTO_ROOT       =https://raw.githubusercontent.com/dapr/dapr/master/dapr/proto/
 
 .PHONY: mod test cover service client lint protps tag docs clean help
 all: test
 
-mod: ## Updates the go modules
+tidy: ## Updates the go modules
 	go mod tidy
 
 test: mod ## Tests the entire project 
-	go test -v -count=1 -race ./...
-	# go test -v -count=1 -run NameOfSingleTest ./...
+	go test -count=1 -race ./...
 
-cover: mod ## Displays test coverage in the Client package
-	go test -coverprofile=cover.out ./client && go tool cover -html=cover.out
+cover: mod ## Displays test coverage in the client and service packages
+	go test -coverprofile=cover-client.out ./client && go tool cover -html=cover-client.out
+	go test -coverprofile=cover-service.out ./service/grpc && go tool cover -html=cover-service.out
 
 service: mod ## Runs the uncompiled example service code 
 	dapr run --app-id serving \
-	         --app-protocol grpc \
+			 --app-protocol grpc \
 			 --app-port 50001 \
-			 go run example/serving/main.go
+			 --port 3500 \
+			 --log-level debug \
+			 --components-path example/serving/grpc/config \
+			 go run example/serving/grpc/main.go
+
+service09: mod ## Runs the uncompiled example service code using the Dapr v0.9 flags
+	dapr run --app-id serving \
+			 --protocol grpc \
+			 --app-port 50001 \
+			 --port 3500 \
+			 --log-level debug \
+			 --components-path example/serving/grpc/config \
+			 go run example/serving/grpc/main.go
 
 client: mod ## Runs the uncompiled example client code 
 	dapr run --app-id caller \
-             --components-path example/client/comp \
+             --components-path example/client/config \
+             --log-level debug \
              go run example/client/main.go 
+
+pubsub: ## Submits pub/sub events in different cotnent types 
+	curl -d '{ "from": "John", "to": "Lary", "message": "hi" }' \
+		-H "Content-type: application/json" \
+		"http://localhost:3500/v1.0/publish/messages"
+	curl -d '<message><from>John</from><to>Lary</to></message>' \
+		-H "Content-type: application/xml" \
+		"http://localhost:3500/v1.0/publish/messages"
+	curl -d '0x18, 0x2d, 0x44, 0x54, 0xfb, 0x21, 0x09, 0x40' \
+		-H "Content-type: application/octet-stream" \
+		"http://localhost:3500/v1.0/publish/messages"
+
+invoke: ## Invokes service method with different operations
+	curl -d '{ "from": "John", "to": "Lary", "message": "hi" }' \
+		-H "Content-type: application/json" \
+		"http://localhost:3500/v1.0/invoke/serving/method/echo"
+	curl -d "ping" \
+		-H "Content-type: text/plain;charset=UTF-8" \
+		"http://localhost:3500/v1.0/invoke/serving/method/echo"
+	curl -X DELETE \
+		"http://localhost:3500/v1.0/invoke/serving/method/echo?k1=v1&k2=v2"
 
 lint: ## Lints the entire project
 	golangci-lint run --timeout=3m
@@ -48,7 +82,7 @@ clean: ## Cleans go and generated files in ./dapr/proto/
 	rm -fr ./dapr/proto/common/v1/*
 	rm -fr ./dapr/proto/runtime/v1/*
 
-protos: ## Downloads proto files from dapr/dapr and generats gRPC proto clients
+protos: ## Downloads proto files from dapr/dapr master and generats gRPC proto clients
 	go install github.com/gogo/protobuf/gogoreplace
 
 	wget -q $(PROTO_ROOT)/common/v1/common.proto -O ./dapr/proto/common/v1/common.proto

@@ -54,7 +54,7 @@ type Client interface {
 	// SaveStateData saves the raw data into store using default state options.
 	SaveStateData(ctx context.Context, store, key string, data []byte) error
 
-	// SaveStateDataWithETag saves the raw data into store using default state options and provided ETag.
+	// SaveStateDataWithETag saves the raw data into store using default state options and ETag.
 	SaveStateDataWithETag(ctx context.Context, store, key, etag string, data []byte) error
 
 	// SaveStateItem saves the single state item to store.
@@ -69,8 +69,8 @@ type Client interface {
 	// DeleteState deletes content from store using default state options.
 	DeleteState(ctx context.Context, store, key string) error
 
-	// DeleteStateVersion deletes content from store using provided state options and etag.
-	DeleteStateVersion(ctx context.Context, store, key, etag string, opts *StateOptions) error
+	// DeleteStateWithETag deletes content from store using provided state options and etag.
+	DeleteStateWithETag(ctx context.Context, store, key, etag string, opts *StateOptions) error
 
 	// Close cleans up all resources created by the client.
 	Close()
