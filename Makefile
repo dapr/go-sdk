@@ -24,6 +24,15 @@ service: mod ## Runs the uncompiled example service code
 			 --components-path example/serving/config \
 			 go run example/serving/main.go
 
+service09: mod ## Runs the uncompiled example service code using the Dapr v0.9 flags
+	dapr run --app-id serving \
+			 --protocol grpc \
+			 --app-port 50001 \
+			 --port 3500 \
+			 --log-level debug \
+			 --components-path example/serving/config \
+			 go run example/serving/main.go
+
 client: mod ## Runs the uncompiled example client code 
 	dapr run --app-id caller \
              --components-path example/client/config \
