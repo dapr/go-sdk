@@ -1,6 +1,6 @@
 # Dapr SDK for Go
 
-Client library to accelerate Dapr development in go. This client supports all public [Dapr API](https://github.com/dapr/docs/tree/master/reference/api) and focuses on developer productivity. 
+Client library to accelerate Dapr application development in go. This client supports all public [Dapr API](https://github.com/dapr/docs/tree/master/reference/api) and focuses on developer productivity. 
 
 [![Test](https://github.com/dapr/go-sdk/workflows/Test/badge.svg)](https://github.com/dapr/go-sdk/actions?query=workflow%3ATest) [![Release](https://github.com/dapr/go-sdk/workflows/Release/badge.svg)](https://github.com/dapr/go-sdk/actions?query=workflow%3ARelease) [![Go Report Card](https://goreportcard.com/badge/github.com/dapr/go-sdk)](https://goreportcard.com/report/github.com/dapr/go-sdk) ![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/dapr/go-sdk)
 
@@ -8,7 +8,7 @@ Client library to accelerate Dapr development in go. This client supports all pu
 
 > Assuming you already have [installed](https://golang.org/doc/install) go
 
-Dapr go client includes two packages: `client` (for invoking public Dapr API) and `service` (to create services in go that can be invoked by Dapr). 
+Dapr go client includes two packages: `client` (for invoking public Dapr API) and `service` (to create services in go that can be invoked by Dapr, this is sometimes refereed to as "callback"). 
 
 ### Client 
 
@@ -68,7 +68,7 @@ data := []byte("hello")
 store := "my-store" // defined in the component YAML 
 
 // save state with the key
-err = client.SaveStateData(ctx, store, "k1", "v1", data)
+err = client.SaveStateData(ctx, store, "k1", data)
 handleErrors(err)
 
 // get state for key
@@ -94,11 +94,6 @@ data := &client.StateItem{
     Options:  &client.StateOptions{
         Concurrency: client.StateConcurrencyLastWrite,
         Consistency: client.StateConsistencyStrong,
-        RetryPolicy: &client.StateRetryPolicy{
-            Threshold: 3,
-            Pattern: client.RetryPatternExponential,
-            Interval: time.Duration(5 * time.Second),
-        },
     },
 }
 err = client.SaveStateItem(ctx, store, data)

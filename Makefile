@@ -1,4 +1,4 @@
-RELEASE_VERSION  =v0.9.0
+RELEASE_VERSION  =v0.10.0
 GDOC_PORT        =8888
 PROTO_ROOT       =https://raw.githubusercontent.com/dapr/dapr/master/dapr/proto/
 
@@ -17,7 +17,7 @@ cover: mod ## Displays test coverage in the client and service packages
 
 service: mod ## Runs the uncompiled example service code 
 	dapr run --app-id serving \
-			 --protocol grpc \
+			 --app-protocol grpc \
 			 --app-port 50001 \
 			 --port 3500 \
 			 --log-level debug \
