@@ -11,7 +11,7 @@ import (
 )
 
 // AddTopicEventHandler appends provided event handler with topic name to the service
-func (s *Server) AddTopicEventHandler(topic string, m map[string]string, fn func(ctx context.Context, e *TopicEvent) error) error {
+func (s *Server) AddTopicEventHandler(topic string, fn func(ctx context.Context, e *TopicEvent) error) error {
 	if topic == "" {
 		return fmt.Errorf("topic name required")
 	}
@@ -19,6 +19,19 @@ func (s *Server) AddTopicEventHandler(topic string, m map[string]string, fn func
 		topic: topic,
 		fn:    fn,
 		meta:  map[string]string{},
+	}
+	return nil
+}
+
+// AddTopicEventHandlerWithMetadata appends provided event handler with topic name and metadata to the service
+func (s *Server) AddTopicEventHandlerWithMetadata(topic string, m map[string]string, fn func(ctx context.Context, e *TopicEvent) error) error {
+	if topic == "" {
+		return fmt.Errorf("topic name required")
+	}
+	s.topicSubscriptions[topic] = &topicEventHandler{
+		topic: topic,
+		fn:    fn,
+		meta:  m,
 	}
 	return nil
 }

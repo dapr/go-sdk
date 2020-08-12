@@ -21,11 +21,10 @@ func TestTopic(t *testing.T) {
 	t.Parallel()
 
 	topicName := "test"
-	meta := map[string]string{}
 	ctx := context.Background()
 
 	server := getTestServer()
-	err := server.AddTopicEventHandler(topicName, meta, eventHandler)
+	err := server.AddTopicEventHandler(topicName, eventHandler)
 	assert.Nil(t, err)
 	startTestServer(server)
 

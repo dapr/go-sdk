@@ -16,8 +16,7 @@ func main() {
 	}
 
 	// add some topic subscriptions
-	m := map[string]string{}
-	err = s.AddTopicEventHandler("messages", m, eventHandler)
+	err = s.AddTopicEventHandler("messages", eventHandler)
 	if err != nil {
 		log.Fatalf("error adding topic subscription: %v", err)
 	}

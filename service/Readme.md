@@ -16,8 +16,7 @@ if err != nil {
     log.Fatalf("failed to start the server: %v", err)
 }
 
-m := map[string]string{"demo-key": "metadata value"}
-err = s.AddTopicEventHandler("messages", m, eventHandler)
+err = s.AddTopicEventHandler("messages", eventHandler)
 if err != nil {
     log.Fatalf("error adding topic subscription: %v", err)
 }
