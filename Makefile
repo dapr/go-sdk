@@ -11,8 +11,9 @@ tidy: ## Updates the go modules
 test: mod ## Tests the entire project 
 	go test -count=1 -race ./...
 
-cover: mod ## Displays test coverage in the Client package
-	go test -coverprofile=cover.out ./client && go tool cover -html=cover.out
+cover: mod ## Displays test coverage in the client and service packages
+	go test -coverprofile=cover-client.out ./client && go tool cover -html=cover-client.out
+	go test -coverprofile=cover-service.out ./service && go tool cover -html=cover-service.out
 
 service: mod ## Runs the uncompiled example service code 
 	dapr run --app-id serving \
