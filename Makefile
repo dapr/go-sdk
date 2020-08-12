@@ -13,7 +13,7 @@ test: mod ## Tests the entire project
 
 cover: mod ## Displays test coverage in the client and service packages
 	go test -coverprofile=cover-client.out ./client && go tool cover -html=cover-client.out
-	go test -coverprofile=cover-service.out ./service && go tool cover -html=cover-service.out
+	go test -coverprofile=cover-service.out ./service/grpc && go tool cover -html=cover-service.out
 
 service: mod ## Runs the uncompiled example service code 
 	dapr run --app-id serving \
@@ -21,8 +21,8 @@ service: mod ## Runs the uncompiled example service code
 			 --app-port 50001 \
 			 --port 3500 \
 			 --log-level debug \
-			 --components-path example/serving/config \
-			 go run example/serving/main.go
+			 --components-path example/serving/grpc/config \
+			 go run example/serving/grpc/main.go
 
 service09: mod ## Runs the uncompiled example service code using the Dapr v0.9 flags
 	dapr run --app-id serving \
@@ -30,8 +30,8 @@ service09: mod ## Runs the uncompiled example service code using the Dapr v0.9 f
 			 --app-port 50001 \
 			 --port 3500 \
 			 --log-level debug \
-			 --components-path example/serving/config \
-			 go run example/serving/main.go
+			 --components-path example/serving/grpc/config \
+			 go run example/serving/grpc/main.go
 
 client: mod ## Runs the uncompiled example client code 
 	dapr run --app-id caller \

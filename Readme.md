@@ -181,7 +181,7 @@ handleErrors(err)
 
 ## Service (callback)
 
-In addition to a an easy to use client, Dapr go package also provides implementation for `service`. Instructions on how to use it are located [here](./service/Readme.md)
+In addition to a an easy to use client, Dapr go package also provides implementation for `service`. Instructions on how to use it are located [here](./service/grpc/Readme.md)
 
 
 ## Contributing to Dapr go client 

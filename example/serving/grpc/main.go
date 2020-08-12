@@ -5,7 +5,7 @@ import (
 	"errors"
 	"log"
 
-	daprd "github.com/dapr/go-sdk/service"
+	daprd "github.com/dapr/go-sdk/service/grpc"
 )
 
 func main() {

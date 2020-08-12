@@ -5,7 +5,7 @@ The `example` folder contains a Dapr enabled `serving` app and a `client` app th
 To run this example, start by first launching the service:
 
 ```
-cd example/serving
+cd example/serving/grpc
 dapr run --app-id serving \
          --app-protocol grpc \
          --app-port 50001 \

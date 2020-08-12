@@ -3,7 +3,7 @@
 Start by importing Dapr go `service` package:
 
 ```go
-daprd "github.com/dapr/go-sdk/service"
+daprd "github.com/dapr/go-sdk/service/grpc"
 ```
 
 ## Event Handling 
