@@ -1,4 +1,4 @@
-package grpc
+package service
 
 import (
 	"context"
@@ -21,10 +21,11 @@ func TestTopic(t *testing.T) {
 	t.Parallel()
 
 	topicName := "test"
+	meta := map[string]string{}
 	ctx := context.Background()
 
 	server := getTestServer()
-	err := server.AddTopicEventHandler(topicName, eventHandler)
+	err := server.AddTopicEventHandler(topicName, meta, eventHandler)
 	assert.Nil(t, err)
 	startTestServer(server)
 
@@ -44,11 +45,12 @@ func TestTopic(t *testing.T) {
 	t.Run("topic event for valid topic", func(t *testing.T) {
 		in := &runtime.TopicEventRequest{
 			Id:              "a123",
-			DataContentType: "text/plain",
 			Source:          "test",
-			SpecVersion:     "v0.3",
-			Topic:           topicName,
 			Type:            "test",
+			SpecVersion:     "v0.3",
+			DataContentType: "text/plain",
+			Data:            []byte("test"),
+			Topic:           topicName,
 		}
 		_, err := server.OnTopicEvent(ctx, in)
 		assert.NoError(t, err)

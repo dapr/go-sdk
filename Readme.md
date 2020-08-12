@@ -184,70 +184,10 @@ secret, err = client.GetSecret(ctx, "store-name", "secret-name", opt)
 handleErrors(err)
 ```
 
-## Service 
+## Service (callback)
 
-Dapr go package provides two implementations for `service`: HTTP and gRPC
+In addition to a an easy to use client, Dapr go package also provides implementation for `service`. Instructions on how to use it are located [here](./service/Readme.md)
 
-### HTTP
-
-Import Dapr go `service` package:
-
-```go
-daprd "github.com/dapr/go-sdk/service/http"
-```
-
-#### Event Handling 
-
-To handle events from specific topic in HTTP, first create a Dapr serving server, add topic event handler, and start the service on specific address:
-
-```go
-s := daprd.NewService()
-
-err := s.AddTopicEventHandler("messages", "/messages", messageHandler)
-if err != nil {
-    log.Fatalf("error adding topic subscription: %v", err)
-}
-
-// start service on address (e.g. ":8080", "0.0.0.0:8080", "10.1.1.1:8080" )
-if err = s.Start(":8080"); err != nil && err != http.ErrServerClosed {
-    log.Fatalf("error listenning: %v", err)
-}
-
-func messageHandler(ctx context.Context, e daprd.TopicEvent) error {
-    log.Printf("event - Topic:%s, ID:%s, Data: %v", e.Topic, e.ID, e.Data)
-    return nil
-}
-```
-
-#### Service Invocation Handler 
-
-To handle service invocations in HTTP, first create a Dapr serving server, add invocation handler, and start the service on specific address:
-
-
-
-```go
-s := daprd.NewService()
-
-err = s.AddInvocationHandler("/EchoMethod", echoHandler)
-if err != nil {
-    log.Fatalf("error adding invocation handler: %v", err)
-}
-
-// start service on address (e.g. ":8080", "0.0.0.0:8080", "10.1.1.1:8080" )
-if err = s.Start(":8080"); err != nil && err != http.ErrServerClosed {
-    log.Fatalf("error listenning: %v", err)
-}
-
-func echoHandler(ctx context.Context, in *daprd.InvocationEvent) (out []byte, err error) {
-    if in == nil {
-        err = errors.New("nil invocation parameter")
-        return
-    }
-    log.Printf("echo handler (%s): %+v", in.ContentType, string(in.Data))
-    out = in.Data
-    return
-}
-```
 
 ## Contributing to Dapr go client 
 

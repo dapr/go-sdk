@@ -16,14 +16,39 @@ cover: mod ## Displays test coverage in the Client package
 
 service: mod ## Runs the uncompiled example service code 
 	dapr run --app-id serving \
-	         --app-protocol grpc \
+			 --protocol grpc \
 			 --app-port 50001 \
+			 --port 3500 \
+			 --log-level debug \
+			 --components-path example/serving/config \
 			 go run example/serving/main.go
 
 client: mod ## Runs the uncompiled example client code 
 	dapr run --app-id caller \
-             --components-path example/client/comp \
+             --components-path example/client/config \
+             --log-level debug \
              go run example/client/main.go 
+
+pubsub: ## Submits pub/sub events in different cotnent types 
+	curl -d '{ "from": "John", "to": "Lary", "message": "hi" }' \
+		-H "Content-type: application/json" \
+		"http://localhost:3500/v1.0/publish/messages"
+	curl -d '<message><from>John</from><to>Lary</to></message>' \
+		-H "Content-type: application/xml" \
+		"http://localhost:3500/v1.0/publish/messages"
+	curl -d '0x18, 0x2d, 0x44, 0x54, 0xfb, 0x21, 0x09, 0x40' \
+		-H "Content-type: application/octet-stream" \
+		"http://localhost:3500/v1.0/publish/messages"
+
+invoke: ## Invokes service method with different operations
+	curl -d '{ "from": "John", "to": "Lary", "message": "hi" }' \
+		-H "Content-type: application/json" \
+		"http://localhost:3500/v1.0/invoke/serving/method/echo"
+	curl -d "ping" \
+		-H "Content-type: text/plain;charset=UTF-8" \
+		"http://localhost:3500/v1.0/invoke/serving/method/echo"
+	curl -X DELETE \
+		"http://localhost:3500/v1.0/invoke/serving/method/echo?k1=v1&k2=v2"
 
 lint: ## Lints the entire project
 	golangci-lint run --timeout=3m

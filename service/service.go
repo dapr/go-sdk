@@ -1,4 +1,4 @@
-package grpc
+package service
 
 import (
 	"context"
@@ -14,17 +14,17 @@ import (
 type Service interface {
 	// AddServiceInvocationHandler appends provided service invocation handler with its name to the service.
 	AddServiceInvocationHandler(name string, fn func(ctx context.Context, in *InvocationEvent) (out *Content, err error)) error
-	// AddTopicEventHandler appends provided event handler with it's topic to the service
-	AddTopicEventHandler(topic string, fn func(ctx context.Context, e *TopicEvent) error) error
-	// AddBindingInvocationHandler appends provided binding invocation handler with its name to the service
+	// AddTopicEventHandler appends provided event handler with it's topic and optional metadata to the service.
+	AddTopicEventHandler(topic string, m map[string]string, fn func(ctx context.Context, e *TopicEvent) error) error
+	// AddBindingInvocationHandler appends provided binding invocation handler with its name to the service.
 	AddBindingInvocationHandler(name string, fn func(ctx context.Context, in *BindingEvent) (out []byte, err error)) error
-	// Start starts service
+	// Start starts service.
 	Start() error
-	// Stop stops the previously started service
+	// Stop stops the previously started service.
 	Stop() error
 }
 
-// TopicEvent is the content of the inbound topic message
+// TopicEvent is the content of the inbound topic message.
 type TopicEvent struct {
 	// ID identifies the event.
 	ID string
@@ -44,7 +44,7 @@ type TopicEvent struct {
 	Topic string
 }
 
-// InvocationEvent represents the input and output of binding invocation
+// InvocationEvent represents the input and output of binding invocation.
 type InvocationEvent struct {
 	// Data is the payload that the input bindings sent.
 	Data []byte
@@ -58,7 +58,7 @@ type InvocationEvent struct {
 	QueryString map[string]string
 }
 
-// Content is a generic data content
+// Content is a generic data content.
 type Content struct {
 	// Data is the payload that the input bindings sent.
 	Data []byte
@@ -68,23 +68,23 @@ type Content struct {
 	DataTypeURL string
 }
 
-// BindingEvent represents the binding event handler input
+// BindingEvent represents the binding event handler input.
 type BindingEvent struct {
-	// Data is the input bindings sent
+	// Data is the input bindings sent.
 	Data []byte
-	// Metadata is the input binging components
+	// Metadata is the input binging components.
 	Metadata map[string]string
 }
 
-// Subscription represents single topic subscription
+// Subscription represents single topic subscription.
 type Subscription struct {
-	// Topic is the name of the topic
+	// Topic is the name of the topic.
 	Topic string
-	// Route is the route of the handler where topic events should be published
+	// Route is the route of the handler where topic events should be published.
 	Route string
 }
 
-// NewService creates new Service
+// NewService creates new Service.
 func NewService(address string) (s Service, err error) {
 	if address == "" {
 		return nil, errors.New("nil address")
@@ -98,36 +98,42 @@ func NewService(address string) (s Service, err error) {
 	return
 }
 
-// NewServiceWithListener creates new Service with specific listener
+// NewServiceWithListener creates new Service with specific listener.
 func NewServiceWithListener(lis net.Listener) Service {
 	return newService(lis)
 }
 
-func newService(lis net.Listener) *ServiceImp {
-	return &ServiceImp{
+func newService(lis net.Listener) *Server {
+	return &Server{
 		listener:           lis,
 		invokeHandlers:     make(map[string]func(ctx context.Context, in *InvocationEvent) (out *Content, err error)),
-		topicSubscriptions: make(map[string]func(ctx context.Context, e *TopicEvent) error),
+		topicSubscriptions: make(map[string]*topicEventHandler),
 		bindingHandlers:    make(map[string]func(ctx context.Context, in *BindingEvent) (out []byte, err error)),
 	}
 }
 
-// ServiceImp is the gRPC service implementation for Dapr
-type ServiceImp struct {
+// Server is the gRPC service implementation for Dapr.
+type Server struct {
 	listener           net.Listener
 	invokeHandlers     map[string]func(ctx context.Context, in *InvocationEvent) (out *Content, err error)
-	topicSubscriptions map[string]func(ctx context.Context, e *TopicEvent) error
+	topicSubscriptions map[string]*topicEventHandler
 	bindingHandlers    map[string]func(ctx context.Context, in *BindingEvent) (out []byte, err error)
 }
 
-// Start registers the server and starts it
-func (s *ServiceImp) Start() error {
+type topicEventHandler struct {
+	topic string
+	fn    func(ctx context.Context, e *TopicEvent) error
+	meta  map[string]string
+}
+
+// Start registers the server and starts it.
+func (s *Server) Start() error {
 	gs := grpc.NewServer()
 	pb.RegisterAppCallbackServer(gs, s)
 	return gs.Serve(s.listener)
 }
 
-// Stop stops the previously started service
-func (s *ServiceImp) Stop() error {
+// Stop stops the previously started service.
+func (s *Server) Stop() error {
 	return s.listener.Close()
 }

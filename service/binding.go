@@ -1,4 +1,4 @@
-package grpc
+package service
 
 import (
 	"context"
@@ -11,7 +11,7 @@ import (
 )
 
 // AddBindingInvocationHandler appends provided binding invocation handler with its name to the service
-func (s *ServiceImp) AddBindingInvocationHandler(name string, fn func(ctx context.Context, in *BindingEvent) (out []byte, err error)) error {
+func (s *Server) AddBindingInvocationHandler(name string, fn func(ctx context.Context, in *BindingEvent) (out []byte, err error)) error {
 	if name == "" {
 		return fmt.Errorf("binding name required")
 	}
@@ -21,7 +21,7 @@ func (s *ServiceImp) AddBindingInvocationHandler(name string, fn func(ctx contex
 
 // ListInputBindings is called by Dapr to get the list of bindings the app will get invoked by. In this example, we are telling Dapr
 // To invoke our app with a binding named storage
-func (s *ServiceImp) ListInputBindings(ctx context.Context, in *empty.Empty) (*pb.ListInputBindingsResponse, error) {
+func (s *Server) ListInputBindings(ctx context.Context, in *empty.Empty) (*pb.ListInputBindingsResponse, error) {
 	list := make([]string, 0)
 	for k := range s.bindingHandlers {
 		list = append(list, k)
@@ -33,7 +33,7 @@ func (s *ServiceImp) ListInputBindings(ctx context.Context, in *empty.Empty) (*p
 }
 
 // OnBindingEvent gets invoked every time a new event is fired from a registered binding. The message carries the binding name, a payload and optional metadata
-func (s *ServiceImp) OnBindingEvent(ctx context.Context, in *pb.BindingEventRequest) (*pb.BindingEventResponse, error) {
+func (s *Server) OnBindingEvent(ctx context.Context, in *pb.BindingEventRequest) (*pb.BindingEventResponse, error) {
 	if in == nil {
 		return nil, errors.New("nil binding event request")
 	}

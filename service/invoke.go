@@ -1,4 +1,4 @@
-package grpc
+package service
 
 import (
 	"context"
@@ -11,7 +11,7 @@ import (
 )
 
 // AddServiceInvocationHandler appends provided service invocation handler with its method to the service
-func (s *ServiceImp) AddServiceInvocationHandler(method string, fn func(ctx context.Context, in *InvocationEvent) (our *Content, err error)) error {
+func (s *Server) AddServiceInvocationHandler(method string, fn func(ctx context.Context, in *InvocationEvent) (our *Content, err error)) error {
 	if method == "" {
 		return fmt.Errorf("servie name required")
 	}
@@ -20,7 +20,7 @@ func (s *ServiceImp) AddServiceInvocationHandler(method string, fn func(ctx cont
 }
 
 // OnInvoke gets invoked when a remote service has called the app through Dapr
-func (s *ServiceImp) OnInvoke(ctx context.Context, in *cpb.InvokeRequest) (*cpb.InvokeResponse, error) {
+func (s *Server) OnInvoke(ctx context.Context, in *cpb.InvokeRequest) (*cpb.InvokeResponse, error) {
 	if in == nil {
 		return nil, errors.New("nil invoke request")
 	}

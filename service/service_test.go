@@ -1,4 +1,4 @@
-package grpc
+package service
 
 import (
 	"testing"
@@ -14,11 +14,11 @@ func TestServer(t *testing.T) {
 	stopTestServer(t, server)
 }
 
-func getTestServer() *ServiceImp {
+func getTestServer() *Server {
 	return newService(bufconn.Listen(1024 * 1024))
 }
 
-func startTestServer(server *ServiceImp) {
+func startTestServer(server *Server) {
 	go func() {
 		if err := server.Start(); err != nil && err.Error() != "closed" {
 			panic(err)
@@ -26,7 +26,7 @@ func startTestServer(server *ServiceImp) {
 	}()
 }
 
-func stopTestServer(t *testing.T, server *ServiceImp) {
+func stopTestServer(t *testing.T, server *Server) {
 	assert.NotNil(t, server)
 	err := server.Stop()
 	assert.Nilf(t, err, "error stopping server")
