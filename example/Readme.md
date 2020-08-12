@@ -2,7 +2,22 @@
 
 The `example` folder contains a Dapr enabled `serving` app and a `client` app that uses this SDK to invoke Dapr API for state and events, The `serving` app is available as HTTP or gRPC. The `client` app can target either one of these for service to service and binding invocations.
 
-To run this example, start by first launching the service:
+To run this example, start by first launching the service in ether HTTP or gRPC:
+
+### HTTP
+
+```
+cd example/serving/http
+dapr run --app-id serving \
+         --app-protocol http \
+         --app-port 8080 \
+         --port 3500 \
+         --log-level debug \
+         --components-path ./config \
+         go run main.go
+```
+
+### gRPC
 
 ```
 cd example/serving/grpc
