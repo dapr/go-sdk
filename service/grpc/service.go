@@ -39,6 +39,7 @@ type TopicEvent struct {
 	// The content type of data value.
 	DataContentType string
 	// The content of the event.
+	// Note, this is why the gRPC and HTTP implementations need separate structs for cloud events.
 	Data interface{}
 	// Cloud event subject
 	Subject string
