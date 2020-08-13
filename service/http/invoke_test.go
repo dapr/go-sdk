@@ -9,6 +9,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/dapr/go-sdk/service/common"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -17,12 +18,12 @@ func TestInvocationHandlerWithData(t *testing.T) {
 
 	data := `{"name": "test", "data": hellow}`
 	s := newService("")
-	err := s.AddServiceInvocationHandler("/", func(ctx context.Context, in *InvocationEvent) (out *Content, err error) {
+	err := s.AddServiceInvocationHandler("/", func(ctx context.Context, in *common.InvocationEvent) (out *common.Content, err error) {
 		if in == nil || in.Data == nil || in.ContentType == "" {
 			err = errors.New("nil input")
 			return
 		}
-		out = &Content{
+		out = &common.Content{
 			Data:        in.Data,
 			ContentType: in.ContentType,
 			DataTypeURL: in.DataTypeURL,
@@ -48,12 +49,12 @@ func TestInvocationHandlerWithoutInputData(t *testing.T) {
 	t.Parallel()
 
 	s := newService("")
-	err := s.AddServiceInvocationHandler("/", func(ctx context.Context, in *InvocationEvent) (out *Content, err error) {
+	err := s.AddServiceInvocationHandler("/", func(ctx context.Context, in *common.InvocationEvent) (out *common.Content, err error) {
 		if in == nil || in.Data != nil {
 			err = errors.New("nil input")
 			return
 		}
-		return &Content{}, nil
+		return &common.Content{}, nil
 	})
 	assert.NoErrorf(t, err, "error adding event handler")
 
@@ -75,7 +76,7 @@ func TestInvocationHandlerWithInvalidRoute(t *testing.T) {
 	t.Parallel()
 
 	s := newService("")
-	err := s.AddServiceInvocationHandler("/a", func(ctx context.Context, in *InvocationEvent) (out *Content, err error) {
+	err := s.AddServiceInvocationHandler("/a", func(ctx context.Context, in *common.InvocationEvent) (out *common.Content, err error) {
 		return nil, nil
 	})
 	assert.NoErrorf(t, err, "error adding event handler")

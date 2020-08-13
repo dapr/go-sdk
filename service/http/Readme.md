@@ -13,7 +13,12 @@ To handle events from specific topic, first create a Dapr service, add topic eve
 ```go
 s := daprd.NewService(":8080")
 
-err := s.AddTopicEventHandler("messages", "/events", eventHandler)
+sub := &common.Subscription{
+	Topic: "messages",
+	Route: "/events",
+}
+
+err := s.AddTopicEventHandler(sub, eventHandler)
 if err != nil {
 	log.Fatalf("error adding topic subscription: %v", err)
 }
@@ -68,12 +73,7 @@ To handle binding invocations, create and start the Dapr service as in the above
 ```go
 s := daprd.NewService(":8080")
 
-err = s.AddBindingInvocationHandler("run", runHandler)
-if err != nil {
-    log.Fatalf("error adding binding handler: %v", err)
-}
-
-if err := s.AddInputBindingHandler("/run", runHandler); err != nil {
+if err := s.AddBindingInvocationHandler("/run", runHandler); err != nil {
 	log.Fatalf("error adding binding handler: %v", err)
 }
 

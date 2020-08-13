@@ -8,6 +8,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/dapr/go-sdk/service/common"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -15,7 +16,7 @@ func TestBindingHandlerWithoutData(t *testing.T) {
 	t.Parallel()
 
 	s := newService("")
-	err := s.AddInputBindingHandler("/", func(ctx context.Context, in *BindingEvent) (out []byte, err error) {
+	err := s.AddBindingInvocationHandler("/", func(ctx context.Context, in *common.BindingEvent) (out []byte, err error) {
 		if in == nil {
 			return nil, errors.New("nil input")
 		}
@@ -41,7 +42,7 @@ func TestBindingHandlerWithData(t *testing.T) {
 
 	data := `{"name": "test"}`
 	s := newService("")
-	err := s.AddInputBindingHandler("/", func(ctx context.Context, in *BindingEvent) (out []byte, err error) {
+	err := s.AddBindingInvocationHandler("/", func(ctx context.Context, in *common.BindingEvent) (out []byte, err error) {
 		if in == nil {
 			return nil, errors.New("nil input")
 		}

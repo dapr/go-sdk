@@ -4,14 +4,14 @@ import (
 	"context"
 	"fmt"
 
+	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
+	"github.com/dapr/go-sdk/service/common"
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/pkg/errors"
-
-	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
 )
 
 // AddBindingInvocationHandler appends provided binding invocation handler with its name to the service
-func (s *Server) AddBindingInvocationHandler(name string, fn func(ctx context.Context, in *BindingEvent) (out []byte, err error)) error {
+func (s *Server) AddBindingInvocationHandler(name string, fn func(ctx context.Context, in *common.BindingEvent) (out []byte, err error)) error {
 	if name == "" {
 		return fmt.Errorf("binding name required")
 	}
@@ -38,7 +38,7 @@ func (s *Server) OnBindingEvent(ctx context.Context, in *pb.BindingEventRequest)
 		return nil, errors.New("nil binding event request")
 	}
 	if fn, ok := s.bindingHandlers[in.Name]; ok {
-		e := &BindingEvent{
+		e := &common.BindingEvent{
 			Data:     in.Data,
 			Metadata: in.Metadata,
 		}

@@ -5,17 +5,19 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+
+	"github.com/dapr/go-sdk/service/common"
 )
 
-// AddInputBindingHandler appends provided binding invocation handler with its route to the service
-func (s *ServiceImp) AddInputBindingHandler(route string, fn func(ctx context.Context, in *BindingEvent) (out []byte, err error)) error {
+// AddBindingInvocationHandler appends provided binding invocation handler with its route to the service
+func (s *Server) AddBindingInvocationHandler(route string, fn func(ctx context.Context, in *common.BindingEvent) (out []byte, err error)) error {
 	if route == "" {
 		return fmt.Errorf("binding route required")
 	}
 
 	s.mux.Handle(route, optionsHandler(http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
-			var e BindingEvent
+			var e common.BindingEvent
 			if r.ContentLength > 0 {
 				// deserialize the event
 				if err := json.NewDecoder(r.Body).Decode(&e); err != nil {
@@ -23,7 +25,7 @@ func (s *ServiceImp) AddInputBindingHandler(route string, fn func(ctx context.Co
 					return
 				}
 			} else {
-				e = BindingEvent{}
+				e = common.BindingEvent{}
 			}
 
 			// execute handler

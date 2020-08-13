@@ -6,10 +6,11 @@ import (
 	"testing"
 
 	"github.com/dapr/go-sdk/dapr/proto/runtime/v1"
+	"github.com/dapr/go-sdk/service/common"
 	"github.com/stretchr/testify/assert"
 )
 
-func eventHandler(ctx context.Context, event *TopicEvent) error {
+func eventHandler(ctx context.Context, event *common.TopicEvent) error {
 	if event == nil {
 		return errors.New("nil event")
 	}
@@ -20,11 +21,13 @@ func eventHandler(ctx context.Context, event *TopicEvent) error {
 func TestTopic(t *testing.T) {
 	t.Parallel()
 
-	topicName := "test"
+	sub := &common.Subscription{
+		Topic: "test",
+	}
 	ctx := context.Background()
 
 	server := getTestServer()
-	err := server.AddTopicEventHandler(topicName, eventHandler)
+	err := server.AddTopicEventHandler(sub, eventHandler)
 	assert.Nil(t, err)
 	startTestServer(server)
 
@@ -49,7 +52,7 @@ func TestTopic(t *testing.T) {
 			SpecVersion:     "v0.3",
 			DataContentType: "text/plain",
 			Data:            []byte("test"),
-			Topic:           topicName,
+			Topic:           sub.Topic,
 		}
 		_, err := server.OnTopicEvent(ctx, in)
 		assert.NoError(t, err)

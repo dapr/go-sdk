@@ -7,9 +7,11 @@ import (
 	"net/http"
 
 	"github.com/pkg/errors"
+
+	"github.com/dapr/go-sdk/service/common"
 )
 
-func (s *ServiceImp) registerSubscribeHandler() {
+func (s *Server) registerSubscribeHandler() {
 	f := func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		if err := json.NewEncoder(w).Encode(s.topicSubscriptions); err != nil {
@@ -21,19 +23,20 @@ func (s *ServiceImp) registerSubscribeHandler() {
 }
 
 // AddTopicEventHandler appends provided event handler with it's name to the service
-func (s *ServiceImp) AddTopicEventHandler(topic, route string, fn func(ctx context.Context, e *TopicEvent) error) error {
-	if topic == "" {
+func (s *Server) AddTopicEventHandler(sub *common.Subscription, fn func(ctx context.Context, e *common.TopicEvent) error) error {
+	if sub == nil {
+		return errors.New("subscription required")
+	}
+	if sub.Topic == "" {
 		return errors.New("topic name required")
 	}
-
-	if route == "" {
+	if sub.Route == "" {
 		return errors.New("handler route name")
 	}
 
-	sub := &Subscription{Topic: topic, Route: route}
 	s.topicSubscriptions = append(s.topicSubscriptions, sub)
 
-	s.mux.Handle(route, optionsHandler(http.HandlerFunc(
+	s.mux.Handle(sub.Route, optionsHandler(http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
 			// check for post with no data
 			if r.ContentLength == 0 {
@@ -42,7 +45,7 @@ func (s *ServiceImp) AddTopicEventHandler(topic, route string, fn func(ctx conte
 			}
 
 			// deserialize the event
-			var in TopicEvent
+			var in common.TopicEvent
 			if err := json.NewDecoder(r.Body).Decode(&in); err != nil {
 				fmt.Println(err.Error())
 				http.Error(w, err.Error(), http.StatusBadRequest)
@@ -50,7 +53,7 @@ func (s *ServiceImp) AddTopicEventHandler(topic, route string, fn func(ctx conte
 			}
 
 			if in.Topic == "" {
-				in.Topic = topic
+				in.Topic = sub.Topic
 			}
 
 			if err := fn(r.Context(), &in); err != nil {

@@ -5,15 +5,16 @@ import (
 	"testing"
 
 	"github.com/dapr/go-sdk/dapr/proto/common/v1"
+	cc "github.com/dapr/go-sdk/service/common"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/types/known/anypb"
 )
 
-func testInvokeHandler(ctx context.Context, in *InvocationEvent) (out *Content, err error) {
+func testInvokeHandler(ctx context.Context, in *cc.InvocationEvent) (out *cc.Content, err error) {
 	if in == nil {
 		return
 	}
-	out = &Content{
+	out = &cc.Content{
 		ContentType: in.ContentType,
 		Data:        in.Data,
 	}

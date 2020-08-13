@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/dapr/go-sdk/service/common"
 	daprd "github.com/dapr/go-sdk/service/http"
 )
 
@@ -14,7 +15,11 @@ func main() {
 	s := daprd.NewService(":8080")
 
 	// add some topic subscriptions
-	if err := s.AddTopicEventHandler("messages", "/events", eventHandler); err != nil {
+	sub := &common.Subscription{
+		Topic: "messages",
+		Route: "/events",
+	}
+	if err := s.AddTopicEventHandler(sub, eventHandler); err != nil {
 		log.Fatalf("error adding topic subscription: %v", err)
 	}
 
@@ -24,7 +29,7 @@ func main() {
 	}
 
 	// add an input binding invocation handler
-	if err := s.AddInputBindingHandler("/run", runHandler); err != nil {
+	if err := s.AddBindingInvocationHandler("/run", runHandler); err != nil {
 		log.Fatalf("error adding binding handler: %v", err)
 	}
 
@@ -33,12 +38,12 @@ func main() {
 	}
 }
 
-func eventHandler(ctx context.Context, e *daprd.TopicEvent) error {
+func eventHandler(ctx context.Context, e *common.TopicEvent) error {
 	log.Printf("event - Topic:%s, ID:%s, Data: %v", e.Topic, e.ID, e.Data)
 	return nil
 }
 
-func echoHandler(ctx context.Context, in *daprd.InvocationEvent) (out *daprd.Content, err error) {
+func echoHandler(ctx context.Context, in *common.InvocationEvent) (out *common.Content, err error) {
 	if in == nil {
 		err = errors.New("nil invocation parameter")
 		return
@@ -47,7 +52,7 @@ func echoHandler(ctx context.Context, in *daprd.InvocationEvent) (out *daprd.Con
 		"echo - ContentType:%s, Verb:%s, QueryString:%s, %+v",
 		in.ContentType, in.Verb, in.QueryString, string(in.Data),
 	)
-	out = &daprd.Content{
+	out = &common.Content{
 		Data:        in.Data,
 		ContentType: in.ContentType,
 		DataTypeURL: in.DataTypeURL,
@@ -55,7 +60,7 @@ func echoHandler(ctx context.Context, in *daprd.InvocationEvent) (out *daprd.Con
 	return
 }
 
-func runHandler(ctx context.Context, in *daprd.BindingEvent) (out []byte, err error) {
+func runHandler(ctx context.Context, in *common.BindingEvent) (out []byte, err error) {
 	log.Printf("binding - Data:%v, Meta:%v", in.Data, in.Metadata)
 	return nil, nil
 }

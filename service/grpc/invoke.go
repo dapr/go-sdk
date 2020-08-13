@@ -4,14 +4,14 @@ import (
 	"context"
 	"fmt"
 
+	cpb "github.com/dapr/go-sdk/dapr/proto/common/v1"
+	cc "github.com/dapr/go-sdk/service/common"
 	"github.com/golang/protobuf/ptypes/any"
 	"github.com/pkg/errors"
-
-	cpb "github.com/dapr/go-sdk/dapr/proto/common/v1"
 )
 
 // AddServiceInvocationHandler appends provided service invocation handler with its method to the service
-func (s *Server) AddServiceInvocationHandler(method string, fn func(ctx context.Context, in *InvocationEvent) (our *Content, err error)) error {
+func (s *Server) AddServiceInvocationHandler(method string, fn func(ctx context.Context, in *cc.InvocationEvent) (our *cc.Content, err error)) error {
 	if method == "" {
 		return fmt.Errorf("servie name required")
 	}
@@ -25,7 +25,7 @@ func (s *Server) OnInvoke(ctx context.Context, in *cpb.InvokeRequest) (*cpb.Invo
 		return nil, errors.New("nil invoke request")
 	}
 	if fn, ok := s.invokeHandlers[in.Method]; ok {
-		e := &InvocationEvent{}
+		e := &cc.InvocationEvent{}
 		if in != nil {
 			e.ContentType = in.ContentType
 

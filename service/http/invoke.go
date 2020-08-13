@@ -5,10 +5,13 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/url"
+
+	"github.com/dapr/go-sdk/service/common"
 )
 
 // AddServiceInvocationHandler appends provided service invocation handler with its route to the service
-func (s *ServiceImp) AddServiceInvocationHandler(route string, fn func(ctx context.Context, in *InvocationEvent) (out *Content, err error)) error {
+func (s *Server) AddServiceInvocationHandler(route string, fn func(ctx context.Context, in *common.InvocationEvent) (out *common.Content, err error)) error {
 	if route == "" {
 		return fmt.Errorf("service route required")
 	}
@@ -16,9 +19,9 @@ func (s *ServiceImp) AddServiceInvocationHandler(route string, fn func(ctx conte
 	s.mux.Handle(route, optionsHandler(http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
 			// capture http args
-			e := &InvocationEvent{
+			e := &common.InvocationEvent{
 				Verb:        r.Method,
-				QueryString: r.URL.Query(),
+				QueryString: valuesToMap(r.URL.Query()),
 				ContentType: r.Header.Get("Content-type"),
 			}
 
@@ -52,4 +55,12 @@ func (s *ServiceImp) AddServiceInvocationHandler(route string, fn func(ctx conte
 		})))
 
 	return nil
+}
+
+func valuesToMap(in url.Values) map[string]string {
+	out := map[string]string{}
+	for k := range in {
+		out[k] = in.Get(k)
+	}
+	return out
 }

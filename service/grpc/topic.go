@@ -4,34 +4,24 @@ import (
 	"context"
 	"fmt"
 
+	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
+	"github.com/dapr/go-sdk/service/common"
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/pkg/errors"
-
-	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
 )
 
 // AddTopicEventHandler appends provided event handler with topic name to the service
-func (s *Server) AddTopicEventHandler(topic string, fn func(ctx context.Context, e *TopicEvent) error) error {
-	if topic == "" {
-		return fmt.Errorf("topic name required")
+func (s *Server) AddTopicEventHandler(sub *common.Subscription, fn func(ctx context.Context, e *common.TopicEvent) error) error {
+	if sub == nil {
+		return errors.New("subscription required")
 	}
-	s.topicSubscriptions[topic] = &topicEventHandler{
-		topic: topic,
-		fn:    fn,
-		meta:  map[string]string{},
+	if sub.Topic == "" {
+		return errors.New("topic name required")
 	}
-	return nil
-}
 
-// AddTopicEventHandlerWithMetadata appends provided event handler with topic name and metadata to the service
-func (s *Server) AddTopicEventHandlerWithMetadata(topic string, m map[string]string, fn func(ctx context.Context, e *TopicEvent) error) error {
-	if topic == "" {
-		return fmt.Errorf("topic name required")
-	}
-	s.topicSubscriptions[topic] = &topicEventHandler{
-		topic: topic,
-		fn:    fn,
-		meta:  m,
+	s.topicSubscriptions[sub.Topic] = &topicEventHandler{
+		Subscription: sub,
+		fn:           fn,
 	}
 	return nil
 }
@@ -43,7 +33,7 @@ func (s *Server) ListTopicSubscriptions(ctx context.Context, in *empty.Empty) (*
 	for k, v := range s.topicSubscriptions {
 		sub := &pb.TopicSubscription{
 			Topic:    k,
-			Metadata: v.meta,
+			Metadata: v.Metadata,
 		}
 		subs = append(subs, sub)
 	}
@@ -62,7 +52,7 @@ func (s *Server) OnTopicEvent(ctx context.Context, in *pb.TopicEventRequest) (*p
 		return nil, errors.New("topic event request has no topic name")
 	}
 	if h, ok := s.topicSubscriptions[in.Topic]; ok {
-		e := &TopicEvent{
+		e := &common.TopicEvent{
 			ID:              in.Id,
 			Source:          in.Source,
 			Type:            in.Type,

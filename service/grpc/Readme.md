@@ -16,7 +16,8 @@ if err != nil {
     log.Fatalf("failed to start the server: %v", err)
 }
 
-err = s.AddTopicEventHandler("messages", eventHandler)
+sub := &common.Subscription{ Topic: "messages" }
+err = s.AddTopicEventHandler(sub, eventHandler)
 if err != nil {
     log.Fatalf("error adding topic subscription: %v", err)
 }

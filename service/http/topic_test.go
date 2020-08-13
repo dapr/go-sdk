@@ -9,6 +9,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/dapr/go-sdk/service/common"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -30,7 +31,12 @@ func TestEventHandler(t *testing.T) {
 
 	s := newService("")
 
-	err := s.AddTopicEventHandler("test", "/", func(ctx context.Context, e *TopicEvent) error {
+	sub := &common.Subscription{
+		Topic:    "test",
+		Route:    "/",
+		Metadata: map[string]string{},
+	}
+	err := s.AddTopicEventHandler(sub, func(ctx context.Context, e *common.TopicEvent) error {
 		if e == nil {
 			return errors.New("nil content")
 		}
