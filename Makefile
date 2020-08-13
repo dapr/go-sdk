@@ -13,7 +13,8 @@ test: mod ## Tests the entire project
 
 cover: mod ## Displays test coverage in the client and service packages
 	go test -coverprofile=cover-client.out ./client && go tool cover -html=cover-client.out
-	go test -coverprofile=cover-service.out ./service/grpc && go tool cover -html=cover-service.out
+	go test -coverprofile=cover-grpc.out ./service/grpc && go tool cover -html=cover-grpc.out
+	go test -coverprofile=cover-http.out ./service/http && go tool cover -html=cover-http.out
 
 service: mod ## Runs the uncompiled example service code 
 	dapr run --app-id serving \
