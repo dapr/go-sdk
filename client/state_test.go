@@ -35,20 +35,26 @@ func TestSaveState(t *testing.T) {
 	key := "key1"
 
 	t.Run("save data", func(t *testing.T) {
-		err := testClient.SaveStateData(ctx, store, key, []byte(data))
+		err := testClient.SaveState(ctx, store, key, []byte(data))
 		assert.Nil(t, err)
 	})
 
 	t.Run("get saved data", func(t *testing.T) {
-		out, etag, err := testClient.GetState(ctx, store, key)
+		item, err := testClient.GetState(ctx, store, key)
 		assert.Nil(t, err)
-		assert.NotEmpty(t, etag)
-		assert.NotNil(t, out)
-		assert.Equal(t, string(out), data)
+		assert.NotNil(t, item)
+		assert.NotEmpty(t, item.Etag)
+		assert.Equal(t, item.Key, key)
+		assert.Equal(t, string(item.Value), data)
 	})
 
 	t.Run("save data with version", func(t *testing.T) {
-		err := testClient.SaveStateDataWithETag(ctx, store, key, "1", []byte(data))
+		item := &SetStateItem{
+			Etag:  "1",
+			Key:   key,
+			Value: []byte(data),
+		}
+		err := testClient.SaveStateItems(ctx, store, item)
 		assert.Nil(t, err)
 	})
 
@@ -56,4 +62,54 @@ func TestSaveState(t *testing.T) {
 		err := testClient.DeleteState(ctx, store, key)
 		assert.Nil(t, err)
 	})
+}
+
+// go test -timeout 30s ./client -count 1 -run ^TestStateTransactions$
+func TestStateTransactions(t *testing.T) {
+	ctx := context.Background()
+	data := "test"
+	store := "test"
+	meta := map[string]string{}
+	keys := []string{"k1", "k2", "k3"}
+	adds := make([]*StateOperation, 0)
+
+	for _, k := range keys {
+		op := &StateOperation{
+			Type: StateOperationTypeUpsert,
+			Item: &SetStateItem{
+				Key:   k,
+				Value: []byte(data),
+			},
+		}
+		adds = append(adds, op)
+	}
+
+	t.Run("exec inserts", func(t *testing.T) {
+		err := testClient.ExecuteStateTransaction(ctx, store, meta, adds)
+		assert.Nil(t, err)
+	})
+
+	t.Run("get all inserts", func(t *testing.T) {
+		items, err := testClient.GetStateItems(ctx, store, keys, 10)
+		assert.Nil(t, err)
+		assert.NotNil(t, items)
+		assert.Len(t, items, len(keys))
+	})
+
+	for _, op := range adds {
+		op.Type = StateOperationTypeDelete
+	}
+
+	t.Run("exec deletes", func(t *testing.T) {
+		err := testClient.ExecuteStateTransaction(ctx, store, meta, adds)
+		assert.Nil(t, err)
+	})
+
+	t.Run("ensure deletes", func(t *testing.T) {
+		items, err := testClient.GetStateItems(ctx, store, keys, 3)
+		assert.Nil(t, err)
+		assert.NotNil(t, items)
+		assert.Len(t, items, 0)
+	})
+
 }

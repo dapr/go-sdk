@@ -32,18 +32,18 @@ func main() {
 	logger.Println("data published")
 
 	// save state with the key key1
-	err = client.SaveStateData(ctx, "statestore", "key1", data)
+	err = client.SaveState(ctx, "statestore", "key1", data)
 	if err != nil {
 		logger.Panic(err)
 	}
 	logger.Println("data saved")
 
 	// get state for key key1
-	dataOut, etag, err := client.GetState(ctx, "statestore", "key1")
+	item, err := client.GetState(ctx, "statestore", "key1")
 	if err != nil {
 		logger.Panic(err)
 	}
-	logger.Printf("data out [etag:%s]: %s", etag, string(dataOut))
+	logger.Printf("data out [etag:%s]: %s", item.Etag, string(item.Value))
 
 	// delete state for key key1
 	err = client.DeleteState(ctx, "statestore", "key1")
