@@ -15,9 +15,9 @@ type Service interface {
 	// AddServiceInvocationHandler appends provided service invocation handler with its name to the service.
 	AddServiceInvocationHandler(name string, fn func(ctx context.Context, in *InvocationEvent) (out *Content, err error)) error
 	// AddTopicEventHandler appends provided event handler with it's topic and optional metadata to the service.
-	AddTopicEventHandler(topic string, fn func(ctx context.Context, e *TopicEvent) error) error
+	AddTopicEventHandler(component, topic string, fn func(ctx context.Context, e *TopicEvent) error) error
 	// AddTopicEventHandlerWithMetadata appends provided event handler with topic name and metadata to the service.
-	AddTopicEventHandlerWithMetadata(topic string, m map[string]string, fn func(ctx context.Context, e *TopicEvent) error) error
+	AddTopicEventHandlerWithMetadata(component, topic string, m map[string]string, fn func(ctx context.Context, e *TopicEvent) error) error
 	// AddBindingInvocationHandler appends provided binding invocation handler with its name to the service.
 	AddBindingInvocationHandler(name string, fn func(ctx context.Context, in *BindingEvent) (out []byte, err error)) error
 	// Start starts service.
@@ -44,6 +44,8 @@ type TopicEvent struct {
 	Subject string
 	// The pubsub topic which publisher sent to.
 	Topic string
+	// Component is the pub/sub component this message came from.
+	Component string
 }
 
 // InvocationEvent represents the input and output of binding invocation.
@@ -80,6 +82,8 @@ type BindingEvent struct {
 
 // Subscription represents single topic subscription.
 type Subscription struct {
+	// PubsubName is the pub/sub this message came from.
+	PubsubName string
 	// Topic is the name of the topic.
 	Topic string
 	// Route is the route of the handler where topic events should be published.
@@ -123,9 +127,10 @@ type Server struct {
 }
 
 type topicEventHandler struct {
-	topic string
-	fn    func(ctx context.Context, e *TopicEvent) error
-	meta  map[string]string
+	component string
+	topic     string
+	fn        func(ctx context.Context, e *TopicEvent) error
+	meta      map[string]string
 }
 
 // Start registers the server and starts it.

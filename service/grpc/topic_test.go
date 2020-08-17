@@ -20,11 +20,12 @@ func eventHandler(ctx context.Context, event *TopicEvent) error {
 func TestTopic(t *testing.T) {
 	t.Parallel()
 
+	componentName := "messages"
 	topicName := "test"
 	ctx := context.Background()
 
 	server := getTestServer()
-	err := server.AddTopicEventHandler(topicName, eventHandler)
+	err := server.AddTopicEventHandler(componentName, topicName, eventHandler)
 	assert.Nil(t, err)
 	startTestServer(server)
 
@@ -50,6 +51,7 @@ func TestTopic(t *testing.T) {
 			DataContentType: "text/plain",
 			Data:            []byte("test"),
 			Topic:           topicName,
+			PubsubName:      componentName,
 		}
 		_, err := server.OnTopicEvent(ctx, in)
 		assert.NoError(t, err)

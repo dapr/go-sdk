@@ -16,7 +16,7 @@ func main() {
 	}
 
 	// add some topic subscriptions
-	err = s.AddTopicEventHandler("messages", eventHandler)
+	err = s.AddTopicEventHandler("messages", "example", eventHandler)
 	if err != nil {
 		log.Fatalf("error adding topic subscription: %v", err)
 	}
@@ -40,7 +40,7 @@ func main() {
 }
 
 func eventHandler(ctx context.Context, e *daprd.TopicEvent) error {
-	log.Printf("event - Topic:%s, ID:%s, Data: %v", e.Topic, e.ID, e.Data)
+	log.Printf("event - Component:%s, Topic:%s, ID:%s, Data: %v", e.Component, e.Topic, e.ID, e.Data)
 	return nil
 }
 
