@@ -22,7 +22,7 @@ func main() {
 	defer client.Close()
 
 	// publish a message to the topic messagebus
-	if err := client.PublishEvent(ctx, "messagebus", data); err != nil {
+	if err := client.PublishEvent(ctx, "messagebus", "my-topic", data); err != nil {
 		panic(err)
 	}
 	fmt.Println("data published")
