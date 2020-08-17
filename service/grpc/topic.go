@@ -11,27 +11,29 @@ import (
 )
 
 // AddTopicEventHandler appends provided event handler with topic name to the service
-func (s *Server) AddTopicEventHandler(topic string, fn func(ctx context.Context, e *TopicEvent) error) error {
+func (s *Server) AddTopicEventHandler(component, topic string, fn func(ctx context.Context, e *TopicEvent) error) error {
 	if topic == "" {
 		return fmt.Errorf("topic name required")
 	}
 	s.topicSubscriptions[topic] = &topicEventHandler{
-		topic: topic,
-		fn:    fn,
-		meta:  map[string]string{},
+		component: component,
+		topic:     topic,
+		fn:        fn,
+		meta:      map[string]string{},
 	}
 	return nil
 }
 
 // AddTopicEventHandlerWithMetadata appends provided event handler with topic name and metadata to the service
-func (s *Server) AddTopicEventHandlerWithMetadata(topic string, m map[string]string, fn func(ctx context.Context, e *TopicEvent) error) error {
+func (s *Server) AddTopicEventHandlerWithMetadata(component, topic string, m map[string]string, fn func(ctx context.Context, e *TopicEvent) error) error {
 	if topic == "" {
 		return fmt.Errorf("topic name required")
 	}
 	s.topicSubscriptions[topic] = &topicEventHandler{
-		topic: topic,
-		fn:    fn,
-		meta:  m,
+		component: component,
+		topic:     topic,
+		fn:        fn,
+		meta:      m,
 	}
 	return nil
 }
@@ -40,10 +42,11 @@ func (s *Server) AddTopicEventHandlerWithMetadata(topic string, m map[string]str
 // To subscribe to a topic named TopicA
 func (s *Server) ListTopicSubscriptions(ctx context.Context, in *empty.Empty) (*pb.ListTopicSubscriptionsResponse, error) {
 	subs := make([]*pb.TopicSubscription, 0)
-	for k, v := range s.topicSubscriptions {
+	for _, v := range s.topicSubscriptions {
 		sub := &pb.TopicSubscription{
-			Topic:    k,
-			Metadata: v.meta,
+			PubsubName: v.component,
+			Topic:      v.topic,
+			Metadata:   v.meta,
 		}
 		subs = append(subs, sub)
 	}
@@ -70,6 +73,7 @@ func (s *Server) OnTopicEvent(ctx context.Context, in *pb.TopicEventRequest) (*p
 			DataContentType: in.DataContentType,
 			Data:            in.Data,
 			Topic:           in.Topic,
+			Component:       in.PubsubName,
 		}
 		err := h.fn(ctx, e)
 		if err != nil {
