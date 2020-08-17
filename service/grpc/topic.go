@@ -42,10 +42,11 @@ func (s *Server) AddTopicEventHandlerWithMetadata(component, topic string, m map
 // To subscribe to a topic named TopicA
 func (s *Server) ListTopicSubscriptions(ctx context.Context, in *empty.Empty) (*pb.ListTopicSubscriptionsResponse, error) {
 	subs := make([]*pb.TopicSubscription, 0)
-	for k, v := range s.topicSubscriptions {
+	for _, v := range s.topicSubscriptions {
 		sub := &pb.TopicSubscription{
-			Topic:    k,
-			Metadata: v.meta,
+			PubsubName: v.component,
+			Topic:      v.topic,
+			Metadata:   v.meta,
 		}
 		subs = append(subs, sub)
 	}
@@ -72,6 +73,7 @@ func (s *Server) OnTopicEvent(ctx context.Context, in *pb.TopicEventRequest) (*p
 			DataContentType: in.DataContentType,
 			Data:            in.Data,
 			Topic:           in.Topic,
+			PubsubName:      in.PubsubName,
 		}
 		err := h.fn(ctx, e)
 		if err != nil {
