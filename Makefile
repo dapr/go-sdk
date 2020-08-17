@@ -16,7 +16,7 @@ cover: mod ## Displays test coverage in the client and service packages
 	go test -coverprofile=cover-grpc.out ./service/grpc && go tool cover -html=cover-grpc.out
 	go test -coverprofile=cover-http.out ./service/http && go tool cover -html=cover-http.out
 
-service-http: mod ## Runs the uncompiled HTTP example service code using the Dapr v0.9 flags
+service-http: mod ## Runs the uncompiled HTTP example service code
 	dapr run --app-id serving \
 			 --app-protocol http \
 			 --app-port 8080 \
@@ -25,7 +25,7 @@ service-http: mod ## Runs the uncompiled HTTP example service code using the Dap
 			 --components-path example/serving/http/config \
 			 go run example/serving/http/main.go
 
-service-grpc: mod ## Runs the uncompiled gRPC example service code using the Dapr v0.9 flags
+service-grpc: mod ## Runs the uncompiled gRPC example service code
 	dapr run --app-id serving \
 			 --app-protocol grpc \
 			 --app-port 50001 \
