@@ -11,35 +11,22 @@ import (
 )
 
 // AddTopicEventHandler appends provided event handler with topic name to the service
-func (s *Server) AddTopicEventHandler(component, topic string, fn func(ctx context.Context, e *TopicEvent) error) error {
-	if topic == "" {
-		return fmt.Errorf("topic name required")
+func (s *Server) AddTopicEventHandler(sub *common.Subscription, fn func(ctx context.Context, e *common.TopicEvent) error) error {
+	if sub == nil {
+		return errors.New("subscription required")
 	}
-	if component == "" {
-		return fmt.Errorf("component name required")
+	if sub.Topic == "" {
+		return errors.New("topic name required")
 	}
-	key := fmt.Sprintf("%s-%s", component, topic)
+	if sub.PubsubName == "" {
+		return errors.New("pub/sub name required")
+	}
+	key := fmt.Sprintf("%s-%s", sub.PubsubName, sub.Topic)
 	s.topicSubscriptions[key] = &topicEventHandler{
-		component: component,
-		topic:     topic,
+		component: sub.PubsubName,
+		topic:     sub.Topic,
 		fn:        fn,
-		meta:      map[string]string{},
-	}
-
-// AddTopicEventHandlerWithMetadata appends provided event handler with topic name and metadata to the service
-func (s *Server) AddTopicEventHandlerWithMetadata(component, topic string, m map[string]string, fn func(ctx context.Context, e *TopicEvent) error) error {
-	if topic == "" {
-		return fmt.Errorf("topic name required")
-	}
-	if component == "" {
-		return fmt.Errorf("component name required")
-	}
-	key := fmt.Sprintf("%s-%s", component, topic)
-	s.topicSubscriptions[key] = &topicEventHandler{
-		component: component,
-		topic:     topic,
-		fn:        fn,
-		meta:      m,
+		meta:      sub.Metadata,
 	}
 	return nil
 }
@@ -75,7 +62,7 @@ func (s *Server) OnTopicEvent(ctx context.Context, in *pb.TopicEventRequest) (*p
 	}
 	key := fmt.Sprintf("%s-%s", in.PubsubName, in.Topic)
 	if h, ok := s.topicSubscriptions[key]; ok {
-		e := &TopicEvent{
+		e := &common.TopicEvent{
 			ID:              in.Id,
 			Source:          in.Source,
 			Type:            in.Type,

@@ -19,6 +19,8 @@ type TopicEvent struct {
 	Subject string `json:"subject"`
 	// The pubsub topic which publisher sent to.
 	Topic string `json:"topic"`
+	// PubsubName is name of the pub/sub this message came from
+	PubsubName string `json:"pubsubname"`
 }
 
 // InvocationEvent represents the input and output of binding invocation
@@ -55,6 +57,8 @@ type BindingEvent struct {
 
 // Subscription represents single topic subscription
 type Subscription struct {
+	// PubsubName is name of the pub/sub this message came from
+	PubsubName string `json:"pubsubname"`
 	// Topic is the name of the topic
 	Topic string `json:"topic"`
 	// Route is the route of the handler where HTTP topic events should be published (not used in gRPC)

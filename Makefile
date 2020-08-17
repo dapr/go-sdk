@@ -16,27 +16,18 @@ cover: mod ## Displays test coverage in the client and service packages
 	go test -coverprofile=cover-grpc.out ./service/grpc && go tool cover -html=cover-grpc.out
 	go test -coverprofile=cover-http.out ./service/http && go tool cover -html=cover-http.out
 
-service: mod ## Runs the uncompiled example service code 
+service-http: mod ## Runs the uncompiled HTTP example service code using the Dapr v0.9 flags
 	dapr run --app-id serving \
 			 --app-protocol grpc \
-			 --app-port 50001 \
-			 --port 3500 \
-			 --log-level debug \
-			 --components-path example/serving/grpc/config \
-			 go run example/serving/grpc/main.go
-
-service-v09http: mod ## Runs the uncompiled HTTP example service code using the Dapr v0.9 flags
-	dapr run --app-id serving \
-			 --protocol http \
 			 --app-port 8080 \
 			 --port 3500 \
 			 --log-level debug \
 			 --components-path example/serving/http/config \
 			 go run example/serving/http/main.go
 
-	: mod ## Runs the uncompiled gRPC example service code using the Dapr v0.9 flags
+service-grpc: mod ## Runs the uncompiled gRPC example service code using the Dapr v0.9 flags
 	dapr run --app-id serving \
-			 --protocol grpc \
+			 --app-protocol grpc \
 			 --app-port 50001 \
 			 --port 3500 \
 			 --log-level debug \
@@ -52,13 +43,13 @@ client: mod ## Runs the uncompiled example client code
 pubsub: ## Submits pub/sub events in different cotnent types 
 	curl -d '{ "from": "John", "to": "Lary", "message": "hi" }' \
 		-H "Content-type: application/json" \
-		"http://localhost:3500/v1.0/publish/messages"
+		"http://localhost:3500/v1.0/publish/messages/topic1"
 	curl -d '<message><from>John</from><to>Lary</to></message>' \
 		-H "Content-type: application/xml" \
-		"http://localhost:3500/v1.0/publish/messages"
+		"http://localhost:3500/v1.0/publish/messages/topic1"
 	curl -d '0x18, 0x2d, 0x44, 0x54, 0xfb, 0x21, 0x09, 0x40' \
 		-H "Content-type: application/octet-stream" \
-		"http://localhost:3500/v1.0/publish/messages"
+		"http://localhost:3500/v1.0/publish/messages/topic1"
 
 invoke: ## Invokes service method with different operations
 	curl -d '{ "from": "John", "to": "Lary", "message": "hi" }' \

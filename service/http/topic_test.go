@@ -32,9 +32,10 @@ func TestEventHandler(t *testing.T) {
 	s := newService("")
 
 	sub := &common.Subscription{
-		Topic:    "test",
-		Route:    "/",
-		Metadata: map[string]string{},
+		PubsubName: "messages",
+		Topic:      "test",
+		Route:      "/",
+		Metadata:   map[string]string{},
 	}
 	err := s.AddTopicEventHandler(sub, func(ctx context.Context, e *common.TopicEvent) error {
 		if e == nil {

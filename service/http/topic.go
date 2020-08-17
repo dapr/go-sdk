@@ -30,6 +30,9 @@ func (s *Server) AddTopicEventHandler(sub *common.Subscription, fn func(ctx cont
 	if sub.Topic == "" {
 		return errors.New("topic name required")
 	}
+	if sub.PubsubName == "" {
+		return errors.New("pub/sub name required")
+	}
 	if sub.Route == "" {
 		return errors.New("handler route name")
 	}
