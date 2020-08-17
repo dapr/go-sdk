@@ -18,13 +18,12 @@ func eventHandler(ctx context.Context, event *TopicEvent) error {
 
 // go test -timeout 30s ./service/grpc -count 1 -run ^TestTopic$
 func TestTopic(t *testing.T) {
-	t.Parallel()
-
 	topicName := "test"
+	componentName := "messages"
 	ctx := context.Background()
 
 	server := getTestServer()
-	err := server.AddTopicEventHandler(topicName, eventHandler)
+	err := server.AddTopicEventHandler(componentName, topicName, eventHandler)
 	assert.Nil(t, err)
 	startTestServer(server)
 
@@ -50,6 +49,7 @@ func TestTopic(t *testing.T) {
 			DataContentType: "text/plain",
 			Data:            []byte("test"),
 			Topic:           topicName,
+			PubsubName:      componentName,
 		}
 		_, err := server.OnTopicEvent(ctx, in)
 		assert.NoError(t, err)

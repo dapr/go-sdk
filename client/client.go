@@ -42,8 +42,8 @@ type Client interface {
 	// InvokeServiceWithContent invokes service without content (data + content type).
 	InvokeServiceWithContent(ctx context.Context, serviceID, method, contentType string, data []byte) (out []byte, err error)
 
-	// PublishEvent pubishes data onto specific pubsub topic.
-	PublishEvent(ctx context.Context, topic string, in []byte) error
+	// PublishEvent pubishes data onto topic in specific pubsub component.
+	PublishEvent(ctx context.Context, component, topic string, in []byte) error
 
 	// GetSecret retreaves preconfigred secret from specified store using key.
 	GetSecret(ctx context.Context, store, key string, meta map[string]string) (out map[string]string, err error)
