@@ -10,13 +10,10 @@ import (
 // PublishEvent pubishes data onto specific pubsub topic.
 func (c *GRPCClient) PublishEvent(ctx context.Context, component, topic string, in []byte) error {
 	if topic == "" {
-		return errors.New("nil topic")
+		return errors.New("topic name required")
 	}
 	if component == "" {
-		return errors.New("nil component")
-	}
-	if in == nil {
-		return errors.New("nil in")
+		return errors.New("component name required")
 	}
 
 	envelop := &pb.PublishEventRequest{

@@ -31,8 +31,7 @@ func (s *Server) AddTopicEventHandler(sub *common.Subscription, fn func(ctx cont
 	return nil
 }
 
-// ListTopicSubscriptions is called by Dapr to get the list of topics the app wants to subscribe to. In this example, we are telling Dapr
-// To subscribe to a topic named TopicA
+// ListTopicSubscriptions is called by Dapr to get the list of topics in a pubsub component the app wants to subscribe to.
 func (s *Server) ListTopicSubscriptions(ctx context.Context, in *empty.Empty) (*pb.ListTopicSubscriptionsResponse, error) {
 	subs := make([]*pb.TopicSubscription, 0)
 	for _, v := range s.topicSubscriptions {
@@ -49,7 +48,8 @@ func (s *Server) ListTopicSubscriptions(ctx context.Context, in *empty.Empty) (*
 	}, nil
 }
 
-// OnTopicEvent fired whenever a message has been published to a topic that has been subscribed. Dapr sends published messages in a CloudEvents 0.3 envelope.
+// OnTopicEvent fired whenever a message has been published to a topic that has been subscribed.
+// Dapr sends published messages in a CloudEvents 0.3 envelope.
 func (s *Server) OnTopicEvent(ctx context.Context, in *pb.TopicEventRequest) (*pb.TopicEventResponse, error) {
 	if in == nil {
 		return nil, errors.New("nil event request")
