@@ -154,7 +154,7 @@ func (c *GRPCClient) ExecuteStateTransaction(ctx context.Context, store string, 
 	if store == "" {
 		return errors.New("nil store")
 	}
-	if ops == nil || len(ops) == 0 {
+	if len(ops) == 0 {
 		return nil
 	}
 
@@ -217,7 +217,7 @@ func (c *GRPCClient) GetBulkItems(ctx context.Context, store string, keys []stri
 	if store == "" {
 		return nil, errors.New("nil store")
 	}
-	if keys == nil || len(keys) == 0 {
+	if len(keys) == 0 {
 		return nil, errors.New("keys required")
 	}
 	items := make([]*StateItem, 0)
