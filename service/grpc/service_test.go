@@ -8,7 +8,6 @@ import (
 )
 
 func TestServer(t *testing.T) {
-	t.Parallel()
 	server := getTestServer()
 	startTestServer(server)
 	stopTestServer(t, server)

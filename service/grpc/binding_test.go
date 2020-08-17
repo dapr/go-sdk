@@ -18,8 +18,6 @@ func testBindingHandler(ctx context.Context, in *BindingEvent) (out []byte, err 
 
 // go test -timeout 30s ./service/grpc -count 1 -run ^TestBinding$
 func TestBinding(t *testing.T) {
-	t.Parallel()
-
 	ctx := context.Background()
 	methodName := "test"
 
