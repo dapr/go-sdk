@@ -24,6 +24,13 @@ const (
 	StateConcurrencyFirstWrite StateConcurrency = 1
 	// StateConcurrencyLastWrite represents last write concurrency value.
 	StateConcurrencyLastWrite StateConcurrency = 2
+
+	// StateOperationTypeUndefined is the undefined value for state operation type.
+	StateOperationTypeUndefined OperationType = 0
+	// StateOperationTypeUpsert represents upsert operation type value.
+	StateOperationTypeUpsert OperationType = 1
+	// StateOperationTypeDelete represents delete operation type value.
+	StateOperationTypeDelete OperationType = 2
 )
 
 type (
@@ -31,17 +38,33 @@ type (
 	StateConsistency int
 	// StateConcurrency is the concurrency enum type.
 	StateConcurrency int
+	// OperationType is the operation enum type.
+	OperationType int
 )
+
+// String returns the string value of the OperationType.
+func (o OperationType) String() string {
+	names := [...]string{
+		"undefined",
+		"upsert",
+		"delete",
+	}
+	if o < StateOperationTypeUpsert || o > StateOperationTypeDelete {
+		return "undefined"
+	}
+
+	return names[o]
+}
 
 // String returns the string value of the StateConsistency.
 func (c StateConsistency) String() string {
 	names := [...]string{
-		"Undefined",
-		"Strong",
-		"Eventual",
+		"undefined",
+		"strong",
+		"eventual",
 	}
 	if c < StateConsistencyStrong || c > StateConsistencyEventual {
-		return "Undefined"
+		return "undefined"
 	}
 
 	return names[c]
@@ -50,12 +73,12 @@ func (c StateConsistency) String() string {
 // String returns the string value of the StateConcurrency.
 func (c StateConcurrency) String() string {
 	names := [...]string{
-		"Undefined",
-		"FirstWrite",
-		"LastWrite",
+		"undefined",
+		"first-write",
+		"last-write",
 	}
 	if c < StateConcurrencyFirstWrite || c > StateConcurrencyLastWrite {
-		return "Undefined"
+		return "undefined"
 	}
 
 	return names[c]
@@ -68,14 +91,21 @@ var (
 	}
 )
 
-// State is a collection of StateItems with a store name.
-type State struct {
-	StoreName string
-	States    []*StateItem
+// StateOperation is a collection of StateItems with a store name.
+type StateOperation struct {
+	Type OperationType
+	Item *SetStateItem
 }
 
-// StateItem represents a single state to be persisted.
+// StateItem represents a single state item.
 type StateItem struct {
+	Key   string
+	Value []byte
+	Etag  string
+}
+
+// SetStateItem represents a single state to be persisted.
+type SetStateItem struct {
 	Key      string
 	Value    []byte
 	Etag     string
@@ -89,20 +119,7 @@ type StateOptions struct {
 	Consistency StateConsistency
 }
 
-func toProtoSaveStateRequest(s *State) (req *pb.SaveStateRequest) {
-	r := &pb.SaveStateRequest{
-		StoreName: s.StoreName,
-		States:    make([]*v1.StateItem, 0),
-	}
-
-	for _, si := range s.States {
-		item := toProtoSaveStateItem(si)
-		r.States = append(r.States, item)
-	}
-	return r
-}
-
-func toProtoSaveStateItem(si *StateItem) (item *v1.StateItem) {
+func toProtoSaveStateItem(si *SetStateItem) (item *v1.StateItem) {
 	return &v1.StateItem{
 		Etag:     si.Etag,
 		Key:      si.Key,
@@ -132,76 +149,118 @@ func toProtoDuration(d time.Duration) *duration.Duration {
 	}
 }
 
-// SaveState saves the fully loaded state to store.
-func (c *GRPCClient) SaveState(ctx context.Context, s *State) error {
-	if s == nil || s.StoreName == "" || s.States == nil || len(s.States) < 1 {
-		return errors.New("nil or invalid state")
+// ExecuteStateTransaction provides way to execute multiple operations on a specified store.
+func (c *GRPCClient) ExecuteStateTransaction(ctx context.Context, store string, meta map[string]string, ops []*StateOperation) error {
+	if store == "" {
+		return errors.New("nil store")
 	}
-	req := toProtoSaveStateRequest(s)
+	if len(ops) == 0 {
+		return nil
+	}
+
+	items := make([]*pb.TransactionalStateOperation, 0)
+	for _, op := range ops {
+		item := &pb.TransactionalStateOperation{
+			OperationType: op.Type.String(),
+			Request:       toProtoSaveStateItem(op.Item),
+		}
+		items = append(items, item)
+	}
+
+	req := &pb.ExecuteStateTransactionRequest{
+		Metadata:   meta,
+		StoreName:  store,
+		Operations: items,
+	}
+	_, err := c.protoClient.ExecuteStateTransaction(authContext(ctx), req)
+	if err != nil {
+		return errors.Wrap(err, "error executing state transaction")
+	}
+	return nil
+}
+
+// SaveState saves the raw data into store using default state options.
+func (c *GRPCClient) SaveState(ctx context.Context, store, key string, data []byte) error {
+	item := &SetStateItem{Key: key, Value: data}
+	return c.SaveStateItems(ctx, store, item)
+}
+
+// SaveStateItems saves the multiple state item to store.
+func (c *GRPCClient) SaveStateItems(ctx context.Context, store string, items ...*SetStateItem) error {
+	if store == "" {
+		return errors.New("nil store")
+	}
+	if items == nil {
+		return errors.New("nil item")
+	}
+
+	req := &pb.SaveStateRequest{
+		StoreName: store,
+		States:    make([]*v1.StateItem, 0),
+	}
+
+	for _, si := range items {
+		item := toProtoSaveStateItem(si)
+		req.States = append(req.States, item)
+	}
+
 	_, err := c.protoClient.SaveState(authContext(ctx), req)
 	if err != nil {
 		return errors.Wrap(err, "error saving state")
 	}
 	return nil
+
 }
 
-// SaveStateDataWithETag saves the raw data into store using default state options.
-func (c *GRPCClient) SaveStateDataWithETag(ctx context.Context, store, key, etag string, data []byte) error {
+// GetBulkItems retreaves state for multiple keys from specific store.
+func (c *GRPCClient) GetBulkItems(ctx context.Context, store string, keys []string, parallelism int32) ([]*StateItem, error) {
 	if store == "" {
-		return errors.New("nil store")
+		return nil, errors.New("nil store")
 	}
-	if key == "" {
-		return errors.New("nil key")
+	if len(keys) == 0 {
+		return nil, errors.New("keys required")
 	}
+	items := make([]*StateItem, 0)
 
-	req := &State{
-		StoreName: store,
-		States: []*StateItem{
-			{
-				Key:   key,
-				Value: data,
-				Etag:  etag,
-			},
-		},
+	req := &pb.GetBulkStateRequest{
+		StoreName:   store,
+		Keys:        keys,
+		Parallelism: parallelism,
 	}
 
-	return c.SaveState(ctx, req)
-}
-
-// SaveStateData saves the raw data into store using default state options.
-func (c *GRPCClient) SaveStateData(ctx context.Context, store, key string, data []byte) error {
-	return c.SaveStateDataWithETag(ctx, store, key, "", data)
-}
-
-// SaveStateItem saves the single state item to store.
-func (c *GRPCClient) SaveStateItem(ctx context.Context, store string, item *StateItem) error {
-	if store == "" {
-		return errors.New("nil store")
-	}
-	if item == nil {
-		return errors.New("nil item")
+	results, err := c.protoClient.GetBulkState(authContext(ctx), req)
+	if err != nil {
+		return nil, errors.Wrap(err, "error getting state")
 	}
 
-	req := &State{
-		StoreName: store,
-		States:    []*StateItem{item},
+	if results == nil || results.Items == nil {
+		return items, nil
 	}
 
-	return c.SaveState(ctx, req)
+	for _, r := range results.Items {
+		item := &StateItem{
+			Key:   r.Key,
+			Etag:  r.Etag,
+			Value: r.Data,
+		}
+		items = append(items, item)
+	}
+
+	return items, nil
 }
 
 // GetState retreaves state from specific store using default consistency option.
-func (c *GRPCClient) GetState(ctx context.Context, store, key string) (out []byte, etag string, err error) {
+func (c *GRPCClient) GetState(ctx context.Context, store, key string) (item *StateItem, err error) {
 	return c.GetStateWithConsistency(ctx, store, key, StateConsistencyStrong)
 }
 
 // GetStateWithConsistency retreaves state from specific store using provided state consistency.
-func (c *GRPCClient) GetStateWithConsistency(ctx context.Context, store, key string, sc StateConsistency) (out []byte, etag string, err error) {
+func (c *GRPCClient) GetStateWithConsistency(ctx context.Context, store, key string, sc StateConsistency) (item *StateItem, err error) {
 	if store == "" {
-		return nil, "", errors.New("nil store")
+		return nil, errors.New("nil store")
 	}
 	if key == "" {
-		return nil, "", errors.New("nil key")
+		return nil, errors.New("nil key")
 	}
 
 	req := &pb.GetStateRequest{
@@ -212,10 +271,14 @@ func (c *GRPCClient) GetStateWithConsistency(ctx context.Context, store, key str
 
 	result, err := c.protoClient.GetState(authContext(ctx), req)
 	if err != nil {
-		return nil, "", errors.Wrap(err, "error getting state")
+		return nil, errors.Wrap(err, "error getting state")
 	}
 
-	return result.Data, result.Etag, nil
+	return &StateItem{
+		Etag:  result.Etag,
+		Key:   key,
+		Value: result.Data,
+	}, nil
 }
 
 // DeleteState deletes content from store using default state options.

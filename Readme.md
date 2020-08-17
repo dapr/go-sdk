@@ -67,55 +67,84 @@ ctx := context.Background()
 data := []byte("hello")
 store := "my-store" // defined in the component YAML 
 
-// save state with the key
-err = client.SaveStateData(ctx, store, "k1", data)
-handleErrors(err)
+// save state with the key key1
+if err := client.SaveState(ctx, store, "key1", data); err != nil {
+    panic(err)
+}
 
-// get state for key
-out, etag, err := client.GetState(ctx, store, "k1")
-handleErrors(err)
+// get state for key key1
+item, err := client.GetState(ctx, store, "key1")
+if err != nil {
+    panic(err)
+}
+fmt.Printf("data [key:%s etag:%s]: %s", item.Key, item.Etag, string(item.Value))
 
-// delete state for key
-err = client.DeleteState(ctx, store, "k1")
-handleErrors(err)
+// delete state for key key1
+if err := client.DeleteState(ctx, store, "key1"); err != nil {
+    panic(err)
+}
 ```
 
-For more granular control, the Dapr go client exposed `StateItem` type which can be use to gain more control over the state operations:
+For more granular control, the Dapr go client exposed `SetStateItem` type which can be use to gain more control over the state operations and allow for multiple items to be saved at once:
 
 ```go     
-data := &client.StateItem{
-    Etag:     "v1",
-    Key:      "k1",
+item1 := &dapr.SetStateItem{
+    Key:  "key1",
+    Etag: "2",
     Metadata: map[string]string{
-        "key1": "value1",
-        "key2": "value2",
+        "created-on": time.Now().UTC().String(),
     },
-    Value:    []byte("hello"),
-    Options:  &client.StateOptions{
-        Concurrency: client.StateConcurrencyLastWrite,
-        Consistency: client.StateConsistencyStrong,
+    Value: []byte("hello"),
+    Options: &dapr.StateOptions{
+        Concurrency: dapr.StateConcurrencyLastWrite,
+        Consistency: dapr.StateConsistencyStrong,
     },
 }
-err = client.SaveStateItem(ctx, store, data)
+item2 := &dapr.SetStateItem{
+    Key:  "key2",
+    Etag: "1",
+    Metadata: map[string]string{
+        "created-on": time.Now().UTC().String(),
+    },
+    Value: []byte("hello again"),
+    Options: &dapr.StateOptions{
+        Concurrency: dapr.StateConcurrencyLastWrite,
+        Consistency: dapr.StateConsistencyStrong,
+    },
+}
+if err := client.SaveStateItems(ctx, store, item1, item2); err != nil {
+    panic(err)
+}
 ```
 
-Similarly, `StateOptions` exist on the `GetDate` and `DeleteState` methods to support multiple item operations at once:
+Similarly, `GetStateItems` method provides a way to retrieve multiple state items in a single operation:
 
-```go 
-data := &client.State{
-    StoreName: "my-store",
-    States: []*client.StateItem{
-        {
-            Key:   "k1",
-            Value: []byte("message 1"),
-        },
-        {
-            Key:   "k2",
-            Value: []byte("message 2"),
-        },
+```go
+keys := []string{"key1", "key2", "key3"}
+items, err := GetStateItems(ctx, store, keys, parallelism 100)
+```
+
+And the `ExecuteStateTransaction` method to transactionally execute multiple `upsert` or `delete` operations.
+
+```go
+ops := make([]*dapr.StateOperation, 0)
+
+op1 := &dapr.StateOperation{
+    Type: dapr.StateOperationTypeUpsert,
+    Item: &dapr.SetStateItem{
+        Key:   "key1",
+        Value: []byte(data),
     },
 }
-err = client.SaveState(ctx, data)
+op2 := &dapr.StateOperation{
+    Type: dapr.StateOperationTypeDelete,
+    Item: &dapr.SetStateItem{
+        Key:   "key2",
+    },
+}
+ops = append(ops, op1, op2)
+meta := map[string]string{}
+err := testClient.ExecuteStateTransaction(ctx, store, meta, ops)
 ```
 
 ##### PubSub 
