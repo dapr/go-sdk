@@ -15,9 +15,9 @@ type Service interface {
 	// AddServiceInvocationHandler appends provided service invocation handler with its name to the service.
 	AddServiceInvocationHandler(name string, fn func(ctx context.Context, in *InvocationEvent) (out *Content, err error)) error
 	// AddTopicEventHandler appends provided event handler with it's topic and optional metadata to the service.
-	AddTopicEventHandler(topic string, fn func(ctx context.Context, e *TopicEvent) error) error
+	AddTopicEventHandler(component, topic string, fn func(ctx context.Context, e *TopicEvent) error) error
 	// AddTopicEventHandlerWithMetadata appends provided event handler with topic name and metadata to the service.
-	AddTopicEventHandlerWithMetadata(topic string, m map[string]string, fn func(ctx context.Context, e *TopicEvent) error) error
+	AddTopicEventHandlerWithMetadata(component, topic string, m map[string]string, fn func(ctx context.Context, e *TopicEvent) error) error
 	// AddBindingInvocationHandler appends provided binding invocation handler with its name to the service.
 	AddBindingInvocationHandler(name string, fn func(ctx context.Context, in *BindingEvent) (out []byte, err error)) error
 	// Start starts service.
@@ -44,6 +44,8 @@ type TopicEvent struct {
 	Subject string
 	// The pubsub topic which publisher sent to.
 	Topic string
+	// PubsubName is the pubsub topic which publisher sent to.
+	PubsubName string
 }
 
 // InvocationEvent represents the input and output of binding invocation.
@@ -123,9 +125,10 @@ type Server struct {
 }
 
 type topicEventHandler struct {
-	topic string
-	fn    func(ctx context.Context, e *TopicEvent) error
-	meta  map[string]string
+	component string
+	topic     string
+	fn        func(ctx context.Context, e *TopicEvent) error
+	meta      map[string]string
 }
 
 // Start registers the server and starts it.
