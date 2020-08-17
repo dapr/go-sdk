@@ -56,6 +56,7 @@ func main() {
 	if err := client.SaveStateItems(ctx, store, item2); err != nil {
 		panic(err)
 	}
+	fmt.Println("data item saved")
 
 	// delete state for key key1
 	if err := client.DeleteState(ctx, store, "key1"); err != nil {

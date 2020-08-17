@@ -18,7 +18,7 @@ cover: mod ## Displays test coverage in the client and service packages
 
 service-http: mod ## Runs the uncompiled HTTP example service code using the Dapr v0.9 flags
 	dapr run --app-id serving \
-			 --app-protocol grpc \
+			 --app-protocol http \
 			 --app-port 8080 \
 			 --port 3500 \
 			 --log-level debug \
