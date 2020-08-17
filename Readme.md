@@ -153,8 +153,9 @@ To publish data onto a topic the Dapr client provides a simple method:
 
 ```go
 data := []byte(`{ "id": "a123", "value": "abcdefg", "valid": true }`)
-err = client.PublishEvent(ctx, "topic-name", data)
-handleErrors(err)
+if err := client.PublishEvent(ctx, "component-name", "topic-name", data); err != nil {
+    panic(err)
+}
 ```
 
 ##### Service Invocation 
@@ -163,7 +164,6 @@ To invoke a specific method on another service running with Dapr sidecar, the Da
 
 ```go 
 resp, err = client.InvokeService(ctx, "service-name", "method-name") 
-handleErrors(err)
 ``` 
 
 And to invoke a service with data: 
@@ -171,7 +171,6 @@ And to invoke a service with data:
 ```go 
 data := []byte(`{ "id": "a123", "value": "abcdefg", "valid": true }`)
 resp, err := client.InvokeServiceWithContent(ctx, "service-name", "method-name", "application/json", data)
-handleErrors(err)
 ```
 
 ##### Bindings
@@ -185,7 +184,6 @@ opt := map[string]string{
     "opt2": "value2",
 }
 resp, meta, err := client.InvokeBinding(ctx, "binding-name", "operation-name", data, opt)
-handleErrors(err)
 ```
 
 And for simple, output only biding:
@@ -193,7 +191,6 @@ And for simple, output only biding:
 ```go
 data := []byte("hello")
 err = client.InvokeOutputBinding(ctx, "binding-name", "operation-name", data)
-handleErrors(err)
 ```
 
 ##### Secrets
@@ -205,7 +202,6 @@ opt := map[string]string{
     "version": "2",
 }
 secret, err = client.GetSecret(ctx, "store-name", "secret-name", opt)
-handleErrors(err)
 ```
 
 ## Service (callback)
