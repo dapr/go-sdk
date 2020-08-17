@@ -60,8 +60,8 @@ type Client interface {
 	// GetStateWithConsistency retreaves state from specific store using provided state consistency.
 	GetStateWithConsistency(ctx context.Context, store, key string, sc StateConsistency) (item *StateItem, err error)
 
-	// GetStateItems retreaves state for multiple keys from specific store.
-	GetStateItems(ctx context.Context, store string, keys []string, parallelism int32) ([]*StateItem, error)
+	// GetBulkItems retreaves state for multiple keys from specific store.
+	GetBulkItems(ctx context.Context, store string, keys []string, parallelism int32) ([]*StateItem, error)
 
 	// DeleteState deletes content from store using default state options.
 	DeleteState(ctx context.Context, store, key string) error

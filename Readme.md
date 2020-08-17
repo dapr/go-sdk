@@ -117,7 +117,7 @@ if err := client.SaveStateItems(ctx, store, item1, item2); err != nil {
 }
 ```
 
-Similarly, `GetStateItems` method provides a way to retreaded multiple state items in a single operation:
+Similarly, `GetStateItems` method provides a way to retrieve multiple state items in a single operation:
 
 ```go
 keys := []string{"key1", "key2", "key3"}

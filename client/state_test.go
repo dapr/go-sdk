@@ -90,7 +90,7 @@ func TestStateTransactions(t *testing.T) {
 	})
 
 	t.Run("get all inserts", func(t *testing.T) {
-		items, err := testClient.GetStateItems(ctx, store, keys, 10)
+		items, err := testClient.GetBulkItems(ctx, store, keys, 10)
 		assert.Nil(t, err)
 		assert.NotNil(t, items)
 		assert.Len(t, items, len(keys))
@@ -106,7 +106,7 @@ func TestStateTransactions(t *testing.T) {
 	})
 
 	t.Run("ensure deletes", func(t *testing.T) {
-		items, err := testClient.GetStateItems(ctx, store, keys, 3)
+		items, err := testClient.GetBulkItems(ctx, store, keys, 3)
 		assert.Nil(t, err)
 		assert.NotNil(t, items)
 		assert.Len(t, items, 0)

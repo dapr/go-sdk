@@ -212,8 +212,8 @@ func (c *GRPCClient) SaveStateItems(ctx context.Context, store string, items ...
 
 }
 
-// GetStateItems retreaves state for multiple keys from specific store.
-func (c *GRPCClient) GetStateItems(ctx context.Context, store string, keys []string, parallelism int32) ([]*StateItem, error) {
+// GetBulkItems retreaves state for multiple keys from specific store.
+func (c *GRPCClient) GetBulkItems(ctx context.Context, store string, keys []string, parallelism int32) ([]*StateItem, error) {
 	if store == "" {
 		return nil, errors.New("nil store")
 	}
