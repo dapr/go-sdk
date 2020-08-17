@@ -15,7 +15,11 @@ func (s *Server) AddTopicEventHandler(component, topic string, fn func(ctx conte
 	if topic == "" {
 		return fmt.Errorf("topic name required")
 	}
-	s.topicSubscriptions[topic] = &topicEventHandler{
+	if component == "" {
+		return fmt.Errorf("component name required")
+	}
+	key := fmt.Sprintf("%s-%s", component, topic)
+	s.topicSubscriptions[key] = &topicEventHandler{
 		component: component,
 		topic:     topic,
 		fn:        fn,
@@ -29,7 +33,11 @@ func (s *Server) AddTopicEventHandlerWithMetadata(component, topic string, m map
 	if topic == "" {
 		return fmt.Errorf("topic name required")
 	}
-	s.topicSubscriptions[topic] = &topicEventHandler{
+	if component == "" {
+		return fmt.Errorf("component name required")
+	}
+	key := fmt.Sprintf("%s-%s", component, topic)
+	s.topicSubscriptions[key] = &topicEventHandler{
 		component: component,
 		topic:     topic,
 		fn:        fn,
@@ -64,7 +72,11 @@ func (s *Server) OnTopicEvent(ctx context.Context, in *pb.TopicEventRequest) (*p
 	if in.Topic == "" {
 		return nil, errors.New("topic event request has no topic name")
 	}
-	if h, ok := s.topicSubscriptions[in.Topic]; ok {
+	if in.PubsubName == "" {
+		return nil, errors.New("topic event request has no pub/sub name")
+	}
+	key := fmt.Sprintf("%s-%s", in.PubsubName, in.Topic)
+	if h, ok := s.topicSubscriptions[key]; ok {
 		e := &TopicEvent{
 			ID:              in.Id,
 			Source:          in.Source,
