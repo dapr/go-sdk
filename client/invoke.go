@@ -9,6 +9,14 @@ import (
 	"github.com/pkg/errors"
 )
 
+// ServiceContent the service invocation content
+type ServiceContent struct {
+	// Data is the input data
+	Data []byte
+	// ContentType is the type of the data content
+	ContentType string
+}
+
 func (c *GRPCClient) invokeServiceWithRequest(ctx context.Context, req *pb.InvokeServiceRequest) (out []byte, err error) {
 	if req == nil {
 		return nil, errors.New("nil request")
@@ -50,23 +58,23 @@ func (c *GRPCClient) InvokeService(ctx context.Context, serviceID, method string
 }
 
 // InvokeServiceWithContent invokes service without content (data + content type).
-func (c *GRPCClient) InvokeServiceWithContent(ctx context.Context, serviceID, method, contentType string, data []byte) (out []byte, err error) {
+func (c *GRPCClient) InvokeServiceWithContent(ctx context.Context, serviceID, method string, content *ServiceContent) (out []byte, err error) {
 	if serviceID == "" {
-		return nil, errors.New("nil serviceID")
+		return nil, errors.New("serviceID is required")
 	}
 	if method == "" {
-		return nil, errors.New("nil method")
+		return nil, errors.New("method name is required")
 	}
-	if contentType == "" {
-		return nil, errors.New("nil contentType")
+	if content == nil {
+		return nil, errors.New("content required")
 	}
 
 	req := &pb.InvokeServiceRequest{
 		Id: serviceID,
 		Message: &v1.InvokeRequest{
 			Method:      method,
-			Data:        &anypb.Any{Value: data},
-			ContentType: contentType,
+			Data:        &anypb.Any{Value: content.Data},
+			ContentType: content.ContentType,
 			HttpExtension: &v1.HTTPExtension{
 				Verb: v1.HTTPExtension_POST,
 			},

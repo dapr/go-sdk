@@ -65,7 +65,11 @@ func main() {
 	fmt.Println("data deleted")
 
 	// invoke a method called EchoMethod on another dapr enabled service
-	resp, err := client.InvokeServiceWithContent(ctx, "serving", "echo", "text/plain", data)
+	content := &dapr.ServiceContent{
+		ContentType: "text/plain",
+		Data:        []byte(data),
+	}
+	resp, err := client.InvokeServiceWithContent(ctx, "serving", "echo", content)
 	if err != nil {
 		panic(err)
 	}

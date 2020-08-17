@@ -40,7 +40,7 @@ type Client interface {
 	InvokeService(ctx context.Context, serviceID, method string) (out []byte, err error)
 
 	// InvokeServiceWithContent invokes service without content (data + content type).
-	InvokeServiceWithContent(ctx context.Context, serviceID, method, contentType string, data []byte) (out []byte, err error)
+	InvokeServiceWithContent(ctx context.Context, serviceID, method string, content *ServiceContent) (out []byte, err error)
 
 	// PublishEvent pubishes data onto topic in specific pubsub component.
 	PublishEvent(ctx context.Context, component, topic string, in []byte) error
