@@ -30,11 +30,11 @@ var (
 type Client interface {
 	// InvokeBinding invokes specific operation on the configured Dapr binding.
 	// This method covers input, output, and bi-directional bindings.
-	InvokeBinding(ctx context.Context, name, op string, in []byte, min map[string]string) (out []byte, mout map[string]string, err error)
+	InvokeBinding(ctx context.Context, in *BindingInvocation) (out *BindingEvent, err error)
 
 	// InvokeOutputBinding invokes configured Dapr binding with data (allows nil).InvokeOutputBinding
 	// This method differs from InvokeBinding in that it doesn't expect any content being returned from the invoked method.
-	InvokeOutputBinding(ctx context.Context, name, operation string, data []byte) error
+	InvokeOutputBinding(ctx context.Context, in *BindingInvocation) error
 
 	// InvokeService invokes service without raw data ([]byte).
 	InvokeService(ctx context.Context, serviceID, method string) (out []byte, err error)

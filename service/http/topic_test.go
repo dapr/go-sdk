@@ -14,8 +14,6 @@ import (
 )
 
 func TestEventHandler(t *testing.T) {
-	t.Parallel()
-
 	data := `{
 		"specversion" : "1.0",
 		"type" : "com.github.pull.create",

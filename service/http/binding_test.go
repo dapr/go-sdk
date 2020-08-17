@@ -13,8 +13,6 @@ import (
 )
 
 func TestBindingHandlerWithoutData(t *testing.T) {
-	t.Parallel()
-
 	s := newService("")
 	err := s.AddBindingInvocationHandler("/", func(ctx context.Context, in *common.BindingEvent) (out []byte, err error) {
 		if in == nil {
@@ -38,8 +36,6 @@ func TestBindingHandlerWithoutData(t *testing.T) {
 }
 
 func TestBindingHandlerWithData(t *testing.T) {
-	t.Parallel()
-
 	data := `{"name": "test"}`
 	s := newService("")
 	err := s.AddBindingInvocationHandler("/", func(ctx context.Context, in *common.BindingEvent) (out []byte, err error) {

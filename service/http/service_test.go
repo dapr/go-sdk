@@ -7,7 +7,6 @@ import (
 )
 
 func TestStoppingUnstartedService(t *testing.T) {
-	t.Parallel()
 	s := newService("")
 	assert.NotNil(t, s)
 }

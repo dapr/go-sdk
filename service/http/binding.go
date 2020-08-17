@@ -22,10 +22,14 @@ func (s *Server) AddBindingInvocationHandler(route string, fn func(ctx context.C
 
 	s.mux.Handle(route, optionsHandler(http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
-			content, err := ioutil.ReadAll(r.Body)
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusBadRequest)
-				return
+			var content []byte
+			if r.ContentLength > 0 {
+				body, err := ioutil.ReadAll(r.Body)
+				if err != nil {
+					http.Error(w, err.Error(), http.StatusBadRequest)
+					return
+				}
+				content = body
 			}
 
 			// assuming Dapr doesn't pass multiple values for key
@@ -40,7 +44,11 @@ func (s *Server) AddBindingInvocationHandler(route string, fn func(ctx context.C
 			}
 
 			// execute handler
-			out, err := fn(r.Context(), &common.BindingEvent{Data: content, Metadata: meta})
+			in := &common.BindingEvent{
+				Data:     content,
+				Metadata: meta,
+			}
+			out, err := fn(r.Context(), in)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return

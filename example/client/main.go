@@ -71,7 +71,11 @@ func main() {
 	}
 	fmt.Printf("service method invoked, response: %s", string(resp))
 
-	if err := client.InvokeOutputBinding(ctx, "example-http-binding", "create", nil); err != nil {
+	in := &dapr.BindingInvocation{
+		Name:      "example-http-binding",
+		Operation: "create",
+	}
+	if err := client.InvokeOutputBinding(ctx, in); err != nil {
 		panic(err)
 	}
 	fmt.Println("output binding invoked")
