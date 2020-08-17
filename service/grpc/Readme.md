@@ -16,9 +16,7 @@ if err != nil {
     log.Fatalf("failed to start the server: %v", err)
 }
 
-sub := &common.Subscription{ Topic: "messages" }
-err = s.AddTopicEventHandler(sub, eventHandler)
-if err != nil {
+if err := s.AddTopicEventHandler("messages", "topic1", eventHandler); err != nil {
     log.Fatalf("error adding topic subscription: %v", err)
 }
 
@@ -42,8 +40,7 @@ if err != nil {
     log.Fatalf("failed to start the server: %v", err)
 }
 
-err = s.AddServiceInvocationHandler("echo", echoHandler)
-if err != nil {
+if err := s.AddServiceInvocationHandler("echo", echoHandler); err != nil {
     log.Fatalf("error adding invocation handler: %v", err)
 }
 
@@ -79,8 +76,7 @@ if err != nil {
     log.Fatalf("failed to start the server: %v", err)
 }
 
-err = s.AddBindingInvocationHandler("run", runHandler)
-if err != nil {
+if err := s.AddBindingInvocationHandler("run", runHandler); err != nil {
     log.Fatalf("error adding binding handler: %v", err)
 }
 

@@ -11,17 +11,35 @@ import (
 )
 
 // AddTopicEventHandler appends provided event handler with topic name to the service
-func (s *Server) AddTopicEventHandler(sub *common.Subscription, fn func(ctx context.Context, e *common.TopicEvent) error) error {
-	if sub == nil {
-		return errors.New("subscription required")
+func (s *Server) AddTopicEventHandler(component, topic string, fn func(ctx context.Context, e *TopicEvent) error) error {
+	if topic == "" {
+		return fmt.Errorf("topic name required")
 	}
-	if sub.Topic == "" {
-		return errors.New("topic name required")
+	if component == "" {
+		return fmt.Errorf("component name required")
+	}
+	key := fmt.Sprintf("%s-%s", component, topic)
+	s.topicSubscriptions[key] = &topicEventHandler{
+		component: component,
+		topic:     topic,
+		fn:        fn,
+		meta:      map[string]string{},
 	}
 
-	s.topicSubscriptions[sub.Topic] = &topicEventHandler{
-		Subscription: sub,
-		fn:           fn,
+// AddTopicEventHandlerWithMetadata appends provided event handler with topic name and metadata to the service
+func (s *Server) AddTopicEventHandlerWithMetadata(component, topic string, m map[string]string, fn func(ctx context.Context, e *TopicEvent) error) error {
+	if topic == "" {
+		return fmt.Errorf("topic name required")
+	}
+	if component == "" {
+		return fmt.Errorf("component name required")
+	}
+	key := fmt.Sprintf("%s-%s", component, topic)
+	s.topicSubscriptions[key] = &topicEventHandler{
+		component: component,
+		topic:     topic,
+		fn:        fn,
+		meta:      m,
 	}
 	return nil
 }
@@ -30,10 +48,11 @@ func (s *Server) AddTopicEventHandler(sub *common.Subscription, fn func(ctx cont
 // To subscribe to a topic named TopicA
 func (s *Server) ListTopicSubscriptions(ctx context.Context, in *empty.Empty) (*pb.ListTopicSubscriptionsResponse, error) {
 	subs := make([]*pb.TopicSubscription, 0)
-	for k, v := range s.topicSubscriptions {
+	for _, v := range s.topicSubscriptions {
 		sub := &pb.TopicSubscription{
-			Topic:    k,
-			Metadata: v.Metadata,
+			PubsubName: v.component,
+			Topic:      v.topic,
+			Metadata:   v.meta,
 		}
 		subs = append(subs, sub)
 	}
@@ -51,8 +70,12 @@ func (s *Server) OnTopicEvent(ctx context.Context, in *pb.TopicEventRequest) (*p
 	if in.Topic == "" {
 		return nil, errors.New("topic event request has no topic name")
 	}
-	if h, ok := s.topicSubscriptions[in.Topic]; ok {
-		e := &common.TopicEvent{
+	if in.PubsubName == "" {
+		return nil, errors.New("topic event request has no pub/sub name")
+	}
+	key := fmt.Sprintf("%s-%s", in.PubsubName, in.Topic)
+	if h, ok := s.topicSubscriptions[key]; ok {
+		e := &TopicEvent{
 			ID:              in.Id,
 			Source:          in.Source,
 			Type:            in.Type,
@@ -60,6 +83,7 @@ func (s *Server) OnTopicEvent(ctx context.Context, in *pb.TopicEventRequest) (*p
 			DataContentType: in.DataContentType,
 			Data:            in.Data,
 			Topic:           in.Topic,
+			PubsubName:      in.PubsubName,
 		}
 		err := h.fn(ctx, e)
 		if err != nil {

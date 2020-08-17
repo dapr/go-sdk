@@ -42,35 +42,35 @@ type Client interface {
 	// InvokeServiceWithContent invokes service without content (data + content type).
 	InvokeServiceWithContent(ctx context.Context, serviceID, method, contentType string, data []byte) (out []byte, err error)
 
-	// PublishEvent pubishes data onto specific pubsub topic.
-	PublishEvent(ctx context.Context, topic string, in []byte) error
+	// PublishEvent pubishes data onto topic in specific pubsub component.
+	PublishEvent(ctx context.Context, component, topic string, in []byte) error
 
 	// GetSecret retreaves preconfigred secret from specified store using key.
 	GetSecret(ctx context.Context, store, key string, meta map[string]string) (out map[string]string, err error)
 
-	// SaveState saves the fully loaded state to store.
-	SaveState(ctx context.Context, s *State) error
+	// SaveState saves the raw data into store using default state options.
+	SaveState(ctx context.Context, store, key string, data []byte) error
 
-	// SaveStateData saves the raw data into store using default state options.
-	SaveStateData(ctx context.Context, store, key string, data []byte) error
-
-	// SaveStateDataWithETag saves the raw data into store using default state options and ETag.
-	SaveStateDataWithETag(ctx context.Context, store, key, etag string, data []byte) error
-
-	// SaveStateItem saves the single state item to store.
-	SaveStateItem(ctx context.Context, store string, item *StateItem) error
+	// SaveStateItems saves multiple state item to store with specified options.
+	SaveStateItems(ctx context.Context, store string, items ...*SetStateItem) error
 
 	// GetState retreaves state from specific store using default consistency option.
-	GetState(ctx context.Context, store, key string) (out []byte, etag string, err error)
+	GetState(ctx context.Context, store, key string) (item *StateItem, err error)
 
 	// GetStateWithConsistency retreaves state from specific store using provided state consistency.
-	GetStateWithConsistency(ctx context.Context, store, key string, sc StateConsistency) (out []byte, etag string, err error)
+	GetStateWithConsistency(ctx context.Context, store, key string, sc StateConsistency) (item *StateItem, err error)
+
+	// GetBulkItems retreaves state for multiple keys from specific store.
+	GetBulkItems(ctx context.Context, store string, keys []string, parallelism int32) ([]*StateItem, error)
 
 	// DeleteState deletes content from store using default state options.
 	DeleteState(ctx context.Context, store, key string) error
 
 	// DeleteStateWithETag deletes content from store using provided state options and etag.
 	DeleteStateWithETag(ctx context.Context, store, key, etag string, opts *StateOptions) error
+
+	// ExecuteStateTransaction provides way to execute multiple operations on a specified store.
+	ExecuteStateTransaction(ctx context.Context, store string, meta map[string]string, ops []*StateOperation) error
 
 	// Close cleans up all resources created by the client.
 	Close()

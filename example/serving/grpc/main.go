@@ -17,10 +17,15 @@ func main() {
 	}
 
 	// add some topic subscriptions
+<<<<<<< HEAD
 	sub := &common.Subscription{
 		Topic: "messages",
 	}
 	if err := s.AddTopicEventHandler(sub, eventHandler); err != nil {
+=======
+	err = s.AddTopicEventHandler("messages", "demo", eventHandler)
+	if err != nil {
+>>>>>>> mchmarny-multi-pubsub-support-clean
 		log.Fatalf("error adding topic subscription: %v", err)
 	}
 
@@ -40,8 +45,13 @@ func main() {
 	}
 }
 
+<<<<<<< HEAD
 func eventHandler(ctx context.Context, e *common.TopicEvent) error {
 	log.Printf("event - Topic:%s, ID:%s, Data: %v", e.Topic, e.ID, e.Data)
+=======
+func eventHandler(ctx context.Context, e *daprd.TopicEvent) error {
+	log.Printf("event - PubsubName:%s, Topic:%s, ID:%s, Data: %v", e.PubsubName, e.Topic, e.ID, e.Data)
+>>>>>>> mchmarny-multi-pubsub-support-clean
 	return nil
 }
 

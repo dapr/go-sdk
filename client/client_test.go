@@ -2,6 +2,7 @@ package client
 
 import (
 	"context"
+	"fmt"
 	"net"
 	"os"
 	"testing"
@@ -94,7 +95,24 @@ func (s *testDaprServer) InvokeService(ctx context.Context, req *pb.InvokeServic
 func (s *testDaprServer) GetState(ctx context.Context, req *pb.GetStateRequest) (*pb.GetStateResponse, error) {
 	return &pb.GetStateResponse{
 		Data: s.state[req.Key],
-		Etag: "v1",
+		Etag: "1",
+	}, nil
+}
+
+func (s *testDaprServer) GetBulkState(ctx context.Context, in *pb.GetBulkStateRequest) (*pb.GetBulkStateResponse, error) {
+	items := make([]*pb.BulkStateItem, 0)
+	for _, k := range in.GetKeys() {
+		if v, found := s.state[k]; found {
+			item := &pb.BulkStateItem{
+				Key:  k,
+				Etag: "1",
+				Data: v,
+			}
+			items = append(items, item)
+		}
+	}
+	return &pb.GetBulkStateResponse{
+		Items: items,
 	}, nil
 }
 
@@ -107,6 +125,21 @@ func (s *testDaprServer) SaveState(ctx context.Context, req *pb.SaveStateRequest
 
 func (s *testDaprServer) DeleteState(ctx context.Context, req *pb.DeleteStateRequest) (*empty.Empty, error) {
 	delete(s.state, req.Key)
+	return &empty.Empty{}, nil
+}
+
+func (s *testDaprServer) ExecuteStateTransaction(ctx context.Context, in *pb.ExecuteStateTransactionRequest) (*empty.Empty, error) {
+	for _, op := range in.GetOperations() {
+		item := op.GetRequest()
+		switch opType := op.GetOperationType(); opType {
+		case "upsert":
+			s.state[item.Key] = item.Value
+		case "delete":
+			delete(s.state, item.Key)
+		default:
+			return &empty.Empty{}, fmt.Errorf("invalid operation type: %s", opType)
+		}
+	}
 	return &empty.Empty{}, nil
 }
 
