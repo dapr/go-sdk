@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strings"
 
 	"github.com/dapr/go-sdk/service/common"
 )
@@ -14,6 +15,10 @@ import (
 func (s *Server) AddServiceInvocationHandler(route string, fn func(ctx context.Context, in *common.InvocationEvent) (out *common.Content, err error)) error {
 	if route == "" {
 		return fmt.Errorf("service route required")
+	}
+
+	if !strings.HasPrefix(route, "/") {
+		route = fmt.Sprintf("/%s", route)
 	}
 
 	s.mux.Handle(route, optionsHandler(http.HandlerFunc(

@@ -2,9 +2,10 @@ package http
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
+	"strings"
 
 	"github.com/dapr/go-sdk/service/common"
 )
@@ -15,21 +16,31 @@ func (s *Server) AddBindingInvocationHandler(route string, fn func(ctx context.C
 		return fmt.Errorf("binding route required")
 	}
 
+	if !strings.HasPrefix(route, "/") {
+		route = fmt.Sprintf("/%s", route)
+	}
+
 	s.mux.Handle(route, optionsHandler(http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
-			var e common.BindingEvent
-			if r.ContentLength > 0 {
-				// deserialize the event
-				if err := json.NewDecoder(r.Body).Decode(&e); err != nil {
-					http.Error(w, err.Error(), http.StatusBadRequest)
-					return
+			content, err := ioutil.ReadAll(r.Body)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusBadRequest)
+				return
+			}
+
+			// assuming Dapr doesn't pass multiple values for key
+			meta := map[string]string{}
+			for k, values := range r.Header {
+				// TODO: Need to figure out how to parse out only the headers set in the binding + Traceparent
+				// if k == "raceparent" || strings.HasPrefix(k, "dapr") {
+				for _, v := range values {
+					meta[k] = v
 				}
-			} else {
-				e = common.BindingEvent{}
+				// }
 			}
 
 			// execute handler
-			out, err := fn(r.Context(), &e)
+			out, err := fn(r.Context(), &common.BindingEvent{Data: content, Metadata: meta})
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
