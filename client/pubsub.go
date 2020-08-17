@@ -15,9 +15,6 @@ func (c *GRPCClient) PublishEvent(ctx context.Context, component, topic string, 
 	if component == "" {
 		return errors.New("component name required")
 	}
-	if in == nil {
-		return errors.New("in data required")
-	}
 
 	envelop := &pb.PublishEventRequest{
 		PubsubName: component,
