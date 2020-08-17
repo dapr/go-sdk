@@ -46,8 +46,7 @@ func (s *Server) AddTopicEventHandlerWithMetadata(component, topic string, m map
 	return nil
 }
 
-// ListTopicSubscriptions is called by Dapr to get the list of topics the app wants to subscribe to. In this example, we are telling Dapr
-// To subscribe to a topic named TopicA
+// ListTopicSubscriptions is called by Dapr to get the list of topics in a pubsub component the app wants to subscribe to. 
 func (s *Server) ListTopicSubscriptions(ctx context.Context, in *empty.Empty) (*pb.ListTopicSubscriptionsResponse, error) {
 	subs := make([]*pb.TopicSubscription, 0)
 	for _, v := range s.topicSubscriptions {
