@@ -169,29 +169,37 @@ resp, err = client.InvokeService(ctx, "service-name", "method-name")
 And to invoke a service with data: 
 
 ```go 
-data := []byte(`{ "id": "a123", "value": "abcdefg", "valid": true }`)
-resp, err := client.InvokeServiceWithContent(ctx, "service-name", "method-name", "application/json", data)
+content := &ServiceContent{
+    ContentType: "application/json",
+    Data:        []byte(`{ "id": "a123", "value": "demo", "valid": true }`)
+}
+resp, err := client.InvokeServiceWithContent(ctx, "service-name", "method-name", content)
 ```
 
 ##### Bindings
 
-Similarly to Service, Dapr client provides two methods to invoke an operation on a [Dapr-defined binding](https://github.com/dapr/docs/tree/master/concepts/bindings). Dapr supports input, output, and bidirectional bindings so the first methods supports all of them along with metadata options: 
+Similarly to Service, Dapr client provides two methods to invoke an operation on a [Dapr-defined binding](https://github.com/dapr/docs/tree/master/concepts/bindings). Dapr supports input, output, and bidirectional bindings.
+
+For simple, output only biding:
 
 ```go
-data := []byte("hello")
-opt := map[string]string{
-    "opt1": "value1",
-    "opt2": "value2",
+in := &BindingInvocation{ Name: "binding-name", Operation: "operation-name" }
+err = client.InvokeOutputBinding(ctx, in)
+```
+
+To invoke method with content and metadata:
+
+```go
+in := &BindingInvocation{
+    Name:      "binding-name",
+    Operation: "operation-name",
+    Data: []byte("hello"),
+    Metadata: map[string]string{"k1": "v1", "k2": "v2"}
 }
-resp, meta, err := client.InvokeBinding(ctx, "binding-name", "operation-name", data, opt)
+out, err := client.InvokeBinding(ctx, in)
 ```
 
-And for simple, output only biding:
 
-```go
-data := []byte("hello")
-err = client.InvokeOutputBinding(ctx, "binding-name", "operation-name", data)
-```
 
 ##### Secrets
 

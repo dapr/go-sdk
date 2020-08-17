@@ -14,21 +14,21 @@ To handle events from specific topic, first create a Dapr service, add topic eve
 s := daprd.NewService(":8080")
 
 sub := &common.Subscription{
-	Topic: "messages",
+	PubsubName: "messages",
+	Topic: "topic1",
 	Route: "/events",
 }
-
 err := s.AddTopicEventHandler(sub, eventHandler)
 if err != nil {
 	log.Fatalf("error adding topic subscription: %v", err)
 }
 
 if err = s.Start(); err != nil && err != http.ErrServerClosed {
-	log.Fatalf("error listenning: %v", err)
+	log.Fatalf("error listening: %v", err)
 }
 
-func eventHandler(ctx context.Context, e *daprd.TopicEvent) error {
-	log.Printf("event - Topic:%s, ID:%s, Data: %v", e.Topic, e.ID, e.Data)
+func eventHandler(ctx context.Context, e *common.TopicEvent) error {
+	log.Printf("event - PubsubName:%s, Topic:%s, ID:%s, Data: %v", e.PubsubName, e.Topic, e.ID, e.Data)
 	return nil
 }
 ```
@@ -48,16 +48,16 @@ if err := s.Start(); err != nil {
     log.Fatalf("server error: %v", err)
 }
 
-func echoHandler(ctx context.Context, in *daprd.InvocationEvent) (out *daprd.Content, err error) {
+func echoHandler(ctx context.Context, in *common.InvocationEvent) (out *common.Content, err error) {
 	if in == nil {
-		err = errors.New("nil invocation parameter")
+		err = errors.New("invocation parameter required")
 		return
 	}
 	log.Printf(
 		"echo - ContentType:%s, Verb:%s, QueryString:%s, %+v",
 		in.ContentType, in.Verb, in.QueryString, string(in.Data),
 	)
-	out = &daprd.Content{
+	out = &common.Content{
 		Data:        in.Data,
 		ContentType: in.ContentType,
 		DataTypeURL: in.DataTypeURL,
@@ -77,7 +77,7 @@ if err := s.AddBindingInvocationHandler("/run", runHandler); err != nil {
 	log.Fatalf("error adding binding handler: %v", err)
 }
 
-func runHandler(ctx context.Context, in *daprd.BindingEvent) (out []byte, err error) {
+func runHandler(ctx context.Context, in *common.BindingEvent) (out []byte, err error) {
 	log.Printf("binding - Data:%v, Meta:%v", in.Data, in.Metadata)
 	return nil, nil
 }

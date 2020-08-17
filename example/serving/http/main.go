@@ -46,7 +46,7 @@ func eventHandler(ctx context.Context, e *common.TopicEvent) error {
 
 func echoHandler(ctx context.Context, in *common.InvocationEvent) (out *common.Content, err error) {
 	if in == nil {
-		err = errors.New("nil invocation parameter")
+		err = errors.New("invocation parameter required")
 		return
 	}
 	log.Printf(

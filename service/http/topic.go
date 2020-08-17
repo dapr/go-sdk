@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/pkg/errors"
 
@@ -35,6 +36,10 @@ func (s *Server) AddTopicEventHandler(sub *common.Subscription, fn func(ctx cont
 	}
 	if sub.Route == "" {
 		return errors.New("handler route name")
+	}
+
+	if !strings.HasPrefix(sub.Route, "/") {
+		sub.Route = fmt.Sprintf("/%s", sub.Route)
 	}
 
 	s.topicSubscriptions = append(s.topicSubscriptions, sub)

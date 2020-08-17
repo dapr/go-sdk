@@ -25,7 +25,7 @@ if err := s.Start(); err != nil {
 }
 
 func eventHandler(ctx context.Context, e *daprd.TopicEvent) error {
-	log.Printf("event - Topic:%s, ID:%s, Data: %v", e.Topic, e.ID, e.Data)
+	log.Printf("event - PubsubName:%s, Topic:%s, ID:%s, Data: %v", e.PubsubName, e.Topic, e.ID, e.Data)
 	return nil
 }
 ```
@@ -48,16 +48,16 @@ if err := s.Start(); err != nil {
     log.Fatalf("server error: %v", err)
 }
 
-func echoHandler(ctx context.Context, in *daprd.InvocationEvent) (out *daprd.Content, err error) {
+func echoHandler(ctx context.Context, in *common.InvocationEvent) (out *common.Content, err error) {
 	if in == nil {
-		err = errors.New("nil invocation parameter")
+		err = errors.New("invocation parameter required")
 		return
 	}
 	log.Printf(
 		"echo - ContentType:%s, Verb:%s, QueryString:%s, %+v",
 		in.ContentType, in.Verb, in.QueryString, string(in.Data),
 	)
-	out = &daprd.Content{
+	out = &common.Content{
 		Data:        in.Data,
 		ContentType: in.ContentType,
 		DataTypeURL: in.DataTypeURL,
@@ -84,7 +84,7 @@ if err := s.Start(); err != nil {
     log.Fatalf("server error: %v", err)
 }
 
-func runHandler(ctx context.Context, in *daprd.BindingEvent) (out []byte, err error) {
+func runHandler(ctx context.Context, in *common.BindingEvent) (out []byte, err error) {
 	log.Printf("binding - Data:%v, Meta:%v", in.Data, in.Metadata)
 	return nil, nil
 }
