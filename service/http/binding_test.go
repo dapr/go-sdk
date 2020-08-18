@@ -13,7 +13,7 @@ import (
 )
 
 func TestBindingHandlerWithoutData(t *testing.T) {
-	s := newService("")
+	s := newServer("", nil)
 	err := s.AddBindingInvocationHandler("/", func(ctx context.Context, in *common.BindingEvent) (out []byte, err error) {
 		if in == nil {
 			return nil, errors.New("nil input")
@@ -37,7 +37,7 @@ func TestBindingHandlerWithoutData(t *testing.T) {
 
 func TestBindingHandlerWithData(t *testing.T) {
 	data := `{"name": "test"}`
-	s := newService("")
+	s := newServer("", nil)
 	err := s.AddBindingInvocationHandler("/", func(ctx context.Context, in *common.BindingEvent) (out []byte, err error) {
 		if in == nil {
 			return nil, errors.New("nil input")

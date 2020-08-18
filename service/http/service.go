@@ -8,13 +8,21 @@ import (
 
 // NewService creates new Service
 func NewService(address string) common.Service {
-	return newService(address)
+	return newServer(address, nil)
 }
 
-func newService(address string) *Server {
+// NewServiceWithMux creates new Service with existing http mux
+func NewServiceWithMux(address string, mux *http.ServeMux) common.Service {
+	return newServer(address, mux)
+}
+
+func newServer(address string, mux *http.ServeMux) *Server {
+	if mux == nil {
+		mux = http.NewServeMux()
+	}
 	return &Server{
 		address:            address,
-		mux:                http.NewServeMux(),
+		mux:                mux,
 		topicSubscriptions: make([]*common.Subscription, 0),
 	}
 }
