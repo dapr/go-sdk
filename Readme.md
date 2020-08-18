@@ -115,11 +115,11 @@ if err := client.SaveStateItems(ctx, store, item1, item2, item3); err != nil {
 }
 ```
 
-Similarly, `GetStateItems` method provides a way to retrieve multiple state items in a single operation:
+Similarly, `GetBulkItems` method provides a way to retrieve multiple state items in a single operation:
 
 ```go
 keys := []string{"key1", "key2", "key3"}
-items, err := GetStateItems(ctx, store, keys, 100)
+items, err := GetBulkItems(ctx, store, keys, 100)
 ```
 
 And the `ExecuteStateTransaction` method to transactionally execute multiple `upsert` or `delete` operations.
