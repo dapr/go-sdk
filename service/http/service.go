@@ -1,0 +1,56 @@
+package http
+
+import (
+	"net/http"
+
+	"github.com/dapr/go-sdk/service/common"
+)
+
+// NewService creates new Service
+func NewService(address string) common.Service {
+	return newService(address)
+}
+
+func newService(address string) *Server {
+	return &Server{
+		address:            address,
+		mux:                http.NewServeMux(),
+		topicSubscriptions: make([]*common.Subscription, 0),
+	}
+}
+
+// Server is the HTTP server wrapping mux many Dapr helpers
+type Server struct {
+	address            string
+	mux                *http.ServeMux
+	topicSubscriptions []*common.Subscription
+}
+
+// Start starts the HTTP handler. Blocks while serving
+func (s *Server) Start() error {
+	s.registerSubscribeHandler()
+	server := http.Server{
+		Addr:    s.address,
+		Handler: s.mux,
+	}
+	return server.ListenAndServe()
+}
+
+// Stop stops previously started HTTP service
+func (s *Server) Stop() error {
+	// TODO: implement service stop
+	return nil
+}
+
+func optionsHandler(h http.Handler) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodOptions {
+			w.Header().Set("Access-Control-Allow-Origin", "*")
+			w.Header().Set("Access-Control-Allow-Methods", "POST,OPTIONS")
+			w.Header().Set("Access-Control-Allow-Headers", "authorization, origin, content-type, accept")
+			w.Header().Set("Allow", "POST,OPTIONS")
+		} else {
+			h.ServeHTTP(w, r)
+		}
+	}
+}

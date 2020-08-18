@@ -56,6 +56,7 @@ func main() {
 	if err := client.SaveStateItems(ctx, store, item2); err != nil {
 		panic(err)
 	}
+	fmt.Println("data item saved")
 
 	// delete state for key key1
 	if err := client.DeleteState(ctx, store, "key1"); err != nil {
@@ -64,13 +65,21 @@ func main() {
 	fmt.Println("data deleted")
 
 	// invoke a method called EchoMethod on another dapr enabled service
-	resp, err := client.InvokeServiceWithContent(ctx, "serving", "echo", "text/plain", data)
+	content := &dapr.DataContent{
+		ContentType: "text/plain",
+		Data:        []byte(data),
+	}
+	resp, err := client.InvokeServiceWithContent(ctx, "serving", "echo", content)
 	if err != nil {
 		panic(err)
 	}
 	fmt.Printf("service method invoked, response: %s", string(resp))
 
-	if err := client.InvokeOutputBinding(ctx, "example-http-binding", "create", nil); err != nil {
+	in := &dapr.BindingInvocation{
+		Name:      "example-http-binding",
+		Operation: "create",
+	}
+	if err := client.InvokeOutputBinding(ctx, in); err != nil {
 		panic(err)
 	}
 	fmt.Println("output binding invoked")

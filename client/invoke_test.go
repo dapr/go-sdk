@@ -14,7 +14,11 @@ func TestInvokeServiceWithContent(t *testing.T) {
 	data := "ping"
 
 	t.Run("with content", func(t *testing.T) {
-		resp, err := testClient.InvokeServiceWithContent(ctx, "test", "fn", "text/plain", []byte(data))
+		content := &DataContent{
+			ContentType: "text/plain",
+			Data:        []byte(data),
+		}
+		resp, err := testClient.InvokeServiceWithContent(ctx, "test", "fn", content)
 		assert.Nil(t, err)
 		assert.NotNil(t, resp)
 		assert.Equal(t, string(resp), data)

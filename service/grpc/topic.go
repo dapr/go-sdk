@@ -4,49 +4,34 @@ import (
 	"context"
 	"fmt"
 
+	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
+	"github.com/dapr/go-sdk/service/common"
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/pkg/errors"
-
-	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
 )
 
 // AddTopicEventHandler appends provided event handler with topic name to the service
-func (s *Server) AddTopicEventHandler(component, topic string, fn func(ctx context.Context, e *TopicEvent) error) error {
-	if topic == "" {
-		return fmt.Errorf("topic name required")
+func (s *Server) AddTopicEventHandler(sub *common.Subscription, fn func(ctx context.Context, e *common.TopicEvent) error) error {
+	if sub == nil {
+		return errors.New("subscription required")
 	}
-	if component == "" {
-		return fmt.Errorf("component name required")
+	if sub.Topic == "" {
+		return errors.New("topic name required")
 	}
-	key := fmt.Sprintf("%s-%s", component, topic)
+	if sub.PubsubName == "" {
+		return errors.New("pub/sub name required")
+	}
+	key := fmt.Sprintf("%s-%s", sub.PubsubName, sub.Topic)
 	s.topicSubscriptions[key] = &topicEventHandler{
-		component: component,
-		topic:     topic,
+		component: sub.PubsubName,
+		topic:     sub.Topic,
 		fn:        fn,
-		meta:      map[string]string{},
+		meta:      sub.Metadata,
 	}
 	return nil
 }
 
-// AddTopicEventHandlerWithMetadata appends provided event handler with topic name and metadata to the service
-func (s *Server) AddTopicEventHandlerWithMetadata(component, topic string, m map[string]string, fn func(ctx context.Context, e *TopicEvent) error) error {
-	if topic == "" {
-		return fmt.Errorf("topic name required")
-	}
-	if component == "" {
-		return fmt.Errorf("component name required")
-	}
-	key := fmt.Sprintf("%s-%s", component, topic)
-	s.topicSubscriptions[key] = &topicEventHandler{
-		component: component,
-		topic:     topic,
-		fn:        fn,
-		meta:      m,
-	}
-	return nil
-}
-
-// ListTopicSubscriptions is called by Dapr to get the list of topics in a pubsub component the app wants to subscribe to. 
+// ListTopicSubscriptions is called by Dapr to get the list of topics in a pubsub component the app wants to subscribe to.
 func (s *Server) ListTopicSubscriptions(ctx context.Context, in *empty.Empty) (*pb.ListTopicSubscriptionsResponse, error) {
 	subs := make([]*pb.TopicSubscription, 0)
 	for _, v := range s.topicSubscriptions {
@@ -63,7 +48,8 @@ func (s *Server) ListTopicSubscriptions(ctx context.Context, in *empty.Empty) (*
 	}, nil
 }
 
-// OnTopicEvent fired whenever a message has been published to a topic that has been subscribed. Dapr sends published messages in a CloudEvents 0.3 envelope.
+// OnTopicEvent fired whenever a message has been published to a topic that has been subscribed.
+// Dapr sends published messages in a CloudEvents 0.3 envelope.
 func (s *Server) OnTopicEvent(ctx context.Context, in *pb.TopicEventRequest) (*pb.TopicEventResponse, error) {
 	if in == nil {
 		return nil, errors.New("nil event request")
@@ -76,7 +62,7 @@ func (s *Server) OnTopicEvent(ctx context.Context, in *pb.TopicEventRequest) (*p
 	}
 	key := fmt.Sprintf("%s-%s", in.PubsubName, in.Topic)
 	if h, ok := s.topicSubscriptions[key]; ok {
-		e := &TopicEvent{
+		e := &common.TopicEvent{
 			ID:              in.Id,
 			Source:          in.Source,
 			Type:            in.Type,

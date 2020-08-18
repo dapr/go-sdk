@@ -16,13 +16,13 @@ func TestPublishEvent(t *testing.T) {
 		assert.Nil(t, err)
 	})
 
-	t.Run("with empty topic name", func(t *testing.T) {
-		err := testClient.PublishEvent(ctx, "messagebus", "", []byte("ping"))
-		assert.NotNil(t, err)
-	})
-
 	t.Run("without data", func(t *testing.T) {
 		err := testClient.PublishEvent(ctx, "messagebus", "test", nil)
+		assert.Nil(t, err)
+	})
+
+	t.Run("with empty topic name", func(t *testing.T) {
+		err := testClient.PublishEvent(ctx, "messagebus", "", []byte("ping"))
 		assert.NotNil(t, err)
 	})
 }

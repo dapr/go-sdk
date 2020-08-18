@@ -1,9 +1,9 @@
-# Dapr gRPC Service SDK for Go
+# Dapr HTTP Service SDK for Go
 
-Start by importing Dapr go `service/grpc` package:
+Start by importing Dapr go `service/http` package:
 
 ```go
-daprd "github.com/dapr/go-sdk/service/grpc"
+daprd "github.com/dapr/go-sdk/service/http"
 ```
 
 ## Event Handling 
@@ -11,20 +11,23 @@ daprd "github.com/dapr/go-sdk/service/grpc"
 To handle events from specific topic, first create a Dapr service, add topic event handler, and start the service:
 
 ```go
-s, err := daprd.NewService(":50001")
+s := daprd.NewService(":8080")
+
+sub := &common.Subscription{
+	PubsubName: "messages",
+	Topic: "topic1",
+	Route: "/events",
+}
+err := s.AddTopicEventHandler(sub, eventHandler)
 if err != nil {
-    log.Fatalf("failed to start the server: %v", err)
+	log.Fatalf("error adding topic subscription: %v", err)
 }
 
-if err := s.AddTopicEventHandler("messages", "topic1", eventHandler); err != nil {
-    log.Fatalf("error adding topic subscription: %v", err)
+if err = s.Start(); err != nil && err != http.ErrServerClosed {
+	log.Fatalf("error listening: %v", err)
 }
 
-if err := s.Start(); err != nil {
-    log.Fatalf("server error: %v", err)
-}
-
-func eventHandler(ctx context.Context, e *daprd.TopicEvent) error {
+func eventHandler(ctx context.Context, e *common.TopicEvent) error {
 	log.Printf("event - PubsubName:%s, Topic:%s, ID:%s, Data: %v", e.PubsubName, e.Topic, e.ID, e.Data)
 	return nil
 }
@@ -35,13 +38,10 @@ func eventHandler(ctx context.Context, e *daprd.TopicEvent) error {
 To handle service invocations, create and start the Dapr service as in the above example. In this case though add the handler for service invocation: 
 
 ```go
-s, err := daprd.NewService(":50001")
-if err != nil {
-    log.Fatalf("failed to start the server: %v", err)
-}
+s := daprd.NewService(":8080")
 
-if err := s.AddServiceInvocationHandler("echo", echoHandler); err != nil {
-    log.Fatalf("error adding invocation handler: %v", err)
+if err := s.AddServiceInvocationHandler("/echo", echoHandler); err != nil {
+	log.Fatalf("error adding invocation handler: %v", err)
 }
 
 if err := s.Start(); err != nil {
@@ -71,17 +71,10 @@ func echoHandler(ctx context.Context, in *common.InvocationEvent) (out *common.C
 To handle binding invocations, create and start the Dapr service as in the above examples. In this case though add the handler for binding invocation: 
 
 ```go
-s, err := daprd.NewService(":50001")
-if err != nil {
-    log.Fatalf("failed to start the server: %v", err)
-}
+s := daprd.NewService(":8080")
 
-if err := s.AddBindingInvocationHandler("run", runHandler); err != nil {
-    log.Fatalf("error adding binding handler: %v", err)
-}
-
-if err := s.Start(); err != nil {
-    log.Fatalf("server error: %v", err)
+if err := s.AddBindingInvocationHandler("/run", runHandler); err != nil {
+	log.Fatalf("error adding binding handler: %v", err)
 }
 
 func runHandler(ctx context.Context, in *common.BindingEvent) (out []byte, err error) {
