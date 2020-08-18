@@ -9,8 +9,8 @@ import (
 	"github.com/pkg/errors"
 )
 
-// ServiceContent the service invocation content
-type ServiceContent struct {
+// DataContent the service invocation content
+type DataContent struct {
 	// Data is the input data
 	Data []byte
 	// ContentType is the type of the data content
@@ -58,7 +58,7 @@ func (c *GRPCClient) InvokeService(ctx context.Context, serviceID, method string
 }
 
 // InvokeServiceWithContent invokes service without content (data + content type).
-func (c *GRPCClient) InvokeServiceWithContent(ctx context.Context, serviceID, method string, content *ServiceContent) (out []byte, err error) {
+func (c *GRPCClient) InvokeServiceWithContent(ctx context.Context, serviceID, method string, content *DataContent) (out []byte, err error) {
 	if serviceID == "" {
 		return nil, errors.New("serviceID is required")
 	}

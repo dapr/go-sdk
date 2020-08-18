@@ -32,15 +32,15 @@ type Client interface {
 	// This method covers input, output, and bi-directional bindings.
 	InvokeBinding(ctx context.Context, in *BindingInvocation) (out *BindingEvent, err error)
 
-	// InvokeOutputBinding invokes configured Dapr binding with data (allows nil).InvokeOutputBinding
+	// InvokeOutputBinding invokes configured Dapr binding with data.InvokeOutputBinding
 	// This method differs from InvokeBinding in that it doesn't expect any content being returned from the invoked method.
 	InvokeOutputBinding(ctx context.Context, in *BindingInvocation) error
 
-	// InvokeService invokes service without raw data ([]byte).
+	// InvokeService invokes service without raw data
 	InvokeService(ctx context.Context, serviceID, method string) (out []byte, err error)
 
-	// InvokeServiceWithContent invokes service without content (data + content type).
-	InvokeServiceWithContent(ctx context.Context, serviceID, method string, content *ServiceContent) (out []byte, err error)
+	// InvokeServiceWithContent invokes service with content
+	InvokeServiceWithContent(ctx context.Context, serviceID, method string, content *DataContent) (out []byte, err error)
 
 	// PublishEvent pubishes data onto topic in specific pubsub component.
 	PublishEvent(ctx context.Context, component, topic string, in []byte) error
