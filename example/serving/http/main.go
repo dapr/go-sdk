@@ -40,7 +40,7 @@ func main() {
 }
 
 func eventHandler(ctx context.Context, e *common.TopicEvent) error {
-	log.Printf("event - PubsubName:%s, Topic:%s, ID:%s, Data: %v", e.PubsubName, e.Topic, e.ID, e.Data)
+	log.Printf("event - PubsubName:%s, Topic:%s, ID:%s, Data: %s", e.PubsubName, e.Topic, e.ID, e.Data)
 	return nil
 }
 
@@ -50,8 +50,8 @@ func echoHandler(ctx context.Context, in *common.InvocationEvent) (out *common.C
 		return
 	}
 	log.Printf(
-		"echo - ContentType:%s, Verb:%s, QueryString:%s, %+v",
-		in.ContentType, in.Verb, in.QueryString, string(in.Data),
+		"echo - ContentType:%s, Verb:%s, QueryString:%s, %s",
+		in.ContentType, in.Verb, in.QueryString, in.Data,
 	)
 	out = &common.Content{
 		Data:        in.Data,
@@ -62,6 +62,6 @@ func echoHandler(ctx context.Context, in *common.InvocationEvent) (out *common.C
 }
 
 func runHandler(ctx context.Context, in *common.BindingEvent) (out []byte, err error) {
-	log.Printf("binding - Data:%v, Meta:%v", in.Data, in.Metadata)
+	log.Printf("binding - Data:%s, Meta:%v", in.Data, in.Metadata)
 	return nil, nil
 }
