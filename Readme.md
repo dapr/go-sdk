@@ -48,11 +48,6 @@ dapr run --app-id example-service \
 
 Check the [example folder](./example) for working Dapr go client examples.
 
-To accelerate your Dapr service development even more, consider the GitHub templates with complete gRPC solutions for two common use-cases:
-
-* [gRPC Event Subscriber Template](https://github.com/mchmarny/dapr-grpc-event-subscriber-template) for pub/sub event processing 
-* [gRPC Serving Service Template ](https://github.com/mchmarny/dapr-grpc-service-template) which creates a target for service to service invocations 
-
 
 #### Usage
 
@@ -100,19 +95,22 @@ item1 := &dapr.SetStateItem{
         Consistency: dapr.StateConsistencyStrong,
     },
 }
+
 item2 := &dapr.SetStateItem{
     Key:  "key2",
-    Etag: "1",
     Metadata: map[string]string{
         "created-on": time.Now().UTC().String(),
     },
     Value: []byte("hello again"),
-    Options: &dapr.StateOptions{
-        Concurrency: dapr.StateConcurrencyLastWrite,
-        Consistency: dapr.StateConsistencyStrong,
-    },
 }
-if err := client.SaveStateItems(ctx, store, item1, item2); err != nil {
+
+item3 := &dapr.SetStateItem{
+    Key:  "key3",
+    Etag: "1",
+    Value: []byte("hello again"),
+}
+
+if err := client.SaveStateItems(ctx, store, item1, item2, item3); err != nil {
     panic(err)
 }
 ```
@@ -121,7 +119,7 @@ Similarly, `GetStateItems` method provides a way to retrieve multiple state item
 
 ```go
 keys := []string{"key1", "key2", "key3"}
-items, err := GetStateItems(ctx, store, keys, parallelism 100)
+items, err := GetStateItems(ctx, store, keys, 100)
 ```
 
 And the `ExecuteStateTransaction` method to transactionally execute multiple `upsert` or `delete` operations.
@@ -173,6 +171,7 @@ content := &DataContent{
     ContentType: "application/json",
     Data:        []byte(`{ "id": "a123", "value": "demo", "valid": true }`)
 }
+
 resp, err := client.InvokeServiceWithContent(ctx, "service-name", "method-name", content)
 ```
 
@@ -196,10 +195,9 @@ in := &BindingInvocation{
     Data: []byte("hello"),
     Metadata: map[string]string{"k1": "v1", "k2": "v2"}
 }
+
 out, err := client.InvokeBinding(ctx, in)
 ```
-
-
 
 ##### Secrets
 
@@ -209,13 +207,13 @@ The Dapr client also provides access to the runtime secrets that can be backed b
 opt := map[string]string{
     "version": "2",
 }
+
 secret, err = client.GetSecret(ctx, "store-name", "secret-name", opt)
 ```
 
 ## Service (callback)
 
-In addition to a an easy to use client, Dapr go package also provides implementation for `service`. Instructions on how to use it are located [here](./service/Readme.md)
-
+In addition to this Dapr API client, Dapr go SDK also provides `service` package to bootstrap your Dapr callback services in either gRPC or HTTP. Instructions on how to use it are located [here](./service/Readme.md)
 
 ## Contributing to Dapr go client 
 
