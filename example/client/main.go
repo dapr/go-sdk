@@ -65,7 +65,7 @@ func main() {
 	fmt.Println("data deleted")
 
 	// invoke a method called EchoMethod on another dapr enabled service
-	content := &dapr.ServiceContent{
+	content := &dapr.DataContent{
 		ContentType: "text/plain",
 		Data:        []byte(data),
 	}

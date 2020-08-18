@@ -14,7 +14,7 @@ func TestInvokeServiceWithContent(t *testing.T) {
 	data := "ping"
 
 	t.Run("with content", func(t *testing.T) {
-		content := &ServiceContent{
+		content := &DataContent{
 			ContentType: "text/plain",
 			Data:        []byte(data),
 		}

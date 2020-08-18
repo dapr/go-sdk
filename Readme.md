@@ -169,7 +169,7 @@ resp, err = client.InvokeService(ctx, "service-name", "method-name")
 And to invoke a service with data: 
 
 ```go 
-content := &ServiceContent{
+content := &DataContent{
     ContentType: "application/json",
     Data:        []byte(`{ "id": "a123", "value": "demo", "valid": true }`)
 }
