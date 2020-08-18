@@ -27,7 +27,7 @@ func TestEventHandler(t *testing.T) {
 		"data" : "eyJtZXNzYWdlIjoiaGVsbG8ifQ=="
 	}`
 
-	s := newService("")
+	s := newServer("", nil)
 
 	sub := &common.Subscription{
 		PubsubName: "messages",

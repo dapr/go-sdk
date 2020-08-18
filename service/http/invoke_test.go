@@ -15,7 +15,7 @@ import (
 
 func TestInvocationHandlerWithData(t *testing.T) {
 	data := `{"name": "test", "data": hellow}`
-	s := newService("")
+	s := newServer("", nil)
 	err := s.AddServiceInvocationHandler("/", func(ctx context.Context, in *common.InvocationEvent) (out *common.Content, err error) {
 		if in == nil || in.Data == nil || in.ContentType == "" {
 			err = errors.New("nil input")
@@ -44,7 +44,7 @@ func TestInvocationHandlerWithData(t *testing.T) {
 }
 
 func TestInvocationHandlerWithoutInputData(t *testing.T) {
-	s := newService("")
+	s := newServer("", nil)
 	err := s.AddServiceInvocationHandler("/", func(ctx context.Context, in *common.InvocationEvent) (out *common.Content, err error) {
 		if in == nil || in.Data != nil {
 			err = errors.New("nil input")
@@ -69,7 +69,7 @@ func TestInvocationHandlerWithoutInputData(t *testing.T) {
 }
 
 func TestInvocationHandlerWithInvalidRoute(t *testing.T) {
-	s := newService("")
+	s := newServer("", nil)
 	err := s.AddServiceInvocationHandler("/a", func(ctx context.Context, in *common.InvocationEvent) (out *common.Content, err error) {
 		return nil, nil
 	})

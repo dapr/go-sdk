@@ -7,6 +7,6 @@ import (
 )
 
 func TestStoppingUnstartedService(t *testing.T) {
-	s := newService("")
+	s := newServer("", nil)
 	assert.NotNil(t, s)
 }
