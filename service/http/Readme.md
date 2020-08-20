@@ -87,8 +87,8 @@ func runHandler(ctx context.Context, in *common.BindingEvent) (out []byte, err e
 
 To accelerate your Dapr app development in go even further you can use one of the GitHub templates integrating the HTTP Dapr callback package:
 
-* [dapr-http-event-subscriber-template](https://github.com/mchmarny/dapr-http-event-subscriber-template)
-* [dapr-http-cron-handler-template](https://github.com/mchmarny/dapr-http-cron-handler-template)
+* [dapr-http-event-subscriber-template](https://github.com/dapr/dapr-http-event-subscriber-template)
+* [dapr-http-cron-handler-template](https://github.com/dapr/dapr-http-cron-handler-template)
 
 
 ## Contributing to Dapr go client 
