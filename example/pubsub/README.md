@@ -9,7 +9,8 @@ This folder contains two go file that uses this go-SDK to invoke the Dapr PubSub
 
 ### Prepare
 - Dapr installed
-- Run a redis with host: 127.0.0.1:6379 password: 123456
+- A local Redis in Docker.
+May be helpful: `docker run d --name dapr-redis -p 6379:6379 redis --requirepass "123456"`
 
 ### Run Subscriber Server
 when we use Dapr PubSub to subscribe, we should have a http or gRPC server to receive the requests from Dapr.
@@ -19,7 +20,7 @@ Please change directory to pubsub/ and run the following command:
 dapr run --app-id sub \ 
          --app-protocol http \ 
          --app-port 8080 \ 
-         --port 3500 \ 
+         --dapr-http-port 3500 \ 
          --log-level debug \ 
          --components-path ./config \ 
          go run sub.go 

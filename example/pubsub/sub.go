@@ -9,6 +9,10 @@ import (
 	daprd "github.com/dapr/go-sdk/service/http"
 )
 
+// Subscription to tell the dapr what topic to subscribe.
+// - PubsubName: is the name of the component configured in the metadata of pubsub.yaml.
+// - Topic: is the name of the topic to subscribe.
+// - Route: tell dapr where to request the API to publish the message to the subscriber when get a message from topic.
 var sub := &common.Subscription{
 	PubsubName: "messagebus",
 	Topic:      "neworder",
