@@ -3,12 +3,17 @@ package main
 import (
 	"context"
 	"fmt"
+	"os"
 
 	dapr "github.com/dapr/go-sdk/client"
 )
 
-const (
-	pubsubName = "messagebus"
+func init() {
+	os.Setenv("dapr-PubsubName", "messagebus")
+}
+
+var (
+	pubsubName = os.Getenv("dapr-PubsubName")
 	topicName  = "neworder"
 )
 
