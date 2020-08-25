@@ -15,6 +15,8 @@ May be helpful: `docker run d --name dapr-redis -p 6379:6379 redis --requirepass
 ### Run Subscriber Server
 when we use Dapr PubSub to subscribe, we should have a http or gRPC server to receive the requests from Dapr.
 
+We use the environment variable, Please set `DAPR_PUBSUB_NAME` as the name of the components: `messagebus` at first.
+
 Please change directory to pubsub/ and run the following command:
 ```bash
 dapr run --app-id sub \ 

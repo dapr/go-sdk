@@ -8,12 +8,9 @@ import (
 	dapr "github.com/dapr/go-sdk/client"
 )
 
-func init() {
-	os.Setenv("dapr-PubsubName", "messagebus")
-}
-
 var (
-	pubsubName = os.Getenv("dapr-PubsubName")
+	// set the environment as instructions.
+	pubsubName = os.Getenv("DAPR_PUBSUB_NAME")
 	topicName  = "neworder"
 )
 
