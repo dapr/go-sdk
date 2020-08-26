@@ -9,13 +9,11 @@ This folder contains two go file that uses this go-SDK to invoke the Dapr PubSub
 
 ### Prepare
 - Dapr installed
-- A local Redis in Docker.
-May be helpful: `docker run d --name dapr-redis -p 6379:6379 redis --requirepass "123456"`
 
 ### Run Subscriber Server
-when we use Dapr PubSub to subscribe, we should have a http or gRPC server to receive the requests from Dapr.
+when use Dapr PubSub to subscribe, should have a http or gRPC server to receive the requests from Dapr.
 
-We use the environment variable, Please set `DAPR_PUBSUB_NAME` as the name of the components: `messagebus` at first.
+Use the environment variable, Please set `DAPR_PUBSUB_NAME` as the name of the components: `messagebus` at first.
 
 Please change directory to pubsub/ and run the following command:
 ```bash
