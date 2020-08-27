@@ -13,16 +13,14 @@ This folder contains two go file that uses this go-SDK to invoke the Dapr PubSub
 ### Run Subscriber Server
 when use Dapr PubSub to subscribe, should have a http or gRPC server to receive the requests from Dapr.
 
-Use the environment variable, Please set `DAPR_PUBSUB_NAME` as the name of the components: `messagebus` at first.
-
-Please change directory to pubsub/ and run the following command:
+Please change directory to pubsub/sub and run the following command:
 ```bash
-dapr run --app-id sub \ 
-         --app-protocol http \ 
-         --app-port 8080 \ 
-         --dapr-http-port 3500 \ 
-         --log-level debug \ 
-         --components-path ./config \ 
+dapr run --app-id sub \
+         --app-protocol http \
+         --app-port 8080 \
+         --dapr-http-port 3500 \
+         --log-level debug \
+         --components-path ../config \
          go run sub.go 
 ```
 
@@ -30,11 +28,14 @@ dapr run --app-id sub \
 Publish is more simply than subscribe. Just Publish the data to target pubsub component with its' name.
 
 After you start a server by above guide.
-Please change directory to pubsub/ and run the following command:
+
+Use the environment variable, Please set `DAPR_PUBSUB_NAME` as the name of the components: `messagebus` at first.
+
+Please change directory to pubsub/pub and run the following command:
 ```bash
-dapr run --app-id pub \ 
-         --log-level debug \ 
-         --components-path ./config \ 
+dapr run --app-id pub \
+         --log-level debug \
+         --components-path ../config \
          go run pub.go 
 ```
 
