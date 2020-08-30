@@ -119,7 +119,7 @@ Similarly, `GetBulkItems` method provides a way to retrieve multiple state items
 
 ```go
 keys := []string{"key1", "key2", "key3"}
-items, err := GetBulkItems(ctx, store, keys, 100)
+items, err := client.GetBulkItems(ctx, store, keys, 100)
 ```
 
 And the `ExecuteStateTransaction` method to transactionally execute multiple `upsert` or `delete` operations.
