@@ -167,9 +167,9 @@ resp, err = client.InvokeService(ctx, "service-name", "method-name")
 And to invoke a service with data: 
 
 ```go 
-content := &DataContent{
+content := &dapr.DataContent{
     ContentType: "application/json",
-    Data:        []byte(`{ "id": "a123", "value": "demo", "valid": true }`)
+    Data:        []byte(`{ "id": "a123", "value": "demo", "valid": true }`),
 }
 
 resp, err := client.InvokeServiceWithContent(ctx, "service-name", "method-name", content)
@@ -189,11 +189,11 @@ err = client.InvokeOutputBinding(ctx, in)
 To invoke method with content and metadata:
 
 ```go
-in := &BindingInvocation{
+in := &dapr.BindingInvocation{
     Name:      "binding-name",
     Operation: "operation-name",
     Data: []byte("hello"),
-    Metadata: map[string]string{"k1": "v1", "k2": "v2"}
+    Metadata: map[string]string{"k1": "v1", "k2": "v2"},
 }
 
 out, err := client.InvokeBinding(ctx, in)
@@ -208,7 +208,7 @@ opt := map[string]string{
     "version": "2",
 }
 
-secret, err = client.GetSecret(ctx, "store-name", "secret-name", opt)
+secret, err := client.GetSecret(ctx, "store-name", "secret-name", opt)
 ```
 
 ## Service (callback)
