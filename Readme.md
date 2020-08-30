@@ -182,7 +182,7 @@ Similarly to Service, Dapr client provides two methods to invoke an operation on
 For simple, output only biding:
 
 ```go
-in := &BindingInvocation{ Name: "binding-name", Operation: "operation-name" }
+in := &dapr.BindingInvocation{ Name: "binding-name", Operation: "operation-name" }
 err = client.InvokeOutputBinding(ctx, in)
 ```
 
