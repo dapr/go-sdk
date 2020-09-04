@@ -8,7 +8,7 @@ on:
 jobs:
 
   build:
-    name: Create Release
+    name: Create Release on Tag
     runs-on: ubuntu-latest
     steps:
 

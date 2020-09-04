@@ -6,7 +6,7 @@ on:
 jobs:
 
   build:
-    name: Test Push
+    name: Test and Lint on Push
     runs-on: ubuntu-latest
     steps:
 
