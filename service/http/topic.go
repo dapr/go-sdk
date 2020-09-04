@@ -12,6 +12,17 @@ import (
 	"github.com/dapr/go-sdk/service/common"
 )
 
+const (
+	// PubSubHandlerSuccessStatusCode is the successful ack code for pubsub event appcallback response
+	PubSubHandlerSuccessStatusCode int = http.StatusOK
+
+	// PubSubHandlerRetryStatusCode is the error response code (nack) pubsub event appcallback response
+	PubSubHandlerRetryStatusCode int = http.StatusInternalServerError
+
+	// PubSubHandlerDropStatusCode is the pubsub event appcallback response code indicating that Dapr should drop that message
+	PubSubHandlerDropStatusCode int = http.StatusSeeOther
+)
+
 func (s *Server) registerSubscribeHandler() {
 	f := func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
@@ -48,7 +59,7 @@ func (s *Server) AddTopicEventHandler(sub *common.Subscription, fn func(ctx cont
 		func(w http.ResponseWriter, r *http.Request) {
 			// check for post with no data
 			if r.ContentLength == 0 {
-				http.Error(w, "nil content", http.StatusBadRequest)
+				http.Error(w, "nil content", PubSubHandlerDropStatusCode)
 				return
 			}
 
@@ -56,7 +67,7 @@ func (s *Server) AddTopicEventHandler(sub *common.Subscription, fn func(ctx cont
 			var in common.TopicEvent
 			if err := json.NewDecoder(r.Body).Decode(&in); err != nil {
 				fmt.Println(err.Error())
-				http.Error(w, err.Error(), http.StatusBadRequest)
+				http.Error(w, err.Error(), PubSubHandlerDropStatusCode)
 				return
 			}
 
@@ -65,7 +76,7 @@ func (s *Server) AddTopicEventHandler(sub *common.Subscription, fn func(ctx cont
 			}
 
 			if err := fn(r.Context(), &in); err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
+				http.Error(w, err.Error(), PubSubHandlerRetryStatusCode)
 				return
 			}
 
