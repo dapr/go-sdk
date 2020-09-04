@@ -48,6 +48,15 @@ func TestSaveState(t *testing.T) {
 		assert.Equal(t, string(item.Value), data)
 	})
 
+	t.Run("get saved data with consistency", func(t *testing.T) {
+		item, err := testClient.GetStateWithConsistency(ctx, store, key, nil, StateConsistencyStrong)
+		assert.Nil(t, err)
+		assert.NotNil(t, item)
+		assert.NotEmpty(t, item.Etag)
+		assert.Equal(t, item.Key, key)
+		assert.Equal(t, string(item.Value), data)
+	})
+
 	t.Run("save data with version", func(t *testing.T) {
 		item := &SetStateItem{
 			Etag:  "1",
