@@ -35,7 +35,7 @@ func (s *Server) registerSubscribeHandler() {
 }
 
 // AddTopicEventHandler appends provided event handler with it's name to the service
-func (s *Server) AddTopicEventHandler(sub *common.Subscription, fn func(ctx context.Context, e *common.TopicEvent) error) error {
+func (s *Server) AddTopicEventHandler(sub *common.Subscription, fn func(ctx context.Context, e *common.TopicEvent) (retry bool, err error)) error {
 	if sub == nil {
 		return errors.New("subscription required")
 	}
@@ -75,13 +75,19 @@ func (s *Server) AddTopicEventHandler(sub *common.Subscription, fn func(ctx cont
 				in.Topic = sub.Topic
 			}
 
-			if err := fn(r.Context(), &in); err != nil {
+			retry, err := fn(r.Context(), &in)
+			if err == nil {
+				w.Header().Add("Content-Type", "application/json")
+				w.WriteHeader(http.StatusOK)
+				return
+			}
+
+			if retry {
 				http.Error(w, err.Error(), PubSubHandlerRetryStatusCode)
 				return
 			}
 
-			w.Header().Add("Content-Type", "application/json")
-			w.WriteHeader(http.StatusOK)
+			http.Error(w, err.Error(), PubSubHandlerDropStatusCode)
 		})))
 
 	return nil

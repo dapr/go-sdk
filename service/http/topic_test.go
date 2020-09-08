@@ -35,17 +35,17 @@ func TestEventHandler(t *testing.T) {
 		Route:      "/",
 		Metadata:   map[string]string{},
 	}
-	err := s.AddTopicEventHandler(sub, func(ctx context.Context, e *common.TopicEvent) error {
+	err := s.AddTopicEventHandler(sub, func(ctx context.Context, e *common.TopicEvent) (retry bool, err error) {
 		if e == nil {
-			return errors.New("nil content")
+			return false, errors.New("nil content")
 		}
 		if e.DataContentType != "application/json" {
-			return fmt.Errorf("invalid content type: %s", e.DataContentType)
+			return false, fmt.Errorf("invalid content type: %s", e.DataContentType)
 		}
 		if e.Data == nil {
-			return errors.New("nil data")
+			return false, errors.New("nil data")
 		}
-		return nil
+		return false, nil
 	})
 	assert.NoErrorf(t, err, "error adding event handler")
 
