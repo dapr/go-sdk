@@ -40,7 +40,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("data retreaved [key:%s etag:%s]: %s\n", item.Key, item.Etag, string(item.Value))
+	fmt.Printf("data retrieved [key:%s etag:%s]: %s\n", item.Key, item.Etag, string(item.Value))
 
 	// save state with options
 	item2 := &dapr.SetStateItem{
