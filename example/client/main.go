@@ -11,7 +11,8 @@ import (
 func main() {
 	// just for this demo
 	ctx := context.Background()
-	data := []byte("ping")
+	json := `{ "message": "hello" }`
+	data := []byte(json)
 	store := "statestore"
 
 	// create the client
@@ -28,6 +29,7 @@ func main() {
 	fmt.Println("data published")
 
 	// save state with the key key1
+	fmt.Printf("saving data: %s\n", string(data))
 	if err := client.SaveState(ctx, store, "key1", data); err != nil {
 		panic(err)
 	}
@@ -38,7 +40,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("data [key:%s etag:%s]: %s", item.Key, item.Etag, string(item.Value))
+	fmt.Printf("data retrieved [key:%s etag:%s]: %s\n", item.Key, item.Etag, string(item.Value))
 
 	// save state with options
 	item2 := &dapr.SetStateItem{
@@ -67,7 +69,7 @@ func main() {
 	// invoke a method called EchoMethod on another dapr enabled service
 	content := &dapr.DataContent{
 		ContentType: "text/plain",
-		Data:        []byte(data),
+		Data:        []byte("hellow"),
 	}
 	resp, err := client.InvokeServiceWithContent(ctx, "serving", "echo", content)
 	if err != nil {
