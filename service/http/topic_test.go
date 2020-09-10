@@ -42,9 +42,6 @@ func TestEventHandler(t *testing.T) {
 		if e.DataContentType != "application/json" {
 			return false, fmt.Errorf("invalid content type: %s", e.DataContentType)
 		}
-		if e.Data == nil {
-			return false, errors.New("nil data")
-		}
 		return false, nil
 	})
 	assert.NoErrorf(t, err, "error adding event handler")
