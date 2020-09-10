@@ -67,7 +67,7 @@ func TestSaveState(t *testing.T) {
 // go test -timeout 30s ./client -count 1 -run ^TestStateTransactions$
 func TestStateTransactions(t *testing.T) {
 	ctx := context.Background()
-	data := "test"
+	data := `{ "message": "test" }`
 	store := "test"
 	meta := map[string]string{}
 	keys := []string{"k1", "k2", "k3"}
@@ -94,6 +94,7 @@ func TestStateTransactions(t *testing.T) {
 		assert.Nil(t, err)
 		assert.NotNil(t, items)
 		assert.Len(t, items, len(keys))
+		assert.Equal(t, data, string(items[0].Value))
 	})
 
 	for _, op := range adds {
