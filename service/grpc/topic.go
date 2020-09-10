@@ -11,7 +11,7 @@ import (
 )
 
 // AddTopicEventHandler appends provided event handler with topic name to the service
-func (s *Server) AddTopicEventHandler(sub *common.Subscription, fn func(ctx context.Context, e *common.TopicEvent) error) error {
+func (s *Server) AddTopicEventHandler(sub *common.Subscription, fn func(ctx context.Context, e *common.TopicEvent) (retry bool, err error)) error {
 	if sub == nil {
 		return errors.New("subscription required")
 	}
@@ -49,16 +49,12 @@ func (s *Server) ListTopicSubscriptions(ctx context.Context, in *empty.Empty) (*
 }
 
 // OnTopicEvent fired whenever a message has been published to a topic that has been subscribed.
-// Dapr sends published messages in a CloudEvents 0.3 envelope.
+// Dapr sends published messages in a CloudEvents v1.0 envelope.
 func (s *Server) OnTopicEvent(ctx context.Context, in *pb.TopicEventRequest) (*pb.TopicEventResponse, error) {
-	if in == nil {
-		return nil, errors.New("nil event request")
-	}
-	if in.Topic == "" {
-		return nil, errors.New("topic event request has no topic name")
-	}
-	if in.PubsubName == "" {
-		return nil, errors.New("topic event request has no pub/sub name")
+	if in == nil || in.Topic == "" || in.PubsubName == "" {
+		// this is really Dapr issue more than the event request format.
+		// since Dapr will not get updated until long after this event expires, just drop it
+		return &pb.TopicEventResponse{Status: pb.TopicEventResponse_DROP}, errors.New("pub/sub and topic names required")
 	}
 	key := fmt.Sprintf("%s-%s", in.PubsubName, in.Topic)
 	if h, ok := s.topicSubscriptions[key]; ok {
@@ -72,11 +68,17 @@ func (s *Server) OnTopicEvent(ctx context.Context, in *pb.TopicEventRequest) (*p
 			Topic:           in.Topic,
 			PubsubName:      in.PubsubName,
 		}
-		err := h.fn(ctx, e)
-		if err != nil {
-			return nil, errors.Wrapf(err, "error handling topic event: %s", in.Topic)
+		retry, err := h.fn(ctx, e)
+		if err == nil {
+			return &pb.TopicEventResponse{Status: pb.TopicEventResponse_SUCCESS}, nil
 		}
-		return &pb.TopicEventResponse{}, nil
+		if retry {
+			return &pb.TopicEventResponse{Status: pb.TopicEventResponse_RETRY}, err
+		}
+		return &pb.TopicEventResponse{Status: pb.TopicEventResponse_DROP}, err
 	}
-	return &pb.TopicEventResponse{}, fmt.Errorf("topic not configured: %s", in.Topic)
+	return &pb.TopicEventResponse{Status: pb.TopicEventResponse_RETRY}, fmt.Errorf(
+		"pub/sub and topic combination not configured: %s/%s",
+		in.PubsubName, in.Topic,
+	)
 }
