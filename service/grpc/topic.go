@@ -49,7 +49,7 @@ func (s *Server) ListTopicSubscriptions(ctx context.Context, in *empty.Empty) (*
 }
 
 // OnTopicEvent fired whenever a message has been published to a topic that has been subscribed.
-// Dapr sends published messages in a CloudEvents 0.3 envelope.
+// Dapr sends published messages in a CloudEvents v1.0 envelope.
 func (s *Server) OnTopicEvent(ctx context.Context, in *pb.TopicEventRequest) (*pb.TopicEventResponse, error) {
 	if in == nil || in.Topic == "" || in.PubsubName == "" {
 		// this is really Dapr issue more than the event request format.

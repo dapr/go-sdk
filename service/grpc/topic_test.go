@@ -48,7 +48,7 @@ func TestTopic(t *testing.T) {
 			Id:              "a123",
 			Source:          "test",
 			Type:            "test",
-			SpecVersion:     "v0.3",
+			SpecVersion:     "v1.0",
 			DataContentType: "text/plain",
 			Data:            []byte("test"),
 			Topic:           sub.Topic,
