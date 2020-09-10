@@ -89,7 +89,29 @@ func TestStateTransactions(t *testing.T) {
 		assert.Nil(t, err)
 	})
 
-	t.Run("get all inserts", func(t *testing.T) {
+	t.Run("exec upserts", func(t *testing.T) {
+		items, err := testClient.GetBulkItems(ctx, store, keys, 10)
+		assert.Nil(t, err)
+		assert.NotNil(t, items)
+		assert.Len(t, items, len(keys))
+
+		upsers := make([]*StateOperation, 0)
+		for _, item := range items {
+			op := &StateOperation{
+				Type: StateOperationTypeUpsert,
+				Item: &SetStateItem{
+					Key:   item.Key,
+					Etag:  item.Etag,
+					Value: item.Value,
+				},
+			}
+			upsers = append(upsers, op)
+		}
+		err = testClient.ExecuteStateTransaction(ctx, store, meta, upsers)
+		assert.Nil(t, err)
+	})
+
+	t.Run("get and validate inserts", func(t *testing.T) {
 		items, err := testClient.GetBulkItems(ctx, store, keys, 10)
 		assert.Nil(t, err)
 		assert.NotNil(t, items)
