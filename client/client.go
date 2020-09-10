@@ -75,7 +75,7 @@ type Client interface {
 	// ExecuteStateTransaction provides way to execute multiple operations on a specified store.
 	ExecuteStateTransaction(ctx context.Context, store string, meta map[string]string, ops []*StateOperation) error
 
-	// WithTraceID adds existing trace ID to the outgoign context
+	// WithTraceID adds existing trace ID to the outgoing context
 	WithTraceID(ctx context.Context, id string) context.Context
 
 	// Close cleans up all resources created by the client.
@@ -149,7 +149,7 @@ func (c *GRPCClient) Close() {
 	}
 }
 
-// WithTraceID adds existing trace ID to the outgoign context
+// WithTraceID adds existing trace ID to the outgoing context
 func (c *GRPCClient) WithTraceID(ctx context.Context, id string) context.Context {
 	if id == "" {
 		return ctx
