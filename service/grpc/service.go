@@ -50,7 +50,7 @@ type Server struct {
 type topicEventHandler struct {
 	component string
 	topic     string
-	fn        func(ctx context.Context, e *common.TopicEvent) error
+	fn        func(ctx context.Context, e *common.TopicEvent) (retry bool, err error)
 	meta      map[string]string
 }
 
