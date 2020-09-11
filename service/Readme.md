@@ -12,7 +12,7 @@ To accelerate your Dapr app development in go even further you can use one of th
 * [Dapr gRPC Service in Go](https://github.com/mchmarny/dapr-grpc-service-template) - Template project to jump start your Dapr event subscriber service with gRPC development
 * [Dapr HTTP Event Subscriber in Go](https://github.com/mchmarny/dapr-http-event-subscriber-template) - Template project to jump start your Dapr event subscriber service with HTTP development
 * [Dapr gRPC Event Subscriber in Go](https://github.com/mchmarny/dapr-grpc-event-subscriber-template) - Template project to jump start your Dapr event subscriber service with gRPC development
-* [Dapr-http-cron-handler in Go](https://github.com/mchmarny/dapr-http-cron-handler-template) - Template project to jump start your Dapr service development for scheduled workloads
+* [Dapr HTTP cron Handler in Go](https://github.com/mchmarny/dapr-http-cron-handler-template) - Template project to jump start your Dapr service development for scheduled workloads
 
 ## Contributing
 
