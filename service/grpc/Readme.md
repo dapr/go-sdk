@@ -94,8 +94,8 @@ func runHandler(ctx context.Context, in *common.BindingEvent) (out []byte, err e
 
 To accelerate your Dapr app development in go even further you can use one of the GitHub templates integrating the gRPC Dapr callback package:
 
-* [dapr-grpc-event-subscriber-template](https://github.com/dapr/dapr-grpc-event-subscriber-template)
-* [dapr-grpc-service-template](https://github.com/dapr/dapr-grpc-service-template)
+* [Dapr gRPC Service in Go](https://github.com/mchmarny/dapr-grpc-service-template) - Template project to jump start your Dapr event subscriber service with gRPC development
+* [Dapr gRPC Event Subscriber in Go](https://github.com/mchmarny/dapr-grpc-event-subscriber-template) - Template project to jump start your Dapr event subscriber service with gRPC development
 
 
 ## Contributing to Dapr go client 
