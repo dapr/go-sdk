@@ -6,7 +6,7 @@ on:
 jobs:
 
   build:
-    name: Test Push
+    name: Test and Lint on Push
     runs-on: ubuntu-latest
     steps:
 
@@ -19,6 +19,16 @@ jobs:
     - name: Checkout
       id: setup
       uses: actions/checkout@v2
+
+    - name: Cache
+      uses: actions/cache@preview
+      with:
+        path: ~/go/pkg/mod
+        key: ${{ runner.os }}-build-${{ hashFiles('**/go.sum') }}
+        restore-keys: |
+          ${{ runner.OS }}-build-${{ env.cache-name }}-
+          ${{ runner.OS }}-build-
+          ${{ runner.OS }}-
 
     - name: Tidy
       run: |
