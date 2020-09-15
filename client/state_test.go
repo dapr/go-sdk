@@ -76,7 +76,7 @@ func TestSaveState(t *testing.T) {
 // go test -timeout 30s ./client -count 1 -run ^TestStateTransactions$
 func TestStateTransactions(t *testing.T) {
 	ctx := context.Background()
-	data := "test"
+	data := `{ "message": "test" }`
 	store := "test"
 	meta := map[string]string{}
 	keys := []string{"k1", "k2", "k3"}
@@ -98,11 +98,34 @@ func TestStateTransactions(t *testing.T) {
 		assert.Nil(t, err)
 	})
 
-	t.Run("get all inserts", func(t *testing.T) {
+	t.Run("exec upserts", func(t *testing.T) {
 		items, err := testClient.GetBulkItems(ctx, store, keys, 10)
 		assert.Nil(t, err)
 		assert.NotNil(t, items)
 		assert.Len(t, items, len(keys))
+
+		upsers := make([]*StateOperation, 0)
+		for _, item := range items {
+			op := &StateOperation{
+				Type: StateOperationTypeUpsert,
+				Item: &SetStateItem{
+					Key:   item.Key,
+					Etag:  item.Etag,
+					Value: item.Value,
+				},
+			}
+			upsers = append(upsers, op)
+		}
+		err = testClient.ExecuteStateTransaction(ctx, store, meta, upsers)
+		assert.Nil(t, err)
+	})
+
+	t.Run("get and validate inserts", func(t *testing.T) {
+		items, err := testClient.GetBulkItems(ctx, store, keys, 10)
+		assert.Nil(t, err)
+		assert.NotNil(t, items)
+		assert.Len(t, items, len(keys))
+		assert.Equal(t, data, string(items[0].Value))
 	})
 
 	for _, op := range adds {

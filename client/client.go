@@ -17,6 +17,9 @@ import (
 const (
 	daprPortDefault    = "50001"
 	daprPortEnvVarName = "DAPR_GRPC_PORT"
+	traceparentKey     = "traceparent"
+	apiTokenKey        = "dapr-api-token"
+	apiTokenEnvVarName = "DAPR_API_TOKEN"
 )
 
 var (
@@ -72,6 +75,9 @@ type Client interface {
 	// ExecuteStateTransaction provides way to execute multiple operations on a specified store.
 	ExecuteStateTransaction(ctx context.Context, store string, meta map[string]string, ops []*StateOperation) error
 
+	// WithTraceID adds existing trace ID to the outgoing context
+	WithTraceID(ctx context.Context, id string) context.Context
+
 	// Close cleans up all resources created by the client.
 	Close()
 }
@@ -116,6 +122,9 @@ func NewClientWithAddress(address string) (client Client, err error) {
 	if err != nil {
 		return nil, errors.Wrapf(err, "error creating connection to '%s': %v", address, err)
 	}
+	if hasToken := os.Getenv(apiTokenEnvVarName); hasToken != "" {
+		logger.Println("client uses API token")
+	}
 	return NewClientWithConnection(conn), nil
 }
 
@@ -140,11 +149,21 @@ func (c *GRPCClient) Close() {
 	}
 }
 
+// WithTraceID adds existing trace ID to the outgoing context
+func (c *GRPCClient) WithTraceID(ctx context.Context, id string) context.Context {
+	if id == "" {
+		return ctx
+	}
+	logger.Printf("using trace parent ID: %s", id)
+	md := metadata.Pairs(traceparentKey, id)
+	return metadata.NewOutgoingContext(ctx, md)
+}
+
 func authContext(ctx context.Context) context.Context {
-	token := os.Getenv("DAPR_API_TOKEN")
+	token := os.Getenv(apiTokenEnvVarName)
 	if token == "" {
 		return ctx
 	}
-	md := metadata.Pairs("dapr-api-token", token)
+	md := metadata.Pairs(apiTokenKey, token)
 	return metadata.NewOutgoingContext(ctx, md)
 }
