@@ -35,11 +35,23 @@ func TestMain(m *testing.M) {
 	os.Exit(r)
 }
 
-func TestNewClientWithoutArgs(t *testing.T) {
-	_, err := NewClientWithPort("")
-	assert.NotNil(t, err)
-	_, err = NewClientWithAddress("")
-	assert.NotNil(t, err)
+func TestNewClient(t *testing.T) {
+	t.Run("no arg for with port", func(t *testing.T) {
+		_, err := NewClientWithPort("")
+		assert.Error(t, err)
+	})
+
+	t.Run("no arg for with address", func(t *testing.T) {
+		_, err := NewClientWithAddress("")
+		assert.Error(t, err)
+	})
+
+	t.Run("new client closed with empty token", func(t *testing.T) {
+		c, err := NewClient()
+		assert.NoError(t, err)
+		c.WithAuthToken("")
+		c.Close()
+	})
 }
 
 func getTestClient(ctx context.Context) (client Client, closer func()) {
