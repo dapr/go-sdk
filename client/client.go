@@ -75,8 +75,11 @@ type Client interface {
 	// ExecuteStateTransaction provides way to execute multiple operations on a specified store.
 	ExecuteStateTransaction(ctx context.Context, store string, meta map[string]string, ops []*StateOperation) error
 
-	// WithTraceID adds existing trace ID to the outgoing context
+	// WithTraceID adds existing trace ID to the outgoing context.
 	WithTraceID(ctx context.Context, id string) context.Context
+
+	// WithAuthToken sets Dapr API token on the instantiated client.
+	WithAuthToken(token string)
 
 	// Close cleans up all resources created by the client.
 	Close()
@@ -133,6 +136,7 @@ func NewClientWithConnection(conn *grpc.ClientConn) Client {
 	return &GRPCClient{
 		connection:  conn,
 		protoClient: pb.NewDaprClient(conn),
+		authToken:   os.Getenv(apiTokenEnvVarName),
 	}
 }
 
@@ -140,6 +144,8 @@ func NewClientWithConnection(conn *grpc.ClientConn) Client {
 type GRPCClient struct {
 	connection  *grpc.ClientConn
 	protoClient pb.DaprClient
+	authToken   string
+	mux         sync.Mutex
 }
 
 // Close cleans up all resources created by the client.
@@ -147,6 +153,14 @@ func (c *GRPCClient) Close() {
 	if c.connection != nil {
 		c.connection.Close()
 	}
+}
+
+// WithAuthToken sets Dapr API token on the instantiated client.
+// Allows empty string to reset token on existing client
+func (c *GRPCClient) WithAuthToken(token string) {
+	c.mux.Lock()
+	c.authToken = token
+	c.mux.Unlock()
 }
 
 // WithTraceID adds existing trace ID to the outgoing context
@@ -159,11 +173,9 @@ func (c *GRPCClient) WithTraceID(ctx context.Context, id string) context.Context
 	return metadata.NewOutgoingContext(ctx, md)
 }
 
-func authContext(ctx context.Context) context.Context {
-	token := os.Getenv(apiTokenEnvVarName)
-	if token == "" {
+func (c *GRPCClient) withAuthToken(ctx context.Context) context.Context {
+	if c.authToken == "" {
 		return ctx
 	}
-	md := metadata.Pairs(apiTokenKey, token)
-	return metadata.NewOutgoingContext(ctx, md)
+	return metadata.NewOutgoingContext(ctx, metadata.Pairs(apiTokenKey, string(c.authToken)))
 }

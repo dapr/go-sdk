@@ -53,6 +53,7 @@ Check the [example folder](./example) for working Dapr go client examples.
 
 The Dapr go client supports following functionality: 
 
+
 ##### State 
 
 For simple use-cases, Dapr client provides easy to use methods for `Save`, `Get`, and `Delete`: 
@@ -209,6 +210,30 @@ opt := map[string]string{
 }
 
 secret, err := client.GetSecret(ctx, "store-name", "secret-name", opt)
+```
+
+
+#### Authentication 
+
+By default, Dapr relies on the network boundary to limit access to its API. If however the target Dapr API is configured with token-based authentication, users can configure the go Dapr client with that token in two ways:
+
+##### Environment Variable 
+
+If the `DAPR_API_TOKEN` environment variable is defined, Dapr will automatically use it to augment its Dapr API invocations to ensure authentication. 
+
+##### Explicit Method 
+
+In addition, users can also set the API token explicitly on any Dapr client instance. This approach is helpful in cases when the user code needs to create multiple clients for different Dapr API endpoints. 
+
+```go
+func main() {
+    client, err := dapr.NewClient()
+    if err != nil {
+        panic(err)
+    }
+    defer client.Close()
+    client.WithAuthToken("your-Dapr-API-token-here")
+}
 ```
 
 ## Service (callback)
