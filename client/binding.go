@@ -47,7 +47,7 @@ func (c *GRPCClient) InvokeBinding(ctx context.Context, in *BindingInvocation) (
 		Metadata:  in.Metadata,
 	}
 
-	resp, err := c.protoClient.InvokeBinding(authContext(ctx), req)
+	resp, err := c.protoClient.InvokeBinding(c.withAuthToken(ctx), req)
 	if err != nil {
 		return nil, errors.Wrapf(err, "error invoking binding %s/%s", in.Name, in.Operation)
 	}
