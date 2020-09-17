@@ -22,7 +22,7 @@ func (c *GRPCClient) GetSecret(ctx context.Context, store, key string, meta map[
 		Metadata:  meta,
 	}
 
-	resp, err := c.protoClient.GetSecret(authContext(ctx), req)
+	resp, err := c.protoClient.GetSecret(c.withAuthToken(ctx), req)
 	if err != nil {
 		return nil, errors.Wrap(err, "error invoking service")
 	}
