@@ -4,8 +4,3 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
-    default_reviewers:
-      - "mchmarny"
-      - "yaron2"
-      - "youngbupark"
-      - "mukundansundar"
