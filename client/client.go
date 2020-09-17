@@ -144,6 +144,7 @@ type GRPCClient struct {
 	connection  *grpc.ClientConn
 	protoClient pb.DaprClient
 	authToken   string
+	mux         sync.Mutex
 }
 
 // Close cleans up all resources created by the client.
@@ -156,7 +157,9 @@ func (c *GRPCClient) Close() {
 // WithAuthToken sets Dapr API token on the instantiated client.
 // Allows empty string to reset token on existing client
 func (c *GRPCClient) WithAuthToken(token string) {
+	c.mux.Lock()
 	c.authToken = token
+	c.mux.Unlock()
 }
 
 // WithTraceID adds existing trace ID to the outgoing context
