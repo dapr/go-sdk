@@ -172,7 +172,7 @@ func (c *GRPCClient) ExecuteStateTransaction(ctx context.Context, store string, 
 		StoreName:  store,
 		Operations: items,
 	}
-	_, err := c.protoClient.ExecuteStateTransaction(authContext(ctx), req)
+	_, err := c.protoClient.ExecuteStateTransaction(c.withAuthToken(ctx), req)
 	if err != nil {
 		return errors.Wrap(err, "error executing state transaction")
 	}
@@ -204,7 +204,7 @@ func (c *GRPCClient) SaveStateItems(ctx context.Context, store string, items ...
 		req.States = append(req.States, item)
 	}
 
-	_, err := c.protoClient.SaveState(authContext(ctx), req)
+	_, err := c.protoClient.SaveState(c.withAuthToken(ctx), req)
 	if err != nil {
 		return errors.Wrap(err, "error saving state")
 	}
@@ -228,7 +228,7 @@ func (c *GRPCClient) GetBulkItems(ctx context.Context, store string, keys []stri
 		Parallelism: parallelism,
 	}
 
-	results, err := c.protoClient.GetBulkState(authContext(ctx), req)
+	results, err := c.protoClient.GetBulkState(c.withAuthToken(ctx), req)
 	if err != nil {
 		return nil, errors.Wrap(err, "error getting state")
 	}
@@ -269,7 +269,7 @@ func (c *GRPCClient) GetStateWithConsistency(ctx context.Context, store, key str
 		Consistency: (v1.StateOptions_StateConsistency(sc)),
 	}
 
-	result, err := c.protoClient.GetState(authContext(ctx), req)
+	result, err := c.protoClient.GetState(c.withAuthToken(ctx), req)
 	if err != nil {
 		return nil, errors.Wrap(err, "error getting state")
 	}
@@ -302,7 +302,7 @@ func (c *GRPCClient) DeleteStateWithETag(ctx context.Context, store, key, etag s
 		Options:   toProtoStateOptions(opts),
 	}
 
-	_, err := c.protoClient.DeleteState(authContext(ctx), req)
+	_, err := c.protoClient.DeleteState(c.withAuthToken(ctx), req)
 	if err != nil {
 		return errors.Wrap(err, "error deleting state")
 	}
