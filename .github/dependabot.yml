@@ -1,6 +1,6 @@
 version: 2
 updates:
-  - package-ecosystem: "go:modules"
+  - package-ecosystem: "gomod"
     directory: "/"
     schedule:
       interval: "daily"
@@ -8,3 +8,4 @@ updates:
       - "mchmarny"
       - "yaron2"
       - "youngbupark"
+      - "mukundansundar"
