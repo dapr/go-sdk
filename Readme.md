@@ -212,7 +212,7 @@ secret, err := client.GetSecret(ctx, "store-name", "secret-name", opt)
 
 ## Service (callback)
 
-In addition to this Dapr API client operations, Dapr go SDK also provides `service` package to help you bootstrap Dapr callback services in either gRPC or HTTP. Instructions on how to use it are located [here](./service/Readme.md)
+In addition to the client capabilities that allow you to call into the Dapr API, the go SDK also provides `service` package to help you bootstrap Dapr callback services in either gRPC or HTTP. Instructions on how to use it are located [here](./service/Readme.md)
 
 ## Contributing to Dapr go client 
 

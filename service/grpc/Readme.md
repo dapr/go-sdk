@@ -8,7 +8,7 @@ daprd "github.com/dapr/go-sdk/service/grpc"
 
 ## Creating and Starting Service 
 
-To create an gRPC Dapr service, first, create a Dapr callback instance with a specific address:
+To create a gRPC Dapr service, first, create a Dapr callback instance with a specific address:
 
 ```go
 s, err := daprd.NewService(":50001")
