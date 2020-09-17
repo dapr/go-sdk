@@ -136,6 +136,7 @@ func NewClientWithConnection(conn *grpc.ClientConn) Client {
 	return &GRPCClient{
 		connection:  conn,
 		protoClient: pb.NewDaprClient(conn),
+		authToken:   os.Getenv(apiTokenEnvVarName),
 	}
 }
 
@@ -173,13 +174,8 @@ func (c *GRPCClient) WithTraceID(ctx context.Context, id string) context.Context
 }
 
 func (c *GRPCClient) withAuthToken(ctx context.Context) context.Context {
-	if c.authToken != "" {
-		return metadata.NewOutgoingContext(ctx, metadata.Pairs(apiTokenKey, c.authToken))
-	}
-
-	token := os.Getenv(apiTokenEnvVarName)
-	if token == "" {
+	if c.authToken == "" {
 		return ctx
 	}
-	return metadata.NewOutgoingContext(ctx, metadata.Pairs(apiTokenKey, token))
+	return metadata.NewOutgoingContext(ctx, metadata.Pairs(apiTokenKey, string(c.authToken)))
 }
