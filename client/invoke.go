@@ -22,7 +22,7 @@ func (c *GRPCClient) invokeServiceWithRequest(ctx context.Context, req *pb.Invok
 		return nil, errors.New("nil request")
 	}
 
-	resp, err := c.protoClient.InvokeService(authContext(ctx), req)
+	resp, err := c.protoClient.InvokeService(c.withAuthToken(ctx), req)
 	if err != nil {
 		return nil, errors.Wrap(err, "error invoking service")
 	}

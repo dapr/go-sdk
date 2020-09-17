@@ -22,7 +22,7 @@ func (c *GRPCClient) PublishEvent(ctx context.Context, component, topic string, 
 		Data:       in,
 	}
 
-	_, err := c.protoClient.PublishEvent(authContext(ctx), envelop)
+	_, err := c.protoClient.PublishEvent(c.withAuthToken(ctx), envelop)
 	if err != nil {
 		return errors.Wrapf(err, "error publishing event unto %s topic", topic)
 	}
