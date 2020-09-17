@@ -61,7 +61,7 @@ type Client interface {
 	GetState(ctx context.Context, store, key string) (item *StateItem, err error)
 
 	// GetStateWithConsistency retreaves state from specific store using provided state consistency.
-	GetStateWithConsistency(ctx context.Context, store, key string, sc StateConsistency) (item *StateItem, err error)
+	GetStateWithConsistency(ctx context.Context, store, key string, meta map[string]string, sc StateConsistency) (item *StateItem, err error)
 
 	// GetBulkItems retreaves state for multiple keys from specific store.
 	GetBulkItems(ctx context.Context, store string, keys []string, parallelism int32) ([]*StateItem, error)
