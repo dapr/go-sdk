@@ -36,7 +36,7 @@ jobs:
         go mod vendor
 
     - name: Test
-      run: go test -v -count=1 -race ./...
+      run: go test -v -count=1 -race -coverprofile=coverage.txt -covermode=atomic ./...
 
     - name: Cover
       uses: codecov/codecov-action@v1
