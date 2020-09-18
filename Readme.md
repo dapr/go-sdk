@@ -1,6 +1,6 @@
 # Dapr SDK for Go
 
-Client library to accelerate Dapr application development in go. This client supports all public [Dapr API](https://github.com/dapr/docs/tree/master/reference/api) and focuses on developer productivity. 
+Client library to help you build Dapr application in go. This client supports all public [Dapr APIs](https://github.com/dapr/docs/tree/master/reference/api) while focusing on idiomatic go experience and developer productivity. 
 
 [![Test](https://github.com/dapr/go-sdk/workflows/Test/badge.svg)](https://github.com/dapr/go-sdk/actions?query=workflow%3ATest) [![Release](https://github.com/dapr/go-sdk/workflows/Release/badge.svg)](https://github.com/dapr/go-sdk/actions?query=workflow%3ARelease) [![Go Report Card](https://goreportcard.com/badge/github.com/dapr/go-sdk)](https://goreportcard.com/report/github.com/dapr/go-sdk) ![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/dapr/go-sdk)
 
@@ -8,9 +8,9 @@ Client library to accelerate Dapr application development in go. This client sup
 
 > Assuming you already have [installed](https://golang.org/doc/install) go
 
-Dapr go client includes two packages: `client` (for invoking public Dapr API) and `service` (to create services in go that can be invoked by Dapr, this is sometimes refereed to as "callback"). 
+Dapr go client includes two packages: `client` (for invoking public Dapr API), and `service` (to create services that will be invoked by Dapr, this is sometimes refereed to as "callback"). 
 
-### Client 
+### Creating client 
 
 Import Dapr go `client` package:
 
@@ -37,7 +37,7 @@ func main() {
 }
 ```
 
-Assuming you have [Dapr CLI](https://github.com/dapr/docs/blob/master/getting-started/environment-setup.md) installed locally, you can then launch your app locally like this:
+Assuming you have [Dapr CLI](https://github.com/dapr/docs/blob/master/getting-started/environment-setup.md) installed, you can then launch your app locally like this:
 
 ```shell
 dapr run --app-id example-service \
@@ -46,17 +46,16 @@ dapr run --app-id example-service \
          go run main.go
 ```
 
-Check the [example folder](./example) for working Dapr go client examples.
-
+See the [example folder](./example) for more working Dapr client examples.
 
 #### Usage
 
-The Dapr go client supports following functionality: 
+The go client supports all the building blocks exposed by Dapr API. Let's review these one by one: 
 
 
 ##### State 
 
-For simple use-cases, Dapr client provides easy to use methods for `Save`, `Get`, and `Delete`: 
+For simple use-cases, Dapr client provides easy to use `Save`, `Get`, and `Delete` methods: 
 
 ```go
 ctx := context.Background()
@@ -81,7 +80,7 @@ if err := client.DeleteState(ctx, store, "key1"); err != nil {
 }
 ```
 
-For more granular control, the Dapr go client exposed `SetStateItem` type which can be use to gain more control over the state operations and allow for multiple items to be saved at once:
+For more granular control, the Dapr go client exposes `SetStateItem` type, which can be use to gain more control over the state operations and allow for multiple items to be saved at once:
 
 ```go     
 item1 := &dapr.SetStateItem{
@@ -123,7 +122,7 @@ keys := []string{"key1", "key2", "key3"}
 items, err := client.GetBulkItems(ctx, store, keys, 100)
 ```
 
-And the `ExecuteStateTransaction` method to transactionally execute multiple `upsert` or `delete` operations.
+And the `ExecuteStateTransaction` method to execute multiple `upsert` or `delete` operations transactionally.
 
 ```go
 ops := make([]*dapr.StateOperation, 0)
@@ -148,7 +147,7 @@ err := testClient.ExecuteStateTransaction(ctx, store, meta, ops)
 
 ##### PubSub 
 
-To publish data onto a topic the Dapr client provides a simple method:
+To publish data onto a topic, the Dapr client provides a simple method:
 
 ```go
 data := []byte(`{ "id": "a123", "value": "abcdefg", "valid": true }`)
@@ -238,7 +237,7 @@ func main() {
 
 ## Service (callback)
 
-In addition to this Dapr API client, Dapr go SDK also provides `service` package to bootstrap your Dapr callback services in either gRPC or HTTP. Instructions on how to use it are located [here](./service/Readme.md)
+In addition to the client capabilities that allow you to call into the Dapr API, the go SDK also provides `service` package to help you bootstrap Dapr callback services in either gRPC or HTTP. Instructions on how to use it are located [here](./service/Readme.md)
 
 ## Contributing to Dapr go client 
 
