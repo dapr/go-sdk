@@ -1,4 +1,4 @@
 ignore:
-  - "**/zz_generated*.go" # generated
-  - "dapr/proto"
-  - "example" 
+  - "dapr/proto/**"
+  - "example/**"
+ 
