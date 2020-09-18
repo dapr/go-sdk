@@ -9,7 +9,12 @@ tidy: ## Updates the go modules
 	go mod tidy
 
 test: mod ## Tests the entire project 
-	go test -count=1 -race ./...
+	go test -v \
+			-count=1 \
+			-race \
+			-coverprofile=coverage.txt \
+			-covermode=atomic \
+			./...
 
 cover: mod ## Displays test coverage in the client and service packages
 	go test -coverprofile=cover-client.out ./client && go tool cover -html=cover-client.out

@@ -1,0 +1,4 @@
+ignore:
+  - "dapr/proto/**"
+  - "example/**"
+ 
