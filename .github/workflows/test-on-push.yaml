@@ -38,6 +38,9 @@ jobs:
     - name: Test
       run: go test -v -count=1 -race ./...
 
+    - name: Cover
+      uses: codecov/codecov-action@v1
+      
     - name: Lint
       uses: golangci/golangci-lint-action@v1
       with:

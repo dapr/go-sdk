@@ -1,0 +1,3 @@
+ignore:
+  - "**/zz_generated*.go" # generated
+  - "dapr/proto" # downloaded protos 
