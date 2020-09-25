@@ -242,3 +242,7 @@ In addition to the client capabilities that allow you to call into the Dapr API,
 ## Contributing to Dapr go client 
 
 See the [Contribution Guide](./CONTRIBUTING.md) to get started with building and developing.
+
+## Code of Conduct
+
+Please refer to our [Dapr Community Code of Conduct](https://github.com/dapr/community/blob/master/CODE-OF-CONDUCT.md)
