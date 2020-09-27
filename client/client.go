@@ -70,7 +70,7 @@ type Client interface {
 	DeleteState(ctx context.Context, store, key string) error
 
 	// DeleteStateWithETag deletes content from store using provided state options and etag.
-	DeleteStateWithETag(ctx context.Context, store, key, etag string, opts *StateOptions) error
+	DeleteStateWithETag(ctx context.Context, store, key, etag string, meta map[string]string, opts *StateOptions) error
 
 	// ExecuteStateTransaction provides way to execute multiple operations on a specified store.
 	ExecuteStateTransaction(ctx context.Context, store string, meta map[string]string, ops []*StateOperation) error

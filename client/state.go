@@ -284,11 +284,11 @@ func (c *GRPCClient) GetStateWithConsistency(ctx context.Context, store, key str
 
 // DeleteState deletes content from store using default state options.
 func (c *GRPCClient) DeleteState(ctx context.Context, store, key string) error {
-	return c.DeleteStateWithETag(ctx, store, key, "", nil)
+	return c.DeleteStateWithETag(ctx, store, key, "", nil, nil)
 }
 
 // DeleteStateWithETag deletes content from store using provided state options and etag.
-func (c *GRPCClient) DeleteStateWithETag(ctx context.Context, store, key, etag string, opts *StateOptions) error {
+func (c *GRPCClient) DeleteStateWithETag(ctx context.Context, store, key, etag string, meta map[string]string, opts *StateOptions) error {
 	if store == "" {
 		return errors.New("nil store")
 	}
@@ -301,6 +301,7 @@ func (c *GRPCClient) DeleteStateWithETag(ctx context.Context, store, key, etag s
 		Key:       key,
 		Etag:      etag,
 		Options:   toProtoStateOptions(opts),
+		Metadata:  meta,
 	}
 
 	_, err := c.protoClient.DeleteState(c.withAuthToken(ctx), req)
