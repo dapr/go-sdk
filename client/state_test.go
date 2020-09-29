@@ -73,6 +73,83 @@ func TestSaveState(t *testing.T) {
 	})
 }
 
+// go test -timeout 30s ./client -count 1 -run ^TestDeleteState$
+func TestDeleteState(t *testing.T) {
+	ctx := context.Background()
+	data := "test"
+	store := "test"
+	key := "key1"
+
+	t.Run("delete not exist data", func(t *testing.T) {
+		err := testClient.DeleteState(ctx, store, key)
+		assert.Nil(t, err)
+	})
+	t.Run("delete not exist data with etag and meta", func(t *testing.T) {
+		err := testClient.DeleteStateWithETag(ctx, store, key, "100", map[string]string{"meta1": "value1"},
+			&StateOptions{Concurrency: StateConcurrencyFirstWrite, Consistency: StateConsistencyEventual})
+		assert.Nil(t, err)
+	})
+
+	t.Run("save data", func(t *testing.T) {
+		err := testClient.SaveState(ctx, store, key, []byte(data))
+		assert.Nil(t, err)
+	})
+	t.Run("confirm data saved", func(t *testing.T) {
+		item, err := testClient.GetState(ctx, store, key)
+		assert.Nil(t, err)
+		assert.NotNil(t, item)
+		assert.NotEmpty(t, item.Etag)
+		assert.Equal(t, item.Key, key)
+		assert.Equal(t, string(item.Value), data)
+	})
+
+	t.Run("delete exist data", func(t *testing.T) {
+		err := testClient.DeleteState(ctx, store, key)
+		assert.Nil(t, err)
+	})
+	t.Run("confirm data deleted", func(t *testing.T) {
+		item, err := testClient.GetState(ctx, store, key)
+		assert.Nil(t, err)
+		assert.NotNil(t, item)
+		assert.NotEmpty(t, item.Etag)
+		assert.Equal(t, item.Key, key)
+		assert.Nil(t, item.Value)
+	})
+
+	t.Run("save data again with etag, meta", func(t *testing.T) {
+		err := testClient.SaveStateItems(ctx, store, &SetStateItem{
+			Key:      key,
+			Value:    []byte(data),
+			Etag:     "100",
+			Metadata: map[string]string{"meta1": "value1"},
+			Options:  &StateOptions{Concurrency: StateConcurrencyFirstWrite, Consistency: StateConsistencyEventual},
+		})
+		assert.Nil(t, err)
+	})
+	t.Run("confirm data saved", func(t *testing.T) {
+		item, err := testClient.GetStateWithConsistency(ctx, store, key, map[string]string{"meta1": "value1"}, StateConsistencyEventual)
+		assert.Nil(t, err)
+		assert.NotNil(t, item)
+		assert.NotEmpty(t, item.Etag)
+		assert.Equal(t, item.Key, key)
+		assert.Equal(t, string(item.Value), data)
+	})
+
+	t.Run("delete exist data with etag and meta", func(t *testing.T) {
+		err := testClient.DeleteStateWithETag(ctx, store, key, "100", map[string]string{"meta1": "value1"},
+			&StateOptions{Concurrency: StateConcurrencyFirstWrite, Consistency: StateConsistencyEventual})
+		assert.Nil(t, err)
+	})
+	t.Run("confirm data deleted", func(t *testing.T) {
+		item, err := testClient.GetStateWithConsistency(ctx, store, key, map[string]string{"meta1": "value1"}, StateConsistencyEventual)
+		assert.Nil(t, err)
+		assert.NotNil(t, item)
+		assert.NotEmpty(t, item.Etag)
+		assert.Equal(t, item.Key, key)
+		assert.Nil(t, item.Value)
+	})
+}
+
 // go test -timeout 30s ./client -count 1 -run ^TestStateTransactions$
 func TestStateTransactions(t *testing.T) {
 	ctx := context.Background()
