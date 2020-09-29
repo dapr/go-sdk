@@ -11,7 +11,7 @@ cd example/serving/http
 dapr run --app-id serving \
          --app-protocol http \
          --app-port 8080 \
-         --port 3500 \
+         --dapr-http-port 3500 \
          --log-level debug \
          --components-path ./config \
          go run main.go
@@ -24,7 +24,7 @@ cd example/serving/grpc
 dapr run --app-id serving \
          --app-protocol grpc \
          --app-port 50001 \
-         --port 3500 \
+         --dapr-grpc-port 3500 \
          --log-level debug \
          --components-path ./config \
          go run main.go
@@ -39,7 +39,7 @@ cd example/client
 dapr run --app-id caller \
          --components-path ./config \
          --log-level debug \
-         go run main.go 
+         go run main.go
 ```
 
 ## API
