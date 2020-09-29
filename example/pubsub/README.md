@@ -21,7 +21,7 @@ dapr run --app-id sub \
          --dapr-http-port 3500 \
          --log-level debug \
          --components-path ../config \
-         go run sub.go 
+         go run sub.go
 ```
 
 ### Run Publisher
@@ -36,7 +36,7 @@ Please change directory to pubsub/pub and run the following command:
 dapr run --app-id pub \
          --log-level debug \
          --components-path ../config \
-         go run pub.go 
+         go run pub.go
 ```
 
 ## Result
