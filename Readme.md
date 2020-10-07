@@ -7,7 +7,7 @@ Client library to help you build Dapr application in Go. This client supports al
 ## Usage
 > Assuming you already have [installed](https://golang.org/doc/install) Go
 
-Dapr Go client includes two packages: `client` (for invoking the public Dapr API), and `service` (to create services that will be invoked by Dapr, this is sometimes refereed to as "callback"). 
+Dapr Go client includes two packages: `client` (for invoking public Dapr APIs), and `service` (to create services that will be invoked by Dapr, this is sometimes refereed to as "callback"). 
 
 ### Creating client 
 
