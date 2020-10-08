@@ -34,7 +34,7 @@ jobs:
 
     - name: Tidy
       run: |
-        go mod tidy 
+        go mod tidy
         go mod vendor
 
     - name: Test
@@ -47,8 +47,9 @@ jobs:
 
     - name: Version
       id: get_version
-      run: echo ::set-env name=RELEASE_VERSION::$(echo ${GITHUB_REF:10})
-      
+      run: |
+        echo "RELEASE_VERSION=$(echo ${GITHUB_REF:10})" >> $GITHUB_ENV
+
     - name: Release
       id: release-step
       uses: actions/create-release@v1
@@ -57,6 +58,6 @@ jobs:
       with:
         tag_name: ${{ github.ref }}
         release_name: Release ${{ github.ref }}
-        body: Automatic go Dapr client release 
+        body: Automatic go Dapr client release
         draft: false
         prerelease: false
