@@ -42,7 +42,7 @@ jobs:
       uses: codecov/codecov-action@v1
       
     - name: Lint
-      uses: golangci/golangci-lint-action@v1
+      uses: golangci/golangci-lint-action@v2.2.1
       with:
         version: v1.30
       
