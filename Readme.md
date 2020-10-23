@@ -1,6 +1,6 @@
 # Dapr SDK for Go
 
-Client library to help you build Dapr application in Go. This client supports all public [Dapr APIs](https://github.com/dapr/docs/tree/master/reference/api) while focusing on idiomatic Go experience and developer productivity. 
+Client library to help you build Dapr application in Go. This client supports all public [Dapr APIs](https://docs.dapr.io/reference/api/) while focusing on idiomatic Go experience and developer productivity. 
 
 [![Test](https://github.com/dapr/go-sdk/workflows/Test/badge.svg)](https://github.com/dapr/go-sdk/actions?query=workflow%3ATest) [![Release](https://github.com/dapr/go-sdk/workflows/Release/badge.svg)](https://github.com/dapr/go-sdk/actions?query=workflow%3ARelease) [![Go Report Card](https://goreportcard.com/badge/github.com/dapr/go-sdk)](https://goreportcard.com/report/github.com/dapr/go-sdk) ![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/dapr/go-sdk) [![codecov](https://codecov.io/gh/dapr/go-sdk/branch/master/graph/badge.svg)](https://codecov.io/gh/dapr/go-sdk)
 
@@ -36,7 +36,7 @@ func main() {
 }
 ```
 
-Assuming you have [Dapr CLI](https://github.com/dapr/docs/blob/master/getting-started/environment-setup.md) installed, you can then launch your app locally like this:
+Assuming you have [Dapr CLI](https://docs.dapr.io/getting-started/install-dapr/) installed, you can then launch your app locally like this:
 
 ```shell
 dapr run --app-id example-service \
@@ -176,7 +176,7 @@ resp, err := client.InvokeServiceWithContent(ctx, "service-name", "method-name",
 
 ##### Bindings
 
-Similarly to Service, Dapr client provides two methods to invoke an operation on a [Dapr-defined binding](https://github.com/dapr/docs/tree/master/concepts/bindings). Dapr supports input, output, and bidirectional bindings.
+Similarly to Service, Dapr client provides two methods to invoke an operation on a [Dapr-defined binding](https://docs.dapr.io/developing-applications/building-blocks/bindings/). Dapr supports input, output, and bidirectional bindings.
 
 For simple, output only biding:
 
