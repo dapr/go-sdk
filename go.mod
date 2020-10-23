@@ -9,11 +9,10 @@ require (
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.6.1
-	golang.org/x/net v0.0.0-20200904194848-62affa334b73 // indirect
-	golang.org/x/sys v0.0.0-20200917073148-efd3b9a0ff20 // indirect
-	golang.org/x/text v0.3.3 // indirect
-	google.golang.org/genproto v0.0.0-20200917134801-bb4cff56e0d0 // indirect
-	google.golang.org/grpc v1.32.0
+	golang.org/x/net v0.0.0-20201022231255-08b38378de70 // indirect
+	golang.org/x/sys v0.0.0-20201022201747-fb209a7c41cd // indirect
+	google.golang.org/genproto v0.0.0-20201022181438-0ff5f38871d5 // indirect
+	google.golang.org/grpc v1.33.1
 	google.golang.org/protobuf v1.25.0
 	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
 	gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776 // indirect
