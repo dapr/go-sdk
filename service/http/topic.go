@@ -75,20 +75,30 @@ func (s *Server) AddTopicEventHandler(sub *common.Subscription, fn func(ctx cont
 				in.Topic = sub.Topic
 			}
 
+			w.Header().Add("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+
+			// execute user handler
 			retry, err := fn(r.Context(), &in)
 			if err == nil {
-				w.Header().Add("Content-Type", "application/json")
-				w.WriteHeader(http.StatusOK)
+				writeStatus(w, common.SubscriptionResponseStatusSuccess)
 				return
 			}
 
 			if retry {
-				http.Error(w, err.Error(), PubSubHandlerRetryStatusCode)
+				writeStatus(w, common.SubscriptionResponseStatusRetry)
 				return
 			}
 
-			http.Error(w, err.Error(), PubSubHandlerDropStatusCode)
+			writeStatus(w, common.SubscriptionResponseStatusDrop)
 		})))
 
 	return nil
+}
+
+func writeStatus(w http.ResponseWriter, s string) {
+	status := &common.SubscriptionResponse{Status: s}
+	if err := json.NewEncoder(w).Encode(status); err != nil {
+		http.Error(w, err.Error(), PubSubHandlerRetryStatusCode)
+	}
 }

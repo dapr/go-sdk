@@ -66,3 +66,17 @@ type Subscription struct {
 	// Metadata is the subscription metadata
 	Metadata map[string]string `json:"metadata,omitempty"`
 }
+
+const (
+	// SubscriptionResponseStatusSuccess means message is processed successfully
+	SubscriptionResponseStatusSuccess = "SUCCESS"
+	// SubscriptionResponseStatusRetry means message to be retried by Dapr
+	SubscriptionResponseStatusRetry = "RETRY"
+	// SubscriptionResponseStatusDrop means warning is logged and message is dropped
+	SubscriptionResponseStatusDrop = "DROP"
+)
+
+// SubscriptionResponse represents the response handling hint from subscriber to Dapr
+type SubscriptionResponse struct {
+	Status string `json:"status"`
+}
