@@ -11,6 +11,8 @@ import (
 func TestStoppingUnstartedService(t *testing.T) {
 	s := newServer("", nil)
 	assert.NotNil(t, s)
+	err := s.Stop()
+	assert.NoError(t, err)
 }
 
 func TestSettingOptions(t *testing.T) {
