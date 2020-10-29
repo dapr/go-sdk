@@ -1,3 +1,14 @@
+coverage:
+  # See https://docs.codecov.io/docs/commit-status
+  status:
+    project:
+      default: false
+      client:
+        paths: "client/"
+        threshold: 0% # don't allow coverage to drop on client
+      service:
+        paths: "service"
+        threshold: 3% # allow coverage to drop on service by 3% (wip)
 ignore:
   - "dapr/proto/**"
   - "example/**"
