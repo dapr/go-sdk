@@ -55,3 +55,32 @@ func TestBindingHandlerWithData(t *testing.T) {
 	assert.Equal(t, http.StatusOK, resp.Code)
 	assert.Equal(t, "test", resp.Body.String())
 }
+
+func bindingHandlerFn(ctx context.Context, in *common.BindingEvent) (out []byte, err error) {
+	if in == nil {
+		return nil, errors.New("nil input")
+	}
+	return []byte("test"), nil
+}
+
+func bindingHandlerFnWithError(ctx context.Context, in *common.BindingEvent) (out []byte, err error) {
+	return nil, errors.New("intentional error")
+}
+
+func TestBindingHandlerErrors(t *testing.T) {
+	data := `{"name": "test"}`
+	s := newServer("", nil)
+	err := s.AddBindingInvocationHandler("", bindingHandlerFn)
+	assert.Errorf(t, err, "expected error adding binding event handler sans route")
+
+	err = s.AddBindingInvocationHandler("errors", bindingHandlerFnWithError)
+	assert.NoErrorf(t, err, "error adding binding event handler sans slash")
+
+	req, err := http.NewRequest(http.MethodPost, "/errors", strings.NewReader(data))
+	assert.NoErrorf(t, err, "error creating request")
+	req.Header.Set("Content-Type", "application/json")
+
+	resp := httptest.NewRecorder()
+	s.mux.ServeHTTP(resp, req)
+	assert.Equal(t, http.StatusInternalServerError, resp.Code)
+}

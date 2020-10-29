@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"strings"
 	"testing"
 
@@ -68,17 +69,43 @@ func TestInvocationHandlerWithoutInputData(t *testing.T) {
 	assert.Equal(t, "", string(b))
 }
 
+func emptyInvocationFn(ctx context.Context, in *common.InvocationEvent) (out *common.Content, err error) {
+	return nil, nil
+}
+
 func TestInvocationHandlerWithInvalidRoute(t *testing.T) {
 	s := newServer("", nil)
-	err := s.AddServiceInvocationHandler("/a", func(ctx context.Context, in *common.InvocationEvent) (out *common.Content, err error) {
-		return nil, nil
-	})
+
+	err := s.AddServiceInvocationHandler("no-slash", emptyInvocationFn)
+	assert.NoErrorf(t, err, "error adding no slash route event handler")
+
+	err = s.AddServiceInvocationHandler("", emptyInvocationFn)
+	assert.Errorf(t, err, "expected error from adding no route event handler")
+
+	err = s.AddServiceInvocationHandler("/a", emptyInvocationFn)
 	assert.NoErrorf(t, err, "error adding event handler")
 
-	req, err := http.NewRequest(http.MethodPost, "/b", nil)
-	assert.NoErrorf(t, err, "error creating request")
+	makeEventRequest(t, s, "/b", "", http.StatusNotFound)
+}
 
-	resp := httptest.NewRecorder()
-	s.mux.ServeHTTP(resp, req)
-	assert.Equal(t, http.StatusNotFound, resp.Code)
+func errorInvocationFn(ctx context.Context, in *common.InvocationEvent) (out *common.Content, err error) {
+	return nil, errors.New("intentional test error")
+}
+
+func TestInvocationHandlerWithError(t *testing.T) {
+	s := newServer("", nil)
+
+	err := s.AddServiceInvocationHandler("/error", errorInvocationFn)
+	assert.NoErrorf(t, err, "error adding error event handler")
+
+	makeEventRequest(t, s, "/error", "", http.StatusInternalServerError)
+}
+
+func TestValuesToMap(t *testing.T) {
+	m := valuesToMap(url.Values{
+		"k1": []string{"v11", "v12", "v13"},
+		"k2": []string{"v21", "v22", "v23"},
+		"k3": []string{"v31", "v32", "v33"},
+	})
+	assert.Equal(t, 3, len(m["k2"]))
 }
