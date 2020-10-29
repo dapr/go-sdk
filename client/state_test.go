@@ -9,6 +9,15 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestTypes(t *testing.T) {
+	var op OperationType = -1
+	assert.Equal(t, UndefinedType, op.String())
+	var c StateConcurrency = -1
+	assert.Equal(t, UndefinedType, c.String())
+	var d StateConsistency = -1
+	assert.Equal(t, UndefinedType, d.String())
+}
+
 func TestDurationConverter(t *testing.T) {
 	d := time.Duration(10 * time.Second)
 	pd := toProtoDuration(d)

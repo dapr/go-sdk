@@ -31,6 +31,8 @@ const (
 	StateOperationTypeUpsert OperationType = 1
 	// StateOperationTypeDelete represents delete operation type value.
 	StateOperationTypeDelete OperationType = 2
+	// UndefinedType represents undefined type value
+	UndefinedType = "undefined"
 )
 
 type (
@@ -45,12 +47,12 @@ type (
 // String returns the string value of the OperationType.
 func (o OperationType) String() string {
 	names := [...]string{
-		"undefined",
+		UndefinedType,
 		"upsert",
 		"delete",
 	}
 	if o < StateOperationTypeUpsert || o > StateOperationTypeDelete {
-		return "undefined"
+		return UndefinedType
 	}
 
 	return names[o]
@@ -59,12 +61,12 @@ func (o OperationType) String() string {
 // String returns the string value of the StateConsistency.
 func (c StateConsistency) String() string {
 	names := [...]string{
-		"undefined",
+		UndefinedType,
 		"strong",
 		"eventual",
 	}
 	if c < StateConsistencyStrong || c > StateConsistencyEventual {
-		return "undefined"
+		return UndefinedType
 	}
 
 	return names[c]
@@ -73,12 +75,12 @@ func (c StateConsistency) String() string {
 // String returns the string value of the StateConcurrency.
 func (c StateConcurrency) String() string {
 	names := [...]string{
-		"undefined",
+		UndefinedType,
 		"first-write",
 		"last-write",
 	}
 	if c < StateConcurrencyFirstWrite || c > StateConcurrencyLastWrite {
-		return "undefined"
+		return UndefinedType
 	}
 
 	return names[c]

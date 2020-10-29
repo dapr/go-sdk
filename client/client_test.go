@@ -58,7 +58,7 @@ func TestNewClient(t *testing.T) {
 		assert.NoError(t, err)
 		defer c.Close()
 		ctx := c.WithTraceID(context.Background(), "")
-		ctx = c.WithTraceID(ctx, "test")
+		_ = c.WithTraceID(ctx, "test")
 	})
 }
 
