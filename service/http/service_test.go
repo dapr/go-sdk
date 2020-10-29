@@ -27,3 +27,11 @@ func TestSettingOptions(t *testing.T) {
 	assert.Equal(t, "authorization, origin, content-type, accept", resp.Header.Get("Access-Control-Allow-Headers"))
 	assert.Equal(t, "POST,OPTIONS", resp.Header.Get("Allow"))
 }
+
+func testRequest(t *testing.T, s *Server, r *http.Request, expectedStatusCode int) {
+	rr := httptest.NewRecorder()
+	s.mux.ServeHTTP(rr, r)
+	rez := rr.Result()
+	assert.NotNil(t, rez)
+	assert.Equal(t, expectedStatusCode, rez.StatusCode)
+}

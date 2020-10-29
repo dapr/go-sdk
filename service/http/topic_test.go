@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"net/http/httptest"
 	"strings"
 	"testing"
 
@@ -92,12 +91,4 @@ func TestAddingInvalidEventHandlers(t *testing.T) {
 	sub.PubsubName = "messages"
 	err = s.AddTopicEventHandler(sub, testTopicFunc)
 	assert.Errorf(t, err, "expected error adding sub without route event handler")
-}
-
-func testRequest(t *testing.T, s *Server, r *http.Request, expectedStatusCode int) {
-	rr := httptest.NewRecorder()
-	s.mux.ServeHTTP(rr, r)
-	rez := rr.Result()
-	assert.NotNil(t, rez)
-	assert.Equal(t, expectedStatusCode, rez.StatusCode)
 }
