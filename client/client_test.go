@@ -49,8 +49,16 @@ func TestNewClient(t *testing.T) {
 	t.Run("new client closed with empty token", func(t *testing.T) {
 		c, err := NewClient()
 		assert.NoError(t, err)
+		defer c.Close()
 		c.WithAuthToken("")
-		c.Close()
+	})
+
+	t.Run("new client with trace ID", func(t *testing.T) {
+		c, err := NewClient()
+		assert.NoError(t, err)
+		defer c.Close()
+		ctx := c.WithTraceID(context.Background(), "")
+		_ = c.WithTraceID(ctx, "test")
 	})
 }
 

@@ -11,6 +11,18 @@ import (
 func TestGetSecret(t *testing.T) {
 	ctx := context.Background()
 
+	t.Run("without store", func(t *testing.T) {
+		out, err := testClient.GetSecret(ctx, "", "key1", nil)
+		assert.Error(t, err)
+		assert.Nil(t, out)
+	})
+
+	t.Run("without key", func(t *testing.T) {
+		out, err := testClient.GetSecret(ctx, "store", "", nil)
+		assert.Error(t, err)
+		assert.Nil(t, out)
+	})
+
 	t.Run("without meta", func(t *testing.T) {
 		out, err := testClient.GetSecret(ctx, "store", "key1", nil)
 		assert.Nil(t, err)
