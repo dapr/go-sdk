@@ -38,7 +38,7 @@ jobs:
         go mod vendor
 
     - name: Test
-      run: go test -v -count=1 -race ./...
+      run: go test -count=1 -race ./...
 
     - name: Lint
       uses: golangci/golangci-lint-action@v1
