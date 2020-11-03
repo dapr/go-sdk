@@ -16,6 +16,9 @@ func (s *Server) AddServiceInvocationHandler(route string, fn func(ctx context.C
 	if route == "" {
 		return fmt.Errorf("service route required")
 	}
+	if fn == nil {
+		return fmt.Errorf("invocation handler required")
+	}
 
 	if !strings.HasPrefix(route, "/") {
 		route = fmt.Sprintf("/%s", route)

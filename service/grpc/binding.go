@@ -15,6 +15,9 @@ func (s *Server) AddBindingInvocationHandler(name string, fn func(ctx context.Co
 	if name == "" {
 		return fmt.Errorf("binding name required")
 	}
+	if fn == nil {
+		return fmt.Errorf("binding handler required")
+	}
 	s.bindingHandlers[name] = fn
 	return nil
 }

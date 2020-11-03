@@ -21,6 +21,9 @@ func (s *Server) AddTopicEventHandler(sub *common.Subscription, fn func(ctx cont
 	if sub.PubsubName == "" {
 		return errors.New("pub/sub name required")
 	}
+	if fn == nil {
+		return fmt.Errorf("topic handler required")
+	}
 	key := fmt.Sprintf("%s-%s", sub.PubsubName, sub.Topic)
 	s.topicSubscriptions[key] = &topicEventHandler{
 		component: sub.PubsubName,

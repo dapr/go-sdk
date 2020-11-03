@@ -15,6 +15,9 @@ func (s *Server) AddServiceInvocationHandler(method string, fn func(ctx context.
 	if method == "" {
 		return fmt.Errorf("servie name required")
 	}
+	if fn == nil {
+		return fmt.Errorf("invocation handler required")
+	}
 	s.invokeHandlers[method] = fn
 	return nil
 }
