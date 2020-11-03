@@ -15,6 +15,9 @@ func (s *Server) AddBindingInvocationHandler(route string, fn func(ctx context.C
 	if route == "" {
 		return fmt.Errorf("binding route required")
 	}
+	if fn == nil {
+		return fmt.Errorf("binding handler required")
+	}
 
 	if !strings.HasPrefix(route, "/") {
 		route = fmt.Sprintf("/%s", route)

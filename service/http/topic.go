@@ -48,6 +48,9 @@ func (s *Server) AddTopicEventHandler(sub *common.Subscription, fn func(ctx cont
 	if sub.Route == "" {
 		return errors.New("handler route name")
 	}
+	if fn == nil {
+		return fmt.Errorf("topic handler required")
+	}
 
 	if !strings.HasPrefix(sub.Route, "/") {
 		sub.Route = fmt.Sprintf("/%s", sub.Route)

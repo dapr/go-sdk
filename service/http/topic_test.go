@@ -26,6 +26,18 @@ func testErrorTopicFunc(ctx context.Context, e *common.TopicEvent) (retry bool, 
 	return true, errors.New("error to cause a retry")
 }
 
+func TestEventNilHandler(t *testing.T) {
+	s := newServer("", nil)
+	sub := &common.Subscription{
+		PubsubName: "messages",
+		Topic:      "test",
+		Route:      "/",
+		Metadata:   map[string]string{},
+	}
+	err := s.AddTopicEventHandler(sub, nil)
+	assert.Errorf(t, err, "expected error adding event handler")
+}
+
 func TestEventHandler(t *testing.T) {
 	data := `{
 		"specversion" : "1.0",
