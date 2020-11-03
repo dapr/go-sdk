@@ -12,6 +12,12 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestBindingHandlerWithoutHandler(t *testing.T) {
+	s := newServer("", nil)
+	err := s.AddBindingInvocationHandler("/", nil)
+	assert.Errorf(t, err, "expected error adding nil binding event handler")
+}
+
 func TestBindingHandlerWithoutData(t *testing.T) {
 	s := newServer("", nil)
 	err := s.AddBindingInvocationHandler("/", func(ctx context.Context, in *common.BindingEvent) (out []byte, err error) {

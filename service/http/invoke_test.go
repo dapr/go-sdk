@@ -14,6 +14,12 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestInvocationHandlerWithoutHandler(t *testing.T) {
+	s := newServer("", nil)
+	err := s.AddServiceInvocationHandler("/", nil)
+	assert.Errorf(t, err, "expected error adding event handler")
+}
+
 func TestInvocationHandlerWithData(t *testing.T) {
 	data := `{"name": "test", "data": hellow}`
 	s := newServer("", nil)
