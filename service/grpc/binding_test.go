@@ -7,6 +7,7 @@ import (
 
 	"github.com/dapr/go-sdk/dapr/proto/runtime/v1"
 	"github.com/dapr/go-sdk/service/common"
+	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -15,6 +16,27 @@ func testBindingHandler(ctx context.Context, in *common.BindingEvent) (out []byt
 		return nil, errors.New("nil event")
 	}
 	return in.Data, nil
+}
+
+func TestListInputBindings(t *testing.T) {
+	server := getTestServer()
+	err := server.AddBindingInvocationHandler("test1", testBindingHandler)
+	assert.NoError(t, err)
+	err = server.AddBindingInvocationHandler("test2", testBindingHandler)
+	assert.NoError(t, err)
+	resp, err := server.ListInputBindings(context.Background(), &empty.Empty{})
+	assert.NoError(t, err)
+	assert.NotNil(t, resp)
+	assert.Lenf(t, resp.Bindings, 2, "expected 2 handlers")
+}
+
+func TestBindingForErrors(t *testing.T) {
+	server := getTestServer()
+	err := server.AddBindingInvocationHandler("", nil)
+	assert.Errorf(t, err, "expected error on nil method name")
+
+	err = server.AddBindingInvocationHandler("test", nil)
+	assert.Errorf(t, err, "expected error on nil method handler")
 }
 
 // go test -timeout 30s ./service/grpc -count 1 -run ^TestBinding$
