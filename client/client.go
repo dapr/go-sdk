@@ -48,7 +48,7 @@ type Client interface {
 	// PublishEvent pubishes data onto topic in specific pubsub component.
 	PublishEvent(ctx context.Context, component, topic string, in []byte) error
 
-	// PublishEventfromStruct serializes an struct and pubishes its contents as data onto topic in specific pubsub component.
+	// PublishEventfromStruct serializes an struct and pubishes its contents as data (JSON) onto topic in specific pubsub component.
 	PublishEventfromStruct(ctx context.Context, component, topic string, in interface{}) error
 
 	// GetSecret retreaves preconfigred secret from specified store using key.
