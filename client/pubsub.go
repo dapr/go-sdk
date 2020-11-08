@@ -31,8 +31,15 @@ func (c *GRPCClient) PublishEvent(ctx context.Context, component, topic string, 
 	return nil
 }
 
-// PublishEventfromStruct serializes an struct onto raw and pubishes its contents as data onto topic in specific pubsub component.
+// PublishEventfromStruct serializes an struct and pubishes its contents as data (JSON) onto topic in specific pubsub component.
 func (c *GRPCClient) PublishEventfromStruct(ctx context.Context, component, topic string, in interface{}) error {
+
+	if topic == "" {
+		return errors.New("topic name required")
+	}
+	if component == "" {
+		return errors.New("component name required")
+	}
 
 	bytes, err := json.Marshal(in)
 
@@ -40,9 +47,16 @@ func (c *GRPCClient) PublishEventfromStruct(ctx context.Context, component, topi
 		return errors.WithMessage(err, "error serializing input struct")
 	}
 
-	err = c.PublishEvent(ctx, component, topic, bytes)
+	envelop := &pb.PublishEventRequest{
+		PubsubName: component,
+		Topic:      topic,
+		Data:       bytes,
+	}
+
+	_, err = c.protoClient.PublishEvent(c.withAuthToken(ctx), envelop)
+
 	if err != nil {
-		return errors.Wrapf(err, "error publishing serialized data as event unto %s topic", topic)
+		return errors.Wrapf(err, "error publishing event unto %s topic", topic)
 	}
 
 	return nil
