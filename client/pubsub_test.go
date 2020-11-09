@@ -8,17 +8,17 @@ import (
 )
 
 type _testStructwithText struct {
-	key1, key2 string
+	Key1, Key2 string
 }
 
 type _testStructwithTextandNumbers struct {
-	key1 string
-	key2 int
+	Key1 string
+	Key2 int
 }
 
 type _testStructwithSlices struct {
-	key1 []string
-	key2 []int
+	Key1 []string
+	Key2 []int
 }
 
 // go test -timeout 30s ./client -count 1 -run ^TestPublishEvent$
@@ -42,8 +42,8 @@ func TestPublishEvent(t *testing.T) {
 
 	t.Run("from struct with text", func(t *testing.T) {
 		testdata := _testStructwithText{
-			key1: "value1",
-			key2: "value2",
+			Key1: "value1",
+			Key2: "value2",
 		}
 		err := testClient.PublishEventfromStruct(ctx, "messagebus", "test", testdata)
 		assert.Nil(t, err)
@@ -51,8 +51,8 @@ func TestPublishEvent(t *testing.T) {
 
 	t.Run("from struct with text and numbers", func(t *testing.T) {
 		testdata := _testStructwithTextandNumbers{
-			key1: "value1",
-			key2: 2500,
+			Key1: "value1",
+			Key2: 2500,
 		}
 		err := testClient.PublishEventfromStruct(ctx, "messagebus", "test", testdata)
 		assert.Nil(t, err)
@@ -60,8 +60,8 @@ func TestPublishEvent(t *testing.T) {
 
 	t.Run("from struct with slices", func(t *testing.T) {
 		testdata := _testStructwithSlices{
-			key1: []string{"value1", "value2", "value3"},
-			key2: []int{25, 40, 600},
+			Key1: []string{"value1", "value2", "value3"},
+			Key2: []int{25, 40, 600},
 		}
 		err := testClient.PublishEventfromStruct(ctx, "messagebus", "test", testdata)
 		assert.Nil(t, err)
