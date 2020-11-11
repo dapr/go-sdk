@@ -91,6 +91,9 @@ clean: ## Cleans go and generated files in ./dapr/proto/
 protos: ## Downloads proto files from dapr/dapr master and generats gRPC proto clients
 	go install github.com/gogo/protobuf/gogoreplace
 
+	rm -f ./dapr/proto/common/v1/*
+	rm -f ./dapr/proto/runtime/v1/*
+
 	wget -q $(PROTO_ROOT)/common/v1/common.proto -O ./dapr/proto/common/v1/common.proto
 	gogoreplace 'option go_package = "github.com/dapr/dapr/pkg/proto/common/v1;common";' \
 		'option go_package = "github.com/dapr/go-sdk/dapr/proto/common/v1;common";' \
@@ -106,8 +109,13 @@ protos: ## Downloads proto files from dapr/dapr master and generats gRPC proto c
 		'option go_package = "github.com/dapr/go-sdk/dapr/proto/runtime/v1;runtime";' \
 		./dapr/proto/runtime/v1/dapr.proto
 
-	protoc -I . --go_out=plugins=grpc:. --go_opt=paths=source_relative  ./dapr/proto/common/v1/*.proto
-	protoc -I . --go_out=plugins=grpc:. --go_opt=paths=source_relative ./dapr/proto/runtime/v1/*.proto
+	protoc --go_out=. --go_opt=paths=source_relative \
+	       --go-grpc_out=. --go-grpc_opt=paths=source_relative \
+		   dapr/proto/common/v1/common.proto
+
+	protoc --go_out=. --go_opt=paths=source_relative \
+		   --go-grpc_out=. --go-grpc_opt=paths=source_relative \
+		   dapr/proto/runtime/v1/*.proto
 
 	rm -f ./dapr/proto/common/v1/*.proto
 	rm -f ./dapr/proto/runtime/v1/*.proto
