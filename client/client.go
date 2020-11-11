@@ -57,17 +57,17 @@ type Client interface {
 	// SaveState saves the raw data into store using default state options.
 	SaveState(ctx context.Context, store, key string, data []byte) error
 
-	// SaveStateItems saves multiple state item to store with specified options.
-	SaveStateItems(ctx context.Context, store string, items ...*SetStateItem) error
+	// SaveBulkState saves multiple state item to store with specified options.
+	SaveBulkState(ctx context.Context, store string, items ...*SetStateItem) error
 
-	// GetState retreaves state from specific store using default consistency option.
+	// GetState retrieves state from specific store using default consistency option.
 	GetState(ctx context.Context, store, key string) (item *StateItem, err error)
 
-	// GetStateWithConsistency retreaves state from specific store using provided state consistency.
+	// GetStateWithConsistency retrieves state from specific store using provided state consistency.
 	GetStateWithConsistency(ctx context.Context, store, key string, meta map[string]string, sc StateConsistency) (item *StateItem, err error)
 
-	// GetBulkItems retreaves state for multiple keys from specific store.
-	GetBulkItems(ctx context.Context, store string, keys []string, parallelism int32) ([]*StateItem, error)
+	// GetBulkState retrieves state for multiple keys from specific store.
+	GetBulkState(ctx context.Context, store string, keys []string, parallelism int32) ([]*StateItem, error)
 
 	// DeleteState deletes content from store using default state options.
 	DeleteState(ctx context.Context, store, key string) error

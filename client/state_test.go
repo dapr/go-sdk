@@ -72,7 +72,7 @@ func TestSaveState(t *testing.T) {
 			Key:   key,
 			Value: []byte(data),
 		}
-		err := testClient.SaveStateItems(ctx, store, item)
+		err := testClient.SaveBulkState(ctx, store, item)
 		assert.Nil(t, err)
 	})
 
@@ -126,7 +126,7 @@ func TestDeleteState(t *testing.T) {
 	})
 
 	t.Run("save data again with etag, meta", func(t *testing.T) {
-		err := testClient.SaveStateItems(ctx, store, &SetStateItem{
+		err := testClient.SaveBulkState(ctx, store, &SetStateItem{
 			Key:      key,
 			Value:    []byte(data),
 			Etag:     "100",
@@ -185,7 +185,7 @@ func TestStateTransactions(t *testing.T) {
 	})
 
 	t.Run("exec upserts", func(t *testing.T) {
-		items, err := testClient.GetBulkItems(ctx, store, keys, 10)
+		items, err := testClient.GetBulkState(ctx, store, keys, 10)
 		assert.Nil(t, err)
 		assert.NotNil(t, items)
 		assert.Len(t, items, len(keys))
@@ -207,7 +207,7 @@ func TestStateTransactions(t *testing.T) {
 	})
 
 	t.Run("get and validate inserts", func(t *testing.T) {
-		items, err := testClient.GetBulkItems(ctx, store, keys, 10)
+		items, err := testClient.GetBulkState(ctx, store, keys, 10)
 		assert.Nil(t, err)
 		assert.NotNil(t, items)
 		assert.Len(t, items, len(keys))
@@ -224,7 +224,7 @@ func TestStateTransactions(t *testing.T) {
 	})
 
 	t.Run("ensure deletes", func(t *testing.T) {
-		items, err := testClient.GetBulkItems(ctx, store, keys, 3)
+		items, err := testClient.GetBulkState(ctx, store, keys, 3)
 		assert.Nil(t, err)
 		assert.NotNil(t, items)
 		assert.Len(t, items, 0)
