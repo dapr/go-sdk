@@ -55,7 +55,7 @@ func main() {
 			Consistency: dapr.StateConsistencyStrong,
 		},
 	}
-	if err := client.SaveStateItems(ctx, store, item2); err != nil {
+	if err := client.SaveBulkState(ctx, store, item2); err != nil {
 		panic(err)
 	}
 	fmt.Println("data item saved")
