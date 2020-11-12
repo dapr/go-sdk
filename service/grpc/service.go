@@ -41,6 +41,7 @@ func newService(lis net.Listener) *Server {
 
 // Server is the gRPC service implementation for Dapr.
 type Server struct {
+	pb.UnimplementedAppCallbackServer
 	listener           net.Listener
 	invokeHandlers     map[string]func(ctx context.Context, in *common.InvocationEvent) (out *common.Content, err error)
 	topicSubscriptions map[string]*topicEventHandler
