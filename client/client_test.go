@@ -71,7 +71,7 @@ func getTestClient(ctx context.Context) (client Client, closer func()) {
 
 	l := bufconn.Listen(testBufSize)
 	go func() {
-		if err := s.Serve(l); err != nil {
+		if err := s.Serve(l); err != nil && err.Error() != "closed" {
 			logger.Fatalf("test server exited with error: %v", err)
 		}
 	}()
