@@ -45,6 +45,9 @@ type Client interface {
 	// InvokeServiceWithContent invokes service with content
 	InvokeServiceWithContent(ctx context.Context, serviceID, method string, content *DataContent) (out []byte, err error)
 
+	// InvokeServiceWithCustomContent invokes service with custom content (struct + content type).
+	InvokeServiceWithCustomContent(ctx context.Context, serviceID, method string, contentType string, content interface{}) (out []byte, err error)
+
 	// PublishEvent pubishes data onto topic in specific pubsub component.
 	PublishEvent(ctx context.Context, component, topic string, in []byte) error
 

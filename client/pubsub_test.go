@@ -7,16 +7,16 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type _testStructwithText struct {
+type _testCustomContentwithText struct {
 	Key1, Key2 string
 }
 
-type _testStructwithTextandNumbers struct {
+type _testCustomContentwithTextandNumbers struct {
 	Key1 string
 	Key2 int
 }
 
-type _testStructwithSlices struct {
+type _testCustomContentwithSlices struct {
 	Key1 []string
 	Key2 []int
 }
