@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/golang/protobuf/ptypes/empty"
+	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 
 	"google.golang.org/grpc"
@@ -70,7 +71,7 @@ func getTestClient(ctx context.Context) (client Client, closer func()) {
 
 	l := bufconn.Listen(testBufSize)
 	go func() {
-		if err := s.Serve(l); err != nil {
+		if err := s.Serve(l); err != nil && err.Error() != "closed" {
 			logger.Fatalf("test server exited with error: %v", err)
 		}
 	}()
@@ -94,6 +95,7 @@ func getTestClient(ctx context.Context) (client Client, closer func()) {
 }
 
 type testDaprServer struct {
+	pb.UnimplementedDaprServer
 	state map[string][]byte
 }
 
@@ -186,4 +188,16 @@ func (s *testDaprServer) GetSecret(ctx context.Context, req *pb.GetSecretRequest
 	return &pb.GetSecretResponse{
 		Data: d,
 	}, nil
+}
+
+func (s *testDaprServer) InvokeActor(context.Context, *pb.InvokeActorRequest) (*pb.InvokeActorResponse, error) {
+	return nil, errors.New("actors not implemented in go SDK")
+}
+
+func (s *testDaprServer) RegisterActorTimer(context.Context, *pb.RegisterActorTimerRequest) (*empty.Empty, error) {
+	return nil, errors.New("actors not implemented in go SDK")
+}
+
+func (s *testDaprServer) UnregisterActorTimer(context.Context, *pb.UnregisterActorTimerRequest) (*empty.Empty, error) {
+	return nil, errors.New("actors not implemented in go SDK")
 }
