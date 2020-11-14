@@ -45,7 +45,7 @@ func TestPublishEvent(t *testing.T) {
 			Key1: "value1",
 			Key2: "value2",
 		}
-		err := testClient.PublishEventfromStruct(ctx, "messagebus", "test", testdata)
+		err := testClient.PublishEventfromCustomContent(ctx, "messagebus", "test", testdata)
 		assert.Nil(t, err)
 	})
 
@@ -54,7 +54,7 @@ func TestPublishEvent(t *testing.T) {
 			Key1: "value1",
 			Key2: 2500,
 		}
-		err := testClient.PublishEventfromStruct(ctx, "messagebus", "test", testdata)
+		err := testClient.PublishEventfromCustomContent(ctx, "messagebus", "test", testdata)
 		assert.Nil(t, err)
 	})
 
@@ -63,7 +63,7 @@ func TestPublishEvent(t *testing.T) {
 			Key1: []string{"value1", "value2", "value3"},
 			Key2: []int{25, 40, 600},
 		}
-		err := testClient.PublishEventfromStruct(ctx, "messagebus", "test", testdata)
+		err := testClient.PublishEventfromCustomContent(ctx, "messagebus", "test", testdata)
 		assert.Nil(t, err)
 	})
 }

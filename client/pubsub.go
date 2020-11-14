@@ -31,8 +31,8 @@ func (c *GRPCClient) PublishEvent(ctx context.Context, component, topic string, 
 	return nil
 }
 
-// PublishEventfromStruct serializes an struct and pubishes its contents as data (JSON) onto topic in specific pubsub component.
-func (c *GRPCClient) PublishEventfromStruct(ctx context.Context, component, topic string, in interface{}) error {
+// PublishEventfromCustomContent serializes an struct and pubishes its contents as data (JSON) onto topic in specific pubsub component.
+func (c *GRPCClient) PublishEventfromCustomContent(ctx context.Context, component, topic string, in interface{}) error {
 
 	if topic == "" {
 		return errors.New("topic name required")
