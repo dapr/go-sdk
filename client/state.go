@@ -187,7 +187,7 @@ func (c *GRPCClient) SaveState(ctx context.Context, store, key string, data []by
 	return c.SaveBulkState(ctx, store, item)
 }
 
-// SaveStateItems saves the multiple state item to store.
+// SaveBulkState saves the multiple state item to store.
 func (c *GRPCClient) SaveBulkState(ctx context.Context, store string, items ...*SetStateItem) error {
 	if store == "" {
 		return errors.New("nil store")
@@ -214,7 +214,7 @@ func (c *GRPCClient) SaveBulkState(ctx context.Context, store string, items ...*
 
 }
 
-// GetBulkItems retreaves state for multiple keys from specific store.
+// GetBulkState retreaves state for multiple keys from specific store.
 func (c *GRPCClient) GetBulkState(ctx context.Context, store string, keys []string, parallelism int32) ([]*StateItem, error) {
 	if store == "" {
 		return nil, errors.New("nil store")
