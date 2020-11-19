@@ -55,6 +55,15 @@ type topicEventHandler struct {
 	meta      map[string]string
 }
 
+// Addr returns the net.Addr of the running server. If the server
+// has not yet been started it will return nil.
+func (s *Server) Addr() net.Addr {
+	if s.listener != nil {
+		return s.listener.Addr()
+	}
+	return nil
+}
+
 // Start registers the server and starts it.
 func (s *Server) Start() error {
 	gs := grpc.NewServer()
