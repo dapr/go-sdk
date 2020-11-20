@@ -24,7 +24,7 @@ func (c *GRPCClient) PublishEvent(ctx context.Context, component, topic string, 
 
 	_, err := c.protoClient.PublishEvent(c.withAuthToken(ctx), envelop)
 	if err != nil {
-		return errors.Wrapf(err, "error publishing event unto %s topic", topic)
+		return errors.Wrapf(err, "error publishing event to %v topic", topic)
 	}
 
 	return nil
