@@ -2,7 +2,7 @@ RELEASE_VERSION  =v1.0.0-rc-1
 GDOC_PORT        =8888
 PROTO_ROOT       =https://raw.githubusercontent.com/dapr/dapr/master/dapr/proto/
 
-.PHONY: mod test cover service client lint protps tag docs clean help
+.PHONY: mod test spellcheck cover service client lint protps tag docs clean help
 all: test
 
 tidy: ## Updates the go modules
@@ -15,6 +15,10 @@ test: mod ## Tests the entire project
 			-coverprofile=coverage.txt \
 			-covermode=atomic \
 			./...
+
+spellcheck: ## Checks spelling across the entire project 
+	@command -v misspell > /dev/null 2>&1 || (cd tools && go get github.com/client9/misspell/cmd/misspell)
+	@misspell -locale="US" -error -source="text" **/*
 
 cover: mod ## Displays test coverage in the client and service packages
 	go test -coverprofile=cover-client.out ./client && go tool cover -html=cover-client.out

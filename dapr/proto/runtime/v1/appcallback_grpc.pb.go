@@ -4,7 +4,6 @@ package runtime
 
 import (
 	context "context"
-
 	v1 "github.com/dapr/go-sdk/dapr/proto/common/v1"
 	empty "github.com/golang/protobuf/ptypes/empty"
 	grpc "google.golang.org/grpc"
