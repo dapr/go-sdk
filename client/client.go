@@ -64,7 +64,7 @@ type Client interface {
 	GetStateWithConsistency(ctx context.Context, store, key string, meta map[string]string, sc StateConsistency) (item *StateItem, err error)
 
 	// GetBulkState retrieves state for multiple keys from specific store.
-	GetBulkState(ctx context.Context, store string, keys []string, parallelism int32) ([]*StateItem, error)
+	GetBulkState(ctx context.Context, store string, keys []string, meta map[string]string, parallelism int32) ([]*BulkStateItem, error)
 
 	// DeleteState deletes content from store using default state options.
 	DeleteState(ctx context.Context, store, key string) error
