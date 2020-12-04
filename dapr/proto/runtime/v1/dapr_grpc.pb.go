@@ -41,6 +41,14 @@ type DaprClient interface {
 	RegisterActorTimer(ctx context.Context, in *RegisterActorTimerRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	// Unregister an actor timer.
 	UnregisterActorTimer(ctx context.Context, in *UnregisterActorTimerRequest, opts ...grpc.CallOption) (*empty.Empty, error)
+	// Register an actor reminder.
+	RegisterActorReminder(ctx context.Context, in *RegisterActorReminderRequest, opts ...grpc.CallOption) (*empty.Empty, error)
+	// Unregister an actor reminder.
+	UnregisterActorReminder(ctx context.Context, in *UnregisterActorReminderRequest, opts ...grpc.CallOption) (*empty.Empty, error)
+	// Gets the state for a specific actor.
+	GetActorState(ctx context.Context, in *GetActorStateRequest, opts ...grpc.CallOption) (*GetActorStateResponse, error)
+	// Executes state transactions for a specified actor
+	ExecuteActorStateTransaction(ctx context.Context, in *ExecuteActorStateTransactionRequest, opts ...grpc.CallOption) (*empty.Empty, error)
 	// InvokeActor calls a method on an actor.
 	InvokeActor(ctx context.Context, in *InvokeActorRequest, opts ...grpc.CallOption) (*InvokeActorResponse, error)
 }
@@ -152,6 +160,42 @@ func (c *daprClient) UnregisterActorTimer(ctx context.Context, in *UnregisterAct
 	return out, nil
 }
 
+func (c *daprClient) RegisterActorReminder(ctx context.Context, in *RegisterActorReminderRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
+	out := new(empty.Empty)
+	err := c.cc.Invoke(ctx, "/dapr.proto.runtime.v1.Dapr/RegisterActorReminder", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *daprClient) UnregisterActorReminder(ctx context.Context, in *UnregisterActorReminderRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
+	out := new(empty.Empty)
+	err := c.cc.Invoke(ctx, "/dapr.proto.runtime.v1.Dapr/UnregisterActorReminder", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *daprClient) GetActorState(ctx context.Context, in *GetActorStateRequest, opts ...grpc.CallOption) (*GetActorStateResponse, error) {
+	out := new(GetActorStateResponse)
+	err := c.cc.Invoke(ctx, "/dapr.proto.runtime.v1.Dapr/GetActorState", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *daprClient) ExecuteActorStateTransaction(ctx context.Context, in *ExecuteActorStateTransactionRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
+	out := new(empty.Empty)
+	err := c.cc.Invoke(ctx, "/dapr.proto.runtime.v1.Dapr/ExecuteActorStateTransaction", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *daprClient) InvokeActor(ctx context.Context, in *InvokeActorRequest, opts ...grpc.CallOption) (*InvokeActorResponse, error) {
 	out := new(InvokeActorResponse)
 	err := c.cc.Invoke(ctx, "/dapr.proto.runtime.v1.Dapr/InvokeActor", in, out, opts...)
@@ -187,6 +231,14 @@ type DaprServer interface {
 	RegisterActorTimer(context.Context, *RegisterActorTimerRequest) (*empty.Empty, error)
 	// Unregister an actor timer.
 	UnregisterActorTimer(context.Context, *UnregisterActorTimerRequest) (*empty.Empty, error)
+	// Register an actor reminder.
+	RegisterActorReminder(context.Context, *RegisterActorReminderRequest) (*empty.Empty, error)
+	// Unregister an actor reminder.
+	UnregisterActorReminder(context.Context, *UnregisterActorReminderRequest) (*empty.Empty, error)
+	// Gets the state for a specific actor.
+	GetActorState(context.Context, *GetActorStateRequest) (*GetActorStateResponse, error)
+	// Executes state transactions for a specified actor
+	ExecuteActorStateTransaction(context.Context, *ExecuteActorStateTransactionRequest) (*empty.Empty, error)
 	// InvokeActor calls a method on an actor.
 	InvokeActor(context.Context, *InvokeActorRequest) (*InvokeActorResponse, error)
 	mustEmbedUnimplementedDaprServer()
@@ -228,6 +280,18 @@ func (UnimplementedDaprServer) RegisterActorTimer(context.Context, *RegisterActo
 }
 func (UnimplementedDaprServer) UnregisterActorTimer(context.Context, *UnregisterActorTimerRequest) (*empty.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UnregisterActorTimer not implemented")
+}
+func (UnimplementedDaprServer) RegisterActorReminder(context.Context, *RegisterActorReminderRequest) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RegisterActorReminder not implemented")
+}
+func (UnimplementedDaprServer) UnregisterActorReminder(context.Context, *UnregisterActorReminderRequest) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UnregisterActorReminder not implemented")
+}
+func (UnimplementedDaprServer) GetActorState(context.Context, *GetActorStateRequest) (*GetActorStateResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetActorState not implemented")
+}
+func (UnimplementedDaprServer) ExecuteActorStateTransaction(context.Context, *ExecuteActorStateTransactionRequest) (*empty.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ExecuteActorStateTransaction not implemented")
 }
 func (UnimplementedDaprServer) InvokeActor(context.Context, *InvokeActorRequest) (*InvokeActorResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method InvokeActor not implemented")
@@ -443,6 +507,78 @@ func _Dapr_UnregisterActorTimer_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Dapr_RegisterActorReminder_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RegisterActorReminderRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DaprServer).RegisterActorReminder(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dapr.proto.runtime.v1.Dapr/RegisterActorReminder",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DaprServer).RegisterActorReminder(ctx, req.(*RegisterActorReminderRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Dapr_UnregisterActorReminder_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UnregisterActorReminderRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DaprServer).UnregisterActorReminder(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dapr.proto.runtime.v1.Dapr/UnregisterActorReminder",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DaprServer).UnregisterActorReminder(ctx, req.(*UnregisterActorReminderRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Dapr_GetActorState_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetActorStateRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DaprServer).GetActorState(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dapr.proto.runtime.v1.Dapr/GetActorState",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DaprServer).GetActorState(ctx, req.(*GetActorStateRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Dapr_ExecuteActorStateTransaction_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ExecuteActorStateTransactionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DaprServer).ExecuteActorStateTransaction(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dapr.proto.runtime.v1.Dapr/ExecuteActorStateTransaction",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DaprServer).ExecuteActorStateTransaction(ctx, req.(*ExecuteActorStateTransactionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Dapr_InvokeActor_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(InvokeActorRequest)
 	if err := dec(in); err != nil {
@@ -508,6 +644,22 @@ var _Dapr_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UnregisterActorTimer",
 			Handler:    _Dapr_UnregisterActorTimer_Handler,
+		},
+		{
+			MethodName: "RegisterActorReminder",
+			Handler:    _Dapr_RegisterActorReminder_Handler,
+		},
+		{
+			MethodName: "UnregisterActorReminder",
+			Handler:    _Dapr_UnregisterActorReminder_Handler,
+		},
+		{
+			MethodName: "GetActorState",
+			Handler:    _Dapr_GetActorState_Handler,
+		},
+		{
+			MethodName: "ExecuteActorStateTransaction",
+			Handler:    _Dapr_ExecuteActorStateTransaction_Handler,
 		},
 		{
 			MethodName: "InvokeActor",

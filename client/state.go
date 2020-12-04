@@ -258,8 +258,7 @@ func (c *GRPCClient) GetBulkState(ctx context.Context, store string, keys []stri
 		} else {
 			item.Etag = r.Etag
 			item.Value = r.Data
-			// TODO: update to get metadata when proto changes have merged into go-sdk
-			//item.Metadata = r.Metadata
+			item.Metadata = r.Metadata
 		}
 
 		items = append(items, item)
