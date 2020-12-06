@@ -5,10 +5,10 @@ package runtime
 import (
 	context "context"
 	v1 "github.com/dapr/go-sdk/dapr/proto/common/v1"
-	empty "github.com/golang/protobuf/ptypes/empty"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -26,29 +26,29 @@ type DaprClient interface {
 	// Gets a bulk of state items for a list of keys
 	GetBulkState(ctx context.Context, in *GetBulkStateRequest, opts ...grpc.CallOption) (*GetBulkStateResponse, error)
 	// Saves the state for a specific key.
-	SaveState(ctx context.Context, in *SaveStateRequest, opts ...grpc.CallOption) (*empty.Empty, error)
+	SaveState(ctx context.Context, in *SaveStateRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// Deletes the state for a specific key.
-	DeleteState(ctx context.Context, in *DeleteStateRequest, opts ...grpc.CallOption) (*empty.Empty, error)
+	DeleteState(ctx context.Context, in *DeleteStateRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// Executes transactions for a specified store
-	ExecuteStateTransaction(ctx context.Context, in *ExecuteStateTransactionRequest, opts ...grpc.CallOption) (*empty.Empty, error)
+	ExecuteStateTransaction(ctx context.Context, in *ExecuteStateTransactionRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// Publishes events to the specific topic.
-	PublishEvent(ctx context.Context, in *PublishEventRequest, opts ...grpc.CallOption) (*empty.Empty, error)
+	PublishEvent(ctx context.Context, in *PublishEventRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// Invokes binding data to specific output bindings
 	InvokeBinding(ctx context.Context, in *InvokeBindingRequest, opts ...grpc.CallOption) (*InvokeBindingResponse, error)
 	// Gets secrets from secret stores.
 	GetSecret(ctx context.Context, in *GetSecretRequest, opts ...grpc.CallOption) (*GetSecretResponse, error)
 	// Register an actor timer.
-	RegisterActorTimer(ctx context.Context, in *RegisterActorTimerRequest, opts ...grpc.CallOption) (*empty.Empty, error)
+	RegisterActorTimer(ctx context.Context, in *RegisterActorTimerRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// Unregister an actor timer.
-	UnregisterActorTimer(ctx context.Context, in *UnregisterActorTimerRequest, opts ...grpc.CallOption) (*empty.Empty, error)
+	UnregisterActorTimer(ctx context.Context, in *UnregisterActorTimerRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// Register an actor reminder.
-	RegisterActorReminder(ctx context.Context, in *RegisterActorReminderRequest, opts ...grpc.CallOption) (*empty.Empty, error)
+	RegisterActorReminder(ctx context.Context, in *RegisterActorReminderRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// Unregister an actor reminder.
-	UnregisterActorReminder(ctx context.Context, in *UnregisterActorReminderRequest, opts ...grpc.CallOption) (*empty.Empty, error)
+	UnregisterActorReminder(ctx context.Context, in *UnregisterActorReminderRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// Gets the state for a specific actor.
 	GetActorState(ctx context.Context, in *GetActorStateRequest, opts ...grpc.CallOption) (*GetActorStateResponse, error)
 	// Executes state transactions for a specified actor
-	ExecuteActorStateTransaction(ctx context.Context, in *ExecuteActorStateTransactionRequest, opts ...grpc.CallOption) (*empty.Empty, error)
+	ExecuteActorStateTransaction(ctx context.Context, in *ExecuteActorStateTransactionRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// InvokeActor calls a method on an actor.
 	InvokeActor(ctx context.Context, in *InvokeActorRequest, opts ...grpc.CallOption) (*InvokeActorResponse, error)
 }
@@ -88,8 +88,8 @@ func (c *daprClient) GetBulkState(ctx context.Context, in *GetBulkStateRequest, 
 	return out, nil
 }
 
-func (c *daprClient) SaveState(ctx context.Context, in *SaveStateRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
-	out := new(empty.Empty)
+func (c *daprClient) SaveState(ctx context.Context, in *SaveStateRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, "/dapr.proto.runtime.v1.Dapr/SaveState", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -97,8 +97,8 @@ func (c *daprClient) SaveState(ctx context.Context, in *SaveStateRequest, opts .
 	return out, nil
 }
 
-func (c *daprClient) DeleteState(ctx context.Context, in *DeleteStateRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
-	out := new(empty.Empty)
+func (c *daprClient) DeleteState(ctx context.Context, in *DeleteStateRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, "/dapr.proto.runtime.v1.Dapr/DeleteState", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -106,8 +106,8 @@ func (c *daprClient) DeleteState(ctx context.Context, in *DeleteStateRequest, op
 	return out, nil
 }
 
-func (c *daprClient) ExecuteStateTransaction(ctx context.Context, in *ExecuteStateTransactionRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
-	out := new(empty.Empty)
+func (c *daprClient) ExecuteStateTransaction(ctx context.Context, in *ExecuteStateTransactionRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, "/dapr.proto.runtime.v1.Dapr/ExecuteStateTransaction", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -115,8 +115,8 @@ func (c *daprClient) ExecuteStateTransaction(ctx context.Context, in *ExecuteSta
 	return out, nil
 }
 
-func (c *daprClient) PublishEvent(ctx context.Context, in *PublishEventRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
-	out := new(empty.Empty)
+func (c *daprClient) PublishEvent(ctx context.Context, in *PublishEventRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, "/dapr.proto.runtime.v1.Dapr/PublishEvent", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -142,8 +142,8 @@ func (c *daprClient) GetSecret(ctx context.Context, in *GetSecretRequest, opts .
 	return out, nil
 }
 
-func (c *daprClient) RegisterActorTimer(ctx context.Context, in *RegisterActorTimerRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
-	out := new(empty.Empty)
+func (c *daprClient) RegisterActorTimer(ctx context.Context, in *RegisterActorTimerRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, "/dapr.proto.runtime.v1.Dapr/RegisterActorTimer", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -151,8 +151,8 @@ func (c *daprClient) RegisterActorTimer(ctx context.Context, in *RegisterActorTi
 	return out, nil
 }
 
-func (c *daprClient) UnregisterActorTimer(ctx context.Context, in *UnregisterActorTimerRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
-	out := new(empty.Empty)
+func (c *daprClient) UnregisterActorTimer(ctx context.Context, in *UnregisterActorTimerRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, "/dapr.proto.runtime.v1.Dapr/UnregisterActorTimer", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -160,8 +160,8 @@ func (c *daprClient) UnregisterActorTimer(ctx context.Context, in *UnregisterAct
 	return out, nil
 }
 
-func (c *daprClient) RegisterActorReminder(ctx context.Context, in *RegisterActorReminderRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
-	out := new(empty.Empty)
+func (c *daprClient) RegisterActorReminder(ctx context.Context, in *RegisterActorReminderRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, "/dapr.proto.runtime.v1.Dapr/RegisterActorReminder", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -169,8 +169,8 @@ func (c *daprClient) RegisterActorReminder(ctx context.Context, in *RegisterActo
 	return out, nil
 }
 
-func (c *daprClient) UnregisterActorReminder(ctx context.Context, in *UnregisterActorReminderRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
-	out := new(empty.Empty)
+func (c *daprClient) UnregisterActorReminder(ctx context.Context, in *UnregisterActorReminderRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, "/dapr.proto.runtime.v1.Dapr/UnregisterActorReminder", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -187,8 +187,8 @@ func (c *daprClient) GetActorState(ctx context.Context, in *GetActorStateRequest
 	return out, nil
 }
 
-func (c *daprClient) ExecuteActorStateTransaction(ctx context.Context, in *ExecuteActorStateTransactionRequest, opts ...grpc.CallOption) (*empty.Empty, error) {
-	out := new(empty.Empty)
+func (c *daprClient) ExecuteActorStateTransaction(ctx context.Context, in *ExecuteActorStateTransactionRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, "/dapr.proto.runtime.v1.Dapr/ExecuteActorStateTransaction", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -216,29 +216,29 @@ type DaprServer interface {
 	// Gets a bulk of state items for a list of keys
 	GetBulkState(context.Context, *GetBulkStateRequest) (*GetBulkStateResponse, error)
 	// Saves the state for a specific key.
-	SaveState(context.Context, *SaveStateRequest) (*empty.Empty, error)
+	SaveState(context.Context, *SaveStateRequest) (*emptypb.Empty, error)
 	// Deletes the state for a specific key.
-	DeleteState(context.Context, *DeleteStateRequest) (*empty.Empty, error)
+	DeleteState(context.Context, *DeleteStateRequest) (*emptypb.Empty, error)
 	// Executes transactions for a specified store
-	ExecuteStateTransaction(context.Context, *ExecuteStateTransactionRequest) (*empty.Empty, error)
+	ExecuteStateTransaction(context.Context, *ExecuteStateTransactionRequest) (*emptypb.Empty, error)
 	// Publishes events to the specific topic.
-	PublishEvent(context.Context, *PublishEventRequest) (*empty.Empty, error)
+	PublishEvent(context.Context, *PublishEventRequest) (*emptypb.Empty, error)
 	// Invokes binding data to specific output bindings
 	InvokeBinding(context.Context, *InvokeBindingRequest) (*InvokeBindingResponse, error)
 	// Gets secrets from secret stores.
 	GetSecret(context.Context, *GetSecretRequest) (*GetSecretResponse, error)
 	// Register an actor timer.
-	RegisterActorTimer(context.Context, *RegisterActorTimerRequest) (*empty.Empty, error)
+	RegisterActorTimer(context.Context, *RegisterActorTimerRequest) (*emptypb.Empty, error)
 	// Unregister an actor timer.
-	UnregisterActorTimer(context.Context, *UnregisterActorTimerRequest) (*empty.Empty, error)
+	UnregisterActorTimer(context.Context, *UnregisterActorTimerRequest) (*emptypb.Empty, error)
 	// Register an actor reminder.
-	RegisterActorReminder(context.Context, *RegisterActorReminderRequest) (*empty.Empty, error)
+	RegisterActorReminder(context.Context, *RegisterActorReminderRequest) (*emptypb.Empty, error)
 	// Unregister an actor reminder.
-	UnregisterActorReminder(context.Context, *UnregisterActorReminderRequest) (*empty.Empty, error)
+	UnregisterActorReminder(context.Context, *UnregisterActorReminderRequest) (*emptypb.Empty, error)
 	// Gets the state for a specific actor.
 	GetActorState(context.Context, *GetActorStateRequest) (*GetActorStateResponse, error)
 	// Executes state transactions for a specified actor
-	ExecuteActorStateTransaction(context.Context, *ExecuteActorStateTransactionRequest) (*empty.Empty, error)
+	ExecuteActorStateTransaction(context.Context, *ExecuteActorStateTransactionRequest) (*emptypb.Empty, error)
 	// InvokeActor calls a method on an actor.
 	InvokeActor(context.Context, *InvokeActorRequest) (*InvokeActorResponse, error)
 	mustEmbedUnimplementedDaprServer()
@@ -257,16 +257,16 @@ func (UnimplementedDaprServer) GetState(context.Context, *GetStateRequest) (*Get
 func (UnimplementedDaprServer) GetBulkState(context.Context, *GetBulkStateRequest) (*GetBulkStateResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetBulkState not implemented")
 }
-func (UnimplementedDaprServer) SaveState(context.Context, *SaveStateRequest) (*empty.Empty, error) {
+func (UnimplementedDaprServer) SaveState(context.Context, *SaveStateRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SaveState not implemented")
 }
-func (UnimplementedDaprServer) DeleteState(context.Context, *DeleteStateRequest) (*empty.Empty, error) {
+func (UnimplementedDaprServer) DeleteState(context.Context, *DeleteStateRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteState not implemented")
 }
-func (UnimplementedDaprServer) ExecuteStateTransaction(context.Context, *ExecuteStateTransactionRequest) (*empty.Empty, error) {
+func (UnimplementedDaprServer) ExecuteStateTransaction(context.Context, *ExecuteStateTransactionRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ExecuteStateTransaction not implemented")
 }
-func (UnimplementedDaprServer) PublishEvent(context.Context, *PublishEventRequest) (*empty.Empty, error) {
+func (UnimplementedDaprServer) PublishEvent(context.Context, *PublishEventRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PublishEvent not implemented")
 }
 func (UnimplementedDaprServer) InvokeBinding(context.Context, *InvokeBindingRequest) (*InvokeBindingResponse, error) {
@@ -275,22 +275,22 @@ func (UnimplementedDaprServer) InvokeBinding(context.Context, *InvokeBindingRequ
 func (UnimplementedDaprServer) GetSecret(context.Context, *GetSecretRequest) (*GetSecretResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetSecret not implemented")
 }
-func (UnimplementedDaprServer) RegisterActorTimer(context.Context, *RegisterActorTimerRequest) (*empty.Empty, error) {
+func (UnimplementedDaprServer) RegisterActorTimer(context.Context, *RegisterActorTimerRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RegisterActorTimer not implemented")
 }
-func (UnimplementedDaprServer) UnregisterActorTimer(context.Context, *UnregisterActorTimerRequest) (*empty.Empty, error) {
+func (UnimplementedDaprServer) UnregisterActorTimer(context.Context, *UnregisterActorTimerRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UnregisterActorTimer not implemented")
 }
-func (UnimplementedDaprServer) RegisterActorReminder(context.Context, *RegisterActorReminderRequest) (*empty.Empty, error) {
+func (UnimplementedDaprServer) RegisterActorReminder(context.Context, *RegisterActorReminderRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RegisterActorReminder not implemented")
 }
-func (UnimplementedDaprServer) UnregisterActorReminder(context.Context, *UnregisterActorReminderRequest) (*empty.Empty, error) {
+func (UnimplementedDaprServer) UnregisterActorReminder(context.Context, *UnregisterActorReminderRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UnregisterActorReminder not implemented")
 }
 func (UnimplementedDaprServer) GetActorState(context.Context, *GetActorStateRequest) (*GetActorStateResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetActorState not implemented")
 }
-func (UnimplementedDaprServer) ExecuteActorStateTransaction(context.Context, *ExecuteActorStateTransactionRequest) (*empty.Empty, error) {
+func (UnimplementedDaprServer) ExecuteActorStateTransaction(context.Context, *ExecuteActorStateTransactionRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ExecuteActorStateTransaction not implemented")
 }
 func (UnimplementedDaprServer) InvokeActor(context.Context, *InvokeActorRequest) (*InvokeActorResponse, error) {
