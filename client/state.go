@@ -251,16 +251,12 @@ func (c *GRPCClient) GetBulkState(ctx context.Context, store string, keys []stri
 
 	for _, r := range results.Items {
 		item := &BulkStateItem{
-			Key: r.Key,
+			Key:      r.Key,
+			Etag:     r.Etag,
+			Value:    r.Data,
+			Metadata: r.Metadata,
+			Error:    r.Error,
 		}
-		if r.Error != "" {
-			item.Error = r.Error
-		} else {
-			item.Etag = r.Etag
-			item.Value = r.Data
-			item.Metadata = r.Metadata
-		}
-
 		items = append(items, item)
 	}
 
