@@ -185,7 +185,7 @@ func TestStateTransactions(t *testing.T) {
 	})
 
 	t.Run("exec upserts", func(t *testing.T) {
-		items, err := testClient.GetBulkState(ctx, store, keys, 10)
+		items, err := testClient.GetBulkState(ctx, store, keys, nil, 10)
 		assert.Nil(t, err)
 		assert.NotNil(t, items)
 		assert.Len(t, items, len(keys))
@@ -207,7 +207,7 @@ func TestStateTransactions(t *testing.T) {
 	})
 
 	t.Run("get and validate inserts", func(t *testing.T) {
-		items, err := testClient.GetBulkState(ctx, store, keys, 10)
+		items, err := testClient.GetBulkState(ctx, store, keys, nil, 10)
 		assert.Nil(t, err)
 		assert.NotNil(t, items)
 		assert.Len(t, items, len(keys))
@@ -224,7 +224,7 @@ func TestStateTransactions(t *testing.T) {
 	})
 
 	t.Run("ensure deletes", func(t *testing.T) {
-		items, err := testClient.GetBulkState(ctx, store, keys, 3)
+		items, err := testClient.GetBulkState(ctx, store, keys, nil, 3)
 		assert.Nil(t, err)
 		assert.NotNil(t, items)
 		assert.Len(t, items, 0)

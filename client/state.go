@@ -106,6 +106,15 @@ type StateItem struct {
 	Etag  string
 }
 
+// StateItem represents a single state item.
+type BulkStateItem struct {
+	Key      string
+	Value    []byte
+	Etag     string
+	Metadata map[string]string
+	Error    string
+}
+
 // SetStateItem represents a single state to be persisted.
 type SetStateItem struct {
 	Key      string
@@ -215,18 +224,19 @@ func (c *GRPCClient) SaveBulkState(ctx context.Context, store string, items ...*
 }
 
 // GetBulkState retreaves state for multiple keys from specific store.
-func (c *GRPCClient) GetBulkState(ctx context.Context, store string, keys []string, parallelism int32) ([]*StateItem, error) {
+func (c *GRPCClient) GetBulkState(ctx context.Context, store string, keys []string, meta map[string]string, parallelism int32) ([]*BulkStateItem, error) {
 	if store == "" {
 		return nil, errors.New("nil store")
 	}
 	if len(keys) == 0 {
 		return nil, errors.New("keys required")
 	}
-	items := make([]*StateItem, 0)
+	items := make([]*BulkStateItem, 0)
 
 	req := &pb.GetBulkStateRequest{
 		StoreName:   store,
 		Keys:        keys,
+		Metadata:    meta,
 		Parallelism: parallelism,
 	}
 
@@ -240,10 +250,12 @@ func (c *GRPCClient) GetBulkState(ctx context.Context, store string, keys []stri
 	}
 
 	for _, r := range results.Items {
-		item := &StateItem{
-			Key:   r.Key,
-			Etag:  r.Etag,
-			Value: r.Data,
+		item := &BulkStateItem{
+			Key:      r.Key,
+			Etag:     r.Etag,
+			Value:    r.Data,
+			Metadata: r.Metadata,
+			Error:    r.Error,
 		}
 		items = append(items, item)
 	}
