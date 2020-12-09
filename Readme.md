@@ -160,7 +160,7 @@ if err := client.PublishEvent(ctx, "component-name", "topic-name", data); err !=
 To invoke a specific method on another service running with Dapr sidecar, the Dapr client provides two options. To invoke a service without any data:
 
 ```go 
-resp, err = client.InvokeService(ctx, "service-name", "method-name") 
+resp, err = client.InvokeMethod(ctx, "service-name", "method-name") 
 ``` 
 
 And to invoke a service with data: 
@@ -171,7 +171,7 @@ content := &dapr.DataContent{
     Data:        []byte(`{ "id": "a123", "value": "demo", "valid": true }`),
 }
 
-resp, err := client.InvokeServiceWithContent(ctx, "service-name", "method-name", content)
+resp, err := client.InvokeMethodWithContent(ctx, "service-name", "method-name", content)
 ```
 
 ##### Bindings
@@ -188,7 +188,7 @@ err = client.InvokeOutputBinding(ctx, in)
 To invoke method with content and metadata:
 
 ```go
-in := &dapr.BindingInvocation{
+in := &dapr.InvokeBindingRequest{
     Name:      "binding-name",
     Operation: "operation-name",
     Data: []byte("hello"),
@@ -200,7 +200,7 @@ out, err := client.InvokeBinding(ctx, in)
 
 ##### Secrets
 
-The Dapr client also provides access to the runtime secrets that can be backed by any number of secrete stores (e.g. Kubernetes Secrets, Hashicorp Vault, or Azure KeyVault):
+The Dapr client also provides access to the runtime secrets that can be backed by any number of secrete stores (e.g. Kubernetes Secrets, HashiCorp Vault, or Azure KeyVault):
 
 ```go
 opt := map[string]string{
