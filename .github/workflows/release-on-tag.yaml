@@ -59,3 +59,12 @@ jobs:
         body: Automatic go Dapr client release
         draft: false
         prerelease: false
+
+    - name: Notify
+      uses: rjstone/discord-webhook-notify@v1
+      with:
+        severity: info
+        details: Release ${{ github.ref }} published
+        description: Release
+        webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}        
+        avatarUrl: https://github.githubassets.com/images/modules/logos_page/Octocat.png
