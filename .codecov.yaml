@@ -8,7 +8,7 @@ coverage:
         threshold: 2% # don't allow coverage to drop on client
       service:
         paths: "service"
-        threshold: 2% # allow coverage to drop on service by 3% (wip)
+        threshold: 2% # allow coverage to drop on service by 2% (wip)
 ignore:
   - "dapr/proto/**"
   - "example/**"
