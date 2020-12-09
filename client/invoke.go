@@ -2,8 +2,8 @@ package client
 
 import (
 	"context"
-	"strings
 	"encoding/json"
+	"strings"
 
 	v1 "github.com/dapr/go-sdk/dapr/proto/common/v1"
 	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
@@ -95,12 +95,9 @@ func (c *GRPCClient) InvokeServiceWithContent(ctx context.Context, serviceID, me
 }
 
 // InvokeServiceWithCustomContent invokes service with custom content (struct + content type).
-func (c *GRPCClient) InvokeServiceWithCustomContent(ctx context.Context, serviceID, method string, contentType string, content interface{}) (out []byte, err error) {
-	if serviceID == "" {
-		return nil, errors.New("serviceID is required")
-	}
-	if method == "" {
-		return nil, errors.New("method name is required")
+func (c *GRPCClient) InvokeServiceWithCustomContent(ctx context.Context, serviceID, method, verb string, contentType string, content interface{}) (out []byte, err error) {
+	if err := hasRequiredInvokeArgs(serviceID, method, verb); err != nil {
+		return nil, errors.Wrap(err, "missing required parameter")
 	}
 	if contentType == "" {
 		return nil, errors.New("content type required")
@@ -110,7 +107,6 @@ func (c *GRPCClient) InvokeServiceWithCustomContent(ctx context.Context, service
 	}
 
 	contentData, err := json.Marshal(content)
-
 	if err != nil {
 		return nil, errors.WithMessage(err, "error serializing input struct")
 	}
@@ -118,12 +114,10 @@ func (c *GRPCClient) InvokeServiceWithCustomContent(ctx context.Context, service
 	req := &pb.InvokeServiceRequest{
 		Id: serviceID,
 		Message: &v1.InvokeRequest{
-			Method:      method,
-			Data:        &anypb.Any{Value: contentData},
-			ContentType: contentType,
-			HttpExtension: &v1.HTTPExtension{
-				Verb: v1.HTTPExtension_POST,
-			},
+			Method:        method,
+			Data:          &anypb.Any{Value: contentData},
+			ContentType:   contentType,
+			HttpExtension: verbToHTTPExtension(verb),
 		},
 	}
 

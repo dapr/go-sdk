@@ -106,7 +106,7 @@ type StateItem struct {
 	Etag  string
 }
 
-// StateItem represents a single state item.
+// BulkStateItem represents a single state item.
 type BulkStateItem struct {
 	Key      string
 	Value    []byte
