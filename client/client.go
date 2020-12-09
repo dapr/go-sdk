@@ -40,10 +40,10 @@ type Client interface {
 	InvokeOutputBinding(ctx context.Context, in *BindingInvocation) error
 
 	// InvokeService invokes service without raw data
-	InvokeService(ctx context.Context, serviceID, method string) (out []byte, err error)
+	InvokeService(ctx context.Context, serviceID, method, verb string) (out []byte, err error)
 
 	// InvokeServiceWithContent invokes service with content
-	InvokeServiceWithContent(ctx context.Context, serviceID, method string, content *DataContent) (out []byte, err error)
+	InvokeServiceWithContent(ctx context.Context, serviceID, method, verb string, content *DataContent) (out []byte, err error)
 
 	// PublishEvent pubishes data onto topic in specific pubsub component.
 	PublishEvent(ctx context.Context, component, topic string, in []byte) error

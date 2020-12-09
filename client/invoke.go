@@ -2,6 +2,7 @@ package client
 
 import (
 	"context"
+	"strings"
 
 	v1 "github.com/dapr/go-sdk/dapr/proto/common/v1"
 	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
@@ -37,8 +38,15 @@ func (c *GRPCClient) invokeServiceWithRequest(ctx context.Context, req *pb.Invok
 	return
 }
 
+func verbToHTTPExtension(verb string) *v1.HTTPExtension {
+	if v, ok := v1.HTTPExtension_Verb_value[strings.ToUpper(verb)]; ok {
+		return &v1.HTTPExtension{Verb: v1.HTTPExtension_Verb(v)}
+	}
+	return &v1.HTTPExtension{Verb: v1.HTTPExtension_NONE}
+}
+
 // InvokeService invokes service without raw data ([]byte).
-func (c *GRPCClient) InvokeService(ctx context.Context, serviceID, method string) (out []byte, err error) {
+func (c *GRPCClient) InvokeService(ctx context.Context, serviceID, method, verb string) (out []byte, err error) {
 	if serviceID == "" {
 		return nil, errors.New("nil serviceID")
 	}
@@ -48,17 +56,15 @@ func (c *GRPCClient) InvokeService(ctx context.Context, serviceID, method string
 	req := &pb.InvokeServiceRequest{
 		Id: serviceID,
 		Message: &v1.InvokeRequest{
-			Method: method,
-			HttpExtension: &v1.HTTPExtension{
-				Verb: v1.HTTPExtension_POST,
-			},
+			Method:        method,
+			HttpExtension: verbToHTTPExtension(verb),
 		},
 	}
 	return c.invokeServiceWithRequest(ctx, req)
 }
 
 // InvokeServiceWithContent invokes service without content (data + content type).
-func (c *GRPCClient) InvokeServiceWithContent(ctx context.Context, serviceID, method string, content *DataContent) (out []byte, err error) {
+func (c *GRPCClient) InvokeServiceWithContent(ctx context.Context, serviceID, method, verb string, content *DataContent) (out []byte, err error) {
 	if serviceID == "" {
 		return nil, errors.New("serviceID is required")
 	}
@@ -72,12 +78,10 @@ func (c *GRPCClient) InvokeServiceWithContent(ctx context.Context, serviceID, me
 	req := &pb.InvokeServiceRequest{
 		Id: serviceID,
 		Message: &v1.InvokeRequest{
-			Method:      method,
-			Data:        &anypb.Any{Value: content.Data},
-			ContentType: content.ContentType,
-			HttpExtension: &v1.HTTPExtension{
-				Verb: v1.HTTPExtension_POST,
-			},
+			Method:        method,
+			Data:          &anypb.Any{Value: content.Data},
+			ContentType:   content.ContentType,
+			HttpExtension: verbToHTTPExtension(verb),
 		},
 	}
 

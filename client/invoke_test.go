@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	v1 "github.com/dapr/go-sdk/dapr/proto/common/v1"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -18,7 +19,7 @@ func TestInvokeServiceWithContent(t *testing.T) {
 			ContentType: "text/plain",
 			Data:        []byte(data),
 		}
-		resp, err := testClient.InvokeServiceWithContent(ctx, "test", "fn", content)
+		resp, err := testClient.InvokeServiceWithContent(ctx, "test", "fn", "post", content)
 		assert.Nil(t, err)
 		assert.NotNil(t, resp)
 		assert.Equal(t, string(resp), data)
@@ -26,9 +27,27 @@ func TestInvokeServiceWithContent(t *testing.T) {
 	})
 
 	t.Run("without content", func(t *testing.T) {
-		resp, err := testClient.InvokeService(ctx, "test", "fn")
+		resp, err := testClient.InvokeService(ctx, "test", "fn", "get")
 		assert.Nil(t, err)
 		assert.Nil(t, resp)
 
+	})
+}
+
+func TestVerbParsing(t *testing.T) {
+	t.Run("valid lower case", func(t *testing.T) {
+		v := verbToHTTPExtension("post")
+		assert.NotNil(t, v)
+		assert.Equal(t, v1.HTTPExtension_POST, v.Verb)
+	})
+	t.Run("valid upper case", func(t *testing.T) {
+		v := verbToHTTPExtension("GET")
+		assert.NotNil(t, v)
+		assert.Equal(t, v1.HTTPExtension_GET, v.Verb)
+	})
+	t.Run("invalid verb", func(t *testing.T) {
+		v := verbToHTTPExtension("BAD")
+		assert.NotNil(t, v)
+		assert.Equal(t, v1.HTTPExtension_NONE, v.Verb)
 	})
 }
