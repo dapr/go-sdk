@@ -45,8 +45,14 @@ type Client interface {
 	// InvokeServiceWithContent invokes service with content
 	InvokeServiceWithContent(ctx context.Context, serviceID, method string, content *DataContent) (out []byte, err error)
 
+	// InvokeServiceWithCustomContent invokes service with custom content (struct + content type).
+	InvokeServiceWithCustomContent(ctx context.Context, serviceID, method string, contentType string, content interface{}) (out []byte, err error)
+
 	// PublishEvent pubishes data onto topic in specific pubsub component.
 	PublishEvent(ctx context.Context, component, topic string, in []byte) error
+
+	// PublishEventfromCustomContent serializes an struct and pubishes its contents as data (JSON) onto topic in specific pubsub component.
+	PublishEventfromCustomContent(ctx context.Context, component, topic string, in interface{}) error
 
 	// GetSecret retreaves preconfigred secret from specified store using key.
 	GetSecret(ctx context.Context, store, key string, meta map[string]string) (out map[string]string, err error)
