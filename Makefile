@@ -2,95 +2,48 @@ RELEASE_VERSION  =v1.0.0-rc-1
 GDOC_PORT        =8888
 PROTO_ROOT       =https://raw.githubusercontent.com/dapr/dapr/master/dapr/proto/
 
-.PHONY: mod test spellcheck cover service client lint protps tag docs clean help
-all: test
+.PHONY: all
+all: help
 
+.PHONY: tidy
 tidy: ## Updates the go modules
 	go mod tidy
 
-test: mod ## Tests the entire project 
+.PHONY: test
+test: tidy ## Tests the entire project 
 	go test -count=1 \
 			-race \
 			-coverprofile=coverage.txt \
 			-covermode=atomic \
 			./...
 
-spellcheck: ## Checks spelling across the entire project 
+.PHONY: spell
+spell: ## Checks spelling across the entire project 
 	@command -v misspell > /dev/null 2>&1 || (cd tools && go get github.com/client9/misspell/cmd/misspell)
 	@misspell -locale="US" -error -source="text" **/*
 
-cover: mod ## Displays test coverage in the client and service packages
+.PHONY: cover
+cover: tidy ## Displays test coverage in the client and service packages
 	go test -coverprofile=cover-client.out ./client && go tool cover -html=cover-client.out
 	go test -coverprofile=cover-grpc.out ./service/grpc && go tool cover -html=cover-grpc.out
 	go test -coverprofile=cover-http.out ./service/http && go tool cover -html=cover-http.out
 
-service-http: mod ## Runs the uncompiled HTTP example service code
-	dapr run --app-id serving \
-			 --app-protocol http \
-			 --app-port 8080 \
-			 --port 3500 \
-			 --log-level debug \
-			 --components-path example/serving/http/config \
-			 go run example/serving/http/main.go
-
-service-grpc: mod ## Runs the uncompiled gRPC example service code
-	dapr run --app-id serving \
-			 --app-protocol grpc \
-			 --app-port 50001 \
-			 --port 3500 \
-			 --log-level debug \
-			 --components-path example/serving/grpc/config \
-			 go run example/serving/grpc/main.go
-
-client: mod ## Runs the uncompiled example client code 
-	dapr run --app-id caller \
-             --components-path example/client/config \
-             --log-level debug \
-             go run example/client/main.go 
-
-pubsub: ## Submits pub/sub events in different cotnent types 
-	curl -d '{ "from": "John", "to": "Lary", "message": "hi" }' \
-		-H "Content-type: application/json" \
-		"http://localhost:3500/v1.0/publish/messages/topic1"
-	curl -d '<message><from>John</from><to>Lary</to></message>' \
-		-H "Content-type: application/xml" \
-		"http://localhost:3500/v1.0/publish/messages/topic1"
-	curl -d '0x18, 0x2d, 0x44, 0x54, 0xfb, 0x21, 0x09, 0x40' \
-		-H "Content-type: application/octet-stream" \
-		"http://localhost:3500/v1.0/publish/messages/topic1"
-
-invoke: ## Invokes service method with different operations
-	curl -d '{ "from": "John", "to": "Lary", "message": "hi" }' \
-		-H "Content-type: application/json" \
-		"http://localhost:3500/v1.0/invoke/serving/method/echo"
-	curl -d "ping" \
-		-H "Content-type: text/plain;charset=UTF-8" \
-		"http://localhost:3500/v1.0/invoke/serving/method/echo"
-	curl -X DELETE \
-		"http://localhost:3500/v1.0/invoke/serving/method/echo?k1=v1&k2=v2"
-
+.PHONY: lint
 lint: ## Lints the entire project
 	golangci-lint run --timeout=3m
 
-docs: ## Runs godoc (in container due to mod support)
-	docker run \
-			--rm \
-			-e "GOPATH=/tmp/go" \
-			-p 127.0.0.1:$(GDOC_PORT):$(GDOC_PORT) \
-			-v $(PWD):/tmp/go/src/ \
-			--name godoc golang \
-			bash -c "go get golang.org/x/tools/cmd/godoc && echo http://localhost:$(GDOC_PORT)/pkg/ && /tmp/go/bin/godoc -http=:$(GDOC_PORT)"
-	open http://localhost:8888/pkg/client/
-
+.PHONY: tag
 tag: ## Creates release tag 
 	git tag $(RELEASE_VERSION)
 	git push origin $(RELEASE_VERSION)
 
+.PHONY: clean
 clean: ## Cleans go and generated files in ./dapr/proto/
 	go clean
 	rm -fr ./dapr/proto/common/v1/*
 	rm -fr ./dapr/proto/runtime/v1/*
 
+.PHONY: protos
 protos: ## Downloads proto files from dapr/dapr master and generats gRPC proto clients
 	go install github.com/gogo/protobuf/gogoreplace
 
@@ -123,6 +76,7 @@ protos: ## Downloads proto files from dapr/dapr master and generats gRPC proto c
 	rm -f ./dapr/proto/common/v1/*.proto
 	rm -f ./dapr/proto/runtime/v1/*.proto
 
+.PHONY: help
 help: ## Display available commands
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk \
 		'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'

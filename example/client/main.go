@@ -14,6 +14,7 @@ func main() {
 	json := `{ "message": "hello" }`
 	data := []byte(json)
 	store := "statestore"
+	pubsub := "messages"
 
 	// create the client
 	client, err := dapr.NewClient()
@@ -23,7 +24,7 @@ func main() {
 	defer client.Close()
 
 	// publish a message to the topic messagebus
-	if err := client.PublishEvent(ctx, "messagebus", "demo", data); err != nil {
+	if err := client.PublishEvent(ctx, pubsub, "demo", data); err != nil {
 		panic(err)
 	}
 	fmt.Println("data published")
