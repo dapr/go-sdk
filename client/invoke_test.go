@@ -32,6 +32,19 @@ func TestInvokeServiceWithContent(t *testing.T) {
 		assert.Nil(t, resp)
 
 	})
+
+	t.Run("without service ID", func(t *testing.T) {
+		_, err := testClient.InvokeService(ctx, "", "fn", "get")
+		assert.NotNil(t, err)
+	})
+	t.Run("without method", func(t *testing.T) {
+		_, err := testClient.InvokeService(ctx, "test", "", "get")
+		assert.NotNil(t, err)
+	})
+	t.Run("without verb", func(t *testing.T) {
+		_, err := testClient.InvokeService(ctx, "test", "fn", "")
+		assert.NotNil(t, err)
+	})
 }
 
 func TestVerbParsing(t *testing.T) {
