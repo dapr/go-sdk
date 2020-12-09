@@ -33,53 +33,53 @@ var (
 type Client interface {
 	// InvokeBinding invokes specific operation on the configured Dapr binding.
 	// This method covers input, output, and bi-directional bindings.
-	InvokeBinding(ctx context.Context, in *BindingInvocation) (out *BindingEvent, err error)
+	InvokeBinding(ctx context.Context, in *InvokeBindingRequest) (out *BindingEvent, err error)
 
 	// InvokeOutputBinding invokes configured Dapr binding with data.InvokeOutputBinding
 	// This method differs from InvokeBinding in that it doesn't expect any content being returned from the invoked method.
-	InvokeOutputBinding(ctx context.Context, in *BindingInvocation) error
+	InvokeOutputBinding(ctx context.Context, in *InvokeBindingRequest) error
 
-	// InvokeService invokes service without raw data
-	InvokeService(ctx context.Context, serviceID, method, verb string) (out []byte, err error)
+	// InvokeMethod invokes service without raw data
+	InvokeMethod(ctx context.Context, appID, methodName, verb string) (out []byte, err error)
 
-	// InvokeServiceWithContent invokes service with content
-	InvokeServiceWithContent(ctx context.Context, serviceID, method, verb string, content *DataContent) (out []byte, err error)
+	// InvokeMethodWithContent invokes service with content
+	InvokeMethodWithContent(ctx context.Context, appID, methodName, verb string, content *DataContent) (out []byte, err error)
 
-	// InvokeServiceWithCustomContent invokes service with custom content (struct + content type).
-	InvokeServiceWithCustomContent(ctx context.Context, serviceID, method, verb string, contentType string, content interface{}) (out []byte, err error)
+	// InvokeMethodWithCustomContent invokes app with custom content (struct + content type).
+	InvokeMethodWithCustomContent(ctx context.Context, appID, methodName, verb string, contentType string, content interface{}) (out []byte, err error)
 
 	// PublishEvent pubishes data onto topic in specific pubsub component.
-	PublishEvent(ctx context.Context, component, topic string, in []byte) error
+	PublishEvent(ctx context.Context, pubsubName, topicName string, data []byte) error
 
 	// PublishEventfromCustomContent serializes an struct and pubishes its contents as data (JSON) onto topic in specific pubsub component.
-	PublishEventfromCustomContent(ctx context.Context, component, topic string, in interface{}) error
+	PublishEventfromCustomContent(ctx context.Context, pubsubName, topicName string, data interface{}) error
 
 	// GetSecret retreaves preconfigred secret from specified store using key.
-	GetSecret(ctx context.Context, store, key string, meta map[string]string) (out map[string]string, err error)
+	GetSecret(ctx context.Context, storeName, key string, meta map[string]string) (data map[string]string, err error)
 
 	// SaveState saves the raw data into store using default state options.
-	SaveState(ctx context.Context, store, key string, data []byte) error
+	SaveState(ctx context.Context, storeName, key string, data []byte) error
 
 	// SaveBulkState saves multiple state item to store with specified options.
-	SaveBulkState(ctx context.Context, store string, items ...*SetStateItem) error
+	SaveBulkState(ctx context.Context, storeName string, items ...*SetStateItem) error
 
 	// GetState retrieves state from specific store using default consistency option.
-	GetState(ctx context.Context, store, key string) (item *StateItem, err error)
+	GetState(ctx context.Context, storeName, key string) (item *StateItem, err error)
 
 	// GetStateWithConsistency retrieves state from specific store using provided state consistency.
-	GetStateWithConsistency(ctx context.Context, store, key string, meta map[string]string, sc StateConsistency) (item *StateItem, err error)
+	GetStateWithConsistency(ctx context.Context, storeName, key string, meta map[string]string, sc StateConsistency) (item *StateItem, err error)
 
 	// GetBulkState retrieves state for multiple keys from specific store.
-	GetBulkState(ctx context.Context, store string, keys []string, meta map[string]string, parallelism int32) ([]*BulkStateItem, error)
+	GetBulkState(ctx context.Context, storeName string, keys []string, meta map[string]string, parallelism int32) ([]*BulkStateItem, error)
 
 	// DeleteState deletes content from store using default state options.
-	DeleteState(ctx context.Context, store, key string) error
+	DeleteState(ctx context.Context, storeName, key string) error
 
 	// DeleteStateWithETag deletes content from store using provided state options and etag.
-	DeleteStateWithETag(ctx context.Context, store, key, etag string, meta map[string]string, opts *StateOptions) error
+	DeleteStateWithETag(ctx context.Context, storeName, key, etag string, meta map[string]string, opts *StateOptions) error
 
 	// ExecuteStateTransaction provides way to execute multiple operations on a specified store.
-	ExecuteStateTransaction(ctx context.Context, store string, meta map[string]string, ops []*StateOperation) error
+	ExecuteStateTransaction(ctx context.Context, storeName string, meta map[string]string, ops []*StateOperation) error
 
 	// WithTraceID adds existing trace ID to the outgoing context.
 	WithTraceID(ctx context.Context, id string) context.Context

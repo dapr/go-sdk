@@ -9,8 +9,7 @@ tidy: ## Updates the go modules
 	go mod tidy
 
 test: mod ## Tests the entire project 
-	go test -v \
-			-count=1 \
+	go test -count=1 \
 			-race \
 			-coverprofile=coverage.txt \
 			-covermode=atomic \

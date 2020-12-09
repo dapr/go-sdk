@@ -11,7 +11,7 @@ import (
 
 func TestInvokeBinding(t *testing.T) {
 	ctx := context.Background()
-	in := &BindingInvocation{
+	in := &InvokeBindingRequest{
 		Name:      "test",
 		Operation: "fn",
 	}
