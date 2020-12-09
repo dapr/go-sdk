@@ -22,7 +22,6 @@ type _testStructwithSlices struct {
 	Key2 []int
 }
 
-// go test -timeout 30s ./client -count 1 -run ^TestInvokeMethodWithContent$
 func TestInvokeMethodWithContent(t *testing.T) {
 	ctx := context.Background()
 	data := "ping"
