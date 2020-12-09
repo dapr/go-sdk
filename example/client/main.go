@@ -71,7 +71,7 @@ func main() {
 		ContentType: "text/plain",
 		Data:        []byte("hellow"),
 	}
-	resp, err := client.InvokeServiceWithContent(ctx, "serving", "echo", content)
+	resp, err := client.InvokeServiceWithContent(ctx, "serving", "echo", "post", content)
 	if err != nil {
 		panic(err)
 	}

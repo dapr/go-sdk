@@ -3,6 +3,7 @@ package client
 import (
 	"context"
 	"encoding/json"
+	"strings"
 
 	v1 "github.com/dapr/go-sdk/dapr/proto/common/v1"
 	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
@@ -38,60 +39,65 @@ func (c *GRPCClient) invokeServiceWithRequest(ctx context.Context, req *pb.Invok
 	return
 }
 
-// InvokeService invokes service without raw data ([]byte).
-func (c *GRPCClient) InvokeService(ctx context.Context, serviceID, method string) (out []byte, err error) {
+func verbToHTTPExtension(verb string) *v1.HTTPExtension {
+	if v, ok := v1.HTTPExtension_Verb_value[strings.ToUpper(verb)]; ok {
+		return &v1.HTTPExtension{Verb: v1.HTTPExtension_Verb(v)}
+	}
+	return &v1.HTTPExtension{Verb: v1.HTTPExtension_NONE}
+}
+
+func hasRequiredInvokeArgs(serviceID, method, verb string) error {
 	if serviceID == "" {
-		return nil, errors.New("nil serviceID")
+		return errors.New("serviceID")
 	}
 	if method == "" {
-		return nil, errors.New("nil method")
+		return errors.New("method")
+	}
+	if verb == "" {
+		return errors.New("verb")
+	}
+	return nil
+}
+
+// InvokeService invokes service without raw data ([]byte).
+func (c *GRPCClient) InvokeService(ctx context.Context, serviceID, method, verb string) (out []byte, err error) {
+	if err := hasRequiredInvokeArgs(serviceID, method, verb); err != nil {
+		return nil, errors.Wrap(err, "missing required parameter")
 	}
 	req := &pb.InvokeServiceRequest{
 		Id: serviceID,
 		Message: &v1.InvokeRequest{
-			Method: method,
-			HttpExtension: &v1.HTTPExtension{
-				Verb: v1.HTTPExtension_POST,
-			},
+			Method:        method,
+			HttpExtension: verbToHTTPExtension(verb),
 		},
 	}
 	return c.invokeServiceWithRequest(ctx, req)
 }
 
 // InvokeServiceWithContent invokes service without content (data + content type).
-func (c *GRPCClient) InvokeServiceWithContent(ctx context.Context, serviceID, method string, content *DataContent) (out []byte, err error) {
-	if serviceID == "" {
-		return nil, errors.New("serviceID is required")
-	}
-	if method == "" {
-		return nil, errors.New("method name is required")
+func (c *GRPCClient) InvokeServiceWithContent(ctx context.Context, serviceID, method, verb string, content *DataContent) (out []byte, err error) {
+	if err := hasRequiredInvokeArgs(serviceID, method, verb); err != nil {
+		return nil, errors.Wrap(err, "missing required parameter")
 	}
 	if content == nil {
 		return nil, errors.New("content required")
 	}
-
 	req := &pb.InvokeServiceRequest{
 		Id: serviceID,
 		Message: &v1.InvokeRequest{
-			Method:      method,
-			Data:        &anypb.Any{Value: content.Data},
-			ContentType: content.ContentType,
-			HttpExtension: &v1.HTTPExtension{
-				Verb: v1.HTTPExtension_POST,
-			},
+			Method:        method,
+			Data:          &anypb.Any{Value: content.Data},
+			ContentType:   content.ContentType,
+			HttpExtension: verbToHTTPExtension(verb),
 		},
 	}
-
 	return c.invokeServiceWithRequest(ctx, req)
 }
 
 // InvokeServiceWithCustomContent invokes service with custom content (struct + content type).
-func (c *GRPCClient) InvokeServiceWithCustomContent(ctx context.Context, serviceID, method string, contentType string, content interface{}) (out []byte, err error) {
-	if serviceID == "" {
-		return nil, errors.New("serviceID is required")
-	}
-	if method == "" {
-		return nil, errors.New("method name is required")
+func (c *GRPCClient) InvokeServiceWithCustomContent(ctx context.Context, serviceID, method, verb string, contentType string, content interface{}) (out []byte, err error) {
+	if err := hasRequiredInvokeArgs(serviceID, method, verb); err != nil {
+		return nil, errors.Wrap(err, "missing required parameter")
 	}
 	if contentType == "" {
 		return nil, errors.New("content type required")
@@ -101,7 +107,6 @@ func (c *GRPCClient) InvokeServiceWithCustomContent(ctx context.Context, service
 	}
 
 	contentData, err := json.Marshal(content)
-
 	if err != nil {
 		return nil, errors.WithMessage(err, "error serializing input struct")
 	}
@@ -109,12 +114,10 @@ func (c *GRPCClient) InvokeServiceWithCustomContent(ctx context.Context, service
 	req := &pb.InvokeServiceRequest{
 		Id: serviceID,
 		Message: &v1.InvokeRequest{
-			Method:      method,
-			Data:        &anypb.Any{Value: contentData},
-			ContentType: contentType,
-			HttpExtension: &v1.HTTPExtension{
-				Verb: v1.HTTPExtension_POST,
-			},
+			Method:        method,
+			Data:          &anypb.Any{Value: contentData},
+			ContentType:   contentType,
+			HttpExtension: verbToHTTPExtension(verb),
 		},
 	}
 
