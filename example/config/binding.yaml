@@ -9,4 +9,3 @@ spec:
     value: https://http2.pro/api/v1
   - name: method
     value: GET
-
