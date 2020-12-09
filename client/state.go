@@ -161,9 +161,9 @@ func toProtoDuration(d time.Duration) *duration.Duration {
 }
 
 // ExecuteStateTransaction provides way to execute multiple operations on a specified store.
-func (c *GRPCClient) ExecuteStateTransaction(ctx context.Context, store string, meta map[string]string, ops []*StateOperation) error {
-	if store == "" {
-		return errors.New("nil store")
+func (c *GRPCClient) ExecuteStateTransaction(ctx context.Context, storeName string, meta map[string]string, ops []*StateOperation) error {
+	if storeName == "" {
+		return errors.New("nil storeName")
 	}
 	if len(ops) == 0 {
 		return nil
@@ -180,7 +180,7 @@ func (c *GRPCClient) ExecuteStateTransaction(ctx context.Context, store string, 
 
 	req := &pb.ExecuteStateTransactionRequest{
 		Metadata:   meta,
-		StoreName:  store,
+		StoreName:  storeName,
 		Operations: items,
 	}
 	_, err := c.protoClient.ExecuteStateTransaction(c.withAuthToken(ctx), req)
@@ -191,14 +191,14 @@ func (c *GRPCClient) ExecuteStateTransaction(ctx context.Context, store string, 
 }
 
 // SaveState saves the raw data into store using default state options.
-func (c *GRPCClient) SaveState(ctx context.Context, store, key string, data []byte) error {
+func (c *GRPCClient) SaveState(ctx context.Context, storeName, key string, data []byte) error {
 	item := &SetStateItem{Key: key, Value: data}
-	return c.SaveBulkState(ctx, store, item)
+	return c.SaveBulkState(ctx, storeName, item)
 }
 
 // SaveBulkState saves the multiple state item to store.
-func (c *GRPCClient) SaveBulkState(ctx context.Context, store string, items ...*SetStateItem) error {
-	if store == "" {
+func (c *GRPCClient) SaveBulkState(ctx context.Context, storeName string, items ...*SetStateItem) error {
+	if storeName == "" {
 		return errors.New("nil store")
 	}
 	if items == nil {
@@ -206,7 +206,7 @@ func (c *GRPCClient) SaveBulkState(ctx context.Context, store string, items ...*
 	}
 
 	req := &pb.SaveStateRequest{
-		StoreName: store,
+		StoreName: storeName,
 		States:    make([]*v1.StateItem, 0),
 	}
 
@@ -224,8 +224,8 @@ func (c *GRPCClient) SaveBulkState(ctx context.Context, store string, items ...*
 }
 
 // GetBulkState retreaves state for multiple keys from specific store.
-func (c *GRPCClient) GetBulkState(ctx context.Context, store string, keys []string, meta map[string]string, parallelism int32) ([]*BulkStateItem, error) {
-	if store == "" {
+func (c *GRPCClient) GetBulkState(ctx context.Context, storeName string, keys []string, meta map[string]string, parallelism int32) ([]*BulkStateItem, error) {
+	if storeName == "" {
 		return nil, errors.New("nil store")
 	}
 	if len(keys) == 0 {
@@ -234,7 +234,7 @@ func (c *GRPCClient) GetBulkState(ctx context.Context, store string, keys []stri
 	items := make([]*BulkStateItem, 0)
 
 	req := &pb.GetBulkStateRequest{
-		StoreName:   store,
+		StoreName:   storeName,
 		Keys:        keys,
 		Metadata:    meta,
 		Parallelism: parallelism,
@@ -264,21 +264,18 @@ func (c *GRPCClient) GetBulkState(ctx context.Context, store string, keys []stri
 }
 
 // GetState retreaves state from specific store using default consistency option.
-func (c *GRPCClient) GetState(ctx context.Context, store, key string) (item *StateItem, err error) {
-	return c.GetStateWithConsistency(ctx, store, key, nil, StateConsistencyStrong)
+func (c *GRPCClient) GetState(ctx context.Context, storeName, key string) (item *StateItem, err error) {
+	return c.GetStateWithConsistency(ctx, storeName, key, nil, StateConsistencyStrong)
 }
 
 // GetStateWithConsistency retreaves state from specific store using provided state consistency.
-func (c *GRPCClient) GetStateWithConsistency(ctx context.Context, store, key string, meta map[string]string, sc StateConsistency) (item *StateItem, err error) {
-	if store == "" {
-		return nil, errors.New("nil store")
-	}
-	if key == "" {
-		return nil, errors.New("nil key")
+func (c *GRPCClient) GetStateWithConsistency(ctx context.Context, storeName, key string, meta map[string]string, sc StateConsistency) (item *StateItem, err error) {
+	if err := hasRequiredStateArgs(storeName, key); err != nil {
+		return nil, errors.Wrap(err, "missing required arguments")
 	}
 
 	req := &pb.GetStateRequest{
-		StoreName:   store,
+		StoreName:   storeName,
 		Key:         key,
 		Consistency: (v1.StateOptions_StateConsistency(sc)),
 		Metadata:    meta,
@@ -297,21 +294,18 @@ func (c *GRPCClient) GetStateWithConsistency(ctx context.Context, store, key str
 }
 
 // DeleteState deletes content from store using default state options.
-func (c *GRPCClient) DeleteState(ctx context.Context, store, key string) error {
-	return c.DeleteStateWithETag(ctx, store, key, "", nil, nil)
+func (c *GRPCClient) DeleteState(ctx context.Context, storeName, key string) error {
+	return c.DeleteStateWithETag(ctx, storeName, key, "", nil, nil)
 }
 
 // DeleteStateWithETag deletes content from store using provided state options and etag.
-func (c *GRPCClient) DeleteStateWithETag(ctx context.Context, store, key, etag string, meta map[string]string, opts *StateOptions) error {
-	if store == "" {
-		return errors.New("nil store")
-	}
-	if key == "" {
-		return errors.New("nil key")
+func (c *GRPCClient) DeleteStateWithETag(ctx context.Context, storeName, key, etag string, meta map[string]string, opts *StateOptions) error {
+	if err := hasRequiredStateArgs(storeName, key); err != nil {
+		return errors.Wrap(err, "missing required arguments")
 	}
 
 	req := &pb.DeleteStateRequest{
-		StoreName: store,
+		StoreName: storeName,
 		Key:       key,
 		Etag:      etag,
 		Options:   toProtoStateOptions(opts),
@@ -323,5 +317,15 @@ func (c *GRPCClient) DeleteStateWithETag(ctx context.Context, store, key, etag s
 		return errors.Wrap(err, "error deleting state")
 	}
 
+	return nil
+}
+
+func hasRequiredStateArgs(storeName, key string) error {
+	if storeName == "" {
+		return errors.New("store")
+	}
+	if key == "" {
+		return errors.New("key")
+	}
 	return nil
 }

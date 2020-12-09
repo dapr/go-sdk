@@ -7,8 +7,8 @@ import (
 	"github.com/pkg/errors"
 )
 
-// BindingInvocation represents binding invocation request
-type BindingInvocation struct {
+// InvokeBindingRequest represents binding invocation request
+type InvokeBindingRequest struct {
 	// Name is name of binding to invoke.
 	Name string
 	// Operation is the name of the operation type for the binding to invoke
@@ -29,7 +29,7 @@ type BindingEvent struct {
 
 // InvokeBinding invokes specific operation on the configured Dapr binding.
 // This method covers input, output, and bi-directional bindings.
-func (c *GRPCClient) InvokeBinding(ctx context.Context, in *BindingInvocation) (out *BindingEvent, err error) {
+func (c *GRPCClient) InvokeBinding(ctx context.Context, in *InvokeBindingRequest) (out *BindingEvent, err error) {
 	if in == nil {
 		return nil, errors.New("binding invocation required")
 	}
@@ -64,7 +64,7 @@ func (c *GRPCClient) InvokeBinding(ctx context.Context, in *BindingInvocation) (
 
 // InvokeOutputBinding invokes configured Dapr binding with data (allows nil).InvokeOutputBinding
 // This method differs from InvokeBinding in that it doesn't expect any content being returned from the invoked method.
-func (c *GRPCClient) InvokeOutputBinding(ctx context.Context, in *BindingInvocation) error {
+func (c *GRPCClient) InvokeOutputBinding(ctx context.Context, in *InvokeBindingRequest) error {
 	if _, err := c.InvokeBinding(ctx, in); err != nil {
 		return errors.Wrap(err, "error invoking output binding")
 	}

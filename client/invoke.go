@@ -46,12 +46,12 @@ func verbToHTTPExtension(verb string) *v1.HTTPExtension {
 	return &v1.HTTPExtension{Verb: v1.HTTPExtension_NONE}
 }
 
-func hasRequiredInvokeArgs(serviceID, method, verb string) error {
-	if serviceID == "" {
-		return errors.New("serviceID")
+func hasRequiredInvokeArgs(appID, methodName, verb string) error {
+	if appID == "" {
+		return errors.New("appID")
 	}
-	if method == "" {
-		return errors.New("method")
+	if methodName == "" {
+		return errors.New("methodName")
 	}
 	if verb == "" {
 		return errors.New("verb")
@@ -59,33 +59,33 @@ func hasRequiredInvokeArgs(serviceID, method, verb string) error {
 	return nil
 }
 
-// InvokeService invokes service without raw data ([]byte).
-func (c *GRPCClient) InvokeService(ctx context.Context, serviceID, method, verb string) (out []byte, err error) {
-	if err := hasRequiredInvokeArgs(serviceID, method, verb); err != nil {
+// InvokeMethod invokes service without raw data ([]byte).
+func (c *GRPCClient) InvokeMethod(ctx context.Context, appID, methodName, verb string) (out []byte, err error) {
+	if err := hasRequiredInvokeArgs(appID, methodName, verb); err != nil {
 		return nil, errors.Wrap(err, "missing required parameter")
 	}
 	req := &pb.InvokeServiceRequest{
-		Id: serviceID,
+		Id: appID,
 		Message: &v1.InvokeRequest{
-			Method:        method,
+			Method:        methodName,
 			HttpExtension: verbToHTTPExtension(verb),
 		},
 	}
 	return c.invokeServiceWithRequest(ctx, req)
 }
 
-// InvokeServiceWithContent invokes service without content (data + content type).
-func (c *GRPCClient) InvokeServiceWithContent(ctx context.Context, serviceID, method, verb string, content *DataContent) (out []byte, err error) {
-	if err := hasRequiredInvokeArgs(serviceID, method, verb); err != nil {
+// InvokeMethodWithContent invokes service without content (data + content type).
+func (c *GRPCClient) InvokeMethodWithContent(ctx context.Context, appID, methodName, verb string, content *DataContent) (out []byte, err error) {
+	if err := hasRequiredInvokeArgs(appID, methodName, verb); err != nil {
 		return nil, errors.Wrap(err, "missing required parameter")
 	}
 	if content == nil {
 		return nil, errors.New("content required")
 	}
 	req := &pb.InvokeServiceRequest{
-		Id: serviceID,
+		Id: appID,
 		Message: &v1.InvokeRequest{
-			Method:        method,
+			Method:        methodName,
 			Data:          &anypb.Any{Value: content.Data},
 			ContentType:   content.ContentType,
 			HttpExtension: verbToHTTPExtension(verb),
@@ -94,9 +94,9 @@ func (c *GRPCClient) InvokeServiceWithContent(ctx context.Context, serviceID, me
 	return c.invokeServiceWithRequest(ctx, req)
 }
 
-// InvokeServiceWithCustomContent invokes service with custom content (struct + content type).
-func (c *GRPCClient) InvokeServiceWithCustomContent(ctx context.Context, serviceID, method, verb string, contentType string, content interface{}) (out []byte, err error) {
-	if err := hasRequiredInvokeArgs(serviceID, method, verb); err != nil {
+// InvokeMethodWithCustomContent invokes service with custom content (struct + content type).
+func (c *GRPCClient) InvokeMethodWithCustomContent(ctx context.Context, appID, methodName, verb string, contentType string, content interface{}) (out []byte, err error) {
+	if err := hasRequiredInvokeArgs(appID, methodName, verb); err != nil {
 		return nil, errors.Wrap(err, "missing required parameter")
 	}
 	if contentType == "" {
@@ -112,9 +112,9 @@ func (c *GRPCClient) InvokeServiceWithCustomContent(ctx context.Context, service
 	}
 
 	req := &pb.InvokeServiceRequest{
-		Id: serviceID,
+		Id: appID,
 		Message: &v1.InvokeRequest{
-			Method:        method,
+			Method:        methodName,
 			Data:          &anypb.Any{Value: contentData},
 			ContentType:   contentType,
 			HttpExtension: verbToHTTPExtension(verb),

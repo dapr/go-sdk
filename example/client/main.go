@@ -71,13 +71,13 @@ func main() {
 		ContentType: "text/plain",
 		Data:        []byte("hellow"),
 	}
-	resp, err := client.InvokeServiceWithContent(ctx, "serving", "echo", "post", content)
+	resp, err := client.InvokeMethodWithContent(ctx, "serving", "echo", "post", content)
 	if err != nil {
 		panic(err)
 	}
 	fmt.Printf("service method invoked, response: %s", string(resp))
 
-	in := &dapr.BindingInvocation{
+	in := &dapr.InvokeBindingRequest{
 		Name:      "example-http-binding",
 		Operation: "create",
 	}
