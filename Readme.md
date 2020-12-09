@@ -160,7 +160,7 @@ if err := client.PublishEvent(ctx, "component-name", "topic-name", data); err !=
 To invoke a specific method on another service running with Dapr sidecar, the Dapr client provides two options. To invoke a service without any data:
 
 ```go 
-resp, err = client.InvokeMethod(ctx, "service-name", "method-name") 
+resp, err = client.InvokeMethod(ctx, "app-id", "method-name") 
 ``` 
 
 And to invoke a service with data: 
@@ -171,7 +171,7 @@ content := &dapr.DataContent{
     Data:        []byte(`{ "id": "a123", "value": "demo", "valid": true }`),
 }
 
-resp, err := client.InvokeMethodWithContent(ctx, "service-name", "method-name", content)
+resp, err := client.InvokeMethodWithContent(ctx, "app-id", "method-name", content)
 ```
 
 ##### Bindings
@@ -181,7 +181,7 @@ Similarly to Service, Dapr client provides two methods to invoke an operation on
 For simple, output only biding:
 
 ```go
-in := &dapr.BindingInvocation{ Name: "binding-name", Operation: "operation-name" }
+in := &dapr.InvokeBindingRequest{ Name: "binding-name", Operation: "operation-name" }
 err = client.InvokeOutputBinding(ctx, in)
 ```
 
