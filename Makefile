@@ -20,7 +20,7 @@ test: tidy ## Tests the entire project
 .PHONY: spell
 spell: ## Checks spelling across the entire project 
 	@command -v misspell > /dev/null 2>&1 || (cd tools && go get github.com/client9/misspell/cmd/misspell)
-	@misspell -locale="US" -error -source="text" **/*
+	@misspell -locale US -error go=golang client/**/* example/**/* service/**/* .
 
 .PHONY: cover
 cover: tidy ## Displays test coverage in the client and service packages
@@ -44,7 +44,7 @@ clean: ## Cleans go and generated files in ./dapr/proto/
 	rm -fr ./dapr/proto/runtime/v1/*
 
 .PHONY: protos
-protos: ## Downloads proto files from dapr/dapr master and generats gRPC proto clients
+protos: ## Downloads proto files from dapr/dapr master and generates gRPC proto clients
 	go install github.com/gogo/protobuf/gogoreplace
 
 	rm -f ./dapr/proto/common/v1/*
