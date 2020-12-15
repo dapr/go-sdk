@@ -54,10 +54,10 @@ type Client interface {
 	// PublishEventfromCustomContent serializes an struct and pubishes its contents as data (JSON) onto topic in specific pubsub component.
 	PublishEventfromCustomContent(ctx context.Context, pubsubName, topicName string, data interface{}) error
 
-	// GetSecret retreaves preconfigred secret from specified store using key.
+	// GetSecret retrieves preconfigred secret from specified store using key.
 	GetSecret(ctx context.Context, storeName, key string, meta map[string]string) (data map[string]string, err error)
 
-	// GetBulkSecret retreaves all preconfigred secrets for this application.
+	// GetBulkSecret retrieves all preconfigred secrets for this application.
 	GetBulkSecret(ctx context.Context, storeName string, meta map[string]string) (data map[string]string, err error)
 
 	// SaveState saves the raw data into store using default state options.
