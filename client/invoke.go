@@ -39,9 +39,16 @@ func (c *GRPCClient) invokeServiceWithRequest(ctx context.Context, req *pb.Invok
 	return
 }
 
-func verbToHTTPExtension(verb string) *v1.HTTPExtension {
+func queryAndVerbToHTTPExtension(query string, verb string) *v1.HTTPExtension {
+	var queryMap = map[string]string{}
+	for _, item := range strings.Split(query, "&") {
+		kv := strings.Split(item, "=")
+		if len(kv) == 2 {
+			queryMap[kv[0]] = kv[1]
+		}
+	}
 	if v, ok := v1.HTTPExtension_Verb_value[strings.ToUpper(verb)]; ok {
-		return &v1.HTTPExtension{Verb: v1.HTTPExtension_Verb(v)}
+		return &v1.HTTPExtension{Verb: v1.HTTPExtension_Verb(v), Querystring: queryMap}
 	}
 	return &v1.HTTPExtension{Verb: v1.HTTPExtension_NONE}
 }
@@ -64,11 +71,12 @@ func (c *GRPCClient) InvokeMethod(ctx context.Context, appID, methodName, verb s
 	if err := hasRequiredInvokeArgs(appID, methodName, verb); err != nil {
 		return nil, errors.Wrap(err, "missing required parameter")
 	}
+	method, query := extractMethodAndQuery(methodName)
 	req := &pb.InvokeServiceRequest{
 		Id: appID,
 		Message: &v1.InvokeRequest{
-			Method:        methodName,
-			HttpExtension: verbToHTTPExtension(verb),
+			Method:        method,
+			HttpExtension: queryAndVerbToHTTPExtension(query, verb),
 		},
 	}
 	return c.invokeServiceWithRequest(ctx, req)
@@ -82,13 +90,14 @@ func (c *GRPCClient) InvokeMethodWithContent(ctx context.Context, appID, methodN
 	if content == nil {
 		return nil, errors.New("content required")
 	}
+	method, query := extractMethodAndQuery(methodName)
 	req := &pb.InvokeServiceRequest{
 		Id: appID,
 		Message: &v1.InvokeRequest{
-			Method:        methodName,
+			Method:        method,
 			Data:          &anypb.Any{Value: content.Data},
 			ContentType:   content.ContentType,
-			HttpExtension: verbToHTTPExtension(verb),
+			HttpExtension: queryAndVerbToHTTPExtension(query, verb),
 		},
 	}
 	return c.invokeServiceWithRequest(ctx, req)
@@ -111,15 +120,26 @@ func (c *GRPCClient) InvokeMethodWithCustomContent(ctx context.Context, appID, m
 		return nil, errors.WithMessage(err, "error serializing input struct")
 	}
 
+	method, query := extractMethodAndQuery(methodName)
+
 	req := &pb.InvokeServiceRequest{
 		Id: appID,
 		Message: &v1.InvokeRequest{
-			Method:        methodName,
+			Method:        method,
 			Data:          &anypb.Any{Value: contentData},
 			ContentType:   contentType,
-			HttpExtension: verbToHTTPExtension(verb),
+			HttpExtension: queryAndVerbToHTTPExtension(query, verb),
 		},
 	}
 
 	return c.invokeServiceWithRequest(ctx, req)
+}
+
+func extractMethodAndQuery(name string) (method, query string) {
+	splitStr := strings.SplitN(name, "?", 2)
+	method = splitStr[0]
+	if len(splitStr) == 2 {
+		query = splitStr[1]
+	}
+	return
 }
