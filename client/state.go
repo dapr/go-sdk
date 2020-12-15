@@ -223,7 +223,7 @@ func (c *GRPCClient) SaveBulkState(ctx context.Context, storeName string, items 
 
 }
 
-// GetBulkState retreaves state for multiple keys from specific store.
+// GetBulkState retrieves state for multiple keys from specific store.
 func (c *GRPCClient) GetBulkState(ctx context.Context, storeName string, keys []string, meta map[string]string, parallelism int32) ([]*BulkStateItem, error) {
 	if storeName == "" {
 		return nil, errors.New("nil store")
@@ -263,12 +263,12 @@ func (c *GRPCClient) GetBulkState(ctx context.Context, storeName string, keys []
 	return items, nil
 }
 
-// GetState retreaves state from specific store using default consistency option.
+// GetState retrieves state from specific store using default consistency option.
 func (c *GRPCClient) GetState(ctx context.Context, storeName, key string) (item *StateItem, err error) {
 	return c.GetStateWithConsistency(ctx, storeName, key, nil, StateConsistencyStrong)
 }
 
-// GetStateWithConsistency retreaves state from specific store using provided state consistency.
+// GetStateWithConsistency retrieves state from specific store using provided state consistency.
 func (c *GRPCClient) GetStateWithConsistency(ctx context.Context, storeName, key string, meta map[string]string, sc StateConsistency) (item *StateItem, err error) {
 	if err := hasRequiredStateArgs(storeName, key); err != nil {
 		return nil, errors.Wrap(err, "missing required arguments")
