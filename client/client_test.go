@@ -190,6 +190,14 @@ func (s *testDaprServer) GetSecret(ctx context.Context, req *pb.GetSecretRequest
 	}, nil
 }
 
+func (s *testDaprServer) GetBulkSecret(ctx context.Context, req *pb.GetBulkSecretRequest) (*pb.GetBulkSecretResponse, error) {
+	d := make(map[string]string)
+	d["test"] = "value"
+	return &pb.GetBulkSecretResponse{
+		Data: d,
+	}, nil
+}
+
 func (s *testDaprServer) InvokeActor(context.Context, *pb.InvokeActorRequest) (*pb.InvokeActorResponse, error) {
 	return nil, errors.New("actors not implemented in go SDK")
 }

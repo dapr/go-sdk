@@ -37,6 +37,8 @@ type DaprClient interface {
 	InvokeBinding(ctx context.Context, in *InvokeBindingRequest, opts ...grpc.CallOption) (*InvokeBindingResponse, error)
 	// Gets secrets from secret stores.
 	GetSecret(ctx context.Context, in *GetSecretRequest, opts ...grpc.CallOption) (*GetSecretResponse, error)
+	// Gets a bulk of secrets
+	GetBulkSecret(ctx context.Context, in *GetBulkSecretRequest, opts ...grpc.CallOption) (*GetBulkSecretResponse, error)
 	// Register an actor timer.
 	RegisterActorTimer(ctx context.Context, in *RegisterActorTimerRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// Unregister an actor timer.
@@ -142,6 +144,15 @@ func (c *daprClient) GetSecret(ctx context.Context, in *GetSecretRequest, opts .
 	return out, nil
 }
 
+func (c *daprClient) GetBulkSecret(ctx context.Context, in *GetBulkSecretRequest, opts ...grpc.CallOption) (*GetBulkSecretResponse, error) {
+	out := new(GetBulkSecretResponse)
+	err := c.cc.Invoke(ctx, "/dapr.proto.runtime.v1.Dapr/GetBulkSecret", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *daprClient) RegisterActorTimer(ctx context.Context, in *RegisterActorTimerRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, "/dapr.proto.runtime.v1.Dapr/RegisterActorTimer", in, out, opts...)
@@ -227,6 +238,8 @@ type DaprServer interface {
 	InvokeBinding(context.Context, *InvokeBindingRequest) (*InvokeBindingResponse, error)
 	// Gets secrets from secret stores.
 	GetSecret(context.Context, *GetSecretRequest) (*GetSecretResponse, error)
+	// Gets a bulk of secrets
+	GetBulkSecret(context.Context, *GetBulkSecretRequest) (*GetBulkSecretResponse, error)
 	// Register an actor timer.
 	RegisterActorTimer(context.Context, *RegisterActorTimerRequest) (*emptypb.Empty, error)
 	// Unregister an actor timer.
@@ -274,6 +287,9 @@ func (UnimplementedDaprServer) InvokeBinding(context.Context, *InvokeBindingRequ
 }
 func (UnimplementedDaprServer) GetSecret(context.Context, *GetSecretRequest) (*GetSecretResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetSecret not implemented")
+}
+func (UnimplementedDaprServer) GetBulkSecret(context.Context, *GetBulkSecretRequest) (*GetBulkSecretResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetBulkSecret not implemented")
 }
 func (UnimplementedDaprServer) RegisterActorTimer(context.Context, *RegisterActorTimerRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RegisterActorTimer not implemented")
@@ -471,6 +487,24 @@ func _Dapr_GetSecret_Handler(srv interface{}, ctx context.Context, dec func(inte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Dapr_GetBulkSecret_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetBulkSecretRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DaprServer).GetBulkSecret(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dapr.proto.runtime.v1.Dapr/GetBulkSecret",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DaprServer).GetBulkSecret(ctx, req.(*GetBulkSecretRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Dapr_RegisterActorTimer_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(RegisterActorTimerRequest)
 	if err := dec(in); err != nil {
@@ -636,6 +670,10 @@ var _Dapr_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetSecret",
 			Handler:    _Dapr_GetSecret_Handler,
+		},
+		{
+			MethodName: "GetBulkSecret",
+			Handler:    _Dapr_GetBulkSecret_Handler,
 		},
 		{
 			MethodName: "RegisterActorTimer",
