@@ -29,25 +29,25 @@ client: ## Runs the uncompiled example client code
 
 .PHONY: publish
 publish: ## Submits pub/sub events in different cotnent types 
-	curl -d '{ "from": "John", "to": "Lary", "message": "hi" }' \
+	curl -i -d '{ "from": "John", "to": "Lary", "message": "hi" }' \
 		-H "Content-type: application/json" \
 		"http://localhost:3500/v1.0/publish/messages/topic1"
-	curl -d '<message><from>John</from><to>Lary</to></message>' \
+	curl -i -d '<message><from>John</from><to>Lary</to></message>' \
 		-H "Content-type: application/xml" \
 		"http://localhost:3500/v1.0/publish/messages/topic1"
-	curl -d '0x18, 0x2d, 0x44, 0x54, 0xfb, 0x21, 0x09, 0x40' \
+	curl -i -d '0x18, 0x2d, 0x44, 0x54, 0xfb, 0x21, 0x09, 0x40' \
 		-H "Content-type: application/octet-stream" \
 		"http://localhost:3500/v1.0/publish/messages/topic1"
 
 .PHONY: invoke
 invoke: ## Invokes service method with different operations
-	curl -d '{ "from": "John", "to": "Lary", "message": "hi" }' \
+	curl -i -d '{ "from": "John", "to": "Lary", "message": "hi" }' \
 		-H "Content-type: application/json" \
 		"http://localhost:3500/v1.0/invoke/serving/method/echo"
-	curl -d "ping" \
+	curl -i -d "ping" \
 		-H "Content-type: text/plain;charset=UTF-8" \
 		"http://localhost:3500/v1.0/invoke/serving/method/echo"
-	curl -X DELETE \
+	curl -i -X DELETE \
 		"http://localhost:3500/v1.0/invoke/serving/method/echo?k1=v1&k2=v2"
 
 .PHONY: help
