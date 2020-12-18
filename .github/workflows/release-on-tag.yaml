@@ -20,14 +20,6 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
 
-    - name: Cache
-      uses: actions/cache@v2
-      with:
-        path: ~/go/pkg/mod
-        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-        restore-keys: |
-          ${{ runner.os }}-go-
-
     - name: Tidy
       run: |
         go mod tidy
