@@ -13,13 +13,11 @@ jobs:
     steps:
 
     - name: Setup
-      id: go
       uses: actions/setup-go@v2
       with:
         go-version: ^1.15
 
     - name: Checkout
-      id: setup
       uses: actions/checkout@v2
 
     - name: Cache
@@ -39,17 +37,15 @@ jobs:
       run: go test -count=1 -race ./...
 
     - name: Lint
-      uses: golangci/golangci-lint-action@v1
+      uses: golangci/golangci-lint-action@v2
       with:
-        version: v1.30
+        version: v1.33
 
     - name: Version
-      id: get_version
       run: |
         echo "RELEASE_VERSION=$(echo ${GITHUB_REF:10})" >> $GITHUB_ENV
 
     - name: Release
-      id: release-step
       uses: actions/create-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
