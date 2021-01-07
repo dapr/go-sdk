@@ -101,9 +101,10 @@ type StateOperation struct {
 
 // StateItem represents a single state item.
 type StateItem struct {
-	Key   string
-	Value []byte
-	Etag  string
+	Key      string
+	Value    []byte
+	Etag     string
+	Metadata map[string]string
 }
 
 // BulkStateItem represents a single state item.
@@ -290,6 +291,7 @@ func (c *GRPCClient) GetStateWithConsistency(ctx context.Context, storeName, key
 		Etag:  result.Etag,
 		Key:   key,
 		Value: result.Data,
+		Metadata: result.Metadata,
 	}, nil
 }
 
