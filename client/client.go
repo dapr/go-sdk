@@ -48,16 +48,16 @@ type Client interface {
 	// InvokeMethodWithCustomContent invokes app with custom content (struct + content type).
 	InvokeMethodWithCustomContent(ctx context.Context, appID, methodName, verb string, contentType string, content interface{}) (out []byte, err error)
 
-	// PublishEvent pubishes data onto topic in specific pubsub component.
+	// PublishEvent publishes data onto topic in specific pubsub component.
 	PublishEvent(ctx context.Context, pubsubName, topicName string, data []byte) error
 
-	// PublishEventfromCustomContent serializes an struct and pubishes its contents as data (JSON) onto topic in specific pubsub component.
+	// PublishEventfromCustomContent serializes an struct and publishes its contents as data (JSON) onto topic in specific pubsub component.
 	PublishEventfromCustomContent(ctx context.Context, pubsubName, topicName string, data interface{}) error
 
-	// GetSecret retrieves preconfigred secret from specified store using key.
+	// GetSecret retrieves preconfigured secret from specified store using key.
 	GetSecret(ctx context.Context, storeName, key string, meta map[string]string) (data map[string]string, err error)
 
-	// GetBulkSecret retrieves all preconfigred secrets for this application.
+	// GetBulkSecret retrieves all preconfigured secrets for this application.
 	GetBulkSecret(ctx context.Context, storeName string, meta map[string]string) (data map[string]string, err error)
 
 	// SaveState saves the raw data into store using default state options.
@@ -124,7 +124,7 @@ func NewClientWithPort(port string) (client Client, err error) {
 	return NewClientWithAddress(net.JoinHostPort("127.0.0.1", port))
 }
 
-// NewClientWithAddress instantiates Dapr using specific address (inclding port).
+// NewClientWithAddress instantiates Dapr using specific address (including port).
 func NewClientWithAddress(address string) (client Client, err error) {
 	if address == "" {
 		return nil, errors.New("nil address")

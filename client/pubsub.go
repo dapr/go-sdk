@@ -8,7 +8,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-// PublishEvent pubishes data onto specific pubsub topic.
+// PublishEvent publishes data onto specific pubsub topic.
 func (c *GRPCClient) PublishEvent(ctx context.Context, pubsubName, topicName string, data []byte) error {
 	if pubsubName == "" {
 		return errors.New("pubsubName name required")
@@ -31,7 +31,7 @@ func (c *GRPCClient) PublishEvent(ctx context.Context, pubsubName, topicName str
 	return nil
 }
 
-// PublishEventfromCustomContent serializes an struct and pubishes its contents as data (JSON) onto topic in specific pubsub component.
+// PublishEventfromCustomContent serializes an struct and publishes its contents as data (JSON) onto topic in specific pubsub component.
 func (c *GRPCClient) PublishEventfromCustomContent(ctx context.Context, pubsubName, topicName string, data interface{}) error {
 	if pubsubName == "" {
 		return errors.New("pubsubName name required")
