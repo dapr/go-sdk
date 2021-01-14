@@ -29,18 +29,16 @@ func (s *Server) OnInvoke(ctx context.Context, in *cpb.InvokeRequest) (*cpb.Invo
 	}
 	if fn, ok := s.invokeHandlers[in.Method]; ok {
 		e := &cc.InvocationEvent{}
-		if in != nil {
-			e.ContentType = in.ContentType
+		e.ContentType = in.ContentType
 
-			if in.Data != nil {
-				e.Data = in.Data.Value
-				e.DataTypeURL = in.Data.TypeUrl
-			}
+		if in.Data != nil {
+			e.Data = in.Data.Value
+			e.DataTypeURL = in.Data.TypeUrl
+		}
 
-			if in.HttpExtension != nil {
-				e.Verb = in.HttpExtension.Verb.String()
-				e.QueryString = in.HttpExtension.Querystring
-			}
+		if in.HttpExtension != nil {
+			e.Verb = in.HttpExtension.Verb.String()
+			e.QueryString = in.HttpExtension.Querystring
 		}
 
 		ct, er := fn(ctx, e)
