@@ -45,8 +45,10 @@ func main() {
 
 	// save state with options
 	item2 := &dapr.SetStateItem{
-		Etag: "2",
-		Key:  item.Key,
+		Etag: &dapr.ETag{
+			Value: "2",
+		},
+		Key: item.Key,
 		Metadata: map[string]string{
 			"created-on": time.Now().UTC().String(),
 		},

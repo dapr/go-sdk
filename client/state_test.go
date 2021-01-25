@@ -68,7 +68,9 @@ func TestSaveState(t *testing.T) {
 
 	t.Run("save data with version", func(t *testing.T) {
 		item := &SetStateItem{
-			Etag:  "1",
+			Etag: &ETag{
+				Value: "1",
+			},
 			Key:   key,
 			Value: []byte(data),
 		}
@@ -94,7 +96,7 @@ func TestDeleteState(t *testing.T) {
 		assert.Nil(t, err)
 	})
 	t.Run("delete not exist data with etag and meta", func(t *testing.T) {
-		err := testClient.DeleteStateWithETag(ctx, store, key, "100", map[string]string{"meta1": "value1"},
+		err := testClient.DeleteStateWithETag(ctx, store, key, &ETag{Value: "100"}, map[string]string{"meta1": "value1"},
 			&StateOptions{Concurrency: StateConcurrencyFirstWrite, Consistency: StateConsistencyEventual})
 		assert.Nil(t, err)
 	})
@@ -127,9 +129,11 @@ func TestDeleteState(t *testing.T) {
 
 	t.Run("save data again with etag, meta", func(t *testing.T) {
 		err := testClient.SaveBulkState(ctx, store, &SetStateItem{
-			Key:      key,
-			Value:    []byte(data),
-			Etag:     "100",
+			Key:   key,
+			Value: []byte(data),
+			Etag: &ETag{
+				Value: "1",
+			},
 			Metadata: map[string]string{"meta1": "value1"},
 			Options:  &StateOptions{Concurrency: StateConcurrencyFirstWrite, Consistency: StateConsistencyEventual},
 		})
@@ -145,7 +149,7 @@ func TestDeleteState(t *testing.T) {
 	})
 
 	t.Run("delete exist data with etag and meta", func(t *testing.T) {
-		err := testClient.DeleteStateWithETag(ctx, store, key, "100", map[string]string{"meta1": "value1"},
+		err := testClient.DeleteStateWithETag(ctx, store, key, &ETag{Value: "100"}, map[string]string{"meta1": "value1"},
 			&StateOptions{Concurrency: StateConcurrencyFirstWrite, Consistency: StateConsistencyEventual})
 		assert.Nil(t, err)
 	})
@@ -195,8 +199,10 @@ func TestStateTransactions(t *testing.T) {
 			op := &StateOperation{
 				Type: StateOperationTypeUpsert,
 				Item: &SetStateItem{
-					Key:   item.Key,
-					Etag:  item.Etag,
+					Key: item.Key,
+					Etag: &ETag{
+						Value: item.Etag,
+					},
 					Value: item.Value,
 				},
 			}

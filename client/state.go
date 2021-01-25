@@ -120,9 +120,14 @@ type BulkStateItem struct {
 type SetStateItem struct {
 	Key      string
 	Value    []byte
-	Etag     string
+	Etag     *ETag
 	Metadata map[string]string
 	Options  *StateOptions
+}
+
+// ETag represents an versioned record information
+type ETag struct {
+	Value string
 }
 
 // StateOptions represents the state store persistence policy.
@@ -132,13 +137,20 @@ type StateOptions struct {
 }
 
 func toProtoSaveStateItem(si *SetStateItem) (item *v1.StateItem) {
-	return &v1.StateItem{
-		Etag:     si.Etag,
+	s := &v1.StateItem{
 		Key:      si.Key,
 		Metadata: si.Metadata,
 		Value:    si.Value,
 		Options:  toProtoStateOptions(si.Options),
 	}
+
+	if si.Etag != nil {
+		s.Etag = &v1.Etag{
+			Value: si.Etag.Value,
+		}
+	}
+
+	return s
 }
 
 func toProtoStateOptions(so *StateOptions) (opts *v1.StateOptions) {
@@ -288,20 +300,20 @@ func (c *GRPCClient) GetStateWithConsistency(ctx context.Context, storeName, key
 	}
 
 	return &StateItem{
-		Etag:  result.Etag,
-		Key:   key,
-		Value: result.Data,
+		Etag:     result.Etag,
+		Key:      key,
+		Value:    result.Data,
 		Metadata: result.Metadata,
 	}, nil
 }
 
 // DeleteState deletes content from store using default state options.
 func (c *GRPCClient) DeleteState(ctx context.Context, storeName, key string) error {
-	return c.DeleteStateWithETag(ctx, storeName, key, "", nil, nil)
+	return c.DeleteStateWithETag(ctx, storeName, key, nil, nil, nil)
 }
 
 // DeleteStateWithETag deletes content from store using provided state options and etag.
-func (c *GRPCClient) DeleteStateWithETag(ctx context.Context, storeName, key, etag string, meta map[string]string, opts *StateOptions) error {
+func (c *GRPCClient) DeleteStateWithETag(ctx context.Context, storeName, key string, etag *ETag, meta map[string]string, opts *StateOptions) error {
 	if err := hasRequiredStateArgs(storeName, key); err != nil {
 		return errors.Wrap(err, "missing required arguments")
 	}
@@ -309,9 +321,14 @@ func (c *GRPCClient) DeleteStateWithETag(ctx context.Context, storeName, key, et
 	req := &pb.DeleteStateRequest{
 		StoreName: storeName,
 		Key:       key,
-		Etag:      etag,
 		Options:   toProtoStateOptions(opts),
 		Metadata:  meta,
+	}
+
+	if etag != nil {
+		req.Etag = &v1.Etag{
+			Value: etag.Value,
+		}
 	}
 
 	_, err := c.protoClient.DeleteState(c.withAuthToken(ctx), req)

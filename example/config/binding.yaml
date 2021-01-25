@@ -4,6 +4,7 @@ metadata:
   name: example-http-binding
 spec:
   type: bindings.http
+  version: v1
   metadata:
   - name: url
     value: https://http2.pro/api/v1
