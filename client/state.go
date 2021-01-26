@@ -6,7 +6,7 @@ import (
 
 	v1 "github.com/dapr/go-sdk/dapr/proto/common/v1"
 	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
-	duration "github.com/golang/protobuf/ptypes/duration"
+	"github.com/golang/protobuf/ptypes/duration"
 	"github.com/pkg/errors"
 )
 
@@ -158,8 +158,8 @@ func toProtoStateOptions(so *StateOptions) (opts *v1.StateOptions) {
 		return stateOptionDefault
 	}
 	return &v1.StateOptions{
-		Concurrency: (v1.StateOptions_StateConcurrency(so.Concurrency)),
-		Consistency: (v1.StateOptions_StateConsistency(so.Consistency)),
+		Concurrency: v1.StateOptions_StateConcurrency(so.Concurrency),
+		Consistency: v1.StateOptions_StateConsistency(so.Consistency),
 	}
 }
 
@@ -290,7 +290,7 @@ func (c *GRPCClient) GetStateWithConsistency(ctx context.Context, storeName, key
 	req := &pb.GetStateRequest{
 		StoreName:   storeName,
 		Key:         key,
-		Consistency: (v1.StateOptions_StateConsistency(sc)),
+		Consistency: v1.StateOptions_StateConsistency(sc),
 		Metadata:    meta,
 	}
 

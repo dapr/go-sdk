@@ -78,7 +78,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("service method invoked, response: %s", string(resp))
+	fmt.Printf("service method invoked, response: %s\n", string(resp))
 
 	in := &dapr.InvokeBindingRequest{
 		Name:      "example-http-binding",
@@ -88,5 +88,6 @@ func main() {
 		panic(err)
 	}
 	fmt.Println("output binding invoked")
+
 	fmt.Println("DONE (CTRL+C to Exit)")
 }
