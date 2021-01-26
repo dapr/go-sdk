@@ -32,7 +32,7 @@ dapr run --app-id serving \
 
 ## Client 
 
-Once one of the above services is running is running, launch the client:
+Once one of the above services is running, launch the client:
 
 ```
 cd example/client
