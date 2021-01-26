@@ -191,8 +191,12 @@ func (s *testDaprServer) GetSecret(ctx context.Context, req *pb.GetSecretRequest
 }
 
 func (s *testDaprServer) GetBulkSecret(ctx context.Context, req *pb.GetBulkSecretRequest) (*pb.GetBulkSecretResponse, error) {
-	d := make(map[string]string)
-	d["test"] = "value"
+	d := make(map[string]*pb.SecretResponse)
+	d["test"] = &pb.SecretResponse{
+		Secrets: map[string]string{
+			"test": "value",
+		},
+	}
 	return &pb.GetBulkSecretResponse{
 		Data: d,
 	}, nil

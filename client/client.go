@@ -58,7 +58,7 @@ type Client interface {
 	GetSecret(ctx context.Context, storeName, key string, meta map[string]string) (data map[string]string, err error)
 
 	// GetBulkSecret retrieves all preconfigured secrets for this application.
-	GetBulkSecret(ctx context.Context, storeName string, meta map[string]string) (data map[string]string, err error)
+	GetBulkSecret(ctx context.Context, storeName string, meta map[string]string) (data map[string]map[string]string, err error)
 
 	// SaveState saves the raw data into store using default state options.
 	SaveState(ctx context.Context, storeName, key string, data []byte) error
@@ -79,7 +79,7 @@ type Client interface {
 	DeleteState(ctx context.Context, storeName, key string) error
 
 	// DeleteStateWithETag deletes content from store using provided state options and etag.
-	DeleteStateWithETag(ctx context.Context, storeName, key, etag string, meta map[string]string, opts *StateOptions) error
+	DeleteStateWithETag(ctx context.Context, storeName, key string, etag *ETag, meta map[string]string, opts *StateOptions) error
 
 	// ExecuteStateTransaction provides way to execute multiple operations on a specified store.
 	ExecuteStateTransaction(ctx context.Context, storeName string, meta map[string]string, ops []*StateOperation) error
