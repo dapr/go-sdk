@@ -2,30 +2,30 @@ all: help
 
 .PHONY: http-service
 http-service: ## Runs the uncompiled HTTP example service code
-	dapr run -i serving \
+	dapr run --app-id serving \
 			 -P http \
 			 -p 8080 \
 			 -H 3500 \
 			 -d ./config \
 			 --log-level debug \
-			 go run serving/http/main.go
+			 go run ./serving/http/main.go
 
 .PHONY: grpc-service
 grpc-service: ## Runs the uncompiled gRPC example service code
-	dapr run -i serving \
+	dapr run --app-id serving \
 			 -P grpc \
 			 -p 50001 \
 			 -H 3500 \
 			 -d ./config \
 			 --log-level debug \
-			 go run serving/grpc/main.go
+			 go run ./serving/grpc/main.go
 
 .PHONY: client
 client: ## Runs the uncompiled example client code 
-	dapr run -i caller \
+	dapr run --app-id caller \
              -d ./config \
              --log-level debug \
-             go run client/main.go 
+             go run ./client/main.go 
 
 .PHONY: publish
 publish: ## Submits pub/sub events in different cotnent types 
