@@ -26,17 +26,17 @@ func TestPublishEvent(t *testing.T) {
 	ctx := context.Background()
 
 	t.Run("with data", func(t *testing.T) {
-		err := testClient.PublishEvent(ctx, "messagebus", "test", []byte("ping"))
+		err := testClient.PublishEvent(ctx, "messages", "test", []byte("ping"))
 		assert.Nil(t, err)
 	})
 
 	t.Run("without data", func(t *testing.T) {
-		err := testClient.PublishEvent(ctx, "messagebus", "test", nil)
+		err := testClient.PublishEvent(ctx, "messages", "test", nil)
 		assert.Nil(t, err)
 	})
 
 	t.Run("with empty topic name", func(t *testing.T) {
-		err := testClient.PublishEvent(ctx, "messagebus", "", []byte("ping"))
+		err := testClient.PublishEvent(ctx, "messages", "", []byte("ping"))
 		assert.NotNil(t, err)
 	})
 
@@ -45,7 +45,7 @@ func TestPublishEvent(t *testing.T) {
 			Key1: "value1",
 			Key2: "value2",
 		}
-		err := testClient.PublishEventfromCustomContent(ctx, "messagebus", "test", testdata)
+		err := testClient.PublishEventfromCustomContent(ctx, "messages", "test", testdata)
 		assert.Nil(t, err)
 	})
 
@@ -54,7 +54,7 @@ func TestPublishEvent(t *testing.T) {
 			Key1: "value1",
 			Key2: 2500,
 		}
-		err := testClient.PublishEventfromCustomContent(ctx, "messagebus", "test", testdata)
+		err := testClient.PublishEventfromCustomContent(ctx, "messages", "test", testdata)
 		assert.Nil(t, err)
 	})
 
@@ -63,7 +63,7 @@ func TestPublishEvent(t *testing.T) {
 			Key1: []string{"value1", "value2", "value3"},
 			Key2: []int{25, 40, 600},
 		}
-		err := testClient.PublishEventfromCustomContent(ctx, "messagebus", "test", testdata)
+		err := testClient.PublishEventfromCustomContent(ctx, "messages", "test", testdata)
 		assert.Nil(t, err)
 	})
 }

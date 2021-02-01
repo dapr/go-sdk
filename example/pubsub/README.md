@@ -1,8 +1,8 @@
 # Dapr PubSub Example with go-sdk
 
-This folder contains two go file that uses this go-SDK to invoke the Dapr PubSub API.
+This folder contains two go file that use the Go SDK to invoke the Dapr Pub/Sub API.
 
-## Helpful
+## Diagram
 
 ![](https://i.loli.net/2020/08/23/5MBYgwqCZcXNUf2.jpg)
 
@@ -13,10 +13,6 @@ This folder contains two go file that uses this go-SDK to invoke the Dapr PubSub
 - Dapr installed
 
 ### Run Subscriber Server
-
-when use Dapr PubSub to subscribe, should have a http or gRPC server to receive the requests from Dapr.
-
-Please change directory to pubsub/sub and run the following command:
 
 ```shell
 dapr run --app-id sub \
@@ -30,15 +26,9 @@ dapr run --app-id sub \
 
 ### Run Publisher
 
-Publish is more simply than subscribe. Just Publish the data to target pubsub component with its' name.
-
-After you start a server by above guide.
-
-Use the environment variable, Please set `DAPR_PUBSUB_NAME` as the name of the components: `messagebus` at first.
-
-Please change directory to pubsub/pub and run the following command:
-
 ```shell
+export DAPR_PUBSUB_NAME=messages
+
 dapr run --app-id pub \
          --log-level debug \
          --components-path ../config \
@@ -46,8 +36,6 @@ dapr run --app-id pub \
 ```
 
 ## Result
-
-You would see log that in terminal which run the server(subscriber) code.
 
 ```shell
 == APP == 2020/08/23 13:21:58 event - PubsubName: messages, Topic: demo, ID: 11acaa82-23c4-4244-8969-7360dae52e5d, Data: ping
