@@ -163,6 +163,112 @@ func TestDeleteState(t *testing.T) {
 	})
 }
 
+func TestDeleteBulkState(t *testing.T) {
+	ctx := context.Background()
+	data := "test"
+	store := "test"
+	keys := []string{"key1", "key2", "key3"}
+
+	t.Run("delete not exist data", func(t *testing.T) {
+		err := testClient.DeleteBulkState(ctx, store, keys)
+		assert.Nil(t, err)
+	})
+
+	t.Run("delete not exist data with stateIem", func(t *testing.T) {
+		items := make([]*DeleteStateItem, 0, len(keys))
+		for _, key := range keys {
+			items = append(items, &DeleteStateItem{
+				Key:      key,
+				Metadata: map[string]string{},
+				Options: &StateOptions{
+					Concurrency: StateConcurrencyFirstWrite,
+					Consistency: StateConsistencyEventual,
+				},
+			})
+		}
+		err := testClient.DeleteBulkStateItems(ctx, store, items)
+		assert.Nil(t, err)
+	})
+
+	t.Run("delete exist data", func(t *testing.T) {
+		// save data
+		items := make([]*SetStateItem, 0, len(keys))
+		for _, key := range keys {
+			items = append(items, &SetStateItem{
+				Key:      key,
+				Value:    []byte(data),
+				Metadata: map[string]string{},
+				Etag:     &ETag{Value: "1"},
+				Options: &StateOptions{
+					Concurrency: StateConcurrencyFirstWrite,
+					Consistency: StateConsistencyEventual,
+				},
+			})
+		}
+		err := testClient.SaveBulkState(ctx, store, items...)
+		assert.Nil(t, err)
+
+		// confirm data saved
+		getItems, err := testClient.GetBulkState(ctx, store, keys, nil, 1)
+		assert.NoError(t, err)
+		assert.Equal(t, len(keys), len(getItems))
+
+		// delete
+		err = testClient.DeleteBulkState(ctx, store, keys)
+		assert.NoError(t, err)
+
+		// confirm data deleted
+		getItems, err = testClient.GetBulkState(ctx, store, keys, nil, 1)
+		assert.NoError(t, err)
+		assert.Equal(t, 0, len(getItems))
+	})
+
+	t.Run("delete exist data with stateItem", func(t *testing.T) {
+		// save data
+		items := make([]*SetStateItem, 0, len(keys))
+		for _, key := range keys {
+			items = append(items, &SetStateItem{
+				Key:      key,
+				Value:    []byte(data),
+				Metadata: map[string]string{},
+				Etag:     &ETag{Value: "1"},
+				Options: &StateOptions{
+					Concurrency: StateConcurrencyFirstWrite,
+					Consistency: StateConsistencyEventual,
+				},
+			})
+		}
+		err := testClient.SaveBulkState(ctx, store, items...)
+		assert.Nil(t, err)
+
+		// confirm data saved
+		getItems, err := testClient.GetBulkState(ctx, store, keys, nil, 1)
+		assert.NoError(t, err)
+		assert.Equal(t, len(keys), len(getItems))
+
+		// delete
+		deleteItems := make([]*DeleteStateItem, 0, len(keys))
+		for _, key := range keys {
+			deleteItems = append(deleteItems, &DeleteStateItem{
+				Key:      key,
+				Metadata: map[string]string{},
+				Etag:     &ETag{Value: "1"},
+				Options: &StateOptions{
+					Concurrency: StateConcurrencyFirstWrite,
+					Consistency: StateConsistencyEventual,
+				},
+			})
+		}
+		err = testClient.DeleteBulkStateItems(ctx, store, deleteItems)
+		assert.Nil(t, err)
+
+		// confirm data deleted
+		getItems, err = testClient.GetBulkState(ctx, store, keys, nil, 1)
+		assert.NoError(t, err)
+		assert.Equal(t, 0, len(getItems))
+	})
+}
+
 // go test -timeout 30s ./client -count 1 -run ^TestStateTransactions$
 func TestStateTransactions(t *testing.T) {
 	ctx := context.Background()

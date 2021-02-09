@@ -125,6 +125,9 @@ type SetStateItem struct {
 	Options  *StateOptions
 }
 
+// DeleteStateItem represents a single state to be deleted.
+type DeleteStateItem SetStateItem
+
 // ETag represents an versioned record information
 type ETag struct {
 	Value string
@@ -337,6 +340,58 @@ func (c *GRPCClient) DeleteStateWithETag(ctx context.Context, storeName, key str
 	}
 
 	return nil
+}
+
+// DeleteBulkState deletes content for multiple keys from store.
+func (c *GRPCClient) DeleteBulkState(ctx context.Context, storeName string, keys []string) error {
+	if len(keys) == 0 {
+		return nil
+	}
+
+	items := make([]*DeleteStateItem, 0, len(keys))
+	for i := 0; i < len(keys); i++ {
+		item := &DeleteStateItem{
+			Key: keys[i],
+		}
+		items = append(items, item)
+	}
+
+	return c.DeleteBulkStateItems(ctx, storeName, items)
+}
+
+// DeleteBulkState deletes content for multiple keys from store.
+func (c *GRPCClient) DeleteBulkStateItems(ctx context.Context, storeName string, items []*DeleteStateItem) error {
+	if len(items) == 0 {
+		return nil
+	}
+
+	states := make([]*v1.StateItem, 0, len(items))
+	for i := 0; i < len(items); i++ {
+		item := items[i]
+		if err := hasRequiredStateArgs(storeName, item.Key); err != nil {
+			return errors.Wrap(err, "missing required arguments")
+		}
+
+		state := &v1.StateItem{
+			Key:      item.Key,
+			Metadata: item.Metadata,
+			Options:  toProtoStateOptions(item.Options),
+		}
+		if item.Etag != nil {
+			state.Etag = &v1.Etag{
+				Value: item.Etag.Value,
+			}
+		}
+		states = append(states, state)
+	}
+
+	req := &pb.DeleteBulkStateRequest{
+		StoreName: storeName,
+		States:    states,
+	}
+	_, err := c.protoClient.DeleteBulkState(c.withAuthToken(ctx), req)
+
+	return err
 }
 
 func hasRequiredStateArgs(storeName, key string) error {
