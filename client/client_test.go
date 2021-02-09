@@ -150,6 +150,13 @@ func (s *testDaprServer) DeleteState(ctx context.Context, req *pb.DeleteStateReq
 	return &empty.Empty{}, nil
 }
 
+func (s *testDaprServer) DeleteBulkState(ctx context.Context, req *pb.DeleteBulkStateRequest) (*empty.Empty, error) {
+	for _, item := range req.States {
+		delete(s.state, item.Key)
+	}
+	return &empty.Empty{}, nil
+}
+
 func (s *testDaprServer) ExecuteStateTransaction(ctx context.Context, in *pb.ExecuteStateTransactionRequest) (*empty.Empty, error) {
 	for _, op := range in.GetOperations() {
 		item := op.GetRequest()
