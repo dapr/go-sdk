@@ -29,7 +29,7 @@ func (s *Server) AddServiceInvocationHandler(route string, fn func(ctx context.C
 			// capture http args
 			e := &common.InvocationEvent{
 				Verb:        r.Method,
-				QueryString: valuesToMap(r.URL.Query()),
+				QueryString: r.URL.RawQuery,
 				ContentType: r.Header.Get("Content-type"),
 			}
 

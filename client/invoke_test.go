@@ -118,9 +118,7 @@ func TestVerbParsing(t *testing.T) {
 		v := queryAndVerbToHTTPExtension("foo=bar&url=http://dapr.io", "post")
 		assert.NotNil(t, v)
 		assert.Equal(t, v1.HTTPExtension_POST, v.Verb)
-		assert.Len(t, v.Querystring, 2)
-		assert.Equal(t, "bar", v.Querystring["foo"])
-		assert.Equal(t, "http://dapr.io", v.Querystring["url"])
+		assert.Equal(t, "foo=bar&url=http://dapr.io", v.Querystring)
 	})
 }
 
