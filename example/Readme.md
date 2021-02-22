@@ -7,27 +7,25 @@ To run this example, start by first launching the service in ether HTTP or gRPC:
 ### HTTP
 
 ```
-cd example/serving/http
 dapr run --app-id serving \
          --app-protocol http \
          --app-port 8080 \
          --dapr-http-port 3500 \
          --log-level debug \
          --components-path ./config \
-         go run main.go
+         go run ./serving/http/main.go
 ```
 
 ### gRPC
 
 ```
-cd example/serving/grpc
 dapr run --app-id serving \
          --app-protocol grpc \
          --app-port 50001 \
          --dapr-grpc-port 3500 \
          --log-level debug \
          --components-path ./config \
-         go run main.go
+         go run ./serving/grpc/main.go
 ```
 
 ## Client 
@@ -35,11 +33,10 @@ dapr run --app-id serving \
 Once one of the above services is running, launch the client:
 
 ```
-cd example/client
 dapr run --app-id caller \
          --components-path ./config \
          --log-level debug \
-         go run main.go
+         go run ./client/main.go
 ```
 
 ## API
