@@ -3,8 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"os"
-
 	dapr "github.com/dapr/go-sdk/client"
 )
 
