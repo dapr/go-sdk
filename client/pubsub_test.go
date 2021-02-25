@@ -26,6 +26,14 @@ func TestPublishEvent(t *testing.T) {
 	ctx := context.Background()
 
 	t.Run("with data", func(t *testing.T) {
+		err := testClient.Publish(ctx, &PublishEventRequest{PubsubName: "messages", Topic: "test",
+			Data:     []byte("ping"),
+			Metadata: map[string]string{},
+		})
+		assert.Nil(t, err)
+	})
+
+	t.Run("with data", func(t *testing.T) {
 		err := testClient.PublishEvent(ctx, "messages", "test", []byte("ping"))
 		assert.Nil(t, err)
 	})
