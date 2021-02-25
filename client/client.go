@@ -48,6 +48,9 @@ type Client interface {
 	// InvokeMethodWithCustomContent invokes app with custom content (struct + content type).
 	InvokeMethodWithCustomContent(ctx context.Context, appID, methodName, verb string, contentType string, content interface{}) (out []byte, err error)
 
+	// PublishEvent publishes custom event.
+	Publish(ctx context.Context, in *PublishEventRequest) error
+
 	// PublishEvent publishes data onto topic in specific pubsub component.
 	PublishEvent(ctx context.Context, pubsubName, topicName string, data []byte) error
 
