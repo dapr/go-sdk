@@ -28,7 +28,7 @@ client: ## Runs the uncompiled example client code
              go run ./client/main.go 
 
 .PHONY: publish
-publish: ## Submits pub/sub events in different cotnent types 
+publish: ## Submits pub/sub events in different content types 
 	curl -i -d '{ "from": "John", "to": "Lary", "message": "hi" }' \
 		-H "Content-type: application/json" \
 		"http://localhost:3500/v1.0/publish/messages/topic1"
