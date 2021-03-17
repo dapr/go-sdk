@@ -84,6 +84,12 @@ type Client interface {
 	// ExecuteStateTransaction provides way to execute multiple operations on a specified store.
 	ExecuteStateTransaction(ctx context.Context, storeName string, meta map[string]string, ops []*StateOperation) error
 
+	// DeleteBulkState deletes content for multiple keys from store.
+	DeleteBulkState(ctx context.Context, storeName string, keys []string) error
+
+	// DeleteBulkState deletes content for multiple keys from store.
+	DeleteBulkStateItems(ctx context.Context, storeName string, items []*DeleteStateItem) error
+
 	// WithTraceID adds existing trace ID to the outgoing context.
 	WithTraceID(ctx context.Context, id string) context.Context
 

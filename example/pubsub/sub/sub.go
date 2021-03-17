@@ -14,7 +14,7 @@ import (
 // - Topic: is the name of the topic to subscribe.
 // - Route: tell dapr where to request the API to publish the message to the subscriber when get a message from topic.
 var sub = &common.Subscription{
-	PubsubName: "messagebus",
+	PubsubName: "messages",
 	Topic:      "neworder",
 	Route:      "/orders",
 }
