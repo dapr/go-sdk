@@ -63,6 +63,16 @@ func TestNewClient(t *testing.T) {
 	})
 }
 
+func TestShutdown(t *testing.T) {
+	ctx := context.Background()
+
+	t.Run("shutdown", func(t *testing.T) {
+		err := testClient.Shutdown(ctx)
+		assert.NoError(t, err)
+	})
+}
+
+
 func getTestClient(ctx context.Context) (client Client, closer func()) {
 	s := grpc.NewServer()
 	pb.RegisterDaprServer(s, &testDaprServer{
@@ -219,4 +229,8 @@ func (s *testDaprServer) RegisterActorTimer(context.Context, *pb.RegisterActorTi
 
 func (s *testDaprServer) UnregisterActorTimer(context.Context, *pb.UnregisterActorTimerRequest) (*empty.Empty, error) {
 	return nil, errors.New("actors not implemented in go SDK")
+}
+
+func (s *testDaprServer) Shutdown(ctx context.Context, req *empty.Empty) (*empty.Empty, error) {
+	return &empty.Empty{}, nil
 }

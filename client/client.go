@@ -10,6 +10,7 @@ import (
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/protobuf/types/known/emptypb"
 
 	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
 )
@@ -89,6 +90,9 @@ type Client interface {
 
 	// DeleteBulkState deletes content for multiple keys from store.
 	DeleteBulkStateItems(ctx context.Context, storeName string, items []*DeleteStateItem) error
+
+	// Shutdown the sidecar.
+	Shutdown(ctx context.Context) error
 
 	// WithTraceID adds existing trace ID to the outgoing context.
 	WithTraceID(ctx context.Context, id string) context.Context
@@ -193,4 +197,13 @@ func (c *GRPCClient) withAuthToken(ctx context.Context) context.Context {
 		return ctx
 	}
 	return metadata.NewOutgoingContext(ctx, metadata.Pairs(apiTokenKey, string(c.authToken)))
+}
+
+// Shutdown the sidecar.
+func (c *GRPCClient) Shutdown(ctx context.Context) error {
+	_, err := c.protoClient.Shutdown(c.withAuthToken(ctx), &emptypb.Empty{})
+	if err != nil {
+		return errors.Wrap(err, "error shutting down the sidecar")
+	}
+	return nil
 }
