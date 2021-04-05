@@ -19,7 +19,7 @@ Or with address and an existing `http.ServeMux` in case you want to combine exis
 ```go
 mux := http.NewServeMux()
 mux.HandleFunc("/", myOtherHandler)
-s := daprd.NewService(":8080", mux)
+s := daprd.NewServiceWithMux(":8080", mux)
 ```
 
 Once you create a service instance, you can "attach" to that service any number of event, binding, and service invocation logic handlers as shown below. Onces the logic is defined, you are ready to start the service:
