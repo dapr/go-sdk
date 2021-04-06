@@ -56,10 +56,10 @@ if err := s.AddTopicEventHandler(sub, eventHandler); err != nil {
 The handler method itself can be any method with the expected signature:
 
 ```go
-func eventHandler(ctx context.Context, e *common.TopicEvent) error {
+func eventHandler(ctx context.Context, e *common.TopicEvent) (retry bool, err error) {
 	log.Printf("event - PubsubName:%s, Topic:%s, ID:%s, Data: %v", e.PubsubName, e.Topic, e.ID, e.Data)
 	// do something with the event
-	return nil
+	return true, nil
 }
 ```
 
