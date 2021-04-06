@@ -25,7 +25,7 @@ s := daprd.NewServiceWithMux(":8080", mux)
 Once you create a service instance, you can "attach" to that service any number of event, binding, and service invocation logic handlers as shown below. Onces the logic is defined, you are ready to start the service:
 
 ```go
-if err = s.Start(); err != nil && err != http.ErrServerClosed {
+if err := s.Start(); err != nil && err != http.ErrServerClosed {
 	log.Fatalf("error: %v", err)
 }
 ```
