@@ -56,6 +56,14 @@ type DaprClient interface {
 	ExecuteActorStateTransaction(ctx context.Context, in *ExecuteActorStateTransactionRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// InvokeActor calls a method on an actor.
 	InvokeActor(ctx context.Context, in *InvokeActorRequest, opts ...grpc.CallOption) (*InvokeActorResponse, error)
+	// GetConfiguration gets configuration from configuration store.
+	GetConfiguration(ctx context.Context, in *GetConfigurationRequest, opts ...grpc.CallOption) (*GetConfigurationResponse, error)
+	// SaveConfiguration saves configuration into configuration store.
+	SaveConfiguration(ctx context.Context, in *SaveConfigurationRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	// DeleteConfiguration deletes configuration from configuration store.
+	DeleteConfiguration(ctx context.Context, in *DeleteConfigurationRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	// SubscribeConfiguration gets configuration from configuration store and subscribe the updates.
+	SubscribeConfiguration(ctx context.Context, opts ...grpc.CallOption) (Dapr_SubscribeConfigurationClient, error)
 	// Gets metadata of the sidecar
 	GetMetadata(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GetMetadataResponse, error)
 	// Sets value in extended metadata of the sidecar
@@ -234,6 +242,64 @@ func (c *daprClient) InvokeActor(ctx context.Context, in *InvokeActorRequest, op
 	return out, nil
 }
 
+func (c *daprClient) GetConfiguration(ctx context.Context, in *GetConfigurationRequest, opts ...grpc.CallOption) (*GetConfigurationResponse, error) {
+	out := new(GetConfigurationResponse)
+	err := c.cc.Invoke(ctx, "/dapr.proto.runtime.v1.Dapr/GetConfiguration", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *daprClient) SaveConfiguration(ctx context.Context, in *SaveConfigurationRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, "/dapr.proto.runtime.v1.Dapr/SaveConfiguration", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *daprClient) DeleteConfiguration(ctx context.Context, in *DeleteConfigurationRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, "/dapr.proto.runtime.v1.Dapr/DeleteConfiguration", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *daprClient) SubscribeConfiguration(ctx context.Context, opts ...grpc.CallOption) (Dapr_SubscribeConfigurationClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Dapr_ServiceDesc.Streams[0], "/dapr.proto.runtime.v1.Dapr/SubscribeConfiguration", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &daprSubscribeConfigurationClient{stream}
+	return x, nil
+}
+
+type Dapr_SubscribeConfigurationClient interface {
+	Send(*SubscribeConfigurationRequest) error
+	Recv() (*SubscribeConfigurationResponse, error)
+	grpc.ClientStream
+}
+
+type daprSubscribeConfigurationClient struct {
+	grpc.ClientStream
+}
+
+func (x *daprSubscribeConfigurationClient) Send(m *SubscribeConfigurationRequest) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *daprSubscribeConfigurationClient) Recv() (*SubscribeConfigurationResponse, error) {
+	m := new(SubscribeConfigurationResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 func (c *daprClient) GetMetadata(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GetMetadataResponse, error) {
 	out := new(GetMetadataResponse)
 	err := c.cc.Invoke(ctx, "/dapr.proto.runtime.v1.Dapr/GetMetadata", in, out, opts...)
@@ -301,6 +367,14 @@ type DaprServer interface {
 	ExecuteActorStateTransaction(context.Context, *ExecuteActorStateTransactionRequest) (*emptypb.Empty, error)
 	// InvokeActor calls a method on an actor.
 	InvokeActor(context.Context, *InvokeActorRequest) (*InvokeActorResponse, error)
+	// GetConfiguration gets configuration from configuration store.
+	GetConfiguration(context.Context, *GetConfigurationRequest) (*GetConfigurationResponse, error)
+	// SaveConfiguration saves configuration into configuration store.
+	SaveConfiguration(context.Context, *SaveConfigurationRequest) (*emptypb.Empty, error)
+	// DeleteConfiguration deletes configuration from configuration store.
+	DeleteConfiguration(context.Context, *DeleteConfigurationRequest) (*emptypb.Empty, error)
+	// SubscribeConfiguration gets configuration from configuration store and subscribe the updates.
+	SubscribeConfiguration(Dapr_SubscribeConfigurationServer) error
 	// Gets metadata of the sidecar
 	GetMetadata(context.Context, *emptypb.Empty) (*GetMetadataResponse, error)
 	// Sets value in extended metadata of the sidecar
@@ -367,6 +441,18 @@ func (UnimplementedDaprServer) ExecuteActorStateTransaction(context.Context, *Ex
 }
 func (UnimplementedDaprServer) InvokeActor(context.Context, *InvokeActorRequest) (*InvokeActorResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method InvokeActor not implemented")
+}
+func (UnimplementedDaprServer) GetConfiguration(context.Context, *GetConfigurationRequest) (*GetConfigurationResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetConfiguration not implemented")
+}
+func (UnimplementedDaprServer) SaveConfiguration(context.Context, *SaveConfigurationRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SaveConfiguration not implemented")
+}
+func (UnimplementedDaprServer) DeleteConfiguration(context.Context, *DeleteConfigurationRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteConfiguration not implemented")
+}
+func (UnimplementedDaprServer) SubscribeConfiguration(Dapr_SubscribeConfigurationServer) error {
+	return status.Errorf(codes.Unimplemented, "method SubscribeConfiguration not implemented")
 }
 func (UnimplementedDaprServer) GetMetadata(context.Context, *emptypb.Empty) (*GetMetadataResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetMetadata not implemented")
@@ -714,6 +800,86 @@ func _Dapr_InvokeActor_Handler(srv interface{}, ctx context.Context, dec func(in
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Dapr_GetConfiguration_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetConfigurationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DaprServer).GetConfiguration(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dapr.proto.runtime.v1.Dapr/GetConfiguration",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DaprServer).GetConfiguration(ctx, req.(*GetConfigurationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Dapr_SaveConfiguration_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SaveConfigurationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DaprServer).SaveConfiguration(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dapr.proto.runtime.v1.Dapr/SaveConfiguration",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DaprServer).SaveConfiguration(ctx, req.(*SaveConfigurationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Dapr_DeleteConfiguration_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteConfigurationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DaprServer).DeleteConfiguration(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dapr.proto.runtime.v1.Dapr/DeleteConfiguration",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DaprServer).DeleteConfiguration(ctx, req.(*DeleteConfigurationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Dapr_SubscribeConfiguration_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(DaprServer).SubscribeConfiguration(&daprSubscribeConfigurationServer{stream})
+}
+
+type Dapr_SubscribeConfigurationServer interface {
+	Send(*SubscribeConfigurationResponse) error
+	Recv() (*SubscribeConfigurationRequest, error)
+	grpc.ServerStream
+}
+
+type daprSubscribeConfigurationServer struct {
+	grpc.ServerStream
+}
+
+func (x *daprSubscribeConfigurationServer) Send(m *SubscribeConfigurationResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *daprSubscribeConfigurationServer) Recv() (*SubscribeConfigurationRequest, error) {
+	m := new(SubscribeConfigurationRequest)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 func _Dapr_GetMetadata_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(emptypb.Empty)
 	if err := dec(in); err != nil {
@@ -848,6 +1014,18 @@ var Dapr_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Dapr_InvokeActor_Handler,
 		},
 		{
+			MethodName: "GetConfiguration",
+			Handler:    _Dapr_GetConfiguration_Handler,
+		},
+		{
+			MethodName: "SaveConfiguration",
+			Handler:    _Dapr_SaveConfiguration_Handler,
+		},
+		{
+			MethodName: "DeleteConfiguration",
+			Handler:    _Dapr_DeleteConfiguration_Handler,
+		},
+		{
 			MethodName: "GetMetadata",
 			Handler:    _Dapr_GetMetadata_Handler,
 		},
@@ -860,6 +1038,13 @@ var Dapr_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _Dapr_Shutdown_Handler,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "SubscribeConfiguration",
+			Handler:       _Dapr_SubscribeConfiguration_Handler,
+			ServerStreams: true,
+			ClientStreams: true,
+		},
+	},
 	Metadata: "dapr/proto/runtime/v1/dapr.proto",
 }

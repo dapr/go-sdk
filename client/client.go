@@ -91,6 +91,15 @@ type Client interface {
 	// DeleteBulkState deletes content for multiple keys from store.
 	DeleteBulkStateItems(ctx context.Context, storeName string, items []*DeleteStateItem) error
 
+	// GetConfiguration gets configuration from configuration store.
+	GetConfiguration(ctx context.Context, in *GetConfigurationRequest) (*GetConfigurationResponse, error)
+
+	// SaveConfiguration saves configuration into configuration store.
+	SaveConfiguration(ctx context.Context, in *SaveConfigurationRequest) error
+
+	// DeleteConfiguration deletes configuration from configuration store.
+	DeleteConfiguration(ctx context.Context, in *DeleteConfigurationRequest) error
+
 	// Shutdown the sidecar.
 	Shutdown(ctx context.Context) error
 

@@ -33,6 +33,8 @@ type AppCallbackClient interface {
 	// User application can save the states or send the events to the output
 	// bindings optionally by returning BindingEventResponse.
 	OnBindingEvent(ctx context.Context, in *BindingEventRequest, opts ...grpc.CallOption) (*BindingEventResponse, error)
+	// Listens configuration update events from the configuration store.
+	OnConfigurationEvent(ctx context.Context, in *ConfigurationEventRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
 
 type appCallbackClient struct {
@@ -88,6 +90,15 @@ func (c *appCallbackClient) OnBindingEvent(ctx context.Context, in *BindingEvent
 	return out, nil
 }
 
+func (c *appCallbackClient) OnConfigurationEvent(ctx context.Context, in *ConfigurationEventRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, "/dapr.proto.runtime.v1.AppCallback/OnConfigurationEvent", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AppCallbackServer is the server API for AppCallback service.
 // All implementations must embed UnimplementedAppCallbackServer
 // for forward compatibility
@@ -105,6 +116,8 @@ type AppCallbackServer interface {
 	// User application can save the states or send the events to the output
 	// bindings optionally by returning BindingEventResponse.
 	OnBindingEvent(context.Context, *BindingEventRequest) (*BindingEventResponse, error)
+	// Listens configuration update events from the configuration store.
+	OnConfigurationEvent(context.Context, *ConfigurationEventRequest) (*emptypb.Empty, error)
 	mustEmbedUnimplementedAppCallbackServer()
 }
 
@@ -126,6 +139,9 @@ func (UnimplementedAppCallbackServer) ListInputBindings(context.Context, *emptyp
 }
 func (UnimplementedAppCallbackServer) OnBindingEvent(context.Context, *BindingEventRequest) (*BindingEventResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method OnBindingEvent not implemented")
+}
+func (UnimplementedAppCallbackServer) OnConfigurationEvent(context.Context, *ConfigurationEventRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method OnConfigurationEvent not implemented")
 }
 func (UnimplementedAppCallbackServer) mustEmbedUnimplementedAppCallbackServer() {}
 
@@ -230,6 +246,24 @@ func _AppCallback_OnBindingEvent_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AppCallback_OnConfigurationEvent_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ConfigurationEventRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AppCallbackServer).OnConfigurationEvent(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dapr.proto.runtime.v1.AppCallback/OnConfigurationEvent",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AppCallbackServer).OnConfigurationEvent(ctx, req.(*ConfigurationEventRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // AppCallback_ServiceDesc is the grpc.ServiceDesc for AppCallback service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -256,6 +290,10 @@ var AppCallback_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "OnBindingEvent",
 			Handler:    _AppCallback_OnBindingEvent_Handler,
+		},
+		{
+			MethodName: "OnConfigurationEvent",
+			Handler:    _AppCallback_OnConfigurationEvent_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

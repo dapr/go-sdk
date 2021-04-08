@@ -1,6 +1,6 @@
 RELEASE_VERSION  =v1.0.0-rc-3
 GDOC_PORT        =8888
-PROTO_ROOT       =https://raw.githubusercontent.com/dapr/dapr/master/dapr/proto/
+PROTO_ROOT       =https://raw.githubusercontent.com/skyao/dapr/configuration-api/dapr/proto
 
 .PHONY: all
 all: help
