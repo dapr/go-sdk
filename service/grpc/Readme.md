@@ -44,7 +44,11 @@ if err := s.Start(); err != nil {
 To handle events from specific topic you need to add at least one topic event handler before starting the service:
 
 ```go
-if err := s.AddTopicEventHandler("messages", "topic1", eventHandler); err != nil {
+sub := &common.Subscription{
+		PubsubName: "messages",
+		Topic:      "topic1",
+	}
+if err := s.AddTopicEventHandler(sub, eventHandler); err != nil {
     log.Fatalf("error adding topic subscription: %v", err)
 }
 ```
@@ -52,10 +56,10 @@ if err := s.AddTopicEventHandler("messages", "topic1", eventHandler); err != nil
 The handler method itself can be any method with the expected signature:
 
 ```go
-func eventHandler(ctx context.Context, e *daprd.TopicEvent) error {
+func eventHandler(ctx context.Context, e *common.TopicEvent) (retry bool, err error) {
 	log.Printf("event - PubsubName:%s, Topic:%s, ID:%s, Data: %v", e.PubsubName, e.Topic, e.ID, e.Data)
 	// do something with the event
-	return nil
+	return true, nil
 }
 ```
 
