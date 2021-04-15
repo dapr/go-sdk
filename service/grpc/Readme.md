@@ -24,10 +24,7 @@ list, err := net.Listen("tcp", "localhost:0")
 if err != nil {
 	log.Fatalf("gRPC listener creation failed: %s", err)
 }
-s, err := daprd.NewService(list)
-if err != nil {
-    log.Fatalf("failed to start the server: %v", err)
-}
+s := daprd.NewServiceWithListener(list)
 ```
 
 Once you create a service instance, you can "attach" to that service any number of event, binding, and service invocation logic handlers as shown below. Onces the logic is defined, you are ready to start the service:
