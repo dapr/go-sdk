@@ -99,7 +99,7 @@ func (c StateConcurrency) String() string {
 var (
 	stateOptionDefault = &v1.StateOptions{
 		Concurrency: v1.StateOptions_CONCURRENCY_LAST_WRITE,
-		Consistency: v1.StateOptions_CONSISTENCY_EVENTUAL,
+		Consistency: v1.StateOptions_CONSISTENCY_STRONG,
 	}
 )
 
