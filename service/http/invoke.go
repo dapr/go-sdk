@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"net/url"
 	"strings"
 
 	"github.com/dapr/go-sdk/service/common"
@@ -29,7 +28,7 @@ func (s *Server) AddServiceInvocationHandler(route string, fn func(ctx context.C
 			// capture http args
 			e := &common.InvocationEvent{
 				Verb:        r.Method,
-				QueryString: valuesToMap(r.URL.Query()),
+				QueryString: r.URL.RawQuery,
 				ContentType: r.Header.Get("Content-type"),
 			}
 
@@ -65,10 +64,4 @@ func (s *Server) AddServiceInvocationHandler(route string, fn func(ctx context.C
 	return nil
 }
 
-func valuesToMap(in url.Values) map[string]string {
-	out := map[string]string{}
-	for k := range in {
-		out[k] = in.Get(k)
-	}
-	return out
-}
+
