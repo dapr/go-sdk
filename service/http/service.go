@@ -44,6 +44,11 @@ func (s *Server) Start() error {
 	return server.ListenAndServe()
 }
 
+// Gets the underlying serve address and http.ServeMux
+func (s *Server) Unwrap() (string, *http.ServeMux) {
+	return s.address, s.mux
+}
+
 // Stop stops previously started HTTP service
 func (s *Server) Stop() error {
 	// TODO: implement service stop
