@@ -51,12 +51,12 @@ func (s *Server) AddServiceInvocationHandler(route string, fn func(ctx context.C
 
 			// write to response if handler returned data
 			if o != nil && o.Data != nil {
+				if o.ContentType != "" {
+					w.Header().Set("Content-type", o.ContentType)
+				}
 				if _, err := w.Write(o.Data); err != nil {
 					http.Error(w, err.Error(), http.StatusInternalServerError)
 					return
-				}
-				if o.ContentType != "" {
-					w.Header().Set("Content-type", o.ContentType)
 				}
 			}
 		})))
