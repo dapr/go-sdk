@@ -47,9 +47,10 @@ func (c *GRPCClient) PublishEventfromCustomContent(ctx context.Context, pubsubNa
 	}
 
 	envelop := &pb.PublishEventRequest{
-		PubsubName: pubsubName,
-		Topic:      topicName,
-		Data:       bytes,
+		PubsubName:      pubsubName,
+		Topic:           topicName,
+		Data:            bytes,
+		DataContentType: "application/json",
 	}
 
 	_, err = c.protoClient.PublishEvent(c.withAuthToken(ctx), envelop)
