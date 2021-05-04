@@ -61,7 +61,7 @@ ctx := context.Background()
 data := []byte("hello")
 store := "my-store" // defined in the component YAML 
 
-// save state with the key key1
+// save state with the key key1, default options: strong, last-write
 if err := client.SaveState(ctx, store, "key1", data); err != nil {
     panic(err)
 }
