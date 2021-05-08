@@ -134,5 +134,8 @@ func extractMethodAndQuery(name string) (method, query string) {
 	if len(splitStr) == 2 {
 		query = splitStr[1]
 	}
+	if len(method) == 0 || method[0] != '/' {
+		method = "/" + method
+	}
 	return
 }

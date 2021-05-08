@@ -135,7 +135,7 @@ func TestExtractMethodAndQuery(t *testing.T) {
 		{
 			"pure uri",
 			args{name: "method"},
-			"method",
+			"/method",
 			"",
 		},
 		{
@@ -147,13 +147,13 @@ func TestExtractMethodAndQuery(t *testing.T) {
 		{
 			"uri with one query",
 			args{name: "method?foo=bar"},
-			"method",
+			"/method",
 			"foo=bar",
 		},
 		{
 			"uri with two query",
 			args{name: "method?foo=bar&url=http://dapr.io"},
-			"method",
+			"/method",
 			"foo=bar&url=http://dapr.io",
 		},
 	}
