@@ -65,7 +65,7 @@ type Client interface {
 	GetBulkSecret(ctx context.Context, storeName string, meta map[string]string) (data map[string]map[string]string, err error)
 
 	// SaveState saves the raw data into store using default state options.
-	SaveState(ctx context.Context, storeName, key string, data []byte) error
+	SaveState(ctx context.Context, storeName, key string, data []byte, so ...StateOption) error
 
 	// SaveBulkState saves multiple state item to store with specified options.
 	SaveBulkState(ctx context.Context, storeName string, items ...*SetStateItem) error
