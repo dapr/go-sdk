@@ -75,7 +75,7 @@ func (c *GRPCClient) InvokeMethod(ctx context.Context, appID, methodName, verb s
 	return c.invokeServiceWithRequest(ctx, req)
 }
 
-// InvokeMethodWithContent invokes service without content (data + content type).
+// InvokeMethodWithContent invokes service with content (data + content type).
 func (c *GRPCClient) InvokeMethodWithContent(ctx context.Context, appID, methodName, verb string, content *DataContent) (out []byte, err error) {
 	if err := hasRequiredInvokeArgs(appID, methodName, verb); err != nil {
 		return nil, errors.Wrap(err, "missing required parameter")
