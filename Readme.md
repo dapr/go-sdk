@@ -61,7 +61,7 @@ ctx := context.Background()
 data := []byte("hello")
 store := "my-store" // defined in the component YAML 
 
-// save state with the key key1
+// save state with the key key1, default options: strong, last-write
 if err := client.SaveState(ctx, store, "key1", data); err != nil {
     panic(err)
 }
@@ -84,7 +84,9 @@ For more granular control, the Dapr Go client exposes `SetStateItem` type, which
 ```go     
 item1 := &dapr.SetStateItem{
     Key:  "key1",
-    Etag: "2",
+    Etag: &ETag{
+        Value: "1",
+    },
     Metadata: map[string]string{
         "created-on": time.Now().UTC().String(),
     },
@@ -105,20 +107,22 @@ item2 := &dapr.SetStateItem{
 
 item3 := &dapr.SetStateItem{
     Key:  "key3",
-    Etag: "1",
+    Etag: &dapr.ETag{
+	Value: "1",
+    },
     Value: []byte("hello again"),
 }
 
-if err := client.SaveStateItems(ctx, store, item1, item2, item3); err != nil {
+if err := client.SaveBulkState(ctx, store, item1, item2, item3); err != nil {
     panic(err)
 }
 ```
 
-Similarly, `GetBulkItems` method provides a way to retrieve multiple state items in a single operation:
+Similarly, `GetBulkState` method provides a way to retrieve multiple state items in a single operation:
 
 ```go
 keys := []string{"key1", "key2", "key3"}
-items, err := client.GetBulkItems(ctx, store, keys, 100)
+items, err := client.GetBulkState(ctx, store, keys, nil,100)
 ```
 
 And the `ExecuteStateTransaction` method to execute multiple `upsert` or `delete` operations transactionally.
@@ -160,7 +164,7 @@ if err := client.PublishEvent(ctx, "component-name", "topic-name", data); err !=
 To invoke a specific method on another service running with Dapr sidecar, the Dapr client provides two options. To invoke a service without any data:
 
 ```go 
-resp, err = client.InvokeMethod(ctx, "app-id", "method-name") 
+resp, err := client.InvokeMethod(ctx, "app-id", "method-name", "post")
 ``` 
 
 And to invoke a service with data: 
@@ -171,7 +175,7 @@ content := &dapr.DataContent{
     Data:        []byte(`{ "id": "a123", "value": "demo", "valid": true }`),
 }
 
-resp, err := client.InvokeMethodWithContent(ctx, "app-id", "method-name", content)
+resp, err = client.InvokeMethodWithContent(ctx, "app-id", "method-name", "post", content)
 ```
 
 ##### Bindings
