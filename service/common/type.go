@@ -55,22 +55,6 @@ type BindingEvent struct {
 	Metadata map[string]string `json:"metadata,omitempty"`
 }
 
-// ConfigurationUpdateEvent represents the configuration update event handler input
-type ConfigurationUpdateEvent struct {
-	AppID string               `json:"appID"`
-	Items []*ConfigurationItem `json:"items"`
-}
-
-// ConfigurationItem represents a configuration item with key, content and other information.
-type ConfigurationItem struct {
-	Key      string            `json:"key"`
-	Content  string            `json:"content,omitempty"`
-	Group    string            `json:"group,omitempty"`
-	Label    string            `json:"label,omitempty"`
-	Tags     map[string]string `json:"tags,omitempty"`
-	Metadata map[string]string `json:"metadata"`
-}
-
 // Subscription represents single topic subscription
 type Subscription struct {
 	// PubsubName is name of the pub/sub this message came from
