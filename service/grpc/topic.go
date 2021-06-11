@@ -3,6 +3,7 @@ package grpc
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
 	"github.com/dapr/go-sdk/service/common"
@@ -60,28 +61,44 @@ func (s *Server) OnTopicEvent(ctx context.Context, in *pb.TopicEventRequest) (*p
 		return &pb.TopicEventResponse{Status: pb.TopicEventResponse_DROP}, errors.New("pub/sub and topic names required")
 	}
 	key := fmt.Sprintf("%s-%s", in.PubsubName, in.Topic)
-	if h, ok := s.topicSubscriptions[key]; ok {
-		e := &common.TopicEvent{
-			ID:              in.Id,
-			Source:          in.Source,
-			Type:            in.Type,
-			SpecVersion:     in.SpecVersion,
-			DataContentType: in.DataContentType,
-			Data:            in.Data,
-			Topic:           in.Topic,
-			PubsubName:      in.PubsubName,
+
+	h, ok := s.topicSubscriptions[key]
+	if !ok {
+		// if we can't find the topic int the map, then change the id to '#' and search again
+		byteIndex := strings.LastIndexByte(key, '/')
+		if byteIndex < 0 {
+			return &pb.TopicEventResponse{Status: pb.TopicEventResponse_RETRY}, fmt.Errorf(
+				"pub/sub and topic combination not configured: %s/%s",
+				in.PubsubName, in.Topic,
+			)
 		}
-		retry, err := h.fn(ctx, e)
-		if err == nil {
-			return &pb.TopicEventResponse{Status: pb.TopicEventResponse_SUCCESS}, nil
+
+		newkey := key[:byteIndex] + "/#"
+		h, ok = s.topicSubscriptions[newkey]
+		if !ok {
+			return &pb.TopicEventResponse{Status: pb.TopicEventResponse_RETRY}, fmt.Errorf(
+				"pub/sub and topic combination not configured: %s/%s",
+				in.PubsubName, in.Topic,
+			)
 		}
-		if retry {
-			return &pb.TopicEventResponse{Status: pb.TopicEventResponse_RETRY}, err
-		}
-		return &pb.TopicEventResponse{Status: pb.TopicEventResponse_DROP}, err
 	}
-	return &pb.TopicEventResponse{Status: pb.TopicEventResponse_RETRY}, fmt.Errorf(
-		"pub/sub and topic combination not configured: %s/%s",
-		in.PubsubName, in.Topic,
-	)
+
+	e := &common.TopicEvent{
+		ID:              in.Id,
+		Source:          in.Source,
+		Type:            in.Type,
+		SpecVersion:     in.SpecVersion,
+		DataContentType: in.DataContentType,
+		Data:            in.Data,
+		Topic:           in.Topic,
+		PubsubName:      in.PubsubName,
+	}
+	retry, err := h.fn(ctx, e)
+	if err == nil {
+		return &pb.TopicEventResponse{Status: pb.TopicEventResponse_SUCCESS}, nil
+	}
+	if retry {
+		return &pb.TopicEventResponse{Status: pb.TopicEventResponse_RETRY}, err
+	}
+	return &pb.TopicEventResponse{Status: pb.TopicEventResponse_DROP}, err
 }
