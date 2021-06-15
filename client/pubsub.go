@@ -39,6 +39,11 @@ func (c *GRPCClient) PublishEventWithMetadata(ctx context.Context, pubsubName, t
 
 // PublishEventfromCustomContent serializes an struct and publishes its contents as data (JSON) onto topic in specific pubsub component.
 func (c *GRPCClient) PublishEventfromCustomContent(ctx context.Context, pubsubName, topicName string, data interface{}) error {
+	return c.PublishEventfromCustomContentWithMetadata(ctx, pubsubName, topicName, data, nil)
+}
+
+// PublishEventfromCustomContentWithMetadata serializes an struct and publishes its contents as data (JSON) onto topic in specific pubsub component, with support for metadata.
+func (c *GRPCClient) PublishEventfromCustomContentWithMetadata(ctx context.Context, pubsubName, topicName string, data interface{}, metadata map[string]string) error {
 	if pubsubName == "" {
 		return errors.New("pubsubName name required")
 	}
@@ -52,14 +57,15 @@ func (c *GRPCClient) PublishEventfromCustomContent(ctx context.Context, pubsubNa
 		return errors.WithMessage(err, "error serializing input struct")
 	}
 
-	envelop := &pb.PublishEventRequest{
+	envelope := &pb.PublishEventRequest{
 		PubsubName:      pubsubName,
 		Topic:           topicName,
 		Data:            bytes,
 		DataContentType: "application/json",
+		Metadata:        metadata,
 	}
 
-	_, err = c.protoClient.PublishEvent(c.withAuthToken(ctx), envelop)
+	_, err = c.protoClient.PublishEvent(c.withAuthToken(ctx), envelope)
 
 	if err != nil {
 		return errors.Wrapf(err, "error publishing event unto %s topic", topicName)

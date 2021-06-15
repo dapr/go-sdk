@@ -58,6 +58,9 @@ type Client interface {
 	// PublishEventfromCustomContent serializes an struct and publishes its contents as data (JSON) onto topic in specific pubsub component.
 	PublishEventfromCustomContent(ctx context.Context, pubsubName, topicName string, data interface{}) error
 
+	// PublishEventfromCustomContent serializes an struct and publishes its contents as data (JSON) onto topic in specific pubsub component, with support for metadata.
+	PublishEventfromCustomContentWithMetadata(ctx context.Context, pubsubName, topicName string, data interface{}, metadata map[string]string) error
+
 	// GetSecret retrieves preconfigured secret from specified store using key.
 	GetSecret(ctx context.Context, storeName, key string, meta map[string]string) (data map[string]string, err error)
 
