@@ -10,6 +10,11 @@ import (
 
 // PublishEvent publishes data onto specific pubsub topic.
 func (c *GRPCClient) PublishEvent(ctx context.Context, pubsubName, topicName string, data []byte) error {
+	return c.PublishEventWithMetadata(ctx, pubsubName, topicName, data, nil)
+}
+
+// PublishEventWithMetadata publishes data onto specific pubsub topic with support for metadata.
+func (c *GRPCClient) PublishEventWithMetadata(ctx context.Context, pubsubName, topicName string, data []byte, metadata map[string]string) error {
 	if pubsubName == "" {
 		return errors.New("pubsubName name required")
 	}
@@ -17,13 +22,14 @@ func (c *GRPCClient) PublishEvent(ctx context.Context, pubsubName, topicName str
 		return errors.New("topic name required")
 	}
 
-	envelop := &pb.PublishEventRequest{
+	envelope := &pb.PublishEventRequest{
 		PubsubName: pubsubName,
 		Topic:      topicName,
 		Data:       data,
+		Metadata:   metadata,
 	}
 
-	_, err := c.protoClient.PublishEvent(c.withAuthToken(ctx), envelop)
+	_, err := c.protoClient.PublishEvent(c.withAuthToken(ctx), envelope)
 	if err != nil {
 		return errors.Wrapf(err, "error publishing event unto %s topic", topicName)
 	}

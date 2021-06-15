@@ -52,6 +52,9 @@ type Client interface {
 	// PublishEvent publishes data onto topic in specific pubsub component.
 	PublishEvent(ctx context.Context, pubsubName, topicName string, data []byte) error
 
+	// PublishEventWithMetadata publishes data onto specific pubsub topic with support for metadata.
+	PublishEventWithMetadata(ctx context.Context, pubsubName, topicName string, data []byte, metadata map[string]string) error
+
 	// PublishEventfromCustomContent serializes an struct and publishes its contents as data (JSON) onto topic in specific pubsub component.
 	PublishEventfromCustomContent(ctx context.Context, pubsubName, topicName string, data interface{}) error
 

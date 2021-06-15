@@ -40,6 +40,14 @@ func TestPublishEvent(t *testing.T) {
 		assert.NotNil(t, err)
 	})
 
+	t.Run("with metadata", func(t *testing.T) {
+		metadata := map[string]string{
+			"ttlInSeconds": "120",
+		}
+		err := testClient.PublishEventWithMetadata(ctx, "messages", "test", []byte("ping"), metadata)
+		assert.Nil(t, err)
+	})
+
 	t.Run("from struct with text", func(t *testing.T) {
 		testdata := _testStructwithText{
 			Key1: "value1",
