@@ -65,7 +65,7 @@ func TestTopic(t *testing.T) {
 
 	t.Run("topic event for wrong topic", func(t *testing.T) {
 		in := &runtime.TopicEventRequest{
-			Topic: "invlid",
+			Topic: "invalid",
 		}
 		_, err := server.OnTopicEvent(ctx, in)
 		assert.Error(t, err)

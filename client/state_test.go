@@ -341,5 +341,4 @@ func TestStateTransactions(t *testing.T) {
 		assert.NotNil(t, items)
 		assert.Len(t, items, 0)
 	})
-
 }

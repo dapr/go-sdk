@@ -72,7 +72,6 @@ func TestShutdown(t *testing.T) {
 	})
 }
 
-
 func getTestClient(ctx context.Context) (client Client, closer func()) {
 	s := grpc.NewServer()
 	pb.RegisterDaprServer(s, &testDaprServer{

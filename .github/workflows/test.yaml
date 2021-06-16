@@ -31,18 +31,16 @@ jobs:
 
     - name: Tidy
       run: |
-        go mod tidy 
+        go mod tidy
         go mod vendor
 
     - name: Test
       run: go test -race -coverprofile=coverage.txt -covermode=atomic ./...
-      
+
     - name: Cover
       uses: codecov/codecov-action@v1
-      
+
     - name: Lint
       uses: golangci/golangci-lint-action@v2
       with:
-        version: v1.33
-      
-    
+        version: v1.40.1
