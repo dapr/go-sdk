@@ -42,7 +42,7 @@ func TestPublishEvent(t *testing.T) {
 
 	t.Run("with metadata", func(t *testing.T) {
 		metadata := map[string]string{
-			"ttlInSeconds": "120",
+			"foo": "bar",
 		}
 		err := testClient.PublishEventWithMetadata(ctx, "messages", "test", []byte("ping"), metadata)
 		assert.Nil(t, err)
@@ -63,7 +63,7 @@ func TestPublishEvent(t *testing.T) {
 			Key2: "value2",
 		}
 		metadata := map[string]string{
-			"ttlInSeconds": "120",
+			"foo": "bar",
 		}
 		err := testClient.PublishEventfromCustomContentWithMetadata(ctx, "messages", "test", testdata, metadata)
 		assert.Nil(t, err)
