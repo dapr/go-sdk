@@ -50,9 +50,10 @@ type Client interface {
 	InvokeMethodWithCustomContent(ctx context.Context, appID, methodName, verb string, contentType string, content interface{}) (out []byte, err error)
 
 	// PublishEvent publishes data onto topic in specific pubsub component.
-	PublishEvent(ctx context.Context, pubsubName, topicName string, data []byte) error
+	PublishEvent(ctx context.Context, pubsubName, topicName string, data interface{}, opts ...PublishEventOption) error
 
 	// PublishEventfromCustomContent serializes an struct and publishes its contents as data (JSON) onto topic in specific pubsub component.
+	// DEPRECATED: This method is deprecated and will be removed in a future version of the SDK. Please use `PublishEvent` instead.
 	PublishEventfromCustomContent(ctx context.Context, pubsubName, topicName string, data interface{}) error
 
 	// GetSecret retrieves preconfigured secret from specified store using key.
