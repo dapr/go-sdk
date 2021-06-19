@@ -5,8 +5,8 @@ import (
 	"errors"
 	"log"
 
-	"github.com/dapr/go-sdk/service/common"
-	daprd "github.com/dapr/go-sdk/service/grpc"
+	"github.com/heyanwei/go-sdk/service/common"
+	daprd "github.com/heyanwei/go-sdk/service/grpc"
 )
 
 func main() {

@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/dapr/go-sdk/service/common"
+	"github.com/heyanwei/go-sdk/service/common"
 	"github.com/stretchr/testify/assert"
 )
 

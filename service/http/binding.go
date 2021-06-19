@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/dapr/go-sdk/service/common"
+	"github.com/heyanwei/go-sdk/service/common"
 )
 
 // AddBindingInvocationHandler appends provided binding invocation handler with its route to the service

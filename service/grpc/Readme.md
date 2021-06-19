@@ -3,7 +3,7 @@
 Start by importing Dapr go `service/grpc` package:
 
 ```go
-daprd "github.com/dapr/go-sdk/service/grpc"
+daprd "github.com/heyanwei/go-sdk/service/grpc"
 ```
 
 ## Creating and Starting Service 

@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	v1 "github.com/dapr/go-sdk/dapr/proto/common/v1"
+	v1 "github.com/heyanwei/go-sdk/dapr/proto/common/v1"
 	"github.com/stretchr/testify/assert"
 )
 

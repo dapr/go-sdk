@@ -15,8 +15,8 @@ import (
 	"google.golang.org/grpc/test/bufconn"
 	"google.golang.org/protobuf/types/known/anypb"
 
-	commonv1pb "github.com/dapr/go-sdk/dapr/proto/common/v1"
-	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
+	commonv1pb "github.com/heyanwei/go-sdk/dapr/proto/common/v1"
+	pb "github.com/heyanwei/go-sdk/dapr/proto/runtime/v1"
 )
 
 const (
@@ -71,7 +71,6 @@ func TestShutdown(t *testing.T) {
 		assert.NoError(t, err)
 	})
 }
-
 
 func getTestClient(ctx context.Context) (client Client, closer func()) {
 	s := grpc.NewServer()

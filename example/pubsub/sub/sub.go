@@ -5,8 +5,8 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/dapr/go-sdk/service/common"
-	daprd "github.com/dapr/go-sdk/service/http"
+	"github.com/heyanwei/go-sdk/service/common"
+	daprd "github.com/heyanwei/go-sdk/service/http"
 )
 
 // Subscription to tell the dapr what topic to subscribe.

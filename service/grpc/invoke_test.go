@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
-	"github.com/dapr/go-sdk/dapr/proto/common/v1"
-	cc "github.com/dapr/go-sdk/service/common"
+	"github.com/heyanwei/go-sdk/dapr/proto/common/v1"
+	cc "github.com/heyanwei/go-sdk/service/common"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/types/known/anypb"

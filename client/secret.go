@@ -3,7 +3,7 @@ package client
 import (
 	"context"
 
-	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
+	pb "github.com/heyanwei/go-sdk/dapr/proto/runtime/v1"
 	"github.com/pkg/errors"
 )
 

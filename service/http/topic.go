@@ -9,7 +9,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/dapr/go-sdk/service/common"
+	"github.com/heyanwei/go-sdk/service/common"
 )
 
 const (

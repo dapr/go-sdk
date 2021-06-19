@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"strings"
 
-	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
-	"github.com/dapr/go-sdk/service/common"
 	"github.com/golang/protobuf/ptypes/empty"
+	pb "github.com/heyanwei/go-sdk/dapr/proto/runtime/v1"
+	"github.com/heyanwei/go-sdk/service/common"
 	"github.com/pkg/errors"
 )
 

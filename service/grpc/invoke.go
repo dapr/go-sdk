@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	cpb "github.com/dapr/go-sdk/dapr/proto/common/v1"
-	cc "github.com/dapr/go-sdk/service/common"
 	"github.com/golang/protobuf/ptypes/any"
+	cpb "github.com/heyanwei/go-sdk/dapr/proto/common/v1"
+	cc "github.com/heyanwei/go-sdk/service/common"
 	"github.com/pkg/errors"
 )
 

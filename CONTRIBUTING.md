@@ -32,7 +32,7 @@ There are 4 types of issues:
 Before you file an issue, make sure you've checked the following:
 
 1. Check for existing issues
-    - Before you create a new issue, please do a search in [open issues](https://github.com/dapr/go-sdk/issues) to see if the issue or feature request has already been filed.
+    - Before you create a new issue, please do a search in [open issues](https://github.com/heyanwei/go-sdk/issues) to see if the issue or feature request has already been filed.
     - If you find your issue already exists, make relevant comments and add your [reaction](https://github.com/blog/2119-add-reaction-to-pull-requests-issues-and-comments). Use a reaction:
         - 👍 up-vote
         - 👎 down-vote
