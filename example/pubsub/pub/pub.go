@@ -3,9 +3,8 @@ package main
 import (
 	"context"
 	"fmt"
+	dapr "github.com/dapr/go-sdk/client"
 	"os"
-
-	dapr "github.com/heyanwei/go-sdk/client"
 )
 
 var (

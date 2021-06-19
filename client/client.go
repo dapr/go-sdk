@@ -12,7 +12,7 @@ import (
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/emptypb"
 
-	pb "github.com/heyanwei/go-sdk/dapr/proto/runtime/v1"
+	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
 )
 
 const (

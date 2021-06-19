@@ -3,7 +3,7 @@ package http
 import (
 	"net/http"
 
-	"github.com/heyanwei/go-sdk/service/common"
+	"github.com/dapr/go-sdk/service/common"
 )
 
 // NewService creates new Service

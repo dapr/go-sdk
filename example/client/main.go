@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	dapr "github.com/heyanwei/go-sdk/client"
+	dapr "github.com/dapr/go-sdk/client"
 )
 
 func main() {

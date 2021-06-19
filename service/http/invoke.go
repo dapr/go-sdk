@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/heyanwei/go-sdk/service/common"
+	"github.com/dapr/go-sdk/service/common"
 )
 
 // AddServiceInvocationHandler appends provided service invocation handler with its route to the service
@@ -63,3 +63,5 @@ func (s *Server) AddServiceInvocationHandler(route string, fn func(ctx context.C
 
 	return nil
 }
+
+

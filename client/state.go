@@ -4,9 +4,9 @@ import (
 	"context"
 	"time"
 
+	v1 "github.com/dapr/go-sdk/dapr/proto/common/v1"
+	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
 	"github.com/golang/protobuf/ptypes/duration"
-	v1 "github.com/heyanwei/go-sdk/dapr/proto/common/v1"
-	pb "github.com/heyanwei/go-sdk/dapr/proto/runtime/v1"
 	"github.com/pkg/errors"
 )
 

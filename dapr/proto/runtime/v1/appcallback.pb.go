@@ -12,8 +12,8 @@
 package runtime
 
 import (
+	v1 "github.com/dapr/go-sdk/dapr/proto/common/v1"
 	proto "github.com/golang/protobuf/proto"
-	v1 "github.com/heyanwei/go-sdk/dapr/proto/common/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"

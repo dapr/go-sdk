@@ -6,8 +6,8 @@ import (
 
 	"github.com/pkg/errors"
 
-	pb "github.com/heyanwei/go-sdk/dapr/proto/runtime/v1"
-	"github.com/heyanwei/go-sdk/service/common"
+	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
+	"github.com/dapr/go-sdk/service/common"
 	"google.golang.org/grpc"
 )
 

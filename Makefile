@@ -52,17 +52,17 @@ protos: ## Downloads proto files from dapr/dapr master and generates gRPC proto 
 
 	wget -q $(PROTO_ROOT)/common/v1/common.proto -O ./dapr/proto/common/v1/common.proto
 	gogoreplace 'option go_package = "github.com/dapr/dapr/pkg/proto/common/v1;common";' \
-		'option go_package = "github.com/heyanwei/go-sdk/dapr/proto/common/v1;common";' \
+		'option go_package = "github.com/dapr/go-sdk/dapr/proto/common/v1;common";' \
 		./dapr/proto/common/v1/common.proto
 
 	wget -q $(PROTO_ROOT)/runtime/v1/appcallback.proto -O ./dapr/proto/runtime/v1/appcallback.proto
 	gogoreplace 'option go_package = "github.com/dapr/dapr/pkg/proto/runtime/v1;runtime";' \
-		'option go_package = "github.com/heyanwei/go-sdk/dapr/proto/runtime/v1;runtime";' \
+		'option go_package = "github.com/dapr/go-sdk/dapr/proto/runtime/v1;runtime";' \
 		./dapr/proto/runtime/v1/appcallback.proto
 
 	wget -q $(PROTO_ROOT)/runtime/v1/dapr.proto -O ./dapr/proto/runtime/v1/dapr.proto
 	gogoreplace 'option go_package = "github.com/dapr/dapr/pkg/proto/runtime/v1;runtime";' \
-		'option go_package = "github.com/heyanwei/go-sdk/dapr/proto/runtime/v1;runtime";' \
+		'option go_package = "github.com/dapr/go-sdk/dapr/proto/runtime/v1;runtime";' \
 		./dapr/proto/runtime/v1/dapr.proto
 
 	protoc --go_out=. --go_opt=paths=source_relative \

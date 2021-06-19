@@ -1,4 +1,4 @@
-module github.com/heyanwei/go-sdk
+module github.com/dapr/go-sdk
 
 go 1.15
 
