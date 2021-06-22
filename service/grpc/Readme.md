@@ -1,6 +1,6 @@
 # Dapr gRPC Service SDK for Go
 
-Start by importing Dapr go `service/grpc` package:
+Start by importing Dapr Go `service/grpc` package:
 
 ```go
 daprd "github.com/dapr/go-sdk/service/grpc"
@@ -107,12 +107,12 @@ func runHandler(ctx context.Context, in *common.BindingEvent) (out []byte, err e
 
 ## Templates 
 
-To accelerate your gRPC Dapr app development in go even further you can use one of the GitHub templates integrating the gRPC Dapr callback package:
+To accelerate your gRPC Dapr app development in Go even further you can use one of the GitHub templates integrating the gRPC Dapr callback package:
 
 * [Dapr gRPC Service in Go](https://github.com/mchmarny/dapr-grpc-service-template) - Template project to jump start your Dapr event subscriber service with gRPC development
 * [Dapr gRPC Event Subscriber in Go](https://github.com/mchmarny/dapr-grpc-event-subscriber-template) - Template project to jump start your Dapr event subscriber service with gRPC development
 
 
-## Contributing to Dapr go client 
+## Contributing to Dapr Go client
 
 See the [Contribution Guide](../../CONTRIBUTING.md) to get started with building and developing.

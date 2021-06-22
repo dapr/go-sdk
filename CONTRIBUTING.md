@@ -1,6 +1,6 @@
 # Contribution Guidelines
 
-Thank you for your interest in Dapr go SDK!
+Thank you for your interest in Dapr Go SDK!
 
 This project welcomes contributions and suggestions. Most contributions require you to agree to a Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us the rights to use your contribution.
 
@@ -12,7 +12,7 @@ This project has adopted the Microsoft Open Source Code of Conduct. For more inf
 
 Contributions come in many forms: submitting issues, writing code, participating in discussions and community calls.
 
-This document provides the guidelines for how to contribute to the Dapr go SDK project.
+This document provides the guidelines for how to contribute to the Dapr Go SDK project.
 
 ## Issues
 
@@ -23,7 +23,7 @@ This section describes the guidelines for submitting issues
 There are 4 types of issues:
 
 - Issue/Bug: You've found a bug with the code, and want to report it, or create an issue to track the bug.
-- Issue/Discussion: You have something on your mind, which requires input form others in a discussion, before it eventually manifests as a proposal.
+- Issue/Discussion: You have something on your mind, which requires input from others in a discussion, before it eventually manifests as a proposal.
 - Issue/Proposal: Used for items that propose a new idea or functionality. This allows feedback from others before code is written.
 - Issue/Question: Use this issue type, if you need help or have a question.
 
@@ -37,12 +37,12 @@ Before you file an issue, make sure you've checked the following:
         - 👍 up-vote
         - 👎 down-vote
 1. For proposals
-    - Some changes to the Dapr go SDK may require changes to the API. In that case, the best place to discuss the potential feature is the main [Dapr repo](https://github.com/dapr/dapr).
+    - Some changes to the Dapr Go SDK may require changes to the API. In that case, the best place to discuss the potential feature is the main [Dapr repo](https://github.com/dapr/dapr).
     - Other examples could include bindings, state stores or entirely new components.
 
-## Contributing to Dapr go SDK
+## Contributing to Dapr Go SDK
 
-This section describes the guidelines for contributing code/docs to Dapr go SDK.
+This section describes the guidelines for contributing code/docs to Dapr Go SDK.
 
 ### Pull Requests
 
@@ -68,7 +68,7 @@ A good way to communicate before investing too much time is to create a "Work-in
 ### Use of Third-party code
 
 - All third-party code must be placed in the `vendor/` folder.
-- `vendor/` folder is managed by go modules which stores the source code of third-party go dependencies. - The `vendor/` folder should not be modified manually.
+- `vendor/` folder is managed by Go modules which stores the source code of third-party Go dependencies. - The `vendor/` folder should not be modified manually.
 - Third-party code must include licenses.
 
 A non-exclusive list of code that must be places in `vendor/`:

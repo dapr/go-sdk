@@ -1,6 +1,6 @@
 # Dapr HTTP Service SDK for Go
 
-Start by importing Dapr go `service/http` package:
+Start by importing Dapr Go `service/http` package:
 
 ```go
 daprd "github.com/dapr/go-sdk/service/http"
@@ -103,12 +103,12 @@ func runHandler(ctx context.Context, in *common.BindingEvent) (out []byte, err e
 
 ## Templates 
 
-To accelerate your HTTP Dapr app development in go even further you can use one of the GitHub templates integrating the HTTP Dapr callback package:
+To accelerate your HTTP Dapr app development in Go even further you can use one of the GitHub templates integrating the HTTP Dapr callback package:
 
 * [Dapr HTTP Event Subscriber in Go](https://github.com/mchmarny/dapr-http-event-subscriber-template) - Template project to jump start your Dapr event subscriber service with HTTP development
 * [Dapr HTTP cron Handler in Go](https://github.com/mchmarny/dapr-http-cron-handler-template) - Template project to jump start your Dapr service development for scheduled workloads
 
 
-## Contributing to Dapr go client 
+## Contributing to Dapr Go client
 
 See the [Contribution Guide](../../CONTRIBUTING.md) to get started with building and developing.
