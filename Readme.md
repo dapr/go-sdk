@@ -7,7 +7,7 @@ Client library to help you build Dapr application in Go. This client supports al
 ## Usage
 > Assuming you already have [installed](https://golang.org/doc/install) Go
 
-Dapr Go client includes two packages: `client` (for invoking public Dapr APIs), and `service` (to create services that will be invoked by Dapr, this is sometimes refereed to as "callback"). 
+Dapr Go client includes two packages: `client` (for invoking public Dapr APIs), and `service` (to create services that will be invoked by Dapr, this is sometimes referred to as "callback").
 
 ### Creating client 
 
@@ -217,7 +217,7 @@ secret, err := client.GetSecret(ctx, "store-name", "secret-name", opt)
 
 #### Authentication 
 
-By default, Dapr relies on the network boundary to limit access to its API. If however the target Dapr API is configured with token-based authentication, users can configure the go Dapr client with that token in two ways:
+By default, Dapr relies on the network boundary to limit access to its API. If however the target Dapr API is configured with token-based authentication, users can configure the Go Dapr client with that token in two ways:
 
 ##### Environment Variable 
 
@@ -242,7 +242,7 @@ func main() {
 
 In addition to the client capabilities that allow you to call into the Dapr API, the Go SDK also provides `service` package to help you bootstrap Dapr callback services in either gRPC or HTTP. Instructions on how to use it are located [here](./service/Readme.md)
 
-## Contributing to Dapr go client 
+## Contributing to Dapr Go client
 
 See the [Contribution Guide](./CONTRIBUTING.md) to get started with building and developing.
 
