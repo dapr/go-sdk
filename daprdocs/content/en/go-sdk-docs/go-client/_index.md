@@ -142,7 +142,7 @@ meta := map[string]string{}
 err := testClient.ExecuteStateTransaction(ctx, store, meta, ops)
 ```
 
-### Publish messages
+### Publish Messages
 To publish data onto a topic, the Dapr Go client provides a simple method:
 
 ```go
@@ -154,7 +154,7 @@ if err := client.PublishEvent(ctx, "component-name", "topic-name", data); err !=
 
 - For a full list of state operations visit [How-To: Publish & subscribe]({{< ref howto-publish-subscribe.md >}}).
 
-### Output bindings
+### Output Bindings
 The Dapr Go client SDK provides two methods to invoke an operation on a Dapr-defined binding. Dapr supports input, output, and bidirectional bindings.
 
 For simple, output only biding:
