@@ -16,7 +16,6 @@ Start by importing Dapr Go service/grpc package:
 daprd "github.com/dapr/go-sdk/service/grpc"
 ```
 
-
 ### Creating and Starting Service
 
 To create a gRPC Dapr service, first, create a Dapr callback instance with a specific address:
