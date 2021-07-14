@@ -21,31 +21,31 @@ func (c *GRPCClient) PublishEvent(ctx context.Context, pubsubName, topicName str
 		return errors.New("topic name required")
 	}
 
-	envelope := &pb.PublishEventRequest{
+	request := &pb.PublishEventRequest{
 		PubsubName: pubsubName,
 		Topic:      topicName,
 	}
 	for _, opt := range opts {
-		opt(envelope)
+		opt(request)
 	}
 
 	if data != nil {
 		switch d := data.(type) {
 		case []byte:
-			envelope.Data = d
+			request.Data = d
 		case string:
-			envelope.Data = []byte(d)
+			request.Data = []byte(d)
 		default:
 			var err error
-			envelope.DataContentType = "application/json"
-			envelope.Data, err = json.Marshal(d)
+			request.DataContentType = "application/json"
+			request.Data, err = json.Marshal(d)
 			if err != nil {
 				return errors.WithMessage(err, "error serializing input struct")
 			}
 		}
 	}
 
-	_, err := c.protoClient.PublishEvent(c.withAuthToken(ctx), envelope)
+	_, err := c.protoClient.PublishEvent(c.withAuthToken(ctx), request)
 	if err != nil {
 		return errors.Wrapf(err, "error publishing event unto %s topic", topicName)
 	}
