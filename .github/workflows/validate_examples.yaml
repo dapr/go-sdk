@@ -3,12 +3,12 @@ name: validate-examples
 on:
   push:
     branches:
-      - master
+      - main
     tags:
       - v*
   pull_request:
     branches:
-      - master
+      - main
 jobs:
   validate:
     runs-on: ubuntu-latest
