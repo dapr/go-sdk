@@ -27,13 +27,6 @@ Follow [instructions](https://docs.dapr.io/getting-started/install-dapr/) to dow
 
 ## Step 2 - Understand the code
 
-Now that Dapr is set up locally, clone the repo, then navigate to the Hello World SDK quickstart:
-
-```sh
-git clone [-b <dapr_version_tag>] https://github.com/dapr/quickstarts.git
-cd quickstarts/hello-world-sdk
-```
-
 The [order.go](./order.go) is a simple command line application, that implements four commands:
 * `put` sends an order with configurable order ID.
 * `get` return the current order number.

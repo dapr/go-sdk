@@ -4,6 +4,10 @@ The `examples/service` folder contains a Dapr enabled `serving` app and a `clien
 
 To run this example, start by first launching the service in either HTTP or gRPC:
 
+### Prepare
+
+- Dapr installed
+
 ### HTTP
 
 <!-- STEP
@@ -76,7 +80,7 @@ Publish JSON content
 ```shell
 curl -d '{ "from": "John", "to": "Lary", "message": "hi" }' \
      -H "Content-type: application/json" \
-     "http://localhost:3500/v1.0/publish/messages"
+     "http://localhost:3500/v1.0/publish/messages/topic1"
 ```
 
 Publish XML content (read as text)
@@ -84,7 +88,7 @@ Publish XML content (read as text)
 ```shell
 curl -d '<message><from>John</from><to>Lary</to></message>' \
      -H "Content-type: application/xml" \
-     "http://localhost:3500/v1.0/publish/messages"
+     "http://localhost:3500/v1.0/publish/messages/topic1"
 ```
 
 Publish BIN content 
@@ -92,7 +96,7 @@ Publish BIN content
 ```shell
 curl -d '0x18, 0x2d, 0x44, 0x54, 0xfb, 0x21, 0x09, 0x40' \
      -H "Content-type: application/octet-stream" \
-     "http://localhost:3500/v1.0/publish/messages"
+     "http://localhost:3500/v1.0/publish/messages/topic1"
 ```
 
 ### Service Invocation 
