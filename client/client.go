@@ -2,6 +2,7 @@ package client
 
 import (
 	"context"
+	"github.com/dapr/go-sdk/actor"
 	"log"
 	"net"
 	"os"
@@ -97,11 +98,28 @@ type Client interface {
 	// WithTraceID adds existing trace ID to the outgoing context.
 	WithTraceID(ctx context.Context, id string) context.Context
 
+	// Register an actor timer.
+	RegisterActorTimer(ctx context.Context, in *RegisterActorTimerRequest) error
+	// Unregister an actor timer.
+	//UnregisterActorTimer(ctx context.Context, in *UnregisterActorTimerRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	// Register an actor reminder.
+	RegisterActorReminder(ctx context.Context, in *RegisterActorReminderRequest) error
+	// Unregister an actor reminder.
+	//UnregisterActorReminder(ctx context.Context, in *UnregisterActorReminderRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	// Gets the state for a specific actor.
+	//GetActorState(ctx context.Context, in *GetActorStateRequest, opts ...grpc.CallOption) (*GetActorStateResponse, error)
+	// Executes state transactions for a specified actor
+	//ExecuteActorStateTransaction(ctx context.Context, in *ExecuteActorStateTransactionRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	// InvokeActor calls a method on an actor.
+	InvokeActor(ctx context.Context, in *InvokeActorRequest) (*InvokeActorResponse, error)
+
 	// WithAuthToken sets Dapr API token on the instantiated client.
 	WithAuthToken(token string)
 
 	// Close cleans up all resources created by the client.
 	Close()
+
+	ImplActorInteface(actorInterface actor.ActorProxy)
 }
 
 // NewClient instantiates Dapr client using DAPR_GRPC_PORT environment variable as port.

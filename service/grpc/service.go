@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"context"
+	"github.com/dapr/go-sdk/actor"
 	"net"
 
 	"github.com/pkg/errors"
@@ -46,6 +47,10 @@ type Server struct {
 	invokeHandlers     map[string]func(ctx context.Context, in *common.InvocationEvent) (out *common.Content, err error)
 	topicSubscriptions map[string]*topicEventHandler
 	bindingHandlers    map[string]func(ctx context.Context, in *common.BindingEvent) (out []byte, err error)
+}
+
+func (s *Server) RegisterActor(actor actor.Actor) {
+	panic("implement me")
 }
 
 type topicEventHandler struct {

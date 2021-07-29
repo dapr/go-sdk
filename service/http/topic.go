@@ -4,12 +4,15 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	actorErr "github.com/dapr/go-sdk/actor/error"
+	"github.com/dapr/go-sdk/actor/runtime"
+	"io/ioutil"
 	"net/http"
 	"strings"
 
-	"github.com/pkg/errors"
-
 	"github.com/dapr/go-sdk/service/common"
+	"github.com/gorilla/mux"
+	"github.com/pkg/errors"
 )
 
 const (
@@ -32,6 +35,88 @@ func (s *Server) registerSubscribeHandler() {
 		}
 	}
 	s.mux.HandleFunc("/dapr/subscribe", f)
+}
+
+func (s *Server) registerActorHandler() {
+	fRegister := func(w http.ResponseWriter, r *http.Request) {
+		w.Write(runtime.GetActorRuntime().GetSerializedConfig())
+		fmt.Println("get dapr/config invoke: " + string(runtime.GetActorRuntime().GetSerializedConfig()))
+		w.WriteHeader(200)
+	}
+	s.mux.HandleFunc("/dapr/config", fRegister)
+
+	fInvoke := func(w http.ResponseWriter, r *http.Request) {
+		varsMap := mux.Vars(r)
+		actorType := varsMap["actorType"]
+		actorID := varsMap["actorId"]
+		methodName := varsMap["methodName"]
+		reqData, _ := ioutil.ReadAll(r.Body)
+		rspData, err := runtime.GetActorRuntime().InvokeActorMethod(actorType, actorID, methodName, reqData)
+		if err == actorErr.ErrorActorTypeNotFound || err == actorErr.ErrorActorIDNotFound {
+			w.WriteHeader(404)
+		}
+		if err != actorErr.Success {
+			w.WriteHeader(500)
+		}
+		w.WriteHeader(200)
+		w.Write(rspData)
+	}
+	s.mux.HandleFunc("/actors/{actorType}/{actorId}/method/{methodName}", fInvoke).Methods("PUT")
+
+	fDelete := func(w http.ResponseWriter, r *http.Request) {
+		varsMap := mux.Vars(r)
+		actorType := varsMap["actorType"]
+		actorID := varsMap["actorId"]
+		err := runtime.GetActorRuntime().Deactive(actorType, actorID)
+		if err == actorErr.ErrorActorTypeNotFound || err == actorErr.ErrorActorIDNotFound {
+			w.WriteHeader(404)
+		}
+		if err != actorErr.Success {
+			w.WriteHeader(500)
+		}
+		w.WriteHeader(200)
+	}
+	s.mux.HandleFunc("/actors/{actorType}/{actorId}", fDelete).Methods("DELETE")
+
+	fReminder := func(w http.ResponseWriter, r *http.Request) {
+		varsMap := mux.Vars(r)
+		actorType := varsMap["actorType"]
+		actorID := varsMap["actorId"]
+		reminderName := varsMap["reminderName"]
+		reqData, _ := ioutil.ReadAll(r.Body)
+		err := runtime.GetActorRuntime().InvokeReminder(actorType, actorID, reminderName, reqData)
+		if err == actorErr.ErrorActorTypeNotFound || err == actorErr.ErrorActorIDNotFound {
+			w.WriteHeader(404)
+		}
+		if err != actorErr.Success {
+			w.WriteHeader(500)
+		}
+		w.WriteHeader(200)
+	}
+	s.mux.HandleFunc("/actors/{actorType}/{actorId}/method/remind/{reminderName}", fReminder).Methods("PUT")
+
+	fTimer := func(w http.ResponseWriter, r *http.Request) {
+		fmt.Println("daprd sdk actor invoke timer ")
+		varsMap := mux.Vars(r)
+		actorType := varsMap["actorType"]
+		actorID := varsMap["actorId"]
+		timerName := varsMap["timerName"]
+		reqData, _ := ioutil.ReadAll(r.Body)
+		err := runtime.GetActorRuntime().InvokeTimer(actorType, actorID, timerName, reqData)
+		if err == actorErr.ErrorActorTypeNotFound || err == actorErr.ErrorActorIDNotFound {
+			w.WriteHeader(404)
+		}
+		if err != actorErr.Success {
+			w.WriteHeader(500)
+		}
+		w.WriteHeader(200)
+	}
+	s.mux.HandleFunc("/actors/{actorType}/{actorId}/method/timer/{timerName}", fTimer).Methods("PUT")
+
+	fHealth := func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(200)
+	}
+	s.mux.HandleFunc("/healthz", fHealth)
 }
 
 // AddTopicEventHandler appends provided event handler with it's name to the service
