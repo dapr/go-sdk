@@ -1,6 +1,8 @@
 # Dapr Go client example
 
-The `examples/service` folder contains a Dapr enabled `serving` app and a `client` app that uses this SDK to invoke Dapr API for state and events, The `serving` app is available as HTTP or gRPC. The `client` app can target either one of these for service to service and binding invocations.
+The `examples/service` folder contains a Dapr enabled `serving` app and a `client` app that uses this SDK to invoke Dapr
+API for state and events, The `serving` app is available as HTTP or gRPC. The `client` app can target either one of
+these for service to service and binding invocations.
 
 To run this example, start by first launching the service in either HTTP or gRPC:
 
@@ -43,7 +45,7 @@ dapr run --app-id serving \
          go run ./serving/grpc/main.go
 ```
 
-## Client 
+## Client
 
 Once one of the above services is running, launch the client:
 
@@ -71,6 +73,35 @@ dapr run --app-id caller \
 
 <!-- END_STEP -->
 
+## Custom gRPC client
+
+Launch the DAPR client with custom gRPC client to accept and receive payload size > 4 MB:
+<!-- STEP
+expected_stdout_lines:
+✅  You're up and running! Both Dapr and your app logs will appear here.
+
+== APP == Writing large data blob...
+== APP == Saved the large data blob...
+== APP == Writing to statestore took 1.29516369sGetting data from the large data blob...
+== APP == Reading from statestore took 3.735723404s
+== APP == Deleting key from statestore took 3.738843037s
+== APP == DONE (CTRL+C to Exit)
+✅  Exited App successfully
+ℹ️  
+terminated signal received: shutting down
+✅  Exited Dapr successfully
+-->
+
+```bash
+dapr run --app-id custom-grpc-client \
+		 -d ./config \
+		 --dapr-http-max-request-size 41 \
+		 --log-level debug \
+		 go run ./custom-grpc-client/main.go
+```
+
+<!-- END_STEP -->
+
 ## API
 
 ### PubSub
@@ -91,7 +122,7 @@ curl -d '<message><from>John</from><to>Lary</to></message>' \
      "http://localhost:3500/v1.0/publish/messages/topic1"
 ```
 
-Publish BIN content 
+Publish BIN content
 
 ```shell
 curl -d '0x18, 0x2d, 0x44, 0x54, 0xfb, 0x21, 0x09, 0x40' \
@@ -99,7 +130,7 @@ curl -d '0x18, 0x2d, 0x44, 0x54, 0xfb, 0x21, 0x09, 0x40' \
      "http://localhost:3500/v1.0/publish/messages/topic1"
 ```
 
-### Service Invocation 
+### Service Invocation
 
 Invoke service with JSON payload
 
@@ -124,7 +155,7 @@ curl -X DELETE \
     "http://localhost:3500/v1.0/invoke/serving/method/echo?k1=v1&k2=v2"
 ```
 
-### Input Binding  
+### Input Binding
 
 Uses the [config/cron.yaml](config/cron.yaml) component
 
