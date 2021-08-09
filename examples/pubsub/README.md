@@ -14,7 +14,16 @@ This folder contains two Go files that use the Go SDK to invoke the Dapr Pub/Sub
 
 ### Run Subscriber Server
 
-```shell
+<!-- STEP
+name: Run Subscriber Server
+output_match_mode: substring
+expected_stdout_lines:
+  - 'event - PubsubName: messages, Topic: neworder'
+background: true
+sleep: 5
+-->
+
+```bash
 dapr run --app-id sub \
          --app-protocol http \
          --app-port 8080 \
@@ -24,9 +33,19 @@ dapr run --app-id sub \
          go run sub/sub.go
 ```
 
+<!-- END_STEP -->
+
 ### Run Publisher
 
-```shell
+<!-- STEP
+name: Run publisher
+expected_stdout_lines:
+  - '== APP == data published'
+background: true
+sleep: 15
+-->
+
+```bash
 export DAPR_PUBSUB_NAME=messages
 
 dapr run --app-id pub \
@@ -34,6 +53,23 @@ dapr run --app-id pub \
          --components-path ./config \
          go run pub/pub.go
 ```
+
+<!-- END_STEP -->
+
+### Cleanup
+
+<!-- STEP
+expected_stdout_lines: 
+  - '✅  app stopped successfully: sub'
+expected_stderr_lines:
+name: Shutdown dapr
+-->
+
+```bash
+dapr stop --app-id sub
+```
+
+<!-- END_STEP -->
 
 ## Result
 

@@ -27,13 +27,6 @@ Follow [instructions](https://docs.dapr.io/getting-started/install-dapr/) to dow
 
 ## Step 2 - Understand the code
 
-Now that Dapr is set up locally, clone the repo, then navigate to the Hello World SDK quickstart:
-
-```sh
-git clone [-b <dapr_version_tag>] https://github.com/dapr/quickstarts.git
-cd quickstarts/hello-world-sdk
-```
-
 The [order.go](./order.go) is a simple command line application, that implements four commands:
 * `put` sends an order with configurable order ID.
 * `get` return the current order number.
@@ -69,22 +62,52 @@ Delete the state:
 
 1. Build the app
 
+<!-- STEP 
+name: Build the app
+-->
+
 ```bash
 go mod vendor
 go build -o order order.go
 ```
 
+<!-- END_STEP -->
+
 2. Run the app
 
 There are two ways to launch Dapr applications. You can pass the app executable to the Dapr runtime:
+
+<!-- STEP 
+name: Run and send order
+background: true
+sleep: 5
+expected_stdout_lines:
+  - '== APP == dapr client initializing for: 127.0.0.1:3500'
+  - '== APP == Sending order ID 20'
+  - '== APP == Successfully persisted state'
+-->
 
 ```bash
 dapr run --app-id order-app --dapr-grpc-port 3500 --log-level error -- ./order put --id 20
 ```
 
+<!-- END_STEP -->
+
+<!-- STEP 
+name: Run and get order
+background: true
+sleep: 5
+expected_stdout_lines:
+  - '== APP == dapr client initializing for: 127.0.0.1:3500'
+  - '== APP == Getting order'
+  - '== APP == Order ID 20'
+-->
+
 ```bash
 dapr run --app-id order-app --dapr-grpc-port 3500 --log-level error ./order get
 ```
+
+<!-- END_STEP -->
 
 ![Screenshot1](./img/screenshot1.png)
 ![Screenshot2](./img/screenshot2.png)
