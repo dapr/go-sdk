@@ -93,7 +93,7 @@ func (t *TestActor) ReminderCall(reminderName string, state []byte, dueTime stri
 }
 
 func main() {
-	s := daprd.NewService(":18080")
+	s := daprd.NewService(":8080")
 	s.RegisterActorImplFactory(testActorFactory)
 	if err := s.Start(); err != nil && err != http.ErrServerClosed {
 		log.Fatalf("error listenning: %v", err)
