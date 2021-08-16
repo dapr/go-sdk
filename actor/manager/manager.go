@@ -1,13 +1,12 @@
 package manager
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/dapr/go-sdk/actor"
+	"github.com/dapr/go-sdk/actor/api"
+	"github.com/dapr/go-sdk/actor/codec"
 	actorErr "github.com/dapr/go-sdk/actor/error"
-	"github.com/dapr/go-sdk/actor/reminder"
-	"github.com/dapr/go-sdk/actor/timer"
 	perrors "github.com/pkg/errors"
 	"reflect"
 	"sync"
@@ -15,54 +14,66 @@ import (
 	"unicode/utf8"
 )
 
-// ActorManager is to manage one type of actor
-type ActorManager struct {
-	// factory stores the actor factory of specific type of actor
-	factory actor.ActorImplFactory
+type ActorManager interface {
+	RegisterActorImplFactory(f actor.Factory)
+	InvokeMethod(actorID, methodName string, request []byte) ([]byte, actorErr.ActorErr)
+	DetectiveActor(actorID string) actorErr.ActorErr
+	InvokeReminder(actorID, reminderName string, params []byte) actorErr.ActorErr
+	InvokeTimer(actorID, timerName string, params []byte) actorErr.ActorErr
+}
 
-	service actor.ActorImpl
+// DefaultActorManager is to manage one type of actor
+type DefaultActorManager struct {
+	// factory is the actor factory of specific type of actor
+	factory actor.Factory
 
 	// activeActors stores the map actorID -> ActorContainer
 	activeActors sync.Map
+
+	// serializer is the param and response serializer of the actor
+	serializer codec.Codec
 }
 
-func NewActorManager() *ActorManager {
-	return &ActorManager{}
+func NewDefaultActorManager(serializerType string) (ActorManager, actorErr.ActorErr) {
+	serializer, err := codec.GetActorCodec(serializerType)
+	if err != nil {
+		return nil, actorErr.ErrActorSerializeNoFound
+	}
+	return &DefaultActorManager{
+		serializer: serializer,
+	}, actorErr.Success
 }
 
-// RegisterActorImplFactory registers the action factory @f
-func (m *ActorManager) RegisterActorImplFactory(f actor.ActorImplFactory) {
+// RegisterActorImplFactory registers the action factory f
+func (m *DefaultActorManager) RegisterActorImplFactory(f actor.Factory) {
 	m.factory = f
 }
 
-// InvokeMethod to invoke local function by @actorID, @methodName and @request request param
-func (m *ActorManager) InvokeMethod(actorID, methodName string, request []byte) ([]byte, actorErr.ActorError) {
+// getAndCreateActorContainerIfNotExist will
+func (m *DefaultActorManager) getAndCreateActorContainerIfNotExist(actorID string) ActorContainer {
 	val, ok := m.activeActors.Load(actorID)
 	if !ok {
-		m.service = m.factory()
-		m.activeActors.Store(actorID, NewActorContainer(m.service))
+		m.activeActors.Store(actorID, NewDefaultActorContainer(actorID, m.factory(), m.serializer))
 		val, _ = m.activeActors.Load(actorID)
 	}
-	methodType := val.(*ActorContainer).methodType[methodName]
-	argsValues := make([]reflect.Value, 0)
-	argsValues = append(argsValues, reflect.ValueOf(m.service))
-	argsValues = append(argsValues, reflect.ValueOf(context.Background()))
-	var replyv reflect.Value
-	if len(methodType.ArgsType()) > 0 {
-		typ := methodType.ArgsType()[0]
-		paramValue := reflect.New(typ)
-		paramInterface := paramValue.Interface()
-		if err := json.Unmarshal(request, paramInterface); err != nil {
-			return nil, actorErr.ErrorActorInvokeFailed
-		}
-		argsValues = append(argsValues, reflect.ValueOf(paramInterface).Elem())
+	return val.(ActorContainer)
+}
+
+// InvokeMethod to invoke local function by @actorID, @methodName and @request request param
+func (m *DefaultActorManager) InvokeMethod(actorID, methodName string, request []byte) ([]byte, actorErr.ActorErr) {
+	if m.factory == nil {
+		return nil, actorErr.ErrActorFactoryNotSet
 	}
-	returnValue := methodType.Method().Func.Call(argsValues)
-	var retErr interface{}
+	var replyv reflect.Value
+	returnValue, aerr := m.getAndCreateActorContainerIfNotExist(actorID).Invoke(methodName, request)
+	if aerr != actorErr.Success {
+		return nil, aerr
+	}
 	if len(returnValue) == 1 {
 		return nil, actorErr.Success
 	}
 
+	var retErr interface{}
 	if len(returnValue) == 2 {
 		replyv = returnValue[0]
 		retErr = returnValue[1].Interface()
@@ -73,60 +84,51 @@ func (m *ActorManager) InvokeMethod(actorID, methodName string, request []byte) 
 	}
 	rspData, err := json.Marshal(replyv.Interface())
 	if err != nil {
-		return nil, actorErr.ErrorActorInvokeFailed
+		return nil, actorErr.ErrActorInvokeFailed
 	}
 	return rspData, actorErr.Success
 }
 
-func (m *ActorManager) DetectiveActor(actorID string) actorErr.ActorError {
-	val, ok := m.activeActors.Load(actorID)
+// DetectiveActor removes actor from actor manager
+func (m *DefaultActorManager) DetectiveActor(actorID string) actorErr.ActorErr {
+	_, ok := m.activeActors.Load(actorID)
 	if !ok {
-		return actorErr.ErrorActorIDNotFound
+		return actorErr.ErrActorIDNotFound
 	}
-	val.(actor.ActorImpl).OnDeactive()
+	m.activeActors.Delete(actorID)
 	return actorErr.Success
 }
 
-func (m *ActorManager) ActiveManager(actorID string) {
-	_, ok := m.activeActors.Load(actorID)
-	if ok {
-		return
+// InvokeReminder invoke reminder function with given params
+func (m *DefaultActorManager) InvokeReminder(actorID, reminderName string, params []byte) actorErr.ActorErr {
+	if m.factory == nil {
+		return actorErr.ErrActorFactoryNotSet
 	}
-	// todo create actor
-	//m.activeActors.Store(actor.)
-}
-
-func (m *ActorManager) InvokeReminder(actorID, reminderName string, params []byte) actorErr.ActorError {
-	val, ok := m.activeActors.Load(actorID)
-	if !ok {
-		return actorErr.ErrorActorIDNotFound
-	}
-	reminderParams := &reminder.ActorReminderParams{}
+	reminderParams := &api.ActorReminderParams{}
 	if err := json.Unmarshal(params, reminderParams); err != nil {
 		fmt.Println("unmarshal reminder param error = ", err)
-		return actorErr.ErrorRemindersParamsInvalid
+		return actorErr.ErrRemindersParamsInvalid
 	}
-
-	val.(actor.ActorImpl).ReceiveReminder(reminderName, reminderParams.Data, reminderParams.DueTime, reminderParams.Period)
+	targetActor, ok := m.getAndCreateActorContainerIfNotExist(actorID).GetActor().(actor.ReminderCallee)
+	if !ok {
+		return actorErr.ErrReminderFuncUndefined
+	}
+	targetActor.ReminderCall(reminderName, reminderParams.Data, reminderParams.DueTime, reminderParams.Period)
 	return actorErr.Success
 }
 
-func (m *ActorManager) InvokeTimer(actorID, timerName string, params []byte) actorErr.ActorError {
-	//val, ok := m.activeActors.Load(actorID)
-	//if !ok {
-	//	return actorErr.ErrorActorIDNotFound
-	//}
-	timerParams := &timer.ActorTimerParam{}
+// InvokeTimer invoke timer callback function with given  params
+func (m *DefaultActorManager) InvokeTimer(actorID, timerName string, params []byte) actorErr.ActorErr {
+	if m.factory == nil {
+		return actorErr.ErrActorFactoryNotSet
+	}
+	timerParams := &api.ActorTimerParam{}
 	if err := json.Unmarshal(params, timerParams); err != nil {
 		fmt.Println("unmarshal reminder param error = ", err)
-		return actorErr.ErrorRemindersParamsInvalid
+		return actorErr.ErrRemindersParamsInvalid
 	}
-
-	fmt.Println("timer param: call back = ", timerParams.CallBack, " data = ", string(timerParams.Data))
-
-	// todo call back to target function
-	//val.(actor.ActorImpl).Invoke(params)
-	return actorErr.Success
+	_, aerr := m.getAndCreateActorContainerIfNotExist(actorID).Invoke(timerParams.CallBack, timerParams.Data)
+	return aerr
 }
 
 func getAbsctractMethodMap(rcvr interface{}) map[string]*MethodType {
@@ -134,15 +136,16 @@ func getAbsctractMethodMap(rcvr interface{}) map[string]*MethodType {
 	s.rcvrType = reflect.TypeOf(rcvr)
 	s.rcvr = reflect.ValueOf(rcvr)
 	sname := reflect.Indirect(s.rcvr).Type().Name()
-	if sname == "" {
-		panic("sname == empty")
-	}
 	if !isExported(sname) {
 		s := "type " + sname + " is not exported"
 		panic(s)
 	}
-
 	return suitableMethods(s.rcvrType)
+}
+
+func isExported(name string) bool {
+	s, _ := utf8.DecodeRuneInString(name)
+	return unicode.IsUpper(s)
 }
 
 // Service is description of service
@@ -153,58 +156,12 @@ type Service struct {
 	methods  map[string]*MethodType
 }
 
-// Method gets @s.methods.
-func (s *Service) Method() map[string]*MethodType {
-	return s.methods
-}
-
-// Name will return service name
-func (s *Service) Name() string {
-	return s.name
-}
-
-// RcvrType gets @s.rcvrType.
-func (s *Service) RcvrType() reflect.Type {
-	return s.rcvrType
-}
-
-// Rcvr gets @s.rcvr.
-func (s *Service) Rcvr() reflect.Value {
-	return s.rcvr
-}
-
-// Is this an exported - upper case - name
-func isExported(name string) bool {
-	s, _ := utf8.DecodeRuneInString(name)
-	return unicode.IsUpper(s)
-}
-
 // MethodType is description of service method.
 type MethodType struct {
 	method    reflect.Method
 	ctxType   reflect.Type   // request context
 	argsType  []reflect.Type // args except ctx, include replyType if existing
 	replyType reflect.Type   // return value, otherwise it is nil
-}
-
-// Method gets @m.method.
-func (m *MethodType) Method() reflect.Method {
-	return m.method
-}
-
-// CtxType gets @m.ctxType.
-func (m *MethodType) CtxType() reflect.Type {
-	return m.ctxType
-}
-
-// ArgsType gets @m.argsType.
-func (m *MethodType) ArgsType() []reflect.Type {
-	return m.argsType
-}
-
-// ReplyType gets @m.replyType.
-func (m *MethodType) ReplyType() reflect.Type {
-	return m.replyType
 }
 
 // suitableMethods returns suitable Rpc methods of typ

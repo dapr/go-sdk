@@ -63,5 +63,3 @@ func (s *Server) AddServiceInvocationHandler(route string, fn func(ctx context.C
 
 	return nil
 }
-
-

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/dapr/go-sdk/actor"
+	dapr "github.com/dapr/go-sdk/client"
 	"github.com/dapr/go-sdk/examples/actor/api"
 	"log"
 	"net/http"
@@ -11,23 +12,63 @@ import (
 	daprd "github.com/dapr/go-sdk/service/http"
 )
 
-func testActorFactory() actor.ActorImpl {
-	return &TestActor{}
+func testActorFactory() actor.Server {
+	client, err := dapr.NewClient()
+	if err != nil {
+		panic(err)
+	}
+	return &TestActor{
+		daprClient: client,
+	}
 }
 
 type TestActor struct {
-}
-
-func (t *TestActor) OnDeactive() {
-	panic("implement me")
-}
-
-func (t *TestActor) OnActive() {
-	panic("implement me")
+	actor.ServerImplBase
+	daprClient dapr.Client
 }
 
 func (t *TestActor) Type() string {
 	return "testActorType"
+}
+
+// user defined functions
+func (t *TestActor) StopTimer(ctx context.Context, req *api.TimerRequest) error {
+	return t.daprClient.UnregisterActorTimer(ctx, &dapr.UnregisterActorTimerRequest{
+		ActorType: t.Type(),
+		ActorID:   t.ID(),
+		Name:      req.TimerName,
+	})
+}
+
+func (t *TestActor) StartTimer(ctx context.Context, req *api.TimerRequest) error {
+	return t.daprClient.RegisterActorTimer(ctx, &dapr.RegisterActorTimerRequest{
+		ActorType: t.Type(),
+		ActorID:   t.ID(),
+		Name:      req.TimerName,
+		DueTime:   req.Duration,
+		Period:    req.Period,
+		Data:      []byte(req.Data),
+		CallBack:  req.CallBack,
+	})
+}
+
+func (t *TestActor) StartReminder(ctx context.Context, req *api.ReminderRequest) error {
+	return t.daprClient.RegisterActorReminder(ctx, &dapr.RegisterActorReminderRequest{
+		ActorType: t.Type(),
+		ActorID:   t.ID(),
+		Name:      req.ReminderName,
+		DueTime:   req.Duration,
+		Period:    req.Period,
+		Data:      []byte(req.Data),
+	})
+}
+
+func (t *TestActor) StopReminder(ctx context.Context, req *api.ReminderRequest) error {
+	return t.daprClient.UnregisterActorReminder(ctx, &dapr.UnregisterActorReminderRequest{
+		ActorType: t.Type(),
+		ActorID:   t.ID(),
+		Name:      req.ReminderName,
+	})
 }
 
 func (t *TestActor) Invoke(ctx context.Context, req string) (string, error) {
@@ -47,16 +88,13 @@ func (t *TestActor) Post(ctx context.Context, req string) error {
 	return nil
 }
 
-func (t *TestActor) ReceiveReminder(reminderName string, state interface{}, dueTime string, period string) []byte {
-	fmt.Println("receive reminder = ", reminderName, " state = ", state, "duetime = ", dueTime, "period = ", period)
-	return nil
+func (t *TestActor) ReminderCall(reminderName string, state []byte, dueTime string, period string) {
+	fmt.Println("receive reminder = ", reminderName, " state = ", string(state), "duetime = ", dueTime, "period = ", period)
 }
 
 func main() {
 	s := daprd.NewService(":18080")
-
 	s.RegisterActorImplFactory(testActorFactory)
-
 	if err := s.Start(); err != nil && err != http.ErrServerClosed {
 		log.Fatalf("error listenning: %v", err)
 	}

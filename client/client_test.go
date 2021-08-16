@@ -8,7 +8,6 @@ import (
 	"testing"
 
 	"github.com/golang/protobuf/ptypes/empty"
-	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 
 	"google.golang.org/grpc"
@@ -71,7 +70,6 @@ func TestShutdown(t *testing.T) {
 		assert.NoError(t, err)
 	})
 }
-
 
 func getTestClient(ctx context.Context) (client Client, closer func()) {
 	s := grpc.NewServer()
@@ -219,16 +217,26 @@ func (s *testDaprServer) GetBulkSecret(ctx context.Context, req *pb.GetBulkSecre
 	}, nil
 }
 
+func (s *testDaprServer) RegisterActorReminder(ctx context.Context, req *pb.RegisterActorReminderRequest) (*empty.Empty, error) {
+	return &empty.Empty{}, nil
+}
+
+func (s *testDaprServer) UnregisterActorReminder(ctx context.Context, req *pb.UnregisterActorReminderRequest) (*empty.Empty, error) {
+	return &empty.Empty{}, nil
+}
+
 func (s *testDaprServer) InvokeActor(context.Context, *pb.InvokeActorRequest) (*pb.InvokeActorResponse, error) {
-	return nil, errors.New("actors not implemented in go SDK")
+	return &pb.InvokeActorResponse{
+		Data: []byte("mockValue"),
+	}, nil
 }
 
 func (s *testDaprServer) RegisterActorTimer(context.Context, *pb.RegisterActorTimerRequest) (*empty.Empty, error) {
-	return nil, errors.New("actors not implemented in go SDK")
+	return &empty.Empty{}, nil
 }
 
 func (s *testDaprServer) UnregisterActorTimer(context.Context, *pb.UnregisterActorTimerRequest) (*empty.Empty, error) {
-	return nil, errors.New("actors not implemented in go SDK")
+	return &empty.Empty{}, nil
 }
 
 func (s *testDaprServer) Shutdown(ctx context.Context, req *empty.Empty) (*empty.Empty, error) {

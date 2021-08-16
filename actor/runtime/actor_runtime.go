@@ -3,79 +3,86 @@ package runtime
 import (
 	"encoding/json"
 	"github.com/dapr/go-sdk/actor"
+	"github.com/dapr/go-sdk/actor/api"
+	"github.com/dapr/go-sdk/actor/config"
 	actorErr "github.com/dapr/go-sdk/actor/error"
 	"github.com/dapr/go-sdk/actor/manager"
 	"sync"
 )
 
 type ActorRunTime struct {
-	config        ActorRuntimeConfig
+	config        api.ActorRuntimeConfig
 	actorManagers sync.Map
 }
 
 var actorRuntimeInstance *ActorRunTime
 
+// NewActorRuntime creates an empty ActorRuntime
 func NewActorRuntime() *ActorRunTime {
 	return &ActorRunTime{}
 }
 
+// GetActorRuntime gets or create runtime instance
 func GetActorRuntime() *ActorRunTime {
 	if actorRuntimeInstance == nil {
-		actorRuntimeInstance = &ActorRunTime{}
+		actorRuntimeInstance = NewActorRuntime()
 	}
 	return actorRuntimeInstance
 }
 
-func (r *ActorRunTime) RegisterActorFactory(f actor.ActorImplFactory) {
-	arctorType := f().Type()
-	r.config.RegisteredActorTypes = append(r.config.RegisteredActorTypes, arctorType)
-	mng, ok := r.actorManagers.Load(arctorType)
+// RegisterActorFactory registers the given actor factory from user, and create new actor manager if not exists
+func (r *ActorRunTime) RegisterActorFactory(f actor.Factory, opt ...config.Option) {
+	conf := config.GetConfigFromOptions(opt...)
+	actType := f().Type()
+	r.config.RegisteredActorTypes = append(r.config.RegisteredActorTypes, actType)
+	mng, ok := r.actorManagers.Load(actType)
 	if !ok {
-		newMng := manager.NewActorManager()
+		newMng, err := manager.NewDefaultActorManager(conf.SerializerType)
+		if err != actorErr.Success {
+			return
+		}
 		newMng.RegisterActorImplFactory(f)
-		r.actorManagers.Store(arctorType, newMng)
+		r.actorManagers.Store(actType, newMng)
 		return
 	}
-	mng.(*manager.ActorManager).RegisterActorImplFactory(f)
+	mng.(manager.ActorManager).RegisterActorImplFactory(f)
 }
 
-func (r *ActorRunTime) GetSerializedConfig() []byte {
-	data, _ := json.Marshal(&r.config)
-	return data
+func (r *ActorRunTime) GetJsonSerializedConfig() ([]byte, error) {
+	data, err := json.Marshal(&r.config)
+	return data, err
 }
 
-func (r *ActorRunTime) InvokeActorMethod(actorTypeName, actorID, actorMethod string, payload []byte) ([]byte, actorErr.ActorError) {
+func (r *ActorRunTime) InvokeActorMethod(actorTypeName, actorID, actorMethod string, payload []byte) ([]byte, actorErr.ActorErr) {
 	mng, ok := r.actorManagers.Load(actorTypeName)
 	if !ok {
-		return nil, actorErr.ErrorActorTypeNotFound
+		return nil, actorErr.ErrActorTypeNotFound
 	}
-	return mng.(*manager.ActorManager).InvokeMethod(actorID, actorMethod, payload)
+	return mng.(manager.ActorManager).InvokeMethod(actorID, actorMethod, payload)
 }
 
-func (r *ActorRunTime) Deactive(actorTypeName, actorID string) actorErr.ActorError {
+func (r *ActorRunTime) Deactive(actorTypeName, actorID string) actorErr.ActorErr {
 	targetManager, ok := r.actorManagers.Load(actorTypeName)
 	if !ok {
-		return actorErr.ErrorActorTypeNotFound
+		return actorErr.ErrActorTypeNotFound
 	}
-	return targetManager.(*manager.ActorManager).DetectiveActor(actorID)
+	return targetManager.(manager.ActorManager).DetectiveActor(actorID)
 }
 
-func (r *ActorRunTime) InvokeReminder(actorTypeName, actorID, reminderName string, params []byte) actorErr.ActorError {
+func (r *ActorRunTime) InvokeReminder(actorTypeName, actorID, reminderName string, params []byte) actorErr.ActorErr {
 	targetManager, ok := r.actorManagers.Load(actorTypeName)
 	if !ok {
-		return actorErr.ErrorActorTypeNotFound
+		return actorErr.ErrActorTypeNotFound
 	}
-	mng := targetManager.(*manager.ActorManager)
-	mng.ActiveManager(actorID)
+	mng := targetManager.(manager.ActorManager)
 	return mng.InvokeReminder(actorID, reminderName, params)
 }
 
-func (r *ActorRunTime) InvokeTimer(actorTypeName, actorID, timerName string, params []byte) actorErr.ActorError {
+func (r *ActorRunTime) InvokeTimer(actorTypeName, actorID, timerName string, params []byte) actorErr.ActorErr {
 	targetManager, ok := r.actorManagers.Load(actorTypeName)
 	if !ok {
-		return actorErr.ErrorActorTypeNotFound
+		return actorErr.ErrActorTypeNotFound
 	}
-	mng := targetManager.(*manager.ActorManager)
-	mng.ActiveManager(actorID)
+	mng := targetManager.(manager.ActorManager)
 	return mng.InvokeTimer(actorID, timerName, params)
 }

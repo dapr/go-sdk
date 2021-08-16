@@ -1,14 +1,34 @@
 package actor
 
-type ActorImpl interface {
-	ActorProxy
-	ReceiveReminder(string, interface{}, string, string) []byte
-	OnDeactive()
-	OnActive()
+import "sync"
+
+type Client interface {
+	Type() string
+	ID() string
 }
 
-type ActorProxy interface {
+type Server interface {
+	ID() string
+	SetID(string)
 	Type() string
 }
 
-type ActorImplFactory func() ActorImpl
+type ReminderCallee interface {
+	ReminderCall(string, []byte, string, string)
+}
+
+type Factory func() Server
+
+type ServerImplBase struct {
+	once sync.Once
+	id   string
+}
+
+func (b *ServerImplBase) ID() string {
+	return b.id
+}
+func (b *ServerImplBase) SetID(id string) {
+	b.once.Do(func() {
+		b.id = id
+	})
+}

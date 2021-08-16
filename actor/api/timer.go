@@ -1,4 +1,4 @@
-package timer
+package api
 
 type ActorTimerParam struct {
 	CallBack string `json:"callback"`

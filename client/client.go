@@ -3,6 +3,7 @@ package client
 import (
 	"context"
 	"github.com/dapr/go-sdk/actor"
+	"github.com/dapr/go-sdk/actor/config"
 	"log"
 	"net"
 	"os"
@@ -14,6 +15,8 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 
 	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
+
+	_ "github.com/dapr/go-sdk/actor/codec/impl"
 )
 
 const (
@@ -98,18 +101,18 @@ type Client interface {
 	// WithTraceID adds existing trace ID to the outgoing context.
 	WithTraceID(ctx context.Context, id string) context.Context
 
-	// Register an actor timer.
+	// RegisterActorTimer registers an actor timer.
 	RegisterActorTimer(ctx context.Context, in *RegisterActorTimerRequest) error
-	// Unregister an actor timer.
-	//UnregisterActorTimer(ctx context.Context, in *UnregisterActorTimerRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	// Register an actor reminder.
+
+	// UnregisterActorTimer unregisters an actor timer.
+	UnregisterActorTimer(ctx context.Context, in *UnregisterActorTimerRequest) error
+
+	// RegisterActorReminder registers an actor reminder.
 	RegisterActorReminder(ctx context.Context, in *RegisterActorReminderRequest) error
-	// Unregister an actor reminder.
-	//UnregisterActorReminder(ctx context.Context, in *UnregisterActorReminderRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	// Gets the state for a specific actor.
-	//GetActorState(ctx context.Context, in *GetActorStateRequest, opts ...grpc.CallOption) (*GetActorStateResponse, error)
-	// Executes state transactions for a specified actor
-	//ExecuteActorStateTransaction(ctx context.Context, in *ExecuteActorStateTransactionRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+
+	// UnregisterActorReminder unregisters an actor reminder.
+	UnregisterActorReminder(ctx context.Context, in *UnregisterActorReminderRequest) error
+
 	// InvokeActor calls a method on an actor.
 	InvokeActor(ctx context.Context, in *InvokeActorRequest) (*InvokeActorResponse, error)
 
@@ -119,7 +122,7 @@ type Client interface {
 	// Close cleans up all resources created by the client.
 	Close()
 
-	ImplActorInteface(actorInterface actor.ActorProxy)
+	ImplActorClientStub(actorClientStub actor.Client, opt ...config.Option)
 }
 
 // NewClient instantiates Dapr client using DAPR_GRPC_PORT environment variable as port.

@@ -2,6 +2,7 @@ package http
 
 import (
 	"github.com/dapr/go-sdk/actor"
+	"github.com/dapr/go-sdk/actor/config"
 	"github.com/dapr/go-sdk/actor/runtime"
 	"github.com/gorilla/mux"
 	"github.com/urfave/negroni"
@@ -38,18 +39,16 @@ type Server struct {
 	topicSubscriptions []*common.Subscription
 }
 
-func (s *Server) RegisterActorImplFactory(f actor.ActorImplFactory) {
-	runtime.GetActorRuntime().RegisterActorFactory(f)
+func (s *Server) RegisterActorImplFactory(f actor.Factory, opts ...config.Option) {
+	runtime.GetActorRuntime().RegisterActorFactory(f, opts...)
 }
 
 // Start starts the HTTP handler. Blocks while serving
 func (s *Server) Start() error {
-	s.registerSubscribeHandler()
-	s.registerActorHandler()
-	c := negroni.Classic()
+	s.registerBaseHandler()
+	c := negroni.New()
 	c.UseHandler(s.mux)
-	c.Run(s.address)
-	return nil
+	return http.ListenAndServe(s.address, c)
 }
 
 // Stop stops previously started HTTP service

@@ -2,8 +2,11 @@ package http
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/dapr/go-sdk/actor/api"
+	"github.com/dapr/go-sdk/actor/mock"
 	"net/http"
 	"strings"
 	"testing"
@@ -72,12 +75,87 @@ func TestEventHandler(t *testing.T) {
 	err = s.AddTopicEventHandler(sub2, testErrorTopicFunc)
 	assert.NoErrorf(t, err, "error adding error event handler")
 
-	s.registerSubscribeHandler()
+	s.registerBaseHandler()
 
 	makeEventRequest(t, s, "/", data, http.StatusOK)
 	makeEventRequest(t, s, "/", "", http.StatusSeeOther)
 	makeEventRequest(t, s, "/", "not JSON", http.StatusSeeOther)
 	makeEventRequest(t, s, "/errors", data, http.StatusOK)
+}
+
+func TestHealthCheck(t *testing.T) {
+	s := newServer("", nil)
+	s.registerBaseHandler()
+	makeRequest(t, s, "/healthz", "", http.MethodGet, http.StatusOK)
+}
+
+func TestActorConfig(t *testing.T) {
+	s := newServer("", nil)
+	s.registerBaseHandler()
+	makeRequest(t, s, "/dapr/config", "", http.MethodGet, http.StatusOK)
+}
+
+func TestActorHandler(t *testing.T) {
+	reminderReqData, _ := json.Marshal(api.ActorReminderParams{
+		Data:    []byte("hello"),
+		DueTime: "5s",
+		Period:  "5s",
+	})
+
+	timerReqData, _ := json.Marshal(api.ActorTimerParam{
+		CallBack: "Invoke",
+		DueTime:  "5s",
+		Period:   "5s",
+		Data:     []byte(`"hello"`),
+	})
+
+	timerReqDataWithBadCallBackFunction, _ := json.Marshal(api.ActorTimerParam{
+		CallBack: "UnexistedFunc",
+		DueTime:  "5s",
+		Period:   "5s",
+		Data:     []byte(`"hello"`),
+	})
+	s := newServer("", nil)
+	s.registerBaseHandler()
+	// invoke actor API without target actor defined
+	makeRequest(t, s, "/actors/testActorType/testActorID/method/Invoke", "", http.MethodPut, http.StatusNotFound)
+	makeRequest(t, s, "/actors/testActorType/testActorID", "", http.MethodDelete, http.StatusNotFound)
+	makeRequest(t, s, "/actors/testActorType/testActorID/method/remind/testReminderName", string(reminderReqData), http.MethodPut, http.StatusNotFound)
+	makeRequest(t, s, "/actors/testActorType/testActorID/method/timer/testTimerName", string(timerReqData), http.MethodPut, http.StatusNotFound)
+
+	// register test actor factory
+	s.RegisterActorImplFactory(mock.MockActorImplFactory)
+
+	// invoke actor API with internal error
+	makeRequest(t, s, "/actors/testActorType/testActorID/method/remind/testReminderName", `{
+"dueTime": "5s",
+"period": "5s",
+"data": "test data"`, http.MethodPut, http.StatusInternalServerError)
+	makeRequest(t, s, "/actors/testActorType/testActorID/method/Invoke", "bad request param", http.MethodPut, http.StatusInternalServerError)
+	makeRequest(t, s, "/actors/testActorType/testActorID/method/timer/testTimerName", string(timerReqDataWithBadCallBackFunction), http.MethodPut, http.StatusInternalServerError)
+
+	// invoke actor API with success status
+	makeRequestWithExpectedBody(t, s, "/actors/testActorType/testActorID/method/Invoke", `"invoke request"`, http.MethodPut, http.StatusOK, []byte(`"invoke request"`))
+	makeRequest(t, s, "/actors/testActorType/testActorID/method/remind/testReminderName", string(reminderReqData), http.MethodPut, http.StatusOK)
+	makeRequest(t, s, "/actors/testActorType/testActorID/method/timer/testTimerName", string(timerReqData), http.MethodPut, http.StatusOK)
+	makeRequest(t, s, "/actors/testActorType/testActorID", "", http.MethodDelete, http.StatusOK)
+
+	// register not reminder callee actor factory
+	s.RegisterActorImplFactory(mock.MockNotReminderCalleeActorFactory)
+	// invoke call reminder to not reminder callee actor type
+	makeRequest(t, s, "/actors/testActorNotReminderCalleeType/testActorID/method/remind/testReminderName", string(reminderReqData), http.MethodPut, http.StatusInternalServerError)
+
+}
+
+func makeRequest(t *testing.T, s *Server, route, data, method string, expectedStatusCode int) {
+	req, err := http.NewRequest(method, route, strings.NewReader(data))
+	assert.NoErrorf(t, err, "error creating request: %s", data)
+	testRequest(t, s, req, expectedStatusCode)
+}
+func makeRequestWithExpectedBody(t *testing.T, s *Server, route, data, method string, expectedStatusCode int, expectedBody []byte) {
+	req, err := http.NewRequest(method, route, strings.NewReader(data))
+	assert.NoErrorf(t, err, "error creating request: %s", data)
+	testRequestWithResponseBody(t, s, req, expectedStatusCode, expectedBody)
 }
 
 func makeEventRequest(t *testing.T, s *Server, route, data string, expectedStatusCode int) {

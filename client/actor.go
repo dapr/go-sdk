@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/dapr/go-sdk/actor"
+	"github.com/dapr/go-sdk/actor/codec"
+	"github.com/dapr/go-sdk/actor/config"
 	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
 	"github.com/pkg/errors"
 	"reflect"
@@ -21,23 +23,22 @@ type InvokeActorResponse struct {
 	Data []byte
 }
 
-func (c *GRPCClient) ImplActorInteface(actorInterface actor.ActorProxy) {
-	ImplActor(actorInterface, c)
-}
-
 // InvokeActor invokes specific operation on the configured Dapr binding.
 // This method covers input, output, and bi-directional bindings.
 func (c *GRPCClient) InvokeActor(ctx context.Context, in *InvokeActorRequest) (out *InvokeActorResponse, err error) {
 	// todo param check
-	//if in == nil {
-	//	return nil, errors.New("binding invocation required")
-	//}
-	//if in.Method == "" {
-	//	return nil, errors.New("binding invocation name required")
-	//}
-	//if in.ActorType == "" {
-	//	return nil, errors.New("binding invocation operation required")
-	//}
+	if in == nil {
+		return nil, errors.New("actor invocation required")
+	}
+	if in.Method == "" {
+		return nil, errors.New("actor invocation method required")
+	}
+	if in.ActorType == "" {
+		return nil, errors.New("actor invocation actorType required")
+	}
+	if in.ActorID == "" {
+		return nil, errors.New("actor invocation actorID required")
+	}
 
 	req := &pb.InvokeActorRequest{
 		ActorType: in.ActorType,
@@ -60,6 +61,40 @@ func (c *GRPCClient) InvokeActor(ctx context.Context, in *InvokeActorRequest) (o
 	return out, nil
 }
 
+// ImplActorClientStub impls the given client stub @actorClientStub, an example of client stub is as followed
+/*
+type ClientStub struct {
+// User defined function
+	GetUser       func(context.Context, *User) (*User, error)
+	Invoke        func(context.Context, string) (string, error)
+	Get           func(context.Context) (string, error)
+	Post          func(context.Context, string) error
+	StartTimer    func(context.Context, *TimerRequest) error
+	StopTimer     func(context.Context, *TimerRequest) error
+	...
+}
+
+// Type defined the target type, which should be compatible with server side actor
+func (a *ClientStub) Type() string {
+	return "testActorType"
+}
+
+// ID defined actor ID to be invoked
+func (a *ClientStub) ID() string {
+	return "ActorImplID123456"
+}
+*/
+func (c *GRPCClient) ImplActorClientStub(actorClientStub actor.Client, opt ...config.Option) {
+	serializerType := config.GetConfigFromOptions(opt...).SerializerType
+	serializer, err := codec.GetActorCodec(serializerType)
+	if err != nil {
+		fmt.Printf("[Actor] ERROR: serializer type %s unsupported\n", serializerType)
+		return
+	}
+
+	c.implActor(actorClientStub, serializer)
+}
+
 type RegisterActorReminderRequest struct {
 	ActorType string
 	ActorID   string
@@ -69,18 +104,29 @@ type RegisterActorReminderRequest struct {
 	Data      []byte
 }
 
-// RegisterActorReminder invokes specific operation on the configured Dapr binding.
-// This method covers input, output, and bi-directional bindings.
+// RegisterActorReminder registers a new reminder to target actor. Then, a reminder would be created and
+// invoke actor's ReminderCall function if implemented.
+// If server side actor impls this function, it's asserted to actor.ReminderCallee and can be invoked with call period
+// and state data as param @in defined.
 func (c *GRPCClient) RegisterActorReminder(ctx context.Context, in *RegisterActorReminderRequest) (err error) {
 	// todo param check
 	if in == nil {
-		return errors.New("binding invocation required")
+		return errors.New("actor register reminder invocation request param required")
 	}
-	//if in.Method == "" {
-	//	return  errors.New("binding invocation name required")
-	//}
 	if in.ActorType == "" {
-		return errors.New("binding invocation operation required")
+		return errors.New("actor register reminder invocation actorType required")
+	}
+	if in.ActorID == "" {
+		return errors.New("actor register reminder invocation actorID required")
+	}
+	if in.Name == "" {
+		return errors.New("actor register reminder invocation name required")
+	}
+	if in.DueTime == "" {
+		return errors.New("actor register reminder invocation dueTime required")
+	}
+	if in.Period == "" {
+		return errors.New("actor register reminder invocation period required")
 	}
 
 	req := &pb.RegisterActorReminderRequest{
@@ -94,10 +140,44 @@ func (c *GRPCClient) RegisterActorReminder(ctx context.Context, in *RegisterActo
 
 	_, err = c.protoClient.RegisterActorReminder(c.withAuthToken(ctx), req)
 	if err != nil {
-		return errors.Wrapf(err, "error invoking binding %s/%s", in.ActorType, in.ActorID)
+		return errors.Wrapf(err, "error invoking register actor reminder %s/%s", in.ActorType, in.ActorID)
 	}
 
 	return
+}
+
+type UnregisterActorReminderRequest struct {
+	ActorType string
+	ActorID   string
+	Name      string
+}
+
+// UnregisterActorReminder would unregister the actor reminder
+func (c *GRPCClient) UnregisterActorReminder(ctx context.Context, in *UnregisterActorReminderRequest) error {
+	if in == nil {
+		return errors.New("actor unregister reminder invocation request param required")
+	}
+	if in.ActorType == "" {
+		return errors.New("actor unregister reminder invocation actorType required")
+	}
+	if in.ActorID == "" {
+		return errors.New("actor unregister reminder invocation actorID required")
+	}
+	if in.Name == "" {
+		return errors.New("actor unregister reminder invocation name required")
+	}
+
+	req := &pb.UnregisterActorReminderRequest{
+		ActorType: in.ActorType,
+		ActorId:   in.ActorID,
+		Name:      in.Name,
+	}
+
+	_, err := c.protoClient.UnregisterActorReminder(c.withAuthToken(ctx), req)
+	if err != nil {
+		return errors.Wrapf(err, "error invoking unregister actor reminder %s/%s", in.ActorType, in.ActorID)
+	}
+	return nil
 }
 
 type RegisterActorTimerRequest struct {
@@ -110,18 +190,28 @@ type RegisterActorTimerRequest struct {
 	CallBack  string
 }
 
-// RegisterActorTimer invokes specific operation on the configured Dapr binding.
-// This method covers input, output, and bi-directional bindings.
+// RegisterActorTimer register actor timer as given param @in defined.
 func (c *GRPCClient) RegisterActorTimer(ctx context.Context, in *RegisterActorTimerRequest) (err error) {
-	// todo param check
 	if in == nil {
-		return errors.New("binding invocation required")
+		return errors.New("actor register timer invocation request param required")
 	}
-	//if in.Method == "" {
-	//	return  errors.New("binding invocation name required")
-	//}
 	if in.ActorType == "" {
-		return errors.New("binding invocation operation required")
+		return errors.New("actor register timer invocation actorType required")
+	}
+	if in.ActorID == "" {
+		return errors.New("actor register timer invocation actorID required")
+	}
+	if in.Name == "" {
+		return errors.New("actor register timer invocation name required")
+	}
+	if in.DueTime == "" {
+		return errors.New("actor register timer invocation dueTime required")
+	}
+	if in.Period == "" {
+		return errors.New("actor register timer invocation period required")
+	}
+	if in.CallBack == "" {
+		return errors.New("actor register timer invocation callback function required")
 	}
 
 	req := &pb.RegisterActorTimerRequest{
@@ -136,32 +226,54 @@ func (c *GRPCClient) RegisterActorTimer(ctx context.Context, in *RegisterActorTi
 
 	_, err = c.protoClient.RegisterActorTimer(c.withAuthToken(ctx), req)
 	if err != nil {
-		return errors.Wrapf(err, "error invoking binding %s/%s", in.ActorType, in.ActorID)
+		return errors.Wrapf(err, "error invoking actor register timer %s/%s", in.ActorType, in.ActorID)
 	}
 
 	return
 }
 
-func (c *GRPCClient) SaveStateTransactionally(ctx context.Context, actorID, actorType string, ops []*pb.TransactionalActorStateOperation) error {
-	req := &pb.ExecuteActorStateTransactionRequest{
-		ActorId:    actorID,
-		ActorType:  actorType,
-		Operations: ops,
-	}
-	_, err := c.protoClient.ExecuteActorStateTransaction(c.withAuthToken(ctx), req)
-	return err
+type UnregisterActorTimerRequest struct {
+	ActorType string
+	ActorID   string
+	Name      string
 }
 
-func ImplActor(actor actor.ActorProxy, c Client) {
-	actorValue := reflect.ValueOf(actor)
-	fmt.Println("[Implement] reflect.TypeOf: ", actorValue.String())
+// UnregisterActorTimer unregisters actor timer
+func (c *GRPCClient) UnregisterActorTimer(ctx context.Context, in *UnregisterActorTimerRequest) error {
+	if in == nil {
+		return errors.New("actor unregister timer invocation request param required")
+	}
+	if in.ActorType == "" {
+		return errors.New("actor unregister timer invocation actorType required")
+	}
+	if in.ActorID == "" {
+		return errors.New("actor unregister timer invocation actorID required")
+	}
+	if in.Name == "" {
+		return errors.New("actor unregister timer invocation name required")
+	}
+	req := &pb.UnregisterActorTimerRequest{
+		ActorType: in.ActorType,
+		ActorId:   in.ActorID,
+		Name:      in.Name,
+	}
 
+	_, err := c.protoClient.UnregisterActorTimer(c.withAuthToken(ctx), req)
+	if err != nil {
+		return errors.Wrapf(err, "error invoking binding %s/%s", in.ActorType, in.ActorID)
+	}
+
+	return nil
+}
+
+func (c *GRPCClient) implActor(actor actor.Client, serializer codec.Codec) {
+	actorValue := reflect.ValueOf(actor)
 	valueOfActor := actorValue.Elem()
 	typeOfActor := valueOfActor.Type()
 
-	// check incoming interface, incoming interface's elem must be a struct.
+	// check incoming interface, the incoming interface's elem must be a struct.
 	if typeOfActor.Kind() != reflect.Struct {
-		fmt.Println("%s must be a struct ptr", valueOfActor.String())
+		fmt.Println("[Actor] ERROR: imple actor client stub failed, incoming interface is not struct")
 		return
 	}
 
@@ -177,14 +289,14 @@ func ImplActor(actor actor.ActorProxy, c Client) {
 			outNum := t.Type.NumOut()
 
 			if outNum != 1 && outNum != 2 {
-				fmt.Printf("method %s of mtype %v has wrong number of in out parameters %d; needs exactly 1/2\n",
+				fmt.Printf("[Actor] ERRROR: method %s of mtype %v has wrong number of in out parameters %d; needs exactly 1/2\n",
 					t.Name, t.Type.String(), outNum)
 				continue
 			}
 
 			// The latest return type of the method must be error.
 			if returnType := t.Type.Out(outNum - 1); returnType != reflect.Zero(reflect.TypeOf((*error)(nil)).Elem()).Type() {
-				fmt.Printf("the latest return type %s of method %q is not error\n", returnType, t.Name)
+				fmt.Printf("[Actor] ERRROR: the latest return type %s of method %q is not error\n", returnType, t.Name)
 				continue
 			}
 
@@ -193,15 +305,13 @@ func ImplActor(actor actor.ActorProxy, c Client) {
 				funcOuts[i] = t.Type.Out(i)
 			}
 
-			// do method proxy here:
-			f.Set(reflect.MakeFunc(f.Type(), MakeCallProxyFunction(actor, methodName, funcOuts, c)))
-			fmt.Printf("set method [%s]\n", methodName)
+			f.Set(reflect.MakeFunc(f.Type(), c.makeCallProxyFunction(actor, methodName, funcOuts, serializer)))
 		}
 	}
 
 }
 
-func MakeCallProxyFunction(actor actor.ActorProxy, methodName string, outs []reflect.Type, c Client) func(in []reflect.Value) []reflect.Value {
+func (c *GRPCClient) makeCallProxyFunction(actor actor.Client, methodName string, outs []reflect.Type, serializer codec.Codec) func(in []reflect.Value) []reflect.Value {
 	return func(in []reflect.Value) []reflect.Value {
 		var (
 			err    error
@@ -223,14 +333,9 @@ func MakeCallProxyFunction(actor actor.ActorProxy, methodName string, outs []ref
 		if end > 0 {
 			if in[0].Type().String() == "context.Context" {
 				if !in[0].IsNil() {
-					// the user declared context as method's parameter
 					invCtx = in[0].Interface().(context.Context)
 				}
 				start += 1
-			}
-			if len(outs) == 1 && in[end-1].Type().Kind() == reflect.Ptr {
-				end -= 1
-				reply = in[len(in)-1]
 			}
 		}
 
@@ -239,7 +344,8 @@ func MakeCallProxyFunction(actor actor.ActorProxy, methodName string, outs []ref
 		} else if end-start == 1 {
 			inIArr = []interface{}{in[start].Interface()}
 		} else {
-			panic("param nums is zero or one is allowed by actor")
+			fmt.Println("[Actor] ERROR: param nums is zero or one is allowed by actor")
+			return nil
 		}
 
 		var data []byte
@@ -252,9 +358,9 @@ func MakeCallProxyFunction(actor actor.ActorProxy, methodName string, outs []ref
 
 		rsp, err := c.InvokeActor(invCtx, &InvokeActorRequest{
 			ActorType: actor.Type(),
-			ActorID:   "testActorID", // todo geneate actor id
+			ActorID:   actor.ID(),
 			Method:    methodName,
-			Data:      data, // todo serialize
+			Data:      data,
 		})
 
 		if len(outs) == 1 {
@@ -263,9 +369,8 @@ func MakeCallProxyFunction(actor actor.ActorProxy, methodName string, outs []ref
 
 		response := reply.Interface()
 		if rsp != nil {
-			fmt.Println("invoke actor response = ", string(rsp.Data))
-			if err := json.Unmarshal(rsp.Data, response); err != nil {
-				fmt.Println(err)
+			if err := serializer.Unmarshal(rsp.Data, response); err != nil {
+				fmt.Printf("[Actor] ERROR: unmarshal response err = %v\n", err)
 			}
 		}
 		if len(outs) == 2 && outs[0].Kind() != reflect.Ptr {

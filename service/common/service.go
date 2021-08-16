@@ -3,6 +3,7 @@ package common
 import (
 	"context"
 	"github.com/dapr/go-sdk/actor"
+	"github.com/dapr/go-sdk/actor/config"
 )
 
 // Service represents Dapr callback service
@@ -15,8 +16,7 @@ type Service interface {
 	// AddBindingInvocationHandler appends provided binding invocation handler with its name to the service.
 	AddBindingInvocationHandler(name string, fn func(ctx context.Context, in *BindingEvent) (out []byte, err error)) error
 	// RegisterActorImplFactory Register a new actor to actor runtime of go sdk
-	// RegisterActorImplFactory Register a new actor to actor runtime of go sdk
-	RegisterActorImplFactory(f actor.ActorImplFactory)
+	RegisterActorImplFactory(f actor.Factory, opts ...config.Option)
 	// Start starts service.
 	Start() error
 	// Stop stops the previously started service.

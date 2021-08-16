@@ -3,6 +3,7 @@ package grpc
 import (
 	"context"
 	"github.com/dapr/go-sdk/actor"
+	"github.com/dapr/go-sdk/actor/config"
 	"net"
 
 	"github.com/pkg/errors"
@@ -49,8 +50,8 @@ type Server struct {
 	bindingHandlers    map[string]func(ctx context.Context, in *common.BindingEvent) (out []byte, err error)
 }
 
-func (s *Server) RegisterActor(actor actor.Actor) {
-	panic("implement me")
+func (s *Server) RegisterActorImplFactory(f actor.Factory, opts ...config.Option) {
+	panic("Actor is not supported by gRPC API")
 }
 
 type topicEventHandler struct {

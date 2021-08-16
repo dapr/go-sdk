@@ -6,12 +6,12 @@ import (
 	"fmt"
 	actorErr "github.com/dapr/go-sdk/actor/error"
 	"github.com/dapr/go-sdk/actor/runtime"
+	"github.com/gorilla/mux"
 	"io/ioutil"
 	"net/http"
 	"strings"
 
 	"github.com/dapr/go-sdk/service/common"
-	"github.com/gorilla/mux"
 	"github.com/pkg/errors"
 )
 
@@ -26,7 +26,8 @@ const (
 	PubSubHandlerDropStatusCode int = http.StatusSeeOther
 )
 
-func (s *Server) registerSubscribeHandler() {
+func (s *Server) registerBaseHandler() {
+	// register subscribe handler
 	f := func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		if err := json.NewEncoder(w).Encode(s.topicSubscriptions); err != nil {
@@ -35,16 +36,29 @@ func (s *Server) registerSubscribeHandler() {
 		}
 	}
 	s.mux.HandleFunc("/dapr/subscribe", f)
-}
 
-func (s *Server) registerActorHandler() {
-	fRegister := func(w http.ResponseWriter, r *http.Request) {
-		w.Write(runtime.GetActorRuntime().GetSerializedConfig())
-		fmt.Println("get dapr/config invoke: " + string(runtime.GetActorRuntime().GetSerializedConfig()))
-		w.WriteHeader(200)
+	// register health check handler
+	fHealth := func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
 	}
-	s.mux.HandleFunc("/dapr/config", fRegister)
+	s.mux.HandleFunc("/healthz", fHealth).Methods(http.MethodGet)
 
+	// register actor config handler
+	fRegister := func(w http.ResponseWriter, r *http.Request) {
+		data, err := runtime.GetActorRuntime().GetJsonSerializedConfig()
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		if _, err = w.Write(data); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+	}
+	s.mux.HandleFunc("/dapr/config", fRegister).Methods(http.MethodGet)
+
+	// register actor method invoke handler
 	fInvoke := func(w http.ResponseWriter, r *http.Request) {
 		varsMap := mux.Vars(r)
 		actorType := varsMap["actorType"]
@@ -52,32 +66,36 @@ func (s *Server) registerActorHandler() {
 		methodName := varsMap["methodName"]
 		reqData, _ := ioutil.ReadAll(r.Body)
 		rspData, err := runtime.GetActorRuntime().InvokeActorMethod(actorType, actorID, methodName, reqData)
-		if err == actorErr.ErrorActorTypeNotFound || err == actorErr.ErrorActorIDNotFound {
-			w.WriteHeader(404)
+		if err == actorErr.ErrActorTypeNotFound {
+			w.WriteHeader(http.StatusNotFound)
+			return
 		}
 		if err != actorErr.Success {
-			w.WriteHeader(500)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
 		}
-		w.WriteHeader(200)
-		w.Write(rspData)
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write(rspData)
 	}
-	s.mux.HandleFunc("/actors/{actorType}/{actorId}/method/{methodName}", fInvoke).Methods("PUT")
+	s.mux.HandleFunc("/actors/{actorType}/{actorId}/method/{methodName}", fInvoke).Methods(http.MethodPut)
 
+	// register deactivate actor handler
 	fDelete := func(w http.ResponseWriter, r *http.Request) {
 		varsMap := mux.Vars(r)
 		actorType := varsMap["actorType"]
 		actorID := varsMap["actorId"]
 		err := runtime.GetActorRuntime().Deactive(actorType, actorID)
-		if err == actorErr.ErrorActorTypeNotFound || err == actorErr.ErrorActorIDNotFound {
-			w.WriteHeader(404)
+		if err == actorErr.ErrActorTypeNotFound || err == actorErr.ErrActorIDNotFound {
+			w.WriteHeader(http.StatusNotFound)
 		}
 		if err != actorErr.Success {
-			w.WriteHeader(500)
+			w.WriteHeader(http.StatusInternalServerError)
 		}
-		w.WriteHeader(200)
+		w.WriteHeader(http.StatusOK)
 	}
-	s.mux.HandleFunc("/actors/{actorType}/{actorId}", fDelete).Methods("DELETE")
+	s.mux.HandleFunc("/actors/{actorType}/{actorId}", fDelete).Methods(http.MethodDelete)
 
+	// register actor reminder invoke handler
 	fReminder := func(w http.ResponseWriter, r *http.Request) {
 		varsMap := mux.Vars(r)
 		actorType := varsMap["actorType"]
@@ -85,38 +103,33 @@ func (s *Server) registerActorHandler() {
 		reminderName := varsMap["reminderName"]
 		reqData, _ := ioutil.ReadAll(r.Body)
 		err := runtime.GetActorRuntime().InvokeReminder(actorType, actorID, reminderName, reqData)
-		if err == actorErr.ErrorActorTypeNotFound || err == actorErr.ErrorActorIDNotFound {
-			w.WriteHeader(404)
+		if err == actorErr.ErrActorTypeNotFound {
+			w.WriteHeader(http.StatusNotFound)
 		}
 		if err != actorErr.Success {
-			w.WriteHeader(500)
+			w.WriteHeader(http.StatusInternalServerError)
 		}
-		w.WriteHeader(200)
+		w.WriteHeader(http.StatusOK)
 	}
-	s.mux.HandleFunc("/actors/{actorType}/{actorId}/method/remind/{reminderName}", fReminder).Methods("PUT")
+	s.mux.HandleFunc("/actors/{actorType}/{actorId}/method/remind/{reminderName}", fReminder).Methods(http.MethodPut)
 
+	// register actor timer invoke handler
 	fTimer := func(w http.ResponseWriter, r *http.Request) {
-		fmt.Println("daprd sdk actor invoke timer ")
 		varsMap := mux.Vars(r)
 		actorType := varsMap["actorType"]
 		actorID := varsMap["actorId"]
 		timerName := varsMap["timerName"]
 		reqData, _ := ioutil.ReadAll(r.Body)
 		err := runtime.GetActorRuntime().InvokeTimer(actorType, actorID, timerName, reqData)
-		if err == actorErr.ErrorActorTypeNotFound || err == actorErr.ErrorActorIDNotFound {
-			w.WriteHeader(404)
+		if err == actorErr.ErrActorTypeNotFound {
+			w.WriteHeader(http.StatusNotFound)
 		}
 		if err != actorErr.Success {
-			w.WriteHeader(500)
+			w.WriteHeader(http.StatusInternalServerError)
 		}
-		w.WriteHeader(200)
+		w.WriteHeader(http.StatusOK)
 	}
-	s.mux.HandleFunc("/actors/{actorType}/{actorId}/method/timer/{timerName}", fTimer).Methods("PUT")
-
-	fHealth := func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(200)
-	}
-	s.mux.HandleFunc("/healthz", fHealth)
+	s.mux.HandleFunc("/actors/{actorType}/{actorId}/method/timer/{timerName}", fTimer).Methods(http.MethodPut)
 }
 
 // AddTopicEventHandler appends provided event handler with it's name to the service
@@ -154,7 +167,6 @@ func (s *Server) AddTopicEventHandler(sub *common.Subscription, fn func(ctx cont
 			// deserialize the event
 			var in common.TopicEvent
 			if err := json.NewDecoder(r.Body).Decode(&in); err != nil {
-				fmt.Println(err.Error())
 				http.Error(w, err.Error(), PubSubHandlerDropStatusCode)
 				return
 			}
