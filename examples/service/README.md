@@ -73,35 +73,6 @@ dapr run --app-id caller \
 
 <!-- END_STEP -->
 
-## Custom gRPC client
-
-Launch the DAPR client with custom gRPC client to accept and receive payload size > 4 MB:
-<!-- STEP
-expected_stdout_lines:
-✅  You're up and running! Both Dapr and your app logs will appear here.
-
-== APP == Writing large data blob...
-== APP == Saved the large data blob...
-== APP == Writing to statestore took 1.29516369sGetting data from the large data blob...
-== APP == Reading from statestore took 3.735723404s
-== APP == Deleting key from statestore took 3.738843037s
-== APP == DONE (CTRL+C to Exit)
-✅  Exited App successfully
-ℹ️  
-terminated signal received: shutting down
-✅  Exited Dapr successfully
--->
-
-```bash
-dapr run --app-id custom-grpc-client \
-		 -d ./config \
-		 --dapr-http-max-request-size 41 \
-		 --log-level debug \
-		 go run ./custom-grpc-client/main.go
-```
-
-<!-- END_STEP -->
-
 ## API
 
 ### PubSub
@@ -170,6 +141,36 @@ name: Shutdown dapr
 
 ```bash
 dapr stop --app-id serving
+```
+
+<!-- END_STEP -->
+
+## Custom gRPC client
+
+Launch the DAPR client with custom gRPC client to accept and receive payload size > 4 MB:
+
+<!-- STEP
+expected_stdout_lines:
+✅  You're up and running! Both Dapr and your app logs will appear here.
+
+== APP == Writing large data blob...
+== APP == Saved the large data blob...
+== APP == Writing to statestore took 1.29516369sGetting data from the large data blob...
+== APP == Reading from statestore took 3.735723404s
+== APP == Deleting key from statestore took 3.738843037s
+== APP == DONE (CTRL+C to Exit)
+✅  Exited App successfully
+ℹ️  
+terminated signal received: shutting down
+✅  Exited Dapr successfully
+-->
+
+```bash
+dapr run --app-id custom-grpc-client \
+		 -d ./config \
+		 --dapr-http-max-request-size 41 \
+		 --log-level debug \
+		 go run ./custom-grpc-client/main.go
 ```
 
 <!-- END_STEP -->
