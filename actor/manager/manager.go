@@ -125,7 +125,7 @@ func (m *DefaultActorManager) InvokeTimer(actorID, timerName string, params []by
 	timerParams := &api.ActorTimerParam{}
 	if err := json.Unmarshal(params, timerParams); err != nil {
 		fmt.Println("unmarshal reminder param error = ", err)
-		return actorErr.ErrRemindersParamsInvalid
+		return actorErr.ErrTimerParamsInvalid
 	}
 	_, aerr := m.getAndCreateActorContainerIfNotExist(actorID).Invoke(timerParams.CallBack, timerParams.Data)
 	return aerr

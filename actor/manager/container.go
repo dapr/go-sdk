@@ -48,7 +48,7 @@ func (d *DefaultActorContainer) Invoke(methodName string, param []byte) ([]refle
 		paramValue := reflect.New(typ)
 		paramInterface := paramValue.Interface()
 		if err := d.serializer.Unmarshal(param, paramInterface); err != nil {
-			return nil, actorErr.ErrActorSerializeFailed
+			return nil, actorErr.ErrActorMethodSerializeFailed
 		}
 		argsValues = append(argsValues, reflect.ValueOf(paramInterface).Elem())
 	}
