@@ -20,7 +20,7 @@ test: tidy ## Tests the entire project
 .PHONY: spell
 spell: ## Checks spelling across the entire project 
 	@command -v misspell > /dev/null 2>&1 || (cd tools && go get github.com/client9/misspell/cmd/misspell)
-	@misspell -locale US -error go=golang client/**/* example/**/* service/**/* .
+	@misspell -locale US -error go=golang client/**/* examples/**/* service/**/* actor/**/* .
 
 .PHONY: cover
 cover: tidy ## Displays test coverage in the client and service packages

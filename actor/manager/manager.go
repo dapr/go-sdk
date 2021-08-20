@@ -150,10 +150,8 @@ func isExported(name string) bool {
 
 // Service is description of service
 type Service struct {
-	name     string
 	rcvr     reflect.Value
 	rcvrType reflect.Type
-	methods  map[string]*MethodType
 }
 
 // MethodType is description of service method.
