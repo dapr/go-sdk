@@ -6,9 +6,10 @@ import (
 
 	"github.com/pkg/errors"
 
+	"google.golang.org/grpc"
+
 	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
 	"github.com/dapr/go-sdk/service/common"
-	"google.golang.org/grpc"
 )
 
 // NewService creates new Service.

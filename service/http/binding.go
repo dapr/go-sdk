@@ -10,7 +10,7 @@ import (
 	"github.com/dapr/go-sdk/service/common"
 )
 
-// AddBindingInvocationHandler appends provided binding invocation handler with its route to the service
+// AddBindingInvocationHandler appends provided binding invocation handler with its route to the service.
 func (s *Server) AddBindingInvocationHandler(route string, fn func(ctx context.Context, in *common.BindingEvent) (out []byte, err error)) error {
 	if route == "" {
 		return fmt.Errorf("binding route required")

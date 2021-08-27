@@ -1,6 +1,6 @@
 package common
 
-// TopicEvent is the content of the inbound topic message
+// TopicEvent is the content of the inbound topic message.
 type TopicEvent struct {
 	// ID identifies the event.
 	ID string `json:"id"`
@@ -23,7 +23,7 @@ type TopicEvent struct {
 	PubsubName string `json:"pubsubname"`
 }
 
-// InvocationEvent represents the input and output of binding invocation
+// InvocationEvent represents the input and output of binding invocation.
 type InvocationEvent struct {
 	// Data is the payload that the input bindings sent.
 	Data []byte `json:"data"`
@@ -37,7 +37,7 @@ type InvocationEvent struct {
 	QueryString string `json:"-"`
 }
 
-// Content is a generic data content
+// Content is a generic data content.
 type Content struct {
 	// Data is the payload that the input bindings sent.
 	Data []byte `json:"data"`
@@ -47,7 +47,7 @@ type Content struct {
 	DataTypeURL string `json:"typeUrl,omitempty"`
 }
 
-// BindingEvent represents the binding event handler input
+// BindingEvent represents the binding event handler input.
 type BindingEvent struct {
 	// Data is the input bindings sent
 	Data []byte `json:"data"`
@@ -55,7 +55,7 @@ type BindingEvent struct {
 	Metadata map[string]string `json:"metadata,omitempty"`
 }
 
-// Subscription represents single topic subscription
+// Subscription represents single topic subscription.
 type Subscription struct {
 	// PubsubName is name of the pub/sub this message came from
 	PubsubName string `json:"pubsubname"`
@@ -68,15 +68,15 @@ type Subscription struct {
 }
 
 const (
-	// SubscriptionResponseStatusSuccess means message is processed successfully
+	// SubscriptionResponseStatusSuccess means message is processed successfully.
 	SubscriptionResponseStatusSuccess = "SUCCESS"
-	// SubscriptionResponseStatusRetry means message to be retried by Dapr
+	// SubscriptionResponseStatusRetry means message to be retried by Dapr.
 	SubscriptionResponseStatusRetry = "RETRY"
-	// SubscriptionResponseStatusDrop means warning is logged and message is dropped
+	// SubscriptionResponseStatusDrop means warning is logged and message is dropped.
 	SubscriptionResponseStatusDrop = "DROP"
 )
 
-// SubscriptionResponse represents the response handling hint from subscriber to Dapr
+// SubscriptionResponse represents the response handling hint from subscriber to Dapr.
 type SubscriptionResponse struct {
 	Status string `json:"status"`
 }

@@ -5,13 +5,14 @@ import (
 	"encoding/json"
 	"strings"
 
-	v1 "github.com/dapr/go-sdk/dapr/proto/common/v1"
-	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
 	anypb "github.com/golang/protobuf/ptypes/any"
 	"github.com/pkg/errors"
+
+	v1 "github.com/dapr/go-sdk/dapr/proto/common/v1"
+	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
 )
 
-// DataContent the service invocation content
+// DataContent the service invocation content.
 type DataContent struct {
 	// Data is the input data
 	Data []byte
@@ -97,7 +98,7 @@ func (c *GRPCClient) InvokeMethodWithContent(ctx context.Context, appID, methodN
 }
 
 // InvokeMethodWithCustomContent invokes service with custom content (struct + content type).
-func (c *GRPCClient) InvokeMethodWithCustomContent(ctx context.Context, appID, methodName, verb string, contentType string, content interface{}) (out []byte, err error) {
+func (c *GRPCClient) InvokeMethodWithCustomContent(ctx context.Context, appID, methodName, verb string, contentType string, content interface{}) ([]byte, error) {
 	if err := hasRequiredInvokeArgs(appID, methodName, verb); err != nil {
 		return nil, errors.Wrap(err, "missing required parameter")
 	}
