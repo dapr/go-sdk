@@ -22,8 +22,8 @@ func NewActorRuntime() *ActorRunTime {
 	return &ActorRunTime{}
 }
 
-// GetActorRuntime gets or create runtime instance
-func GetActorRuntime() *ActorRunTime {
+// GetActorRuntimeInstance gets or create runtime instance
+func GetActorRuntimeInstance() *ActorRunTime {
 	if actorRuntimeInstance == nil {
 		actorRuntimeInstance = NewActorRuntime()
 	}

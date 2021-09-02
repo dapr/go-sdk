@@ -8,6 +8,7 @@ import (
 	"github.com/dapr/go-sdk/actor/codec"
 	"github.com/dapr/go-sdk/actor/config"
 	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
+	anypb "github.com/golang/protobuf/ptypes/any"
 	"github.com/pkg/errors"
 	"reflect"
 )
@@ -378,4 +379,72 @@ func (c *GRPCClient) makeCallProxyFunction(actor actor.Client, methodName string
 		}
 		return []reflect.Value{reply, reflect.ValueOf(&err).Elem()}
 	}
+}
+
+type GetActorStateRequest struct {
+	ActorType string
+	ActorID   string
+	KeyName   string
+}
+
+type GetActorStateResponse struct {
+	Data []byte
+}
+
+func (c *GRPCClient) GetActorState(ctx context.Context, in *GetActorStateRequest) (*GetActorStateResponse, error) {
+	if in == nil {
+		return nil, errors.New("actor get state invocation request param required")
+	}
+	if in.ActorType == "" {
+		return nil, errors.New("actor get state invocation actorType required")
+	}
+	if in.ActorID == "" {
+		return nil, errors.New("actor get state invocation actorID required")
+	}
+	if in.KeyName == "" {
+		return nil, errors.New("actor get state invocation keyName required")
+	}
+	rsp, err := c.protoClient.GetActorState(c.withAuthToken(ctx), &pb.GetActorStateRequest{
+		ActorId:   in.ActorID,
+		ActorType: in.ActorType,
+		Key:       in.KeyName,
+	})
+	if err != nil {
+		return nil, errors.Wrapf(err, "error invoking actor get state %s/%s", in.ActorType, in.ActorID)
+	}
+	return &GetActorStateResponse{Data: rsp.Data}, nil
+}
+
+type ActorStateOperation struct {
+	OperationType string
+	Key           string
+	Value         []byte
+}
+
+func (c *GRPCClient) SaveStateTransactionally(ctx context.Context, actorType, actorID string, operations []*ActorStateOperation) error {
+	if len(operations) == 0 {
+		return errors.New("actor save state transactionally invocation request param operations is empty")
+	}
+	if actorType == "" {
+		return errors.New("actor save state transactionally invocation actorType required")
+	}
+	if actorID == "" {
+		return errors.New("actor save state transactionally invocation actorID required")
+	}
+	grpcOperations := make([]*pb.TransactionalActorStateOperation, 0)
+	for _, op := range operations {
+		grpcOperations = append(grpcOperations, &pb.TransactionalActorStateOperation{
+			OperationType: op.OperationType,
+			Key:           op.Key,
+			Value: &anypb.Any{
+				Value: op.Value,
+			},
+		})
+	}
+	_, err := c.protoClient.ExecuteActorStateTransaction(c.withAuthToken(ctx), &pb.ExecuteActorStateTransactionRequest{
+		ActorType:  actorType,
+		ActorId:    actorID,
+		Operations: grpcOperations,
+	})
+	return err
 }

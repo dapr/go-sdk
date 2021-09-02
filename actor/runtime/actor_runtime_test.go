@@ -14,7 +14,7 @@ func TestNewActorRuntime(t *testing.T) {
 }
 
 func TestGetActorRuntime(t *testing.T) {
-	rt := GetActorRuntime()
+	rt := GetActorRuntimeInstance()
 	assert.NotNil(t, rt)
 }
 

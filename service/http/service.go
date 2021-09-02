@@ -40,7 +40,7 @@ type Server struct {
 }
 
 func (s *Server) RegisterActorImplFactory(f actor.Factory, opts ...config.Option) {
-	runtime.GetActorRuntime().RegisterActorFactory(f, opts...)
+	runtime.GetActorRuntimeInstance().RegisterActorFactory(f, opts...)
 }
 
 // Start starts the HTTP handler. Blocks while serving

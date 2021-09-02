@@ -3,14 +3,15 @@ package api
 import "context"
 
 type ClientStub struct {
-	GetUser       func(context.Context, *User) (*User, error)
-	Invoke        func(context.Context, string) (string, error)
-	Get           func(context.Context) (string, error)
-	Post          func(context.Context, string) error
-	StartTimer    func(context.Context, *TimerRequest) error
-	StopTimer     func(context.Context, *TimerRequest) error
-	StartReminder func(context.Context, *ReminderRequest) error
-	StopReminder  func(context.Context, *ReminderRequest) error
+	GetUser         func(context.Context, *User) (*User, error)
+	Invoke          func(context.Context, string) (string, error)
+	Get             func(context.Context) (string, error)
+	Post            func(context.Context, string) error
+	StartTimer      func(context.Context, *TimerRequest) error
+	StopTimer       func(context.Context, *TimerRequest) error
+	StartReminder   func(context.Context, *ReminderRequest) error
+	StopReminder    func(context.Context, *ReminderRequest) error
+	IncrementAndGet func(ctx context.Context, stateKey string) (*User, error)
 }
 
 func (a *ClientStub) Type() string {

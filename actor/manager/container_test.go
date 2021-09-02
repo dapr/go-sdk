@@ -17,6 +17,9 @@ func TestNewDefaultContainer(t *testing.T) {
 	mockCodec := actorMock.NewMockCodec(ctrl)
 
 	mockServer.EXPECT().SetID(mockActorID)
+	mockServer.EXPECT().SetStateManager(gomock.Any())
+	mockServer.EXPECT().SaveState()
+	mockServer.EXPECT().Type()
 
 	container := NewDefaultActorContainer(mockActorID, mockServer, mockCodec).(*DefaultActorContainer)
 
@@ -34,6 +37,9 @@ func TestContainerInvoke(t *testing.T) {
 	param := `"param"`
 
 	mockServer.EXPECT().SetID(mockActorID)
+	mockServer.EXPECT().SetStateManager(gomock.Any())
+	mockServer.EXPECT().SaveState()
+	mockServer.EXPECT().Type()
 
 	container := NewDefaultActorContainer("mockActorID", mockServer, mockCodec).(*DefaultActorContainer)
 

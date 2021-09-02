@@ -100,4 +100,13 @@ func main() {
 	}
 	fmt.Println("stop reminder")
 
+	for i := 0; i < 10; i++ {
+		usr, err := myActor.IncrementAndGet(ctx, "testStateKey")
+		if err != nil {
+			panic(err)
+		}
+		fmt.Printf("get user = %+v\n", *usr)
+		time.Sleep(time.Second)
+	}
+
 }

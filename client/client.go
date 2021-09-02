@@ -101,6 +101,12 @@ type Client interface {
 	// WithTraceID adds existing trace ID to the outgoing context.
 	WithTraceID(ctx context.Context, id string) context.Context
 
+	// WithAuthToken sets Dapr API token on the instantiated client.
+	WithAuthToken(token string)
+
+	// Close cleans up all resources created by the client.
+	Close()
+
 	// RegisterActorTimer registers an actor timer.
 	RegisterActorTimer(ctx context.Context, in *RegisterActorTimerRequest) error
 
@@ -116,11 +122,11 @@ type Client interface {
 	// InvokeActor calls a method on an actor.
 	InvokeActor(ctx context.Context, in *InvokeActorRequest) (*InvokeActorResponse, error)
 
-	// WithAuthToken sets Dapr API token on the instantiated client.
-	WithAuthToken(token string)
+	// GetActorState get actor state
+	GetActorState(ctx context.Context, in *GetActorStateRequest) (data *GetActorStateResponse, err error)
 
-	// Close cleans up all resources created by the client.
-	Close()
+	// SaveStateTransactionally
+	SaveStateTransactionally(ctx context.Context, actorType, actorID string, operations []*ActorStateOperation) error
 
 	ImplActorClientStub(actorClientStub actor.Client, opt ...config.Option)
 }

@@ -86,6 +86,7 @@ func (m *DefaultActorManager) InvokeMethod(actorID, methodName string, request [
 	if err != nil {
 		return nil, actorErr.ErrActorInvokeFailed
 	}
+	m.getAndCreateActorContainerIfNotExist(actorID).GetActor().SaveState()
 	return rspData, actorErr.Success
 }
 

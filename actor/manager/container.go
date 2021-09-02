@@ -5,6 +5,8 @@ import (
 	"github.com/dapr/go-sdk/actor"
 	"github.com/dapr/go-sdk/actor/codec"
 	actorErr "github.com/dapr/go-sdk/actor/error"
+	"github.com/dapr/go-sdk/actor/state"
+	dapr "github.com/dapr/go-sdk/client"
 	"reflect"
 )
 
@@ -23,6 +25,11 @@ type DefaultActorContainer struct {
 // NewDefaultActorContainer creates a new ActorContainer with provider impl actor and serializer
 func NewDefaultActorContainer(actorID string, impl actor.Server, serializer codec.Codec) ActorContainer {
 	impl.SetID(actorID)
+	daprClient, _ := dapr.NewClient()
+	// create state manager for this new actor
+	impl.SetStateManager(state.NewActorStateManager(impl.Type(), actorID, state.NewDaprStateAsyncProvider(daprClient)))
+	// save state of this actor
+	impl.SaveState()
 	return &DefaultActorContainer{
 		methodType: getAbsctractMethodMap(impl),
 		actor:      impl,

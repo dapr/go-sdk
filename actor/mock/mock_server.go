@@ -8,6 +8,7 @@ import (
 	"context"
 	reflect "reflect"
 
+	actor "github.com/dapr/go-sdk/actor"
 	gomock "github.com/golang/mock/gomock"
 )
 
@@ -41,7 +42,6 @@ func (m *MockServer) ID() string {
 	ret0, _ := ret[0].(string)
 	return ret0
 }
-
 func (mr *MockServerMockRecorder) Invoke(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Invoke", reflect.TypeOf((*MockServer)(nil).Invoke), arg0, arg1)
@@ -61,6 +61,18 @@ func (mr *MockServerMockRecorder) ID() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ID", reflect.TypeOf((*MockServer)(nil).ID))
 }
 
+// SaveState mocks base method.
+func (m *MockServer) SaveState() {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "SaveState")
+}
+
+// SaveState indicates an expected call of SaveState.
+func (mr *MockServerMockRecorder) SaveState() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveState", reflect.TypeOf((*MockServer)(nil).SaveState))
+}
+
 // SetID mocks base method.
 func (m *MockServer) SetID(arg0 string) {
 	m.ctrl.T.Helper()
@@ -71,6 +83,18 @@ func (m *MockServer) SetID(arg0 string) {
 func (mr *MockServerMockRecorder) SetID(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetID", reflect.TypeOf((*MockServer)(nil).SetID), arg0)
+}
+
+// SetStateManager mocks base method.
+func (m *MockServer) SetStateManager(arg0 actor.StateManager) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "SetStateManager", arg0)
+}
+
+// SetStateManager indicates an expected call of SetStateManager.
+func (mr *MockServerMockRecorder) SetStateManager(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetStateManager", reflect.TypeOf((*MockServer)(nil).SetStateManager), arg0)
 }
 
 // Type mocks base method.

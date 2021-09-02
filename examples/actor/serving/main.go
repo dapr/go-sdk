@@ -88,12 +88,31 @@ func (t *TestActor) Post(ctx context.Context, req string) error {
 	return nil
 }
 
+func (t *TestActor) IncrementAndGet(ctx context.Context, stateKey string) (*api.User, error) {
+	stateData := api.User{}
+	if exist, err := t.GetStateManager().Contains(stateKey); err != nil {
+		fmt.Println("state manager call contains with key " + stateKey + "err = " + err.Error())
+		return &stateData, err
+	} else if exist {
+		if err := t.GetStateManager().Get(stateKey, &stateData); err != nil {
+			fmt.Println("state manager call get with key " + stateKey + "err = " + err.Error())
+			return &stateData, err
+		}
+	}
+	stateData.Age++
+	if err := t.GetStateManager().Set(stateKey, stateData); err != nil {
+		fmt.Printf("state manager set get with key %s and state data = %+v, error = %s", stateKey, stateData, err.Error())
+		return &stateData, err
+	}
+	return &stateData, nil
+}
+
 func (t *TestActor) ReminderCall(reminderName string, state []byte, dueTime string, period string) {
 	fmt.Println("receive reminder = ", reminderName, " state = ", string(state), "duetime = ", dueTime, "period = ", period)
 }
 
 func main() {
-	s := daprd.NewService(":8080")
+	s := daprd.NewService(":18080")
 	s.RegisterActorImplFactory(testActorFactory)
 	if err := s.Start(); err != nil && err != http.ErrServerClosed {
 		log.Fatalf("error listenning: %v", err)

@@ -45,7 +45,7 @@ func (s *Server) registerBaseHandler() {
 
 	// register actor config handler
 	fRegister := func(w http.ResponseWriter, r *http.Request) {
-		data, err := runtime.GetActorRuntime().GetJsonSerializedConfig()
+		data, err := runtime.GetActorRuntimeInstance().GetJsonSerializedConfig()
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
@@ -65,7 +65,7 @@ func (s *Server) registerBaseHandler() {
 		actorID := varsMap["actorId"]
 		methodName := varsMap["methodName"]
 		reqData, _ := ioutil.ReadAll(r.Body)
-		rspData, err := runtime.GetActorRuntime().InvokeActorMethod(actorType, actorID, methodName, reqData)
+		rspData, err := runtime.GetActorRuntimeInstance().InvokeActorMethod(actorType, actorID, methodName, reqData)
 		if err == actorErr.ErrActorTypeNotFound {
 			w.WriteHeader(http.StatusNotFound)
 			return
@@ -84,7 +84,7 @@ func (s *Server) registerBaseHandler() {
 		varsMap := mux.Vars(r)
 		actorType := varsMap["actorType"]
 		actorID := varsMap["actorId"]
-		err := runtime.GetActorRuntime().Deactive(actorType, actorID)
+		err := runtime.GetActorRuntimeInstance().Deactive(actorType, actorID)
 		if err == actorErr.ErrActorTypeNotFound || err == actorErr.ErrActorIDNotFound {
 			w.WriteHeader(http.StatusNotFound)
 		}
@@ -102,7 +102,7 @@ func (s *Server) registerBaseHandler() {
 		actorID := varsMap["actorId"]
 		reminderName := varsMap["reminderName"]
 		reqData, _ := ioutil.ReadAll(r.Body)
-		err := runtime.GetActorRuntime().InvokeReminder(actorType, actorID, reminderName, reqData)
+		err := runtime.GetActorRuntimeInstance().InvokeReminder(actorType, actorID, reminderName, reqData)
 		if err == actorErr.ErrActorTypeNotFound {
 			w.WriteHeader(http.StatusNotFound)
 		}
@@ -120,7 +120,7 @@ func (s *Server) registerBaseHandler() {
 		actorID := varsMap["actorId"]
 		timerName := varsMap["timerName"]
 		reqData, _ := ioutil.ReadAll(r.Body)
-		err := runtime.GetActorRuntime().InvokeTimer(actorType, actorID, timerName, reqData)
+		err := runtime.GetActorRuntimeInstance().InvokeTimer(actorType, actorID, timerName, reqData)
 		if err == actorErr.ErrActorTypeNotFound {
 			w.WriteHeader(http.StatusNotFound)
 		}
