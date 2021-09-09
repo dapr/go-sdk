@@ -2,6 +2,7 @@ package client
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net"
 	"os"
@@ -113,6 +114,7 @@ type Client interface {
 //   NewClientWithPort(port string) (client Client, err error)
 //   NewClientWithAddress(address string) (client Client, err error)
 //   NewClientWithConnection(conn *grpc.ClientConn) Client
+//   NewClientWithSocket(socket string) (client Client, err error)
 func NewClient() (client Client, err error) {
 	port := os.Getenv(daprPortEnvVarName)
 	if port == "" {
@@ -159,6 +161,23 @@ func NewClientWithAddress(address string) (client Client, err error) {
 	}
 
 	return newClientWithConnectionAndCancelFunc(conn, ctxCancel), nil
+}
+
+// NewClientWithSocket instantiates Dapr using specific socket.
+func NewClientWithSocket(socket string) (client Client, err error) {
+	if socket == "" {
+		return nil, errors.New("nil socket")
+	}
+	logger.Printf("dapr client initializing for: %s", socket)
+	addr := fmt.Sprintf("unix://%s", socket)
+	conn, err := grpc.Dial(addr, grpc.WithInsecure())
+	if err != nil {
+		return nil, errors.Wrapf(err, "error creating connection to '%s': %v", addr, err)
+	}
+	if hasToken := os.Getenv(apiTokenEnvVarName); hasToken != "" {
+		logger.Println("client uses API token")
+	}
+	return NewClientWithConnection(conn), nil
 }
 
 // NewClientWithConnection instantiates Dapr client using specific connection.

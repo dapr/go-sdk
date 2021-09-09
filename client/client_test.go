@@ -21,6 +21,7 @@ import (
 
 const (
 	testBufSize = 1024 * 1024
+	testSocket  = "/tmp/dapr.socket"
 )
 
 var testClient Client
@@ -30,6 +31,15 @@ func TestMain(m *testing.M) {
 	c, f := getTestClient(ctx)
 	testClient = c
 	r := m.Run()
+	f()
+
+	if r != 0 {
+		os.Exit(r)
+	}
+
+	c, f = getTestClientWithSocket(ctx)
+	testClient = c
+	r = m.Run()
 	f()
 	os.Exit(r)
 }
@@ -50,12 +60,48 @@ func TestNewClient(t *testing.T) {
 		assert.Error(t, err)
 	})
 
+	t.Run("no arg with socket", func(t *testing.T) {
+		_, err := NewClientWithSocket("")
+		assert.Error(t, err)
+	})
+
+	t.Run("new client closed with token", func(t *testing.T) {
+		t.Setenv(apiTokenEnvVarName, "test")
+		c, err := NewClientWithSocket(testSocket)
+		assert.NoError(t, err)
+		defer c.Close()
+		c.WithAuthToken("")
+	})
+
 	t.Run("new client closed with empty token", func(t *testing.T) {
 		testClient.WithAuthToken("")
 	})
 
 	t.Run("new client with trace ID", func(t *testing.T) {
 		_ = testClient.WithTraceID(context.Background(), "test")
+	})
+
+	t.Run("new socket client closed with token", func(t *testing.T) {
+		t.Setenv(apiTokenEnvVarName, "test")
+		c, err := NewClientWithSocket(testSocket)
+		assert.NoError(t, err)
+		defer c.Close()
+		c.WithAuthToken("")
+	})
+
+	t.Run("new socket client closed with empty token", func(t *testing.T) {
+		c, err := NewClientWithSocket(testSocket)
+		assert.NoError(t, err)
+		defer c.Close()
+		c.WithAuthToken("")
+	})
+
+	t.Run("new socket client with trace ID", func(t *testing.T) {
+		c, err := NewClientWithSocket(testSocket)
+		assert.NoError(t, err)
+		defer c.Close()
+		ctx := c.WithTraceID(context.Background(), "")
+		_ = c.WithTraceID(ctx, "test")
 	})
 }
 
@@ -96,6 +142,37 @@ func getTestClient(ctx context.Context) (client Client, closer func()) {
 	}
 
 	client = NewClientWithConnection(c)
+	return
+}
+
+func getTestClientWithSocket(ctx context.Context) (client Client, closer func()) {
+	s := grpc.NewServer()
+	pb.RegisterDaprServer(s, &testDaprServer{
+		state: make(map[string][]byte),
+	})
+
+	var lc net.ListenConfig
+	l, err := lc.Listen(ctx, "unix", testSocket)
+	if err != nil {
+		logger.Fatalf("socket test server created with error: %v", err)
+	}
+
+	go func() {
+		if err = s.Serve(l); err != nil && err.Error() != "accept unix /tmp/dapr.socket: use of closed network connection" {
+			logger.Fatalf("socket test server exited with error: %v", err)
+		}
+	}()
+
+	closer = func() {
+		l.Close()
+		s.Stop()
+		os.Remove(testSocket)
+	}
+
+	if client, err = NewClientWithSocket(testSocket); err != nil {
+		logger.Fatalf("socket test client created with error: %v", err)
+	}
+
 	return
 }
 
