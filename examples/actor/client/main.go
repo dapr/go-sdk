@@ -101,6 +101,7 @@ func main() {
 	fmt.Println("stop reminder")
 
 	for i := 0; i < 10; i++ {
+		// Invoke user defined method IncrementAndGet, and server side actor increase the state named testStateKey and return.
 		usr, err := myActor.IncrementAndGet(ctx, "testStateKey")
 		if err != nil {
 			panic(err)

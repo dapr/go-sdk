@@ -52,6 +52,17 @@ dapr stop --app-id  actor-serving
 == APP == stop timer
 == APP == start reminder
 == APP == stop reminder
+== APP == stop reminder
+== APP == get user = {Name: Age:1}
+== APP == get user = {Name: Age:2}
+== APP == get user = {Name: Age:3}
+== APP == get user = {Name: Age:4}
+== APP == get user = {Name: Age:5}
+== APP == get user = {Name: Age:6}
+== APP == get user = {Name: Age:7}
+== APP == get user = {Name: Age:8}
+== APP == get user = {Name: Age:9}
+== APP == get user = {Name: Age:10}
 ✅  Exited App successfully
 
 ```
@@ -75,3 +86,5 @@ dapr stop --app-id  actor-serving
 == APP == receive reminder =  testReminderName  state =  "hello" duetime =  5s period =  5s
 == APP == receive reminder =  testReminderName  state =  "hello" duetime =  5s period =  5s
 ```
+
+## 
