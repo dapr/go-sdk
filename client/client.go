@@ -125,9 +125,10 @@ type Client interface {
 	// GetActorState get actor state
 	GetActorState(ctx context.Context, in *GetActorStateRequest) (data *GetActorStateResponse, err error)
 
-	// SaveStateTransactionally
+	// SaveStateTransactionally save actor state
 	SaveStateTransactionally(ctx context.Context, actorType, actorID string, operations []*ActorStateOperation) error
 
+	// ImplActorClientStub is to impl user defined actor client stub
 	ImplActorClientStub(actorClientStub actor.Client, opt ...config.Option)
 }
 
