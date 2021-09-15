@@ -44,6 +44,16 @@ type (
 	OperationType int
 )
 
+// GetPBConsistency get consistency pb value
+func (s StateConsistency) GetPBConsistency() v1.StateOptions_StateConsistency {
+	return v1.StateOptions_StateConsistency(s)
+}
+
+// GetPBConcurrency get concurrency pb value
+func (s StateConcurrency) GetPBConcurrency() v1.StateOptions_StateConcurrency {
+	return v1.StateOptions_StateConcurrency(s)
+}
+
 // String returns the string value of the OperationType.
 func (o OperationType) String() string {
 	names := [...]string{
@@ -139,6 +149,23 @@ type StateOptions struct {
 	Consistency StateConsistency
 }
 
+// StateOption StateOptions's function type
+type StateOption func(*StateOptions)
+
+// WithConcurrency set StateOptions's Concurrency
+func WithConcurrency(concurrency StateConcurrency) StateOption {
+	return func(so *StateOptions) {
+		so.Concurrency = concurrency
+	}
+}
+
+// WithConsistency set StateOptions's consistency
+func WithConsistency(consistency StateConsistency) StateOption {
+	return func(so *StateOptions) {
+		so.Consistency = consistency
+	}
+}
+
 func toProtoSaveStateItem(si *SetStateItem) (item *v1.StateItem) {
 	s := &v1.StateItem{
 		Key:      si.Key,
@@ -158,11 +185,25 @@ func toProtoSaveStateItem(si *SetStateItem) (item *v1.StateItem) {
 
 func toProtoStateOptions(so *StateOptions) (opts *v1.StateOptions) {
 	if so == nil {
-		return stateOptionDefault
+		return copyStateOptionDefaultPB()
 	}
 	return &v1.StateOptions{
 		Concurrency: v1.StateOptions_StateConcurrency(so.Concurrency),
 		Consistency: v1.StateOptions_StateConsistency(so.Consistency),
+	}
+}
+
+func copyStateOptionDefaultPB() *v1.StateOptions {
+	return &v1.StateOptions{
+		Concurrency: stateOptionDefault.GetConcurrency(),
+		Consistency: stateOptionDefault.GetConsistency(),
+	}
+}
+
+func copyStateOptionDefault() *StateOptions {
+	return &StateOptions{
+		Concurrency: StateConcurrency(stateOptionDefault.GetConcurrency()),
+		Consistency: StateConsistency(stateOptionDefault.GetConsistency()),
 	}
 }
 
@@ -206,9 +247,16 @@ func (c *GRPCClient) ExecuteStateTransaction(ctx context.Context, storeName stri
 	return nil
 }
 
-// SaveState saves the raw data into store using default state options.
-func (c *GRPCClient) SaveState(ctx context.Context, storeName, key string, data []byte) error {
-	item := &SetStateItem{Key: key, Value: data}
+// SaveState saves the raw data into store, default options: strong, last-write
+func (c *GRPCClient) SaveState(ctx context.Context, storeName, key string, data []byte, so ...StateOption) error {
+	var stateOptions = new(StateOptions)
+	for _, o := range so {
+		o(stateOptions)
+	}
+	if len(so) == 0 {
+		stateOptions = copyStateOptionDefault()
+	}
+	item := &SetStateItem{Key: key, Value: data, Options: stateOptions}
 	return c.SaveBulkState(ctx, storeName, item)
 }
 
@@ -236,7 +284,6 @@ func (c *GRPCClient) SaveBulkState(ctx context.Context, storeName string, items 
 		return errors.Wrap(err, "error saving state")
 	}
 	return nil
-
 }
 
 // GetBulkState retrieves state for multiple keys from specific store.

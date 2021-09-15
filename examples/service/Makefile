@@ -27,6 +27,14 @@ client: ## Runs the uncompiled example client code
              --log-level debug \
              go run ./client/main.go 
 
+.PHONY: custom-grpc-client
+custom-grpc-client: ## Runs the uncompiled example custom grpc client code
+	dapr run --app-id custom-grpc-client \
+		 -d ./config \
+		 --dapr-http-max-request-size 41 \
+		 --log-level debug \
+		 go run ./custom-grpc-client/main.go
+
 .PHONY: publish
 publish: ## Submits pub/sub events in different content types 
 	curl -i -d '{ "from": "John", "to": "Lary", "message": "hi" }' \

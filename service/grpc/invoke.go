@@ -43,7 +43,7 @@ func (s *Server) OnInvoke(ctx context.Context, in *cpb.InvokeRequest) (*cpb.Invo
 
 		ct, er := fn(ctx, e)
 		if er != nil {
-			return nil, errors.Wrap(er, "error executing handler")
+			return nil, er
 		}
 
 		if ct == nil {
