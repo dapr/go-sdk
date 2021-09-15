@@ -43,7 +43,7 @@ dapr run --app-id serving \
          go run ./serving/grpc/main.go
 ```
 
-## Client 
+## Client
 
 Once one of the above services is running, launch the client:
 
@@ -71,6 +71,31 @@ dapr run --app-id caller \
 
 <!-- END_STEP -->
 
+## Custom gRPC client
+
+Launch the DAPR client with custom gRPC client to accept and receive payload size > 4 MB:
+
+<!-- STEP
+output_match_mode: substring
+expected_stdout_lines:
+  - '== APP == Writing large data blob'
+  - '== APP == Saved the large data blob'
+  - '== APP == Writing to statestore took'
+  - '== APP == Reading from statestore took'
+  - '== APP == Deleting key from statestore took'
+  - '== APP == DONE (CTRL+C to Exit)'
+-->
+
+```bash
+dapr run --app-id custom-grpc-client \
+		 -d ./config \
+		 --dapr-http-max-request-size 41 \
+		 --log-level debug \
+		 go run ./custom-grpc-client/main.go
+```
+
+<!-- END_STEP -->
+
 ## API
 
 ### PubSub
@@ -91,7 +116,7 @@ curl -d '<message><from>John</from><to>Lary</to></message>' \
      "http://localhost:3500/v1.0/publish/messages/topic1"
 ```
 
-Publish BIN content 
+Publish BIN content
 
 ```shell
 curl -d '0x18, 0x2d, 0x44, 0x54, 0xfb, 0x21, 0x09, 0x40' \
@@ -99,7 +124,7 @@ curl -d '0x18, 0x2d, 0x44, 0x54, 0xfb, 0x21, 0x09, 0x40' \
      "http://localhost:3500/v1.0/publish/messages/topic1"
 ```
 
-### Service Invocation 
+### Service Invocation
 
 Invoke service with JSON payload
 
@@ -124,7 +149,7 @@ curl -X DELETE \
     "http://localhost:3500/v1.0/invoke/serving/method/echo?k1=v1&k2=v2"
 ```
 
-### Input Binding  
+### Input Binding
 
 Uses the [config/cron.yaml](config/cron.yaml) component
 
@@ -142,3 +167,4 @@ dapr stop --app-id serving
 ```
 
 <!-- END_STEP -->
+
