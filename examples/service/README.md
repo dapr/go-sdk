@@ -4,9 +4,22 @@ The `examples/service` folder contains a Dapr enabled `serving` app and a `clien
 
 To run this example, start by first launching the service in either HTTP or gRPC:
 
+### Prepare
+
+- Dapr installed
+
 ### HTTP
 
-```
+<!-- STEP
+name: Run Subscriber Server
+output_match_mode: substring
+expected_stdout_lines:
+  - "ContentType:text/plain, Verb:POST, QueryString:, hellow"
+background: true
+sleep: 5
+-->
+
+```bash
 dapr run --app-id serving \
          --app-protocol http \
          --app-port 8080 \
@@ -15,6 +28,8 @@ dapr run --app-id serving \
          --components-path ./config \
          go run ./serving/http/main.go
 ```
+
+<!-- END_STEP -->
 
 ### gRPC
 
@@ -28,16 +43,58 @@ dapr run --app-id serving \
          go run ./serving/grpc/main.go
 ```
 
-## Client 
+## Client
 
 Once one of the above services is running, launch the client:
 
-```
+<!-- STEP
+name: Run publisher
+expected_stdout_lines:
+  - '== APP == data published'
+  - '== APP == saving data: { "message": "hello" }'
+  - '== APP == data saved'
+  - '== APP == data retrieved [key:key1 etag:1]: { "message": "hello" }'
+  - '== APP == data item saved'
+  - '== APP == data deleted'
+  - '== APP == service method invoked, response: hellow'
+  - '== APP == output binding invoked'
+background: true
+sleep: 15
+-->
+
+```bash
 dapr run --app-id caller \
          --components-path ./config \
          --log-level debug \
          go run ./client/main.go
 ```
+
+<!-- END_STEP -->
+
+## Custom gRPC client
+
+Launch the DAPR client with custom gRPC client to accept and receive payload size > 4 MB:
+
+<!-- STEP
+output_match_mode: substring
+expected_stdout_lines:
+  - '== APP == Writing large data blob'
+  - '== APP == Saved the large data blob'
+  - '== APP == Writing to statestore took'
+  - '== APP == Reading from statestore took'
+  - '== APP == Deleting key from statestore took'
+  - '== APP == DONE (CTRL+C to Exit)'
+-->
+
+```bash
+dapr run --app-id custom-grpc-client \
+		 -d ./config \
+		 --dapr-http-max-request-size 41 \
+		 --log-level debug \
+		 go run ./custom-grpc-client/main.go
+```
+
+<!-- END_STEP -->
 
 ## API
 
@@ -48,7 +105,7 @@ Publish JSON content
 ```shell
 curl -d '{ "from": "John", "to": "Lary", "message": "hi" }' \
      -H "Content-type: application/json" \
-     "http://localhost:3500/v1.0/publish/messages"
+     "http://localhost:3500/v1.0/publish/messages/topic1"
 ```
 
 Publish XML content (read as text)
@@ -56,18 +113,18 @@ Publish XML content (read as text)
 ```shell
 curl -d '<message><from>John</from><to>Lary</to></message>' \
      -H "Content-type: application/xml" \
-     "http://localhost:3500/v1.0/publish/messages"
+     "http://localhost:3500/v1.0/publish/messages/topic1"
 ```
 
-Publish BIN content 
+Publish BIN content
 
 ```shell
 curl -d '0x18, 0x2d, 0x44, 0x54, 0xfb, 0x21, 0x09, 0x40' \
      -H "Content-type: application/octet-stream" \
-     "http://localhost:3500/v1.0/publish/messages"
+     "http://localhost:3500/v1.0/publish/messages/topic1"
 ```
 
-### Service Invocation 
+### Service Invocation
 
 Invoke service with JSON payload
 
@@ -92,6 +149,22 @@ curl -X DELETE \
     "http://localhost:3500/v1.0/invoke/serving/method/echo?k1=v1&k2=v2"
 ```
 
-### Input Binding  
+### Input Binding
 
 Uses the [config/cron.yaml](config/cron.yaml) component
+
+### Cleanup
+
+<!-- STEP
+expected_stdout_lines: 
+  - '✅  app stopped successfully: serving'
+expected_stderr_lines:
+name: Shutdown dapr
+-->
+
+```bash
+dapr stop --app-id serving
+```
+
+<!-- END_STEP -->
+
