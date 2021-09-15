@@ -1,12 +1,22 @@
-# Dapr gRPC Service SDK for Go
+---
+type: docs
+title: "Getting started with the Dapr Service (Callback) SDK for Go"
+linkTitle: "gRPC Service"
+weight: 20000
+description: How to get up and running with the Dapr Service (Callback) SDK for Go
+no_list: true
+---
 
-Start by importing Dapr Go `service/grpc` package:
+## Dapr gRPC Service SDK for Go
+
+### Prerequisite
+Start by importing Dapr Go service/grpc package:
 
 ```go
 daprd "github.com/dapr/go-sdk/service/grpc"
 ```
 
-## Creating and Starting Service 
+### Creating and Starting Service
 
 To create a gRPC Dapr service, first, create a Dapr callback instance with a specific address:
 
@@ -16,8 +26,7 @@ if err != nil {
     log.Fatalf("failed to start the server: %v", err)
 }
 ```
-
-Or with address and an existing `net.Listener` in case you want to combine existing server listener:
+Or with address and an existing net.Listener in case you want to combine existing server listener:
 
 ```go
 list, err := net.Listen("tcp", "localhost:0")
@@ -35,9 +44,7 @@ if err := s.Start(); err != nil {
 }
 ```
 
-
-## Event Handling 
-
+### Event Handling
 To handle events from specific topic you need to add at least one topic event handler before starting the service:
 
 ```go
@@ -60,9 +67,8 @@ func eventHandler(ctx context.Context, e *common.TopicEvent) (retry bool, err er
 }
 ```
 
-## Service Invocation Handler 
-
-To handle service invocations you will need to add at least one service invocation handler before starting the service: 
+### Service Invocation Handler
+To handle service invocations you will need to add at least one service invocation handler before starting the service:
 
 ```go
 if err := s.AddServiceInvocationHandler("echo", echoHandler); err != nil {
@@ -85,9 +91,8 @@ func echoHandler(ctx context.Context, in *common.InvocationEvent) (out *common.C
 }
 ```
 
-## Binding Invocation Handler 
-
-To handle binding invocations you will need to add at least one binding invocation handler before starting the service: 
+### Binding Invocation Handler
+To handle binding invocations you will need to add at least one binding invocation handler before starting the service:
 
 ```go
 if err := s.AddBindingInvocationHandler("run", runHandler); err != nil {
@@ -105,14 +110,5 @@ func runHandler(ctx context.Context, in *common.BindingEvent) (out []byte, err e
 }
 ```
 
-## Templates 
-
-To accelerate your gRPC Dapr app development in Go even further you can use one of the GitHub templates integrating the gRPC Dapr callback package:
-
-* [Dapr gRPC Service in Go](https://github.com/mchmarny/dapr-grpc-service-template) - Template project to jump start your Dapr event subscriber service with gRPC development
-* [Dapr gRPC Event Subscriber in Go](https://github.com/mchmarny/dapr-grpc-event-subscriber-template) - Template project to jump start your Dapr event subscriber service with gRPC development
-
-
-## Contributing to Dapr Go client
-
-See the [Contribution Guide](../../CONTRIBUTING.md) to get started with building and developing.
+## Related links
+- [Go SDK Examples](https://github.com/dapr/go-sdk/tree/main/examples)

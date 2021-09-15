@@ -7,7 +7,7 @@ Client library to help you build Dapr application in Go. This client supports al
 ## Usage
 > Assuming you already have [installed](https://golang.org/doc/install) Go
 
-Dapr Go client includes two packages: `client` (for invoking public Dapr APIs), and `service` (to create services that will be invoked by Dapr, this is sometimes refereed to as "callback"). 
+Dapr Go client includes two packages: `client` (for invoking public Dapr APIs), and `service` (to create services that will be invoked by Dapr, this is sometimes referred to as "callback").
 
 ### Creating client 
 
@@ -45,7 +45,7 @@ dapr run --app-id example-service \
          go run main.go
 ```
 
-See the [example folder](./example) for more working Dapr client examples.
+See the [example folder](./examples) for more working Dapr client examples.
 
 #### Usage
 
@@ -79,7 +79,7 @@ if err := client.DeleteState(ctx, store, "key1"); err != nil {
 }
 ```
 
-For more granular control, the Dapr Go client exposes `SetStateItem` type, which can be use to gain more control over the state operations and allow for multiple items to be saved at once:
+For more granular control, the Dapr Go client exposes `SetStateItem` type, which can be used to gain more control over the state operations and allow for multiple items to be saved at once:
 
 ```go     
 item1 := &dapr.SetStateItem{
@@ -215,15 +215,15 @@ secret, err := client.GetSecret(ctx, "store-name", "secret-name", opt)
 ```
 
 
-#### Authentication 
+##### Authentication
 
-By default, Dapr relies on the network boundary to limit access to its API. If however the target Dapr API is configured with token-based authentication, users can configure the go Dapr client with that token in two ways:
+By default, Dapr relies on the network boundary to limit access to its API. If however the target Dapr API is configured with token-based authentication, users can configure the Go Dapr client with that token in two ways:
 
-##### Environment Variable 
+###### Environment Variable
 
 If the `DAPR_API_TOKEN` environment variable is defined, Dapr will automatically use it to augment its Dapr API invocations to ensure authentication. 
 
-##### Explicit Method 
+###### Explicit Method
 
 In addition, users can also set the API token explicitly on any Dapr client instance. This approach is helpful in cases when the user code needs to create multiple clients for different Dapr API endpoints. 
 
@@ -238,11 +238,11 @@ func main() {
 }
 ```
 
-## Service (callback)
+### Service (callback)
 
 In addition to the client capabilities that allow you to call into the Dapr API, the Go SDK also provides `service` package to help you bootstrap Dapr callback services in either gRPC or HTTP. Instructions on how to use it are located [here](./service/Readme.md)
 
-## Contributing to Dapr go client 
+## Contributing to Dapr Go client
 
 See the [Contribution Guide](./CONTRIBUTING.md) to get started with building and developing.
 
