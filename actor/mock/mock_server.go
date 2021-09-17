@@ -62,9 +62,11 @@ func (mr *MockServerMockRecorder) ID() *gomock.Call {
 }
 
 // SaveState mocks base method.
-func (m *MockServer) SaveState() {
+func (m *MockServer) SaveState() error {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "SaveState")
+	ret := m.ctrl.Call(m, "SaveState")
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // SaveState indicates an expected call of SaveState.

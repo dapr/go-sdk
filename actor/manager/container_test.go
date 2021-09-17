@@ -21,8 +21,11 @@ func TestNewDefaultContainer(t *testing.T) {
 	mockServer.EXPECT().SaveState()
 	mockServer.EXPECT().Type()
 
-	container := NewDefaultActorContainer(mockActorID, mockServer, mockCodec).(*DefaultActorContainer)
+	newContainer, aerr := NewDefaultActorContainer(mockActorID, mockServer, mockCodec)
+	assert.Equal(t, actorErr.Success, aerr)
+	container, ok := newContainer.(*DefaultActorContainer)
 
+	assert.True(t, ok)
 	assert.NotNil(t, container)
 	assert.NotNil(t, container.actor)
 	assert.NotNil(t, container.serializer)
@@ -41,7 +44,9 @@ func TestContainerInvoke(t *testing.T) {
 	mockServer.EXPECT().SaveState()
 	mockServer.EXPECT().Type()
 
-	container := NewDefaultActorContainer("mockActorID", mockServer, mockCodec).(*DefaultActorContainer)
+	newContainer, aerr := NewDefaultActorContainer("mockActorID", mockServer, mockCodec)
+	assert.Equal(t, actorErr.Success, aerr)
+	container := newContainer.(*DefaultActorContainer)
 
 	mockServer.EXPECT().Invoke(gomock.Any(), "param").Return(param, nil)
 	mockCodec.EXPECT().Unmarshal([]byte(param), gomock.Any()).SetArg(1, "param").Return(nil)

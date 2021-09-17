@@ -108,22 +108,22 @@ type Client interface {
 	Close()
 
 	// RegisterActorTimer registers an actor timer.
-	RegisterActorTimer(ctx context.Context, in *RegisterActorTimerRequest) error
+	RegisterActorTimer(ctx context.Context, req *RegisterActorTimerRequest) error
 
 	// UnregisterActorTimer unregisters an actor timer.
-	UnregisterActorTimer(ctx context.Context, in *UnregisterActorTimerRequest) error
+	UnregisterActorTimer(ctx context.Context, req *UnregisterActorTimerRequest) error
 
 	// RegisterActorReminder registers an actor reminder.
-	RegisterActorReminder(ctx context.Context, in *RegisterActorReminderRequest) error
+	RegisterActorReminder(ctx context.Context, req *RegisterActorReminderRequest) error
 
 	// UnregisterActorReminder unregisters an actor reminder.
-	UnregisterActorReminder(ctx context.Context, in *UnregisterActorReminderRequest) error
+	UnregisterActorReminder(ctx context.Context, req *UnregisterActorReminderRequest) error
 
 	// InvokeActor calls a method on an actor.
-	InvokeActor(ctx context.Context, in *InvokeActorRequest) (*InvokeActorResponse, error)
+	InvokeActor(ctx context.Context, req *InvokeActorRequest) (*InvokeActorResponse, error)
 
 	// GetActorState get actor state
-	GetActorState(ctx context.Context, in *GetActorStateRequest) (data *GetActorStateResponse, err error)
+	GetActorState(ctx context.Context, req *GetActorStateRequest) (data *GetActorStateResponse, err error)
 
 	// SaveStateTransactionally save actor state
 	SaveStateTransactionally(ctx context.Context, actorType, actorID string, operations []*ActorStateOperation) error

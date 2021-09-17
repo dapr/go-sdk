@@ -7,8 +7,6 @@
 - Dapr installed
 
 ### Run Actor Server
-
-
 ```bash
 dapr run --app-id actor-serving \
          --app-protocol http \
@@ -18,28 +16,17 @@ dapr run --app-id actor-serving \
          --components-path ./config \
          go run serving/main.go
 ```
-
-<!-- END_STEP -->
-
 ### Run Actor Client
-
 ```bash
 dapr run --app-id actor-client \
          --log-level debug \
          --components-path ./config \
          go run client/main.go
 ```
-
-<!-- END_STEP -->
-
 ### Cleanup
-
 ```bash
 dapr stop --app-id  actor-serving
 ```
-
-<!-- END_STEP -->
-
 ## Result
 - client side
 ```shell
@@ -66,8 +53,6 @@ dapr stop --app-id  actor-serving
 ✅  Exited App successfully
 
 ```
-
-
 - server side
 ```shell
 
@@ -86,5 +71,3 @@ dapr stop --app-id  actor-serving
 == APP == receive reminder =  testReminderName  state =  "hello" duetime =  5s period =  5s
 == APP == receive reminder =  testReminderName  state =  "hello" duetime =  5s period =  5s
 ```
-
-## 

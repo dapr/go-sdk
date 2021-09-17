@@ -76,7 +76,7 @@ func (d *DaprStateAsyncProvider) Apply(actorType, actorID string, changes []*Act
 	return d.daprClient.SaveStateTransactionally(context.Background(), actorType, actorID, operations)
 }
 
-// todo the daprClient may be nil
+// TODO(@laurence) the daprClient may be nil
 func NewDaprStateAsyncProvider(daprClient client.Client) *DaprStateAsyncProvider {
 	stateSerializer, _ := codec.GetActorCodec(constant.DefaultSerializerType)
 	return &DaprStateAsyncProvider{

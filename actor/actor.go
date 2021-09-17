@@ -29,7 +29,7 @@ type Server interface {
 	SetStateManager(StateManager)
 	// SaveState is impl by ServerImplBase, It saves the state cache of this actor instance to state store component by calling api of daprd.
 	// Save state is called at two places: 1. On invocation of this actor instance. 2. When new actor starts.
-	SaveState()
+	SaveState() error
 }
 
 type ReminderCallee interface {
@@ -44,8 +44,8 @@ type ServerImplBase struct {
 	id           string
 }
 
-func (b *ServerImplBase) SetStateManager(mng StateManager) {
-	b.stateManager = mng
+func (b *ServerImplBase) SetStateManager(stateManager StateManager) {
+	b.stateManager = stateManager
 }
 
 // GetStateManager can be called by user-defined-method, to get state manager of this actor instance.
@@ -63,10 +63,11 @@ func (b *ServerImplBase) SetID(id string) {
 }
 
 // SaveState is to saves the state cache of this actor instance to state store component by calling api of daprd.
-func (b *ServerImplBase) SaveState() {
+func (b *ServerImplBase) SaveState() error {
 	if b.stateManager != nil {
-		b.stateManager.Save()
+		return b.stateManager.Save()
 	}
+	return nil
 }
 
 type StateManager interface {
@@ -81,7 +82,7 @@ type StateManager interface {
 	// Contains is to check if state store contains @stateName
 	Contains(stateName string) (bool, error)
 	// Save is to saves the state cache of this actor instance to state store component by calling api of daprd.
-	Save()
+	Save() error
 	// Flush is called by stateManager after Save
 	Flush()
 }

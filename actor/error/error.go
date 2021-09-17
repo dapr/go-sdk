@@ -2,6 +2,7 @@ package error
 
 type ActorErr uint8
 
+// TODO(@laurence) the classification, handle and print log of error should be optimized.
 const (
 	Success                       = ActorErr(0)
 	ErrActorTypeNotFound          = ActorErr(1)
@@ -14,4 +15,6 @@ const (
 	ErrActorIDNotFound            = ActorErr(8)
 	ErrActorFactoryNotSet         = ActorErr(9)
 	ErrTimerParamsInvalid         = ActorErr(10)
+	ErrSaveStateFailed            = ActorErr(11)
+	ErrActorServerInvalid         = ActorErr(12)
 )

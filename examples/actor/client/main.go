@@ -66,7 +66,7 @@ func main() {
 		panic(err)
 	}
 	fmt.Println("start timer")
-	time.Sleep(time.Second * 30) // timer call six times
+	<-time.After(time.Second * 30) // timer call for six times
 
 	// Invoke user defined method StopTimer, and server side actor stop actor timer with given params.
 	err = myActor.StopTimer(ctx, &api.TimerRequest{
@@ -89,7 +89,7 @@ func main() {
 		panic(err)
 	}
 	fmt.Println("start reminder")
-	time.Sleep(time.Second * 30) // reminder call six times
+	<-time.After(time.Second * 30) // timer call for six times
 
 	// Invoke user defined method StopReminder, and server side actor stop actor reminder with given params.
 	err = myActor.StopReminder(ctx, &api.ReminderRequest{

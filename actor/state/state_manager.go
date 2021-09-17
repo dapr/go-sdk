@@ -54,7 +54,6 @@ func (a *ActorStateManager) Get(stateName string, reply interface{}) error {
 		if metadata.Kind == Remove {
 			return errors.Errorf("state is marked for remove: %s", stateName)
 		}
-		// todo check type
 		replyVal := reflect.ValueOf(reply).Elem()
 		metadataValue := reflect.ValueOf(metadata.Value)
 		if metadataValue.Kind() == reflect.Ptr {
@@ -136,7 +135,7 @@ func (a *ActorStateManager) Contains(stateName string) (bool, error) {
 	return a.stateAsyncProvider.Contains(a.ActorTypeName, a.ActorID, stateName)
 }
 
-func (a *ActorStateManager) Save() {
+func (a *ActorStateManager) Save() error {
 	changes := make([]*ActorStateChange, 0)
 	a.stateChangeTracker.Range(func(key, value interface{}) bool {
 		stateName := key.(string)
@@ -145,9 +144,10 @@ func (a *ActorStateManager) Save() {
 		return true
 	})
 	if err := a.stateAsyncProvider.Apply(a.ActorTypeName, a.ActorID, changes); err != nil {
-		return
+		return err
 	}
 	a.Flush()
+	return nil
 }
 
 func (a *ActorStateManager) Flush() {

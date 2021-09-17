@@ -27,7 +27,6 @@ type InvokeActorResponse struct {
 // InvokeActor invokes specific operation on the configured Dapr binding.
 // This method covers input, output, and bi-directional bindings.
 func (c *GRPCClient) InvokeActor(ctx context.Context, in *InvokeActorRequest) (out *InvokeActorResponse, err error) {
-	// todo param check
 	if in == nil {
 		return nil, errors.New("actor invocation required")
 	}
@@ -110,7 +109,6 @@ type RegisterActorReminderRequest struct {
 // If server side actor impls this function, it's asserted to actor.ReminderCallee and can be invoked with call period
 // and state data as param @in defined.
 func (c *GRPCClient) RegisterActorReminder(ctx context.Context, in *RegisterActorReminderRequest) (err error) {
-	// todo param check
 	if in == nil {
 		return errors.New("actor register reminder invocation request param required")
 	}

@@ -7,6 +7,7 @@ import (
 	actorErr "github.com/dapr/go-sdk/actor/error"
 	"github.com/dapr/go-sdk/actor/state"
 	dapr "github.com/dapr/go-sdk/client"
+	"log"
 	"reflect"
 )
 
@@ -23,18 +24,26 @@ type DefaultActorContainer struct {
 }
 
 // NewDefaultActorContainer creates a new ActorContainer with provider impl actor and serializer
-func NewDefaultActorContainer(actorID string, impl actor.Server, serializer codec.Codec) ActorContainer {
+func NewDefaultActorContainer(actorID string, impl actor.Server, serializer codec.Codec) (ActorContainer, actorErr.ActorErr) {
 	impl.SetID(actorID)
 	daprClient, _ := dapr.NewClient()
 	// create state manager for this new actor
 	impl.SetStateManager(state.NewActorStateManager(impl.Type(), actorID, state.NewDaprStateAsyncProvider(daprClient)))
 	// save state of this actor
-	impl.SaveState()
+	err := impl.SaveState()
+	if err != nil {
+		return nil, actorErr.ErrSaveStateFailed
+	}
+	methodType, err := getAbsctractMethodMap(impl)
+	if err != nil {
+		log.Printf("failed to get absctract method map from registered provider, err = %s", err)
+		return nil, actorErr.ErrActorServerInvalid
+	}
 	return &DefaultActorContainer{
-		methodType: getAbsctractMethodMap(impl),
+		methodType: methodType,
 		actor:      impl,
 		serializer: serializer,
-	}
+	}, actorErr.Success
 }
 
 func (d *DefaultActorContainer) GetActor() actor.Server {

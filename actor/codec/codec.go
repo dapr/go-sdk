@@ -23,7 +23,7 @@ func SetActorCodec(name string, f CodecFactory) {
 func GetActorCodec(name string) (Codec, error) {
 	f, ok := codecFacotryMap[name]
 	if !ok {
-		return nil, perrors.New("no actor implement named " + name)
+		return nil, perrors.Errorf("no actor codec implement named %s", name)
 	}
 	return f(), nil
 }

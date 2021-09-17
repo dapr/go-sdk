@@ -8,6 +8,7 @@ import (
 	"github.com/dapr/go-sdk/actor/codec"
 	actorErr "github.com/dapr/go-sdk/actor/error"
 	perrors "github.com/pkg/errors"
+	"log"
 	"reflect"
 	"sync"
 	"unicode"
@@ -50,13 +51,17 @@ func (m *DefaultActorManager) RegisterActorImplFactory(f actor.Factory) {
 }
 
 // getAndCreateActorContainerIfNotExist will
-func (m *DefaultActorManager) getAndCreateActorContainerIfNotExist(actorID string) ActorContainer {
+func (m *DefaultActorManager) getAndCreateActorContainerIfNotExist(actorID string) (ActorContainer, actorErr.ActorErr) {
 	val, ok := m.activeActors.Load(actorID)
 	if !ok {
-		m.activeActors.Store(actorID, NewDefaultActorContainer(actorID, m.factory(), m.serializer))
+		newContainer, aerr := NewDefaultActorContainer(actorID, m.factory(), m.serializer)
+		if aerr != actorErr.Success {
+			return nil, aerr
+		}
+		m.activeActors.Store(actorID, newContainer)
 		val, _ = m.activeActors.Load(actorID)
 	}
-	return val.(ActorContainer)
+	return val.(ActorContainer), actorErr.Success
 }
 
 // InvokeMethod to invoke local function by @actorID, @methodName and @request request param
@@ -64,8 +69,12 @@ func (m *DefaultActorManager) InvokeMethod(actorID, methodName string, request [
 	if m.factory == nil {
 		return nil, actorErr.ErrActorFactoryNotSet
 	}
-	var replyv reflect.Value
-	returnValue, aerr := m.getAndCreateActorContainerIfNotExist(actorID).Invoke(methodName, request)
+
+	actorContainer, aerr := m.getAndCreateActorContainerIfNotExist(actorID)
+	if aerr != actorErr.Success {
+		return nil, aerr
+	}
+	returnValue, aerr := actorContainer.Invoke(methodName, request)
 	if aerr != actorErr.Success {
 		return nil, aerr
 	}
@@ -73,20 +82,26 @@ func (m *DefaultActorManager) InvokeMethod(actorID, methodName string, request [
 		return nil, actorErr.Success
 	}
 
-	var retErr interface{}
+	var (
+		retErr interface{}
+		replyv reflect.Value
+	)
+
 	if len(returnValue) == 2 {
 		replyv = returnValue[0]
 		retErr = returnValue[1].Interface()
 	}
 
 	if retErr != nil {
-		panic(retErr)
-	}
-	rspData, err := json.Marshal(replyv.Interface())
-	if err != nil {
 		return nil, actorErr.ErrActorInvokeFailed
 	}
-	m.getAndCreateActorContainerIfNotExist(actorID).GetActor().SaveState()
+	rspData, err := m.serializer.Marshal(replyv.Interface())
+	if err != nil {
+		return nil, actorErr.ErrActorMethodSerializeFailed
+	}
+	if err := actorContainer.GetActor().SaveState(); err != nil {
+		return nil, actorErr.ErrSaveStateFailed
+	}
 	return rspData, actorErr.Success
 }
 
@@ -107,10 +122,15 @@ func (m *DefaultActorManager) InvokeReminder(actorID, reminderName string, param
 	}
 	reminderParams := &api.ActorReminderParams{}
 	if err := json.Unmarshal(params, reminderParams); err != nil {
-		fmt.Println("unmarshal reminder param error = ", err)
+		log.Printf("failed to unmarshal reminder param, err: %v ", err)
 		return actorErr.ErrRemindersParamsInvalid
 	}
-	targetActor, ok := m.getAndCreateActorContainerIfNotExist(actorID).GetActor().(actor.ReminderCallee)
+	actorContainer, aerr := m.getAndCreateActorContainerIfNotExist(actorID)
+	if aerr != actorErr.Success {
+		return aerr
+	}
+
+	targetActor, ok := actorContainer.GetActor().(actor.ReminderCallee)
 	if !ok {
 		return actorErr.ErrReminderFuncUndefined
 	}
@@ -125,23 +145,26 @@ func (m *DefaultActorManager) InvokeTimer(actorID, timerName string, params []by
 	}
 	timerParams := &api.ActorTimerParam{}
 	if err := json.Unmarshal(params, timerParams); err != nil {
-		fmt.Println("unmarshal reminder param error = ", err)
+		log.Printf("failed to unmarshal reminder param, err: %v ", err)
 		return actorErr.ErrTimerParamsInvalid
 	}
-	_, aerr := m.getAndCreateActorContainerIfNotExist(actorID).Invoke(timerParams.CallBack, timerParams.Data)
+	actorContainer, aerr := m.getAndCreateActorContainerIfNotExist(actorID)
+	if aerr != actorErr.Success {
+		return aerr
+	}
+	_, aerr = actorContainer.Invoke(timerParams.CallBack, timerParams.Data)
 	return aerr
 }
 
-func getAbsctractMethodMap(rcvr interface{}) map[string]*MethodType {
-	s := new(Service)
-	s.rcvrType = reflect.TypeOf(rcvr)
-	s.rcvr = reflect.ValueOf(rcvr)
-	sname := reflect.Indirect(s.rcvr).Type().Name()
+func getAbsctractMethodMap(rcvr interface{}) (map[string]*MethodType, error) {
+	s := &Service{}
+	s.reflectType = reflect.TypeOf(rcvr)
+	s.reflctValue = reflect.ValueOf(rcvr)
+	sname := reflect.Indirect(s.reflctValue).Type().Name()
 	if !isExported(sname) {
-		s := "type " + sname + " is not exported"
-		panic(s)
+		return nil, fmt.Errorf("type %s is not exported", sname)
 	}
-	return suitableMethods(s.rcvrType)
+	return suitableMethods(s.reflectType), nil
 }
 
 func isExported(name string) bool {
@@ -151,8 +174,8 @@ func isExported(name string) bool {
 
 // Service is description of service
 type Service struct {
-	rcvr     reflect.Value
-	rcvrType reflect.Type
+	reflctValue reflect.Value
+	reflectType reflect.Type
 }
 
 // MethodType is description of service method.
@@ -168,7 +191,9 @@ func suitableMethods(typ reflect.Type) map[string]*MethodType {
 	methods := make(map[string]*MethodType)
 	for m := 0; m < typ.NumMethod(); m++ {
 		method := typ.Method(m)
-		if mt, err := suiteMethod(method); mt != nil && err == nil {
+		if mt, err := suiteMethod(method); mt != nil && err != nil {
+			log.Printf("method %s is illegal, err = %s, just skip it", method.Name, err)
+		} else {
 			methods[method.Name] = mt
 		}
 	}
@@ -192,7 +217,7 @@ func suiteMethod(method reflect.Method) (*MethodType, error) {
 		argsType           []reflect.Type
 	)
 
-	if outNum != 1 && outNum != 2 {
+	if outNum > 2 || outNum == 0 {
 		return nil, perrors.New("num out invalid")
 	}
 
