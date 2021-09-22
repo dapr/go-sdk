@@ -5,10 +5,11 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/dapr/go-sdk/dapr/proto/runtime/v1"
-	"github.com/dapr/go-sdk/service/common"
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/dapr/go-sdk/dapr/proto/runtime/v1"
+	"github.com/dapr/go-sdk/service/common"
 )
 
 func TestTopicErrors(t *testing.T) {
@@ -65,7 +66,7 @@ func TestTopic(t *testing.T) {
 
 	t.Run("topic event for wrong topic", func(t *testing.T) {
 		in := &runtime.TopicEventRequest{
-			Topic: "invlid",
+			Topic: "invalid",
 		}
 		_, err := server.OnTopicEvent(ctx, in)
 		assert.Error(t, err)

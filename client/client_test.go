@@ -23,9 +23,7 @@ const (
 	testBufSize = 1024 * 1024
 )
 
-var (
-	testClient Client
-)
+var testClient Client
 
 func TestMain(m *testing.M) {
 	ctx := context.Background()
@@ -71,7 +69,6 @@ func TestShutdown(t *testing.T) {
 		assert.NoError(t, err)
 	})
 }
-
 
 func getTestClient(ctx context.Context) (client Client, closer func()) {
 	s := grpc.NewServer()

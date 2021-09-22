@@ -13,13 +13,13 @@ import (
 )
 
 const (
-	// PubSubHandlerSuccessStatusCode is the successful ack code for pubsub event appcallback response
+	// PubSubHandlerSuccessStatusCode is the successful ack code for pubsub event appcallback response.
 	PubSubHandlerSuccessStatusCode int = http.StatusOK
 
-	// PubSubHandlerRetryStatusCode is the error response code (nack) pubsub event appcallback response
+	// PubSubHandlerRetryStatusCode is the error response code (nack) pubsub event appcallback response.
 	PubSubHandlerRetryStatusCode int = http.StatusInternalServerError
 
-	// PubSubHandlerDropStatusCode is the pubsub event appcallback response code indicating that Dapr should drop that message
+	// PubSubHandlerDropStatusCode is the pubsub event appcallback response code indicating that Dapr should drop that message.
 	PubSubHandlerDropStatusCode int = http.StatusSeeOther
 )
 
@@ -34,7 +34,7 @@ func (s *Server) registerSubscribeHandler() {
 	s.mux.HandleFunc("/dapr/subscribe", f)
 }
 
-// AddTopicEventHandler appends provided event handler with it's name to the service
+// AddTopicEventHandler appends provided event handler with it's name to the service.
 func (s *Server) AddTopicEventHandler(sub *common.Subscription, fn func(ctx context.Context, e *common.TopicEvent) (retry bool, err error)) error {
 	if sub == nil {
 		return errors.New("subscription required")

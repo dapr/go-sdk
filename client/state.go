@@ -4,10 +4,11 @@ import (
 	"context"
 	"time"
 
-	v1 "github.com/dapr/go-sdk/dapr/proto/common/v1"
-	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
 	"github.com/golang/protobuf/ptypes/duration"
 	"github.com/pkg/errors"
+
+	v1 "github.com/dapr/go-sdk/dapr/proto/common/v1"
+	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
 )
 
 const (
@@ -31,7 +32,7 @@ const (
 	StateOperationTypeUpsert OperationType = 1
 	// StateOperationTypeDelete represents delete operation type value.
 	StateOperationTypeDelete OperationType = 2
-	// UndefinedType represents undefined type value
+	// UndefinedType represents undefined type value.
 	UndefinedType = "undefined"
 )
 
@@ -44,12 +45,12 @@ type (
 	OperationType int
 )
 
-// GetPBConsistency get consistency pb value
+// GetPBConsistency get consistency pb value.
 func (s StateConsistency) GetPBConsistency() v1.StateOptions_StateConsistency {
 	return v1.StateOptions_StateConsistency(s)
 }
 
-// GetPBConcurrency get concurrency pb value
+// GetPBConcurrency get concurrency pb value.
 func (s StateConcurrency) GetPBConcurrency() v1.StateOptions_StateConcurrency {
 	return v1.StateOptions_StateConcurrency(s)
 }
@@ -69,39 +70,37 @@ func (o OperationType) String() string {
 }
 
 // String returns the string value of the StateConsistency.
-func (c StateConsistency) String() string {
+func (s StateConsistency) String() string {
 	names := [...]string{
 		UndefinedType,
 		"strong",
 		"eventual",
 	}
-	if c < StateConsistencyStrong || c > StateConsistencyEventual {
+	if s < StateConsistencyStrong || s > StateConsistencyEventual {
 		return UndefinedType
 	}
 
-	return names[c]
+	return names[s]
 }
 
 // String returns the string value of the StateConcurrency.
-func (c StateConcurrency) String() string {
+func (s StateConcurrency) String() string {
 	names := [...]string{
 		UndefinedType,
 		"first-write",
 		"last-write",
 	}
-	if c < StateConcurrencyFirstWrite || c > StateConcurrencyLastWrite {
+	if s < StateConcurrencyFirstWrite || s > StateConcurrencyLastWrite {
 		return UndefinedType
 	}
 
-	return names[c]
+	return names[s]
 }
 
-var (
-	stateOptionDefault = &v1.StateOptions{
-		Concurrency: v1.StateOptions_CONCURRENCY_LAST_WRITE,
-		Consistency: v1.StateOptions_CONSISTENCY_STRONG,
-	}
-)
+var stateOptionDefault = &v1.StateOptions{
+	Concurrency: v1.StateOptions_CONCURRENCY_LAST_WRITE,
+	Consistency: v1.StateOptions_CONSISTENCY_STRONG,
+}
 
 // StateOperation is a collection of StateItems with a store name.
 type StateOperation struct {
@@ -138,7 +137,7 @@ type SetStateItem struct {
 // DeleteStateItem represents a single state to be deleted.
 type DeleteStateItem SetStateItem
 
-// ETag represents an versioned record information
+// ETag represents an versioned record information.
 type ETag struct {
 	Value string
 }
@@ -149,17 +148,17 @@ type StateOptions struct {
 	Consistency StateConsistency
 }
 
-// StateOption StateOptions's function type
+// StateOption StateOptions's function type.
 type StateOption func(*StateOptions)
 
-// WithConcurrency set StateOptions's Concurrency
+// WithConcurrency set StateOptions's Concurrency.
 func WithConcurrency(concurrency StateConcurrency) StateOption {
 	return func(so *StateOptions) {
 		so.Concurrency = concurrency
 	}
 }
 
-// WithConsistency set StateOptions's consistency
+// WithConsistency set StateOptions's consistency.
 func WithConsistency(consistency StateConsistency) StateOption {
 	return func(so *StateOptions) {
 		so.Consistency = consistency
@@ -212,7 +211,7 @@ func toProtoDuration(d time.Duration) *duration.Duration {
 	secs := nanos / 1e9
 	nanos -= secs * 1e9
 	return &duration.Duration{
-		Seconds: int64(secs),
+		Seconds: secs,
 		Nanos:   int32(nanos),
 	}
 }
@@ -247,9 +246,9 @@ func (c *GRPCClient) ExecuteStateTransaction(ctx context.Context, storeName stri
 	return nil
 }
 
-// SaveState saves the raw data into store, default options: strong, last-write
+// SaveState saves the raw data into store, default options: strong, last-write.
 func (c *GRPCClient) SaveState(ctx context.Context, storeName, key string, data []byte, so ...StateOption) error {
-	var stateOptions = new(StateOptions)
+	stateOptions := new(StateOptions)
 	for _, o := range so {
 		o(stateOptions)
 	}
@@ -332,7 +331,7 @@ func (c *GRPCClient) GetState(ctx context.Context, storeName, key string) (item 
 }
 
 // GetStateWithConsistency retrieves state from specific store using provided state consistency.
-func (c *GRPCClient) GetStateWithConsistency(ctx context.Context, storeName, key string, meta map[string]string, sc StateConsistency) (item *StateItem, err error) {
+func (c *GRPCClient) GetStateWithConsistency(ctx context.Context, storeName, key string, meta map[string]string, sc StateConsistency) (*StateItem, error) {
 	if err := hasRequiredStateArgs(storeName, key); err != nil {
 		return nil, errors.Wrap(err, "missing required arguments")
 	}
