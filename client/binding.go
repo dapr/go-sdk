@@ -3,11 +3,12 @@ package client
 import (
 	"context"
 
-	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
 	"github.com/pkg/errors"
+
+	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
 )
 
-// InvokeBindingRequest represents binding invocation request
+// InvokeBindingRequest represents binding invocation request.
 type InvokeBindingRequest struct {
 	// Name is name of binding to invoke.
 	Name string
@@ -19,7 +20,7 @@ type InvokeBindingRequest struct {
 	Metadata map[string]string
 }
 
-// BindingEvent represents the binding event handler input
+// BindingEvent represents the binding event handler input.
 type BindingEvent struct {
 	// Data is the input bindings sent
 	Data []byte
@@ -29,7 +30,7 @@ type BindingEvent struct {
 
 // InvokeBinding invokes specific operation on the configured Dapr binding.
 // This method covers input, output, and bi-directional bindings.
-func (c *GRPCClient) InvokeBinding(ctx context.Context, in *InvokeBindingRequest) (out *BindingEvent, err error) {
+func (c *GRPCClient) InvokeBinding(ctx context.Context, in *InvokeBindingRequest) (*BindingEvent, error) {
 	if in == nil {
 		return nil, errors.New("binding invocation required")
 	}
@@ -52,14 +53,14 @@ func (c *GRPCClient) InvokeBinding(ctx context.Context, in *InvokeBindingRequest
 		return nil, errors.Wrapf(err, "error invoking binding %s/%s", in.Name, in.Operation)
 	}
 
-	out = &BindingEvent{}
-
 	if resp != nil {
-		out.Data = resp.Data
-		out.Metadata = resp.Metadata
+		return &BindingEvent{
+			Data:     resp.Data,
+			Metadata: resp.Metadata,
+		}, nil
 	}
 
-	return
+	return nil, nil
 }
 
 // InvokeOutputBinding invokes configured Dapr binding with data (allows nil).InvokeOutputBinding

@@ -42,5 +42,4 @@ func TestInvokeBinding(t *testing.T) {
 		assert.NotNil(t, out)
 		assert.Equal(t, "test", string(out.Data))
 	})
-
 }

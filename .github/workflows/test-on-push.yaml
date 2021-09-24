@@ -11,6 +11,10 @@ jobs:
   build:
     name: Test and Lint on Push
     runs-on: ubuntu-latest
+    env:
+      GOVER: 1.17
+      GOLANGCILINT_VER: v1.31
+
     steps:
 
     - name: Setup
@@ -41,8 +45,6 @@ jobs:
       uses: codecov/codecov-action@v1
       
     - name: Lint
-      uses: golangci/golangci-lint-action@v2
+      uses: golangci/golangci-lint-action@v2.2.1
       with:
-        version: v1.33
-      
-    
+        version: ${{ env.GOLANGCILINT_VER }}

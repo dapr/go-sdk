@@ -4,13 +4,14 @@ import (
 	"context"
 	"fmt"
 
-	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
-	"github.com/dapr/go-sdk/service/common"
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/pkg/errors"
+
+	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
+	"github.com/dapr/go-sdk/service/common"
 )
 
-// AddTopicEventHandler appends provided event handler with topic name to the service
+// AddTopicEventHandler appends provided event handler with topic name to the service.
 func (s *Server) AddTopicEventHandler(sub *common.Subscription, fn func(ctx context.Context, e *common.TopicEvent) (retry bool, err error)) error {
 	if sub == nil {
 		return errors.New("subscription required")
