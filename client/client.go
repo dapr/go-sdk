@@ -2,6 +2,7 @@ package client
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net"
 	"os"
@@ -25,94 +26,86 @@ const (
 
 var (
 	logger               = log.New(os.Stdout, "", 0)
-	_             Client = (*GRPCClient)(nil)
+	_             Client = &GRPCClient{}
 	defaultClient Client
 	doOnce        sync.Once
 )
 
-// Client is the interface for Dapr client implementation.
-type Client interface {
-	// InvokeBinding invokes specific operation on the configured Dapr binding.
-	// This method covers input, output, and bi-directional bindings.
-	InvokeBinding(ctx context.Context, in *InvokeBindingRequest) (out *BindingEvent, err error)
-
-	// InvokeOutputBinding invokes configured Dapr binding with data.InvokeOutputBinding
-	// This method differs from InvokeBinding in that it doesn't expect any content being returned from the invoked method.
-	InvokeOutputBinding(ctx context.Context, in *InvokeBindingRequest) error
-
-	// InvokeMethod invokes service without raw data
-	InvokeMethod(ctx context.Context, appID, methodName, verb string) (out []byte, err error)
-
-	// InvokeMethodWithContent invokes service with content
-	InvokeMethodWithContent(ctx context.Context, appID, methodName, verb string, content *DataContent) (out []byte, err error)
-
-	// InvokeMethodWithCustomContent invokes app with custom content (struct + content type).
-	InvokeMethodWithCustomContent(ctx context.Context, appID, methodName, verb string, contentType string, content interface{}) (out []byte, err error)
-
-	// PublishEvent publishes data onto topic in specific pubsub component.
-	PublishEvent(ctx context.Context, pubsubName, topicName string, data interface{}, opts ...PublishEventOption) error
-
-	// PublishEventfromCustomContent serializes an struct and publishes its contents as data (JSON) onto topic in specific pubsub component.
-	// Deprecated: This method is deprecated and will be removed in a future version of the SDK. Please use `PublishEvent` instead.
-	PublishEventfromCustomContent(ctx context.Context, pubsubName, topicName string, data interface{}) error
-
-	// GetSecret retrieves preconfigured secret from specified store using key.
-	GetSecret(ctx context.Context, storeName, key string, meta map[string]string) (data map[string]string, err error)
-
-	// GetBulkSecret retrieves all preconfigured secrets for this application.
-	GetBulkSecret(ctx context.Context, storeName string, meta map[string]string) (data map[string]map[string]string, err error)
-
-	// SaveState saves the raw data into store using default state options.
-	SaveState(ctx context.Context, storeName, key string, data []byte, so ...StateOption) error
-
-	// SaveBulkState saves multiple state item to store with specified options.
-	SaveBulkState(ctx context.Context, storeName string, items ...*SetStateItem) error
-
-	// GetState retrieves state from specific store using default consistency option.
-	GetState(ctx context.Context, storeName, key string) (item *StateItem, err error)
-
-	// GetStateWithConsistency retrieves state from specific store using provided state consistency.
-	GetStateWithConsistency(ctx context.Context, storeName, key string, meta map[string]string, sc StateConsistency) (item *StateItem, err error)
-
-	// GetBulkState retrieves state for multiple keys from specific store.
-	GetBulkState(ctx context.Context, storeName string, keys []string, meta map[string]string, parallelism int32) ([]*BulkStateItem, error)
-
-	// DeleteState deletes content from store using default state options.
-	DeleteState(ctx context.Context, storeName, key string) error
-
-	// DeleteStateWithETag deletes content from store using provided state options and etag.
-	DeleteStateWithETag(ctx context.Context, storeName, key string, etag *ETag, meta map[string]string, opts *StateOptions) error
-
-	// ExecuteStateTransaction provides way to execute multiple operations on a specified store.
-	ExecuteStateTransaction(ctx context.Context, storeName string, meta map[string]string, ops []*StateOperation) error
-
-	// DeleteBulkState deletes content for multiple keys from store.
-	DeleteBulkState(ctx context.Context, storeName string, keys []string) error
-
-	// DeleteBulkState deletes content for multiple keys from store.
-	DeleteBulkStateItems(ctx context.Context, storeName string, items []*DeleteStateItem) error
-
-	// Shutdown the sidecar.
-	Shutdown(ctx context.Context) error
-
-	// WithTraceID adds existing trace ID to the outgoing context.
-	WithTraceID(ctx context.Context, id string) context.Context
-
-	// WithAuthToken sets Dapr API token on the instantiated client.
-	WithAuthToken(token string)
-
-	// Close cleans up all resources created by the client.
-	Close()
+type Config struct {
+	// addr is the hostport ie. 127.0.0.1:50001
+	addr string
+	conn grpc.ClientConn
 }
 
-// NewClient instantiates Dapr client using DAPR_GRPC_PORT environment variable as port.
+// Option implements functional options for configuring the client
+type Option func(*GRPCClient) error
+
+// WithConnection instantiates Dapr client using specific connection.
+func WithConnection(conn *grpc.ClientConn) Option {
+	return func(g *GRPCClient) error {
+		g.connection = conn
+		g.protoClient = pb.NewDaprClient(conn)
+		return nil
+	}
+}
+
+// WithAddress allows customizing the address and dialoptions of grpc
+// connection to dapr
+func WithAddress(addr string, opts ...grpc.DialOption) Option {
+	return func(g *GRPCClient) error {
+		if addr == "" {
+			return errors.New("nil address")
+		}
+
+		if opts == nil {
+			opts = []grpc.DialOption{grpc.WithInsecure()}
+		}
+
+		logger.Printf("dapr client initializing for: %s", addr)
+		conn, err := grpc.Dial(addr, opts...)
+		if err != nil {
+			return errors.Wrapf(err, "error creating connection to '%s': %v", addr, err)
+		}
+
+		return WithConnection(conn)(g)
+	}
+}
+
+// New instantiates Dapr client using DAPR_GRPC_PORT environment variable as port.
 // Note, this default factory function creates Dapr client only once. All subsequent invocations
 // will return the already created instance. To create multiple instances of the Dapr client,
-// use one of the parameterized factory functions:
-//   NewClientWithPort(port string) (client Client, err error)
-//   NewClientWithAddress(address string) (client Client, err error)
-//   NewClientWithConnection(conn *grpc.ClientConn) Client
+func New(opts ...Option) (*GRPCClient, error) {
+
+	if hasToken := os.Getenv(apiTokenEnvVarName); hasToken != "" {
+		logger.Println("client uses API token")
+	}
+
+	g := &GRPCClient{
+		// set defaults
+		authToken: os.Getenv(apiTokenEnvVarName),
+	}
+
+	addr := fmt.Sprintf("127.0.0.1:%s", os.Getenv(daprPortEnvVarName))
+
+	// If no options are defined, then set up a default connection with
+	// default dial options
+	if len(opts) == 0 {
+		if err := WithAddress(addr)(g); err != nil {
+			return nil, err
+		}
+	}
+
+	for _, opt := range opts {
+		if err := opt(g); err != nil {
+			return nil, err
+		}
+	}
+	return g, nil
+}
+
+// NewClient is deprecated, see New()
 func NewClient() (client Client, err error) {
+	log.Print("NewClient() is deprecated, see New()")
 	port := os.Getenv(daprPortEnvVarName)
 	if port == "" {
 		port = daprPortDefault
@@ -127,42 +120,30 @@ func NewClient() (client Client, err error) {
 	return defaultClient, onceErr
 }
 
-// NewClientWithPort instantiates Dapr using specific port.
+// NewClientWithPort is deprecated, see WithAddress()
 func NewClientWithPort(port string) (client Client, err error) {
+	log.Print("NewClientWithPort() is deprecated, see WithAddress()")
 	if port == "" {
 		return nil, errors.New("nil port")
 	}
 	return NewClientWithAddress(net.JoinHostPort("127.0.0.1", port))
 }
 
-// NewClientWithAddress instantiates Dapr using specific address (including port).
+// NewClientWithAddress is deprecated, see WithAddress()
 func NewClientWithAddress(address string) (client Client, err error) {
-	if address == "" {
-		return nil, errors.New("nil address")
-	}
-	logger.Printf("dapr client initializing for: %s", address)
-	conn, err := grpc.Dial(address, grpc.WithInsecure())
-	if err != nil {
-		return nil, errors.Wrapf(err, "error creating connection to '%s': %v", address, err)
-	}
-	if hasToken := os.Getenv(apiTokenEnvVarName); hasToken != "" {
-		logger.Println("client uses API token")
-	}
-	return NewClientWithConnection(conn), nil
+	return New(WithAddress(address))
 }
 
-// NewClientWithConnection instantiates Dapr client using specific connection.
+// NewClientWithConnection is deprecated, see WithConnection()
 func NewClientWithConnection(conn *grpc.ClientConn) Client {
-	return &GRPCClient{
-		connection:  conn,
-		protoClient: pb.NewDaprClient(conn),
-		authToken:   os.Getenv(apiTokenEnvVarName),
-	}
+	client, _ := New(WithConnection(conn))
+	return client
 }
 
 // GRPCClient is the gRPC implementation of Dapr client.
 type GRPCClient struct {
-	connection  *grpc.ClientConn
+	connection *grpc.ClientConn
+	// native grpc client used to connect to dapr
 	protoClient pb.DaprClient
 	authToken   string
 	mux         sync.Mutex
