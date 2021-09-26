@@ -4,13 +4,14 @@ import (
 	"context"
 	"fmt"
 
-	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
-	"github.com/dapr/go-sdk/service/common"
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/pkg/errors"
+
+	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
+	"github.com/dapr/go-sdk/service/common"
 )
 
-// AddBindingInvocationHandler appends provided binding invocation handler with its name to the service
+// AddBindingInvocationHandler appends provided binding invocation handler with its name to the service.
 func (s *Server) AddBindingInvocationHandler(name string, fn func(ctx context.Context, in *common.BindingEvent) (out []byte, err error)) error {
 	if name == "" {
 		return fmt.Errorf("binding name required")
@@ -23,7 +24,7 @@ func (s *Server) AddBindingInvocationHandler(name string, fn func(ctx context.Co
 }
 
 // ListInputBindings is called by Dapr to get the list of bindings the app will get invoked by. In this example, we are telling Dapr
-// To invoke our app with a binding named storage
+// To invoke our app with a binding named storage.
 func (s *Server) ListInputBindings(ctx context.Context, in *empty.Empty) (*pb.ListInputBindingsResponse, error) {
 	list := make([]string, 0)
 	for k := range s.bindingHandlers {
@@ -35,7 +36,7 @@ func (s *Server) ListInputBindings(ctx context.Context, in *empty.Empty) (*pb.Li
 	}, nil
 }
 
-// OnBindingEvent gets invoked every time a new event is fired from a registered binding. The message carries the binding name, a payload and optional metadata
+// OnBindingEvent gets invoked every time a new event is fired from a registered binding. The message carries the binding name, a payload and optional metadata.
 func (s *Server) OnBindingEvent(ctx context.Context, in *pb.BindingEventRequest) (*pb.BindingEventResponse, error) {
 	if in == nil {
 		return nil, errors.New("nil binding event request")

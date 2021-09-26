@@ -5,10 +5,11 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/dapr/go-sdk/dapr/proto/runtime/v1"
-	"github.com/dapr/go-sdk/service/common"
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/dapr/go-sdk/dapr/proto/runtime/v1"
+	"github.com/dapr/go-sdk/service/common"
 )
 
 func testBindingHandler(ctx context.Context, in *common.BindingEvent) (out []byte, err error) {

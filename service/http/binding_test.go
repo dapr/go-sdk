@@ -8,8 +8,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/dapr/go-sdk/service/common"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/dapr/go-sdk/service/common"
 )
 
 func TestBindingHandlerWithoutHandler(t *testing.T) {

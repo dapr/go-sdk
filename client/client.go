@@ -19,8 +19,8 @@ const (
 	daprPortDefault    = "50001"
 	daprPortEnvVarName = "DAPR_GRPC_PORT"
 	traceparentKey     = "traceparent"
-	apiTokenKey        = "dapr-api-token"
-	apiTokenEnvVarName = "DAPR_API_TOKEN"
+	apiTokenKey        = "dapr-api-token" /* #nosec */
+	apiTokenEnvVarName = "DAPR_API_TOKEN" /* #nosec */
 )
 
 var (
@@ -175,14 +175,14 @@ func (c *GRPCClient) Close() {
 }
 
 // WithAuthToken sets Dapr API token on the instantiated client.
-// Allows empty string to reset token on existing client
+// Allows empty string to reset token on existing client.
 func (c *GRPCClient) WithAuthToken(token string) {
 	c.mux.Lock()
 	c.authToken = token
 	c.mux.Unlock()
 }
 
-// WithTraceID adds existing trace ID to the outgoing context
+// WithTraceID adds existing trace ID to the outgoing context.
 func (c *GRPCClient) WithTraceID(ctx context.Context, id string) context.Context {
 	if id == "" {
 		return ctx
@@ -196,7 +196,7 @@ func (c *GRPCClient) withAuthToken(ctx context.Context) context.Context {
 	if c.authToken == "" {
 		return ctx
 	}
-	return metadata.NewOutgoingContext(ctx, metadata.Pairs(apiTokenKey, string(c.authToken)))
+	return metadata.NewOutgoingContext(ctx, metadata.Pairs(apiTokenKey, c.authToken))
 }
 
 // Shutdown the sidecar.
