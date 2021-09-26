@@ -39,15 +39,11 @@ type Server struct {
 	topicSubscriptions []*common.Subscription
 }
 
-<<<<<<< HEAD
 func (s *Server) RegisterActorImplFactory(f actor.Factory, opts ...config.Option) {
 	runtime.GetActorRuntimeInstance().RegisterActorFactory(f, opts...)
 }
 
 // Start starts the HTTP handler. Blocks while serving
-=======
-// Start starts the HTTP handler. Blocks while serving.
->>>>>>> origin/main
 func (s *Server) Start() error {
 	s.registerBaseHandler()
 	c := negroni.New()

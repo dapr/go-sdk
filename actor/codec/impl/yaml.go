@@ -16,10 +16,10 @@ func init() {
 type YamlCodec struct {
 }
 
-func (j *YamlCodec) Marshal(v interface{}) ([]byte, error) {
+func (y *YamlCodec) Marshal(v interface{}) ([]byte, error) {
 	return yaml.Marshal(v)
 }
 
-func (j *YamlCodec) Unmarshal(data []byte, v interface{}) error {
+func (y *YamlCodec) Unmarshal(data []byte, v interface{}) error {
 	return yaml.Unmarshal(data, v)
 }
