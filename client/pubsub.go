@@ -4,8 +4,9 @@ import (
 	"context"
 	"encoding/json"
 
-	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
 	"github.com/pkg/errors"
+
+	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
 )
 
 // PublishEvent publishes data onto specific pubsub topic.
@@ -41,7 +42,6 @@ func (c *GRPCClient) PublishEventfromCustomContent(ctx context.Context, pubsubNa
 	}
 
 	bytes, err := json.Marshal(data)
-
 	if err != nil {
 		return errors.WithMessage(err, "error serializing input struct")
 	}

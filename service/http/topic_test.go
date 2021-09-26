@@ -11,8 +11,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/dapr/go-sdk/service/common"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/dapr/go-sdk/service/common"
 )
 
 func testTopicFunc(ctx context.Context, e *common.TopicEvent) (retry bool, err error) {

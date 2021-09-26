@@ -11,7 +11,7 @@ import (
 	"github.com/dapr/go-sdk/service/common"
 )
 
-// NewService creates new Service
+// NewService creates new Service.
 func NewService(address string) common.Service {
 	return newServer(address, nil)
 }
@@ -32,18 +32,22 @@ func newServer(address string, router *mux.Router) *Server {
 	}
 }
 
-// Server is the HTTP server wrapping mux many Dapr helpers
+// Server is the HTTP server wrapping mux many Dapr helpers.
 type Server struct {
 	address            string
 	mux                *mux.Router
 	topicSubscriptions []*common.Subscription
 }
 
+<<<<<<< HEAD
 func (s *Server) RegisterActorImplFactory(f actor.Factory, opts ...config.Option) {
 	runtime.GetActorRuntimeInstance().RegisterActorFactory(f, opts...)
 }
 
 // Start starts the HTTP handler. Blocks while serving
+=======
+// Start starts the HTTP handler. Blocks while serving.
+>>>>>>> origin/main
 func (s *Server) Start() error {
 	s.registerBaseHandler()
 	c := negroni.New()
@@ -51,7 +55,7 @@ func (s *Server) Start() error {
 	return http.ListenAndServe(s.address, c)
 }
 
-// Stop stops previously started HTTP service
+// Stop stops previously started HTTP service.
 func (s *Server) Stop() error {
 	// TODO: implement service stop
 	return nil

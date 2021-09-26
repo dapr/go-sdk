@@ -22,9 +22,7 @@ const (
 	testBufSize = 1024 * 1024
 )
 
-var (
-	testClient Client
-)
+var testClient Client
 
 func TestMain(m *testing.M) {
 	ctx := context.Background()

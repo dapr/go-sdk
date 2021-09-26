@@ -4,11 +4,12 @@ import (
 	"context"
 	"testing"
 
-	"github.com/dapr/go-sdk/dapr/proto/common/v1"
-	cc "github.com/dapr/go-sdk/service/common"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/types/known/anypb"
+
+	"github.com/dapr/go-sdk/dapr/proto/common/v1"
+	cc "github.com/dapr/go-sdk/service/common"
 )
 
 func testInvokeHandler(ctx context.Context, in *cc.InvocationEvent) (out *cc.Content, err error) {

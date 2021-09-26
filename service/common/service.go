@@ -6,7 +6,7 @@ import (
 	"github.com/dapr/go-sdk/actor/config"
 )
 
-// Service represents Dapr callback service
+// Service represents Dapr callback service.
 type Service interface {
 	// AddServiceInvocationHandler appends provided service invocation handler with its name to the service.
 	AddServiceInvocationHandler(name string, fn func(ctx context.Context, in *InvocationEvent) (out *Content, err error)) error
