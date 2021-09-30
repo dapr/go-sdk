@@ -15,6 +15,9 @@ type TopicEvent struct {
 	// The content of the event.
 	// Note, this is why the gRPC and HTTP implementations need separate structs for cloud events.
 	Data interface{} `json:"data"`
+	// The base64 encoding content of the event.
+	// Note, this is processing rawPayload and binary content types .
+	DataBase64 string `json:"data_base64,omitempty"`
 	// Cloud event subject
 	Subject string `json:"subject"`
 	// The pubsub topic which publisher sent to.
