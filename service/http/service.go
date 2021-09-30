@@ -1,7 +1,9 @@
 package http
 
 import (
+	"context"
 	"net/http"
+	"time"
 
 	"github.com/dapr/go-sdk/service/common"
 )
@@ -21,7 +23,11 @@ func newServer(address string, mux *http.ServeMux) *Server {
 		mux = http.NewServeMux()
 	}
 	return &Server{
-		address:            address,
+		address: address,
+		http_server: &http.Server{
+			Addr:    address,
+			Handler: mux,
+		},
 		mux:                mux,
 		topicSubscriptions: make([]*common.Subscription, 0),
 	}
@@ -31,23 +37,24 @@ func newServer(address string, mux *http.ServeMux) *Server {
 type Server struct {
 	address            string
 	mux                *http.ServeMux
+	http_server        *http.Server
 	topicSubscriptions []*common.Subscription
 }
 
 // Start starts the HTTP handler. Blocks while serving.
 func (s *Server) Start() error {
 	s.registerSubscribeHandler()
-	server := http.Server{
-		Addr:    s.address,
-		Handler: s.mux,
-	}
-	return server.ListenAndServe()
+	return s.http_server.ListenAndServe()
 }
 
 // Stop stops previously started HTTP service.
 func (s *Server) Stop() error {
-	// TODO: implement service stop
-	return nil
+	ctxShutDown, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer func() {
+		cancel()
+	}()
+
+	return s.http_server.Shutdown(ctxShutDown)
 }
 
 func setOptions(w http.ResponseWriter, r *http.Request) {
