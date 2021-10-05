@@ -24,7 +24,7 @@ func newServer(address string, mux *http.ServeMux) *Server {
 	}
 	return &Server{
 		address: address,
-		http_server: &http.Server{
+		httpServer: &http.Server{
 			Addr:    address,
 			Handler: mux,
 		},
@@ -37,14 +37,14 @@ func newServer(address string, mux *http.ServeMux) *Server {
 type Server struct {
 	address            string
 	mux                *http.ServeMux
-	http_server        *http.Server
+	httpServer         *http.Server
 	topicSubscriptions []*common.Subscription
 }
 
 // Start starts the HTTP handler. Blocks while serving.
 func (s *Server) Start() error {
 	s.registerSubscribeHandler()
-	return s.http_server.ListenAndServe()
+	return s.httpServer.ListenAndServe()
 }
 
 // Stop stops previously started HTTP service with a five second timeout.
@@ -52,7 +52,7 @@ func (s *Server) Stop() error {
 	ctxShutDown, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	return s.http_server.Shutdown(ctxShutDown)
+	return s.httpServer.Shutdown(ctxShutDown)
 }
 
 func setOptions(w http.ResponseWriter, r *http.Request) {

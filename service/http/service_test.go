@@ -33,12 +33,12 @@ func TestStoppingStartedService(t *testing.T) {
 func TestStartingStoppedService(t *testing.T) {
 	s := newServer(":3333", nil)
 	assert.NotNil(t, s)
-	stop_err := s.Stop()
-	assert.NoError(t, stop_err)
+	stopErr := s.Stop()
+	assert.NoError(t, stopErr)
 
-	start_err := s.Start()
-	assert.Error(t, start_err, "expected starting a stopped server to raise an error")
-	assert.Equal(t, start_err.Error(), http.ErrServerClosed.Error())
+	startErr := s.Start()
+	assert.Error(t, startErr, "expected starting a stopped server to raise an error")
+	assert.Equal(t, startErr.Error(), http.ErrServerClosed.Error())
 }
 
 func TestSettingOptions(t *testing.T) {
