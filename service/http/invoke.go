@@ -23,7 +23,7 @@ func (s *Server) AddServiceInvocationHandler(route string, fn func(ctx context.C
 		route = fmt.Sprintf("/%s", route)
 	}
 
-	s.mux.Handle(route, optionsHandler(http.HandlerFunc(
+	s.Mux().Handle(route, optionsHandler(http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
 			// capture http args
 			e := &common.InvocationEvent{

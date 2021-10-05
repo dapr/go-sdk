@@ -42,7 +42,7 @@ func TestInvocationHandlerWithData(t *testing.T) {
 	req.Header.Set("Content-Type", "application/json")
 
 	resp := httptest.NewRecorder()
-	s.mux.ServeHTTP(resp, req)
+	s.Mux().ServeHTTP(resp, req)
 	assert.Equal(t, http.StatusOK, resp.Code)
 
 	b, err := ioutil.ReadAll(resp.Body)
@@ -66,7 +66,7 @@ func TestInvocationHandlerWithoutInputData(t *testing.T) {
 	req.Header.Set("Content-Type", "application/json")
 
 	resp := httptest.NewRecorder()
-	s.mux.ServeHTTP(resp, req)
+	s.Mux().ServeHTTP(resp, req)
 	assert.Equal(t, http.StatusOK, resp.Code)
 
 	b, err := ioutil.ReadAll(resp.Body)

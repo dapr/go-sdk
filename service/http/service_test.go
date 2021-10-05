@@ -31,7 +31,7 @@ func TestSettingOptions(t *testing.T) {
 
 func testRequest(t *testing.T, s *Server, r *http.Request, expectedStatusCode int) {
 	rr := httptest.NewRecorder()
-	s.mux.ServeHTTP(rr, r)
+	s.Mux().ServeHTTP(rr, r)
 	resp := rr.Result()
 	defer resp.Body.Close()
 	assert.NotNil(t, resp)

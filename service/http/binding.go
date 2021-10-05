@@ -23,7 +23,7 @@ func (s *Server) AddBindingInvocationHandler(route string, fn func(ctx context.C
 		route = fmt.Sprintf("/%s", route)
 	}
 
-	s.mux.Handle(route, optionsHandler(http.HandlerFunc(
+	s.Mux().Handle(route, optionsHandler(http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
 			var content []byte
 			if r.ContentLength > 0 {

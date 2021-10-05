@@ -37,7 +37,7 @@ func TestBindingHandlerWithoutData(t *testing.T) {
 	req.Header.Set("Content-Type", "application/json")
 
 	resp := httptest.NewRecorder()
-	s.mux.ServeHTTP(resp, req)
+	s.Mux().ServeHTTP(resp, req)
 	assert.Equal(t, http.StatusOK, resp.Code)
 	assert.Equal(t, "{}", resp.Body.String())
 }
@@ -58,7 +58,7 @@ func TestBindingHandlerWithData(t *testing.T) {
 	req.Header.Set("Content-Type", "application/json")
 
 	resp := httptest.NewRecorder()
-	s.mux.ServeHTTP(resp, req)
+	s.Mux().ServeHTTP(resp, req)
 	assert.Equal(t, http.StatusOK, resp.Code)
 	assert.Equal(t, "test", resp.Body.String())
 }
@@ -88,6 +88,6 @@ func TestBindingHandlerErrors(t *testing.T) {
 	req.Header.Set("Content-Type", "application/json")
 
 	resp := httptest.NewRecorder()
-	s.mux.ServeHTTP(resp, req)
+	s.Mux().ServeHTTP(resp, req)
 	assert.Equal(t, http.StatusInternalServerError, resp.Code)
 }

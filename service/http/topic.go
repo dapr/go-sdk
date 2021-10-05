@@ -31,7 +31,7 @@ func (s *Server) registerSubscribeHandler() {
 			return
 		}
 	}
-	s.mux.HandleFunc("/dapr/subscribe", f)
+	s.Mux().HandleFunc("/dapr/subscribe", f)
 }
 
 // AddTopicEventHandler appends provided event handler with it's name to the service.
@@ -58,7 +58,7 @@ func (s *Server) AddTopicEventHandler(sub *common.Subscription, fn func(ctx cont
 
 	s.topicSubscriptions = append(s.topicSubscriptions, sub)
 
-	s.mux.Handle(sub.Route, optionsHandler(http.HandlerFunc(
+	s.Mux().Handle(sub.Route, optionsHandler(http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
 			// check for post with no data
 			if r.ContentLength == 0 {
