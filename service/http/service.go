@@ -47,12 +47,10 @@ func (s *Server) Start() error {
 	return s.http_server.ListenAndServe()
 }
 
-// Stop stops previously started HTTP service.
+// Stop stops previously started HTTP service with a five second timeout.
 func (s *Server) Stop() error {
 	ctxShutDown, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer func() {
-		cancel()
-	}()
+	defer cancel()
 
 	return s.http_server.Shutdown(ctxShutDown)
 }
