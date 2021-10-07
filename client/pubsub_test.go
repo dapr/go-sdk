@@ -66,4 +66,9 @@ func TestPublishEvent(t *testing.T) {
 		err := testClient.PublishEventfromCustomContent(ctx, "messages", "test", testdata)
 		assert.Nil(t, err)
 	})
+
+	t.Run("error serializing JSON", func(t *testing.T) {
+		err := testClient.PublishEventfromCustomContent(ctx, "messages", "test", make(chan struct{}))
+		assert.Error(t, err)
+	})
 }
