@@ -7,7 +7,7 @@ all: help
 
 .PHONY: tidy
 tidy: ## Updates the go modules
-	go mod tidy
+	go mod tidy -compat=1.17
 
 .PHONY: test
 test: tidy ## Tests the entire project 
@@ -42,39 +42,6 @@ clean: ## Cleans go and generated files in ./dapr/proto/
 	go clean
 	rm -fr ./dapr/proto/common/v1/*
 	rm -fr ./dapr/proto/runtime/v1/*
-
-.PHONY: protos
-protos: ## Downloads proto files from dapr/dapr master and generates gRPC proto clients
-	go install github.com/gogo/protobuf/gogoreplace
-
-	rm -f ./dapr/proto/common/v1/*
-	rm -f ./dapr/proto/runtime/v1/*
-
-	wget -q $(PROTO_ROOT)/common/v1/common.proto -O ./dapr/proto/common/v1/common.proto
-	gogoreplace 'option go_package = "github.com/dapr/dapr/pkg/proto/common/v1;common";' \
-		'option go_package = "github.com/dapr/go-sdk/dapr/proto/common/v1;common";' \
-		./dapr/proto/common/v1/common.proto
-
-	wget -q $(PROTO_ROOT)/runtime/v1/appcallback.proto -O ./dapr/proto/runtime/v1/appcallback.proto
-	gogoreplace 'option go_package = "github.com/dapr/dapr/pkg/proto/runtime/v1;runtime";' \
-		'option go_package = "github.com/dapr/go-sdk/dapr/proto/runtime/v1;runtime";' \
-		./dapr/proto/runtime/v1/appcallback.proto
-
-	wget -q $(PROTO_ROOT)/runtime/v1/dapr.proto -O ./dapr/proto/runtime/v1/dapr.proto
-	gogoreplace 'option go_package = "github.com/dapr/dapr/pkg/proto/runtime/v1;runtime";' \
-		'option go_package = "github.com/dapr/go-sdk/dapr/proto/runtime/v1;runtime";' \
-		./dapr/proto/runtime/v1/dapr.proto
-
-	protoc --go_out=. --go_opt=paths=source_relative \
-	       --go-grpc_out=. --go-grpc_opt=paths=source_relative \
-		   dapr/proto/common/v1/common.proto
-
-	protoc --go_out=. --go_opt=paths=source_relative \
-		   --go-grpc_out=. --go-grpc_opt=paths=source_relative \
-		   dapr/proto/runtime/v1/*.proto
-
-	rm -f ./dapr/proto/common/v1/*.proto
-	rm -f ./dapr/proto/runtime/v1/*.proto
 
 .PHONY: help
 help: ## Display available commands
