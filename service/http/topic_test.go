@@ -184,3 +184,39 @@ func TestAddingInvalidEventHandlers(t *testing.T) {
 	err = s.AddTopicEventHandler(sub, testTopicFunc)
 	assert.Errorf(t, err, "expected error adding sub without route event handler")
 }
+
+func TestRawPayloadDecode(t *testing.T) {
+	testRawTopicFunc := func(ctx context.Context, e *common.TopicEvent) (retry bool, err error) {
+		if e.DataContentType != "application/octet-stream" {
+			err = fmt.Errorf("invalid content type: %s", e.DataContentType)
+		}
+		if e.DataBase64 != "eyJtZXNzYWdlIjoiaGVsbG8ifQ==" {
+			err = errors.New("error decode data_base64")
+		}
+		if err != nil {
+			assert.NoErrorf(t, err, "error rawPayload decode")
+		}
+		return
+	}
+
+	const rawData = `{
+		"datacontenttype" : "application/octet-stream",
+		"data_base64" : "eyJtZXNzYWdlIjoiaGVsbG8ifQ=="
+	}`
+
+	s := newServer("", nil)
+
+	sub3 := &common.Subscription{
+		PubsubName: "messages",
+		Topic:      "testRaw",
+		Route:      "/raw",
+		Metadata: map[string]string{
+			"rawPayload": "true",
+		},
+	}
+	err := s.AddTopicEventHandler(sub3, testRawTopicFunc)
+	assert.NoErrorf(t, err, "error adding raw event handler")
+
+	s.registerBaseHandler()
+	makeEventRequest(t, s, "/raw", rawData, http.StatusOK)
+}

@@ -3,14 +3,18 @@ package client
 import (
 	"context"
 	"encoding/json"
+	"log"
 
 	"github.com/pkg/errors"
 
 	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
 )
 
+// PublishEventOption is the type for the functional option.
+type PublishEventOption func(*pb.PublishEventRequest)
+
 // PublishEvent publishes data onto specific pubsub topic.
-func (c *GRPCClient) PublishEvent(ctx context.Context, pubsubName, topicName string, data []byte) error {
+func (c *GRPCClient) PublishEvent(ctx context.Context, pubsubName, topicName string, data interface{}, opts ...PublishEventOption) error {
 	if pubsubName == "" {
 		return errors.New("pubsubName name required")
 	}
@@ -18,13 +22,31 @@ func (c *GRPCClient) PublishEvent(ctx context.Context, pubsubName, topicName str
 		return errors.New("topic name required")
 	}
 
-	envelop := &pb.PublishEventRequest{
+	request := &pb.PublishEventRequest{
 		PubsubName: pubsubName,
 		Topic:      topicName,
-		Data:       data,
+	}
+	for _, opt := range opts {
+		opt(request)
 	}
 
-	_, err := c.protoClient.PublishEvent(c.withAuthToken(ctx), envelop)
+	if data != nil {
+		switch d := data.(type) {
+		case []byte:
+			request.Data = d
+		case string:
+			request.Data = []byte(d)
+		default:
+			var err error
+			request.DataContentType = "application/json"
+			request.Data, err = json.Marshal(d)
+			if err != nil {
+				return errors.WithMessage(err, "error serializing input struct")
+			}
+		}
+	}
+
+	_, err := c.protoClient.PublishEvent(c.withAuthToken(ctx), request)
 	if err != nil {
 		return errors.Wrapf(err, "error publishing event unto %s topic", topicName)
 	}
@@ -32,32 +54,30 @@ func (c *GRPCClient) PublishEvent(ctx context.Context, pubsubName, topicName str
 	return nil
 }
 
-// PublishEventfromCustomContent serializes an struct and publishes its contents as data (JSON) onto topic in specific pubsub component.
-func (c *GRPCClient) PublishEventfromCustomContent(ctx context.Context, pubsubName, topicName string, data interface{}) error {
-	if pubsubName == "" {
-		return errors.New("pubsubName name required")
+// PublishEventWithContentType can be passed as option to PublishEvent to set an explicit Content-Type.
+func PublishEventWithContentType(contentType string) PublishEventOption {
+	return func(e *pb.PublishEventRequest) {
+		e.DataContentType = contentType
 	}
-	if topicName == "" {
-		return errors.New("topic name required")
-	}
+}
 
-	bytes, err := json.Marshal(data)
+// PublishEventWithMetadata can be passed as option to PublishEvent to set metadata.
+func PublishEventWithMetadata(metadata map[string]string) PublishEventOption {
+	return func(e *pb.PublishEventRequest) {
+		e.Metadata = metadata
+	}
+}
+
+// PublishEventfromCustomContent serializes an struct and publishes its contents as data (JSON) onto topic in specific pubsub component.
+// Deprecated: This method is deprecated and will be removed in a future version of the SDK. Please use `PublishEvent` instead.
+func (c *GRPCClient) PublishEventfromCustomContent(ctx context.Context, pubsubName, topicName string, data interface{}) error {
+	log.Println("DEPRECATED: client.PublishEventfromCustomContent is deprecated and will be removed in a future version of the SDK. Please use `PublishEvent` instead.")
+
+	// Perform the JSON marshaling here just in case someone passed a []byte or string as data
+	enc, err := json.Marshal(data)
 	if err != nil {
 		return errors.WithMessage(err, "error serializing input struct")
 	}
 
-	envelop := &pb.PublishEventRequest{
-		PubsubName:      pubsubName,
-		Topic:           topicName,
-		Data:            bytes,
-		DataContentType: "application/json",
-	}
-
-	_, err = c.protoClient.PublishEvent(c.withAuthToken(ctx), envelop)
-
-	if err != nil {
-		return errors.Wrapf(err, "error publishing event unto %s topic", topicName)
-	}
-
-	return nil
+	return c.PublishEvent(ctx, pubsubName, topicName, enc, PublishEventWithContentType("application/json"))
 }

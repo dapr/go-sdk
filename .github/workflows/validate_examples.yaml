@@ -94,3 +94,4 @@ jobs:
           ./validate.sh hello-world
           ./validate.sh pubsub
           ./validate.sh service
+          ./validate.sh actor

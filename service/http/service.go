@@ -1,10 +1,11 @@
 package http
 
 import (
+	"context"
 	"net/http"
+	"time"
 
 	"github.com/gorilla/mux"
-	"github.com/urfave/negroni"
 
 	"github.com/dapr/go-sdk/actor"
 	"github.com/dapr/go-sdk/actor/config"
@@ -28,7 +29,11 @@ func newServer(address string, router *mux.Router) *Server {
 		router = mux.NewRouter()
 	}
 	return &Server{
-		address:            address,
+		address: address,
+		httpServer: &http.Server{
+			Addr:    address,
+			Handler: router,
+		},
 		mux:                router,
 		topicSubscriptions: make([]*common.Subscription, 0),
 	}
@@ -38,6 +43,7 @@ func newServer(address string, router *mux.Router) *Server {
 type Server struct {
 	address            string
 	mux                *mux.Router
+	httpServer         *http.Server
 	topicSubscriptions []*common.Subscription
 }
 
@@ -48,15 +54,15 @@ func (s *Server) RegisterActorImplFactory(f actor.Factory, opts ...config.Option
 // Start starts the HTTP handler. Blocks while serving.
 func (s *Server) Start() error {
 	s.registerBaseHandler()
-	c := negroni.New()
-	c.UseHandler(s.mux)
-	return http.ListenAndServe(s.address, c)
+	return s.httpServer.ListenAndServe()
 }
 
-// Stop stops previously started HTTP service.
+// Stop stops previously started HTTP service with a five second timeout.
 func (s *Server) Stop() error {
-	// TODO: implement service stop
-	return nil
+	ctxShutDown, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	return s.httpServer.Shutdown(ctxShutDown)
 }
 
 func setOptions(w http.ResponseWriter, r *http.Request) {
