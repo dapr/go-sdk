@@ -12,13 +12,15 @@
 package runtime
 
 import (
-	v1 "github.com/dapr/go-sdk/dapr/proto/common/v1"
+	reflect "reflect"
+	sync "sync"
+
 	proto "github.com/golang/protobuf/proto"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
-	reflect "reflect"
-	sync "sync"
+
+	v1 "github.com/dapr/go-sdk/dapr/proto/common/v1"
 )
 
 const (
@@ -770,25 +772,28 @@ func file_dapr_proto_runtime_v1_appcallback_proto_rawDescGZIP() []byte {
 	return file_dapr_proto_runtime_v1_appcallback_proto_rawDescData
 }
 
-var file_dapr_proto_runtime_v1_appcallback_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
-var file_dapr_proto_runtime_v1_appcallback_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
-var file_dapr_proto_runtime_v1_appcallback_proto_goTypes = []interface{}{
-	(TopicEventResponse_TopicEventResponseStatus)(0),  // 0: dapr.proto.runtime.v1.TopicEventResponse.TopicEventResponseStatus
-	(BindingEventResponse_BindingEventConcurrency)(0), // 1: dapr.proto.runtime.v1.BindingEventResponse.BindingEventConcurrency
-	(*TopicEventRequest)(nil),                         // 2: dapr.proto.runtime.v1.TopicEventRequest
-	(*TopicEventResponse)(nil),                        // 3: dapr.proto.runtime.v1.TopicEventResponse
-	(*BindingEventRequest)(nil),                       // 4: dapr.proto.runtime.v1.BindingEventRequest
-	(*BindingEventResponse)(nil),                      // 5: dapr.proto.runtime.v1.BindingEventResponse
-	(*ListTopicSubscriptionsResponse)(nil),            // 6: dapr.proto.runtime.v1.ListTopicSubscriptionsResponse
-	(*TopicSubscription)(nil),                         // 7: dapr.proto.runtime.v1.TopicSubscription
-	(*ListInputBindingsResponse)(nil),                 // 8: dapr.proto.runtime.v1.ListInputBindingsResponse
-	nil,                                               // 9: dapr.proto.runtime.v1.BindingEventRequest.MetadataEntry
-	nil,                                               // 10: dapr.proto.runtime.v1.TopicSubscription.MetadataEntry
-	(*v1.StateItem)(nil),                              // 11: dapr.proto.common.v1.StateItem
-	(*v1.InvokeRequest)(nil),                          // 12: dapr.proto.common.v1.InvokeRequest
-	(*emptypb.Empty)(nil),                             // 13: google.protobuf.Empty
-	(*v1.InvokeResponse)(nil),                         // 14: dapr.proto.common.v1.InvokeResponse
-}
+var (
+	file_dapr_proto_runtime_v1_appcallback_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
+	file_dapr_proto_runtime_v1_appcallback_proto_msgTypes  = make([]protoimpl.MessageInfo, 9)
+	file_dapr_proto_runtime_v1_appcallback_proto_goTypes   = []interface{}{
+		(TopicEventResponse_TopicEventResponseStatus)(0),  // 0: dapr.proto.runtime.v1.TopicEventResponse.TopicEventResponseStatus
+		(BindingEventResponse_BindingEventConcurrency)(0), // 1: dapr.proto.runtime.v1.BindingEventResponse.BindingEventConcurrency
+		(*TopicEventRequest)(nil),                         // 2: dapr.proto.runtime.v1.TopicEventRequest
+		(*TopicEventResponse)(nil),                        // 3: dapr.proto.runtime.v1.TopicEventResponse
+		(*BindingEventRequest)(nil),                       // 4: dapr.proto.runtime.v1.BindingEventRequest
+		(*BindingEventResponse)(nil),                      // 5: dapr.proto.runtime.v1.BindingEventResponse
+		(*ListTopicSubscriptionsResponse)(nil),            // 6: dapr.proto.runtime.v1.ListTopicSubscriptionsResponse
+		(*TopicSubscription)(nil),                         // 7: dapr.proto.runtime.v1.TopicSubscription
+		(*ListInputBindingsResponse)(nil),                 // 8: dapr.proto.runtime.v1.ListInputBindingsResponse
+		nil,                                               // 9: dapr.proto.runtime.v1.BindingEventRequest.MetadataEntry
+		nil,                                               // 10: dapr.proto.runtime.v1.TopicSubscription.MetadataEntry
+		(*v1.StateItem)(nil),                              // 11: dapr.proto.common.v1.StateItem
+		(*v1.InvokeRequest)(nil),                          // 12: dapr.proto.common.v1.InvokeRequest
+		(*emptypb.Empty)(nil),                             // 13: google.protobuf.Empty
+		(*v1.InvokeResponse)(nil),                         // 14: dapr.proto.common.v1.InvokeResponse
+	}
+)
+
 var file_dapr_proto_runtime_v1_appcallback_proto_depIdxs = []int32{
 	0,  // 0: dapr.proto.runtime.v1.TopicEventResponse.status:type_name -> dapr.proto.runtime.v1.TopicEventResponse.TopicEventResponseStatus
 	9,  // 1: dapr.proto.runtime.v1.BindingEventRequest.metadata:type_name -> dapr.proto.runtime.v1.BindingEventRequest.MetadataEntry

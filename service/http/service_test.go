@@ -43,6 +43,7 @@ func testRequestWithResponseBody(t *testing.T, s *Server, r *http.Request, expec
 	rr := httptest.NewRecorder()
 	s.mux.ServeHTTP(rr, r)
 	rez := rr.Result()
+	defer rez.Body.Close()
 	rspBody, err := io.ReadAll(rez.Body)
 	assert.Nil(t, err)
 	assert.NotNil(t, rez)

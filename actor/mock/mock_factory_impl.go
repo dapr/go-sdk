@@ -2,51 +2,52 @@ package mock
 
 import (
 	"context"
+
 	"github.com/dapr/go-sdk/actor"
 	dapr "github.com/dapr/go-sdk/client"
 )
 
-func MockActorImplFactory() actor.Server {
+func ActorImplFactory() actor.Server {
 	client, err := dapr.NewClient()
 	if err != nil {
 		panic(err)
 	}
-	return &MockActorImpl{
+	return &ActorImpl{
 		daprClient: client,
 	}
 }
 
-type MockActorImpl struct {
+type ActorImpl struct {
 	actor.ServerImplBase
 	daprClient dapr.Client
 }
 
-func (t *MockActorImpl) Type() string {
+func (t *ActorImpl) Type() string {
 	return "testActorType"
 }
 
-func (t *MockActorImpl) Invoke(ctx context.Context, req string) (string, error) {
+func (t *ActorImpl) Invoke(ctx context.Context, req string) (string, error) {
 	return req, nil
 }
 
-func (t *MockActorImpl) ReminderCall(reminderName string, state []byte, dueTime string, period string) {
+func (t *ActorImpl) ReminderCall(reminderName string, state []byte, dueTime string, period string) {
 }
 
-func MockNotReminderCalleeActorFactory() actor.Server {
+func NotReminderCalleeActorFactory() actor.Server {
 	client, err := dapr.NewClient()
 	if err != nil {
 		panic(err)
 	}
-	return &MockNotReminderCalleeActor{
+	return &NotReminderCalleeActor{
 		daprClient: client,
 	}
 }
 
-type MockNotReminderCalleeActor struct {
+type NotReminderCalleeActor struct {
 	actor.ServerImplBase
 	daprClient dapr.Client
 }
 
-func (t *MockNotReminderCalleeActor) Type() string {
+func (t *NotReminderCalleeActor) Type() string {
 	return "testActorNotReminderCalleeType"
 }

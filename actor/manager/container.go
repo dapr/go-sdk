@@ -2,13 +2,14 @@ package manager
 
 import (
 	"context"
+	"log"
+	"reflect"
+
 	"github.com/dapr/go-sdk/actor"
 	"github.com/dapr/go-sdk/actor/codec"
 	actorErr "github.com/dapr/go-sdk/actor/error"
 	"github.com/dapr/go-sdk/actor/state"
 	dapr "github.com/dapr/go-sdk/client"
-	"log"
-	"reflect"
 )
 
 type ActorContainer interface {
@@ -16,14 +17,14 @@ type ActorContainer interface {
 	GetActor() actor.Server
 }
 
-// DefaultActorContainer contains actor instance and methods type info generated from actor
+// DefaultActorContainer contains actor instance and methods type info generated from actor.
 type DefaultActorContainer struct {
 	methodType map[string]*MethodType
 	actor      actor.Server
 	serializer codec.Codec
 }
 
-// NewDefaultActorContainer creates a new ActorContainer with provider impl actor and serializer
+// NewDefaultActorContainer creates a new ActorContainer with provider impl actor and serializer.
 func NewDefaultActorContainer(actorID string, impl actor.Server, serializer codec.Codec) (ActorContainer, actorErr.ActorErr) {
 	impl.SetID(actorID)
 	daprClient, _ := dapr.NewClient()
@@ -50,15 +51,14 @@ func (d *DefaultActorContainer) GetActor() actor.Server {
 	return d.actor
 }
 
-// Invoke call actor method with given methodName and param
+// Invoke call actor method with given methodName and param.
 func (d *DefaultActorContainer) Invoke(methodName string, param []byte) ([]reflect.Value, actorErr.ActorErr) {
 	methodType, ok := d.methodType[methodName]
 	if !ok {
 		return nil, actorErr.ErrActorMethodNoFound
 	}
 	argsValues := make([]reflect.Value, 0)
-	argsValues = append(argsValues, reflect.ValueOf(d.actor))
-	argsValues = append(argsValues, reflect.ValueOf(context.Background()))
+	argsValues = append(argsValues, reflect.ValueOf(d.actor), reflect.ValueOf(context.Background()))
 	if len(methodType.argsType) > 0 {
 		typ := methodType.argsType[0]
 		paramValue := reflect.New(typ)

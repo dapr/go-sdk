@@ -3,16 +3,18 @@ package manager
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/dapr/go-sdk/actor"
-	"github.com/dapr/go-sdk/actor/api"
-	"github.com/dapr/go-sdk/actor/codec"
-	actorErr "github.com/dapr/go-sdk/actor/error"
-	perrors "github.com/pkg/errors"
 	"log"
 	"reflect"
 	"sync"
 	"unicode"
 	"unicode/utf8"
+
+	perrors "github.com/pkg/errors"
+
+	"github.com/dapr/go-sdk/actor"
+	"github.com/dapr/go-sdk/actor/api"
+	"github.com/dapr/go-sdk/actor/codec"
+	actorErr "github.com/dapr/go-sdk/actor/error"
 )
 
 type ActorManager interface {
@@ -23,7 +25,7 @@ type ActorManager interface {
 	InvokeTimer(actorID, timerName string, params []byte) actorErr.ActorErr
 }
 
-// DefaultActorManager is to manage one type of actor
+// DefaultActorManager is to manage one type of actor.
 type DefaultActorManager struct {
 	// factory is the actor factory of specific type of actor
 	factory actor.Factory
@@ -45,12 +47,12 @@ func NewDefaultActorManager(serializerType string) (ActorManager, actorErr.Actor
 	}, actorErr.Success
 }
 
-// RegisterActorImplFactory registers the action factory f
+// RegisterActorImplFactory registers the action factory f.
 func (m *DefaultActorManager) RegisterActorImplFactory(f actor.Factory) {
 	m.factory = f
 }
 
-// getAndCreateActorContainerIfNotExist will
+// getAndCreateActorContainerIfNotExist will.
 func (m *DefaultActorManager) getAndCreateActorContainerIfNotExist(actorID string) (ActorContainer, actorErr.ActorErr) {
 	val, ok := m.activeActors.Load(actorID)
 	if !ok {
@@ -64,7 +66,7 @@ func (m *DefaultActorManager) getAndCreateActorContainerIfNotExist(actorID strin
 	return val.(ActorContainer), actorErr.Success
 }
 
-// InvokeMethod to invoke local function by @actorID, @methodName and @request request param
+// InvokeMethod to invoke local function by @actorID, @methodName and @request request param.
 func (m *DefaultActorManager) InvokeMethod(actorID, methodName string, request []byte) ([]byte, actorErr.ActorErr) {
 	if m.factory == nil {
 		return nil, actorErr.ErrActorFactoryNotSet
@@ -105,7 +107,7 @@ func (m *DefaultActorManager) InvokeMethod(actorID, methodName string, request [
 	return rspData, actorErr.Success
 }
 
-// DetectiveActor removes actor from actor manager
+// DetectiveActor removes actor from actor manager.
 func (m *DefaultActorManager) DetectiveActor(actorID string) actorErr.ActorErr {
 	_, ok := m.activeActors.Load(actorID)
 	if !ok {
@@ -115,7 +117,7 @@ func (m *DefaultActorManager) DetectiveActor(actorID string) actorErr.ActorErr {
 	return actorErr.Success
 }
 
-// InvokeReminder invoke reminder function with given params
+// InvokeReminder invoke reminder function with given params.
 func (m *DefaultActorManager) InvokeReminder(actorID, reminderName string, params []byte) actorErr.ActorErr {
 	if m.factory == nil {
 		return actorErr.ErrActorFactoryNotSet
@@ -138,7 +140,7 @@ func (m *DefaultActorManager) InvokeReminder(actorID, reminderName string, param
 	return actorErr.Success
 }
 
-// InvokeTimer invoke timer callback function with given  params
+// InvokeTimer invoke timer callback function with given  params.
 func (m *DefaultActorManager) InvokeTimer(actorID, timerName string, params []byte) actorErr.ActorErr {
 	if m.factory == nil {
 		return actorErr.ErrActorFactoryNotSet
@@ -172,7 +174,7 @@ func isExported(name string) bool {
 	return unicode.IsUpper(s)
 }
 
-// Service is description of service
+// Service is description of service.
 type Service struct {
 	reflctValue reflect.Value
 	reflectType reflect.Type
@@ -186,7 +188,7 @@ type MethodType struct {
 	replyType reflect.Type   // return value, otherwise it is nil
 }
 
-// suitableMethods returns suitable Rpc methods of typ
+// suitableMethods returns suitable Rpc methods of typ.
 func suitableMethods(typ reflect.Type) map[string]*MethodType {
 	methods := make(map[string]*MethodType)
 	for m := 0; m < typ.NumMethod(); m++ {
@@ -200,7 +202,7 @@ func suitableMethods(typ reflect.Type) map[string]*MethodType {
 	return methods
 }
 
-// suiteMethod returns a suitable Rpc methodType
+// suiteMethod returns a suitable Rpc methodType.
 func suiteMethod(method reflect.Method) (*MethodType, error) {
 	mtype := method.Type
 	mname := method.Name

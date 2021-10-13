@@ -2,12 +2,13 @@ package runtime
 
 import (
 	"encoding/json"
+	"sync"
+
 	"github.com/dapr/go-sdk/actor"
 	"github.com/dapr/go-sdk/actor/api"
 	"github.com/dapr/go-sdk/actor/config"
 	actorErr "github.com/dapr/go-sdk/actor/error"
 	"github.com/dapr/go-sdk/actor/manager"
-	"sync"
 )
 
 type ActorRunTime struct {
@@ -17,12 +18,12 @@ type ActorRunTime struct {
 
 var actorRuntimeInstance *ActorRunTime
 
-// NewActorRuntime creates an empty ActorRuntime
+// NewActorRuntime creates an empty ActorRuntime.
 func NewActorRuntime() *ActorRunTime {
 	return &ActorRunTime{}
 }
 
-// GetActorRuntimeInstance gets or create runtime instance
+// GetActorRuntimeInstance gets or create runtime instance.
 func GetActorRuntimeInstance() *ActorRunTime {
 	if actorRuntimeInstance == nil {
 		actorRuntimeInstance = NewActorRuntime()
@@ -30,7 +31,7 @@ func GetActorRuntimeInstance() *ActorRunTime {
 	return actorRuntimeInstance
 }
 
-// RegisterActorFactory registers the given actor factory from user, and create new actor manager if not exists
+// RegisterActorFactory registers the given actor factory from user, and create new actor manager if not exists.
 func (r *ActorRunTime) RegisterActorFactory(f actor.Factory, opt ...config.Option) {
 	conf := config.GetConfigFromOptions(opt...)
 	actType := f().Type()
@@ -48,7 +49,7 @@ func (r *ActorRunTime) RegisterActorFactory(f actor.Factory, opt ...config.Optio
 	mng.(manager.ActorManager).RegisterActorImplFactory(f)
 }
 
-func (r *ActorRunTime) GetJsonSerializedConfig() ([]byte, error) {
+func (r *ActorRunTime) GetJSONSerializedConfig() ([]byte, error) {
 	data, err := json.Marshal(&r.config)
 	return data, err
 }
@@ -61,7 +62,7 @@ func (r *ActorRunTime) InvokeActorMethod(actorTypeName, actorID, actorMethod str
 	return mng.(manager.ActorManager).InvokeMethod(actorID, actorMethod, payload)
 }
 
-func (r *ActorRunTime) Deactive(actorTypeName, actorID string) actorErr.ActorErr {
+func (r *ActorRunTime) Deactivate(actorTypeName, actorID string) actorErr.ActorErr {
 	targetManager, ok := r.actorManagers.Load(actorTypeName)
 	if !ok {
 		return actorErr.ErrActorTypeNotFound

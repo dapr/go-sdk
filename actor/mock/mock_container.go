@@ -7,9 +7,10 @@ package mock
 import (
 	reflect "reflect"
 
+	gomock "github.com/golang/mock/gomock"
+
 	actor "github.com/dapr/go-sdk/actor"
 	error "github.com/dapr/go-sdk/actor/error"
-	gomock "github.com/golang/mock/gomock"
 )
 
 // MockActorContainer is a mock of ActorContainer interface.

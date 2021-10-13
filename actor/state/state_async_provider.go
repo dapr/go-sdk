@@ -2,10 +2,12 @@ package state
 
 import (
 	"context"
+
+	"github.com/pkg/errors"
+
 	"github.com/dapr/go-sdk/actor/codec"
 	"github.com/dapr/go-sdk/actor/codec/constant"
 	client "github.com/dapr/go-sdk/client"
-	"github.com/pkg/errors"
 )
 
 type DaprStateAsyncProvider struct {
@@ -76,7 +78,7 @@ func (d *DaprStateAsyncProvider) Apply(actorType, actorID string, changes []*Act
 	return d.daprClient.SaveStateTransactionally(context.Background(), actorType, actorID, operations)
 }
 
-// TODO(@laurence) the daprClient may be nil
+// TODO(@laurence) the daprClient may be nil.
 func NewDaprStateAsyncProvider(daprClient client.Client) *DaprStateAsyncProvider {
 	stateSerializer, _ := codec.GetActorCodec(constant.DefaultSerializerType)
 	return &DaprStateAsyncProvider{

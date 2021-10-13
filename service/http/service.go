@@ -1,12 +1,14 @@
 package http
 
 import (
+	"net/http"
+
+	"github.com/gorilla/mux"
+	"github.com/urfave/negroni"
+
 	"github.com/dapr/go-sdk/actor"
 	"github.com/dapr/go-sdk/actor/config"
 	"github.com/dapr/go-sdk/actor/runtime"
-	"github.com/gorilla/mux"
-	"github.com/urfave/negroni"
-	"net/http"
 
 	"github.com/dapr/go-sdk/service/common"
 )
@@ -16,7 +18,7 @@ func NewService(address string) common.Service {
 	return newServer(address, nil)
 }
 
-// NewServiceWithMux creates new Service with existing http mux
+// NewServiceWithMux creates new Service with existing http mux.
 func NewServiceWithMux(address string, mux *mux.Router) common.Service {
 	return newServer(address, mux)
 }
@@ -43,7 +45,7 @@ func (s *Server) RegisterActorImplFactory(f actor.Factory, opts ...config.Option
 	runtime.GetActorRuntimeInstance().RegisterActorFactory(f, opts...)
 }
 
-// Start starts the HTTP handler. Blocks while serving
+// Start starts the HTTP handler. Blocks while serving.
 func (s *Server) Start() error {
 	s.registerBaseHandler()
 	c := negroni.New()

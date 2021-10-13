@@ -5,11 +5,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/dapr/go-sdk/actor/api"
-	"github.com/dapr/go-sdk/actor/mock"
 	"net/http"
 	"strings"
 	"testing"
+
+	"github.com/dapr/go-sdk/actor/api"
+	"github.com/dapr/go-sdk/actor/mock"
 
 	"github.com/stretchr/testify/assert"
 
@@ -125,7 +126,7 @@ func TestActorHandler(t *testing.T) {
 	makeRequest(t, s, "/actors/testActorType/testActorID/method/timer/testTimerName", string(timerReqData), http.MethodPut, http.StatusNotFound)
 
 	// register test actor factory
-	s.RegisterActorImplFactory(mock.MockActorImplFactory)
+	s.RegisterActorImplFactory(mock.ActorImplFactory)
 
 	// invoke actor API with internal error
 	makeRequest(t, s, "/actors/testActorType/testActorID/method/remind/testReminderName", `{
@@ -142,10 +143,9 @@ func TestActorHandler(t *testing.T) {
 	makeRequest(t, s, "/actors/testActorType/testActorID", "", http.MethodDelete, http.StatusOK)
 
 	// register not reminder callee actor factory
-	s.RegisterActorImplFactory(mock.MockNotReminderCalleeActorFactory)
+	s.RegisterActorImplFactory(mock.NotReminderCalleeActorFactory)
 	// invoke call reminder to not reminder callee actor type
 	makeRequest(t, s, "/actors/testActorNotReminderCalleeType/testActorID/method/remind/testReminderName", string(reminderReqData), http.MethodPut, http.StatusInternalServerError)
-
 }
 
 func makeRequest(t *testing.T, s *Server, route, data, method string, expectedStatusCode int) {
@@ -153,6 +153,7 @@ func makeRequest(t *testing.T, s *Server, route, data, method string, expectedSt
 	assert.NoErrorf(t, err, "error creating request: %s", data)
 	testRequest(t, s, req, expectedStatusCode)
 }
+
 func makeRequestWithExpectedBody(t *testing.T, s *Server, route, data, method string, expectedStatusCode int, expectedBody []byte) {
 	req, err := http.NewRequest(method, route, strings.NewReader(data))
 	assert.NoErrorf(t, err, "error creating request: %s", data)

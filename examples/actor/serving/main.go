@@ -3,11 +3,12 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
+	"net/http"
+
 	"github.com/dapr/go-sdk/actor"
 	dapr "github.com/dapr/go-sdk/client"
 	"github.com/dapr/go-sdk/examples/actor/api"
-	"log"
-	"net/http"
 
 	daprd "github.com/dapr/go-sdk/service/http"
 )
@@ -80,9 +81,11 @@ func (t *TestActor) GetUser(ctx context.Context, user *api.User) (*api.User, err
 	fmt.Println("call get user req = ", user)
 	return user, nil
 }
+
 func (t *TestActor) Get(context.Context) (string, error) {
 	return "get result", nil
 }
+
 func (t *TestActor) Post(ctx context.Context, req string) error {
 	fmt.Println("get post request = ", req)
 	return nil

@@ -1,10 +1,12 @@
 package state
 
 import (
-	"github.com/dapr/go-sdk/actor"
-	"github.com/pkg/errors"
 	"reflect"
 	"sync"
+
+	"github.com/pkg/errors"
+
+	"github.com/dapr/go-sdk/actor"
 )
 
 type ActorStateManager struct {

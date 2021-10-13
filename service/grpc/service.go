@@ -2,16 +2,16 @@ package grpc
 
 import (
 	"context"
+	"net"
+
 	"github.com/dapr/go-sdk/actor"
 	"github.com/dapr/go-sdk/actor/config"
-	"net"
+	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
+	"github.com/dapr/go-sdk/service/common"
 
 	"github.com/pkg/errors"
 
 	"google.golang.org/grpc"
-
-	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
-	"github.com/dapr/go-sdk/service/common"
 )
 
 // NewService creates new Service.

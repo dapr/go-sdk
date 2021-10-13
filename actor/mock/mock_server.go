@@ -8,8 +8,9 @@ import (
 	"context"
 	reflect "reflect"
 
-	actor "github.com/dapr/go-sdk/actor"
 	gomock "github.com/golang/mock/gomock"
+
+	actor "github.com/dapr/go-sdk/actor"
 )
 
 // MockServer is a mock of Server interface.
@@ -42,6 +43,7 @@ func (m *MockServer) ID() string {
 	ret0, _ := ret[0].(string)
 	return ret0
 }
+
 func (mr *MockServerMockRecorder) Invoke(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Invoke", reflect.TypeOf((*MockServer)(nil).Invoke), arg0, arg1)

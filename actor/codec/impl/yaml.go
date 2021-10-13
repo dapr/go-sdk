@@ -3,6 +3,7 @@ package impl
 import (
 	"github.com/dapr/go-sdk/actor/codec"
 	"github.com/dapr/go-sdk/actor/codec/constant"
+
 	"gopkg.in/yaml.v3"
 )
 
@@ -12,9 +13,8 @@ func init() {
 	})
 }
 
-// YamlCodec is json yaml of codec.Codec
-type YamlCodec struct {
-}
+// YamlCodec is json yaml of codec.Codec.
+type YamlCodec struct{}
 
 func (y *YamlCodec) Marshal(v interface{}) ([]byte, error) {
 	return yaml.Marshal(v)

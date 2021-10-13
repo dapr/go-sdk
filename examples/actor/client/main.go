@@ -3,9 +3,10 @@ package main
 import (
 	"context"
 	"fmt"
+	"time"
+
 	dapr "github.com/dapr/go-sdk/client"
 	"github.com/dapr/go-sdk/examples/actor/api"
-	"time"
 )
 
 func main() {
@@ -109,5 +110,4 @@ func main() {
 		fmt.Printf("get user = %+v\n", *usr)
 		time.Sleep(time.Second)
 	}
-
 }

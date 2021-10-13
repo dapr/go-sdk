@@ -4,13 +4,15 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"reflect"
+
+	anypb "github.com/golang/protobuf/ptypes/any"
+	"github.com/pkg/errors"
+
 	"github.com/dapr/go-sdk/actor"
 	"github.com/dapr/go-sdk/actor/codec"
 	"github.com/dapr/go-sdk/actor/config"
 	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
-	anypb "github.com/golang/protobuf/ptypes/any"
-	"github.com/pkg/errors"
-	"reflect"
 )
 
 type InvokeActorRequest struct {
@@ -82,7 +84,7 @@ func (a *ClientStub) Type() string {
 // ID defined actor ID to be invoked
 func (a *ClientStub) ID() string {
 	return "ActorImplID123456"
-}
+}.
 */
 func (c *GRPCClient) ImplActorClientStub(actorClientStub actor.Client, opt ...config.Option) {
 	serializerType := config.GetConfigFromOptions(opt...).SerializerType
@@ -141,8 +143,7 @@ func (c *GRPCClient) RegisterActorReminder(ctx context.Context, in *RegisterActo
 	if err != nil {
 		return errors.Wrapf(err, "error invoking register actor reminder %s/%s", in.ActorType, in.ActorID)
 	}
-
-	return
+	return nil
 }
 
 type UnregisterActorReminderRequest struct {
@@ -151,7 +152,7 @@ type UnregisterActorReminderRequest struct {
 	Name      string
 }
 
-// UnregisterActorReminder would unregister the actor reminder
+// UnregisterActorReminder would unregister the actor reminder.
 func (c *GRPCClient) UnregisterActorReminder(ctx context.Context, in *UnregisterActorReminderRequest) error {
 	if in == nil {
 		return errors.New("actor unregister reminder invocation request param required")
@@ -228,7 +229,7 @@ func (c *GRPCClient) RegisterActorTimer(ctx context.Context, in *RegisterActorTi
 		return errors.Wrapf(err, "error invoking actor register timer %s/%s", in.ActorType, in.ActorID)
 	}
 
-	return
+	return nil
 }
 
 type UnregisterActorTimerRequest struct {
@@ -237,7 +238,7 @@ type UnregisterActorTimerRequest struct {
 	Name      string
 }
 
-// UnregisterActorTimer unregisters actor timer
+// UnregisterActorTimer unregisters actor timer.
 func (c *GRPCClient) UnregisterActorTimer(ctx context.Context, in *UnregisterActorTimerRequest) error {
 	if in == nil {
 		return errors.New("actor unregister timer invocation request param required")
@@ -307,7 +308,6 @@ func (c *GRPCClient) implActor(actor actor.Client, serializer codec.Codec) {
 			f.Set(reflect.MakeFunc(f.Type(), c.makeCallProxyFunction(actor, methodName, funcOuts, serializer)))
 		}
 	}
-
 }
 
 func (c *GRPCClient) makeCallProxyFunction(actor actor.Client, methodName string, outs []reflect.Type, serializer codec.Codec) func(in []reflect.Value) []reflect.Value {
@@ -334,7 +334,7 @@ func (c *GRPCClient) makeCallProxyFunction(actor actor.Client, methodName string
 				if !in[0].IsNil() {
 					invCtx = in[0].Interface().(context.Context)
 				}
-				start += 1
+				start++
 			}
 		}
 
@@ -368,7 +368,7 @@ func (c *GRPCClient) makeCallProxyFunction(actor actor.Client, methodName string
 
 		response := reply.Interface()
 		if rsp != nil {
-			if err := serializer.Unmarshal(rsp.Data, response); err != nil {
+			if err = serializer.Unmarshal(rsp.Data, response); err != nil {
 				fmt.Printf("[Actor] ERROR: unmarshal response err = %v\n", err)
 			}
 		}

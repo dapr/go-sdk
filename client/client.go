@@ -2,12 +2,13 @@ package client
 
 import (
 	"context"
-	"github.com/dapr/go-sdk/actor"
-	"github.com/dapr/go-sdk/actor/config"
 	"log"
 	"net"
 	"os"
 	"sync"
+
+	"github.com/dapr/go-sdk/actor"
+	"github.com/dapr/go-sdk/actor/config"
 
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
@@ -16,6 +17,7 @@ import (
 
 	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
 
+	// used to import codec implements.
 	_ "github.com/dapr/go-sdk/actor/codec/impl"
 )
 

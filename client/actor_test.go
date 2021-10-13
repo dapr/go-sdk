@@ -2,9 +2,12 @@ package client
 
 import (
 	"context"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
+
+const testActorType = "test"
 
 func TestInvokeActor(t *testing.T) {
 	ctx := context.Background()
@@ -12,7 +15,7 @@ func TestInvokeActor(t *testing.T) {
 		ActorID:   "fn",
 		Method:    "mockMethod",
 		Data:      []byte(`{hello}`),
-		ActorType: "test",
+		ActorType: testActorType,
 	}
 
 	t.Run("invoke actor without data ", func(t *testing.T) {
@@ -42,7 +45,7 @@ func TestInvokeActor(t *testing.T) {
 	t.Run("invoke actor without type", func(t *testing.T) {
 		in.ActorType = ""
 		out, err := testClient.InvokeActor(ctx, in)
-		in.ActorType = "test"
+		in.ActorType = testActorType
 		assert.NotNil(t, err)
 		assert.Nil(t, out)
 	})
@@ -60,7 +63,7 @@ func TestRegisterActorReminder(t *testing.T) {
 	in := &RegisterActorReminderRequest{
 		ActorID:   "fn",
 		Data:      []byte(`{hello}`),
-		ActorType: "test",
+		ActorType: testActorType,
 		Name:      "mockName",
 		Period:    "2s",
 		DueTime:   "4s",
@@ -69,7 +72,7 @@ func TestRegisterActorReminder(t *testing.T) {
 	t.Run("invoke register actor reminder without actorType", func(t *testing.T) {
 		in.ActorType = ""
 		err := testClient.RegisterActorReminder(ctx, in)
-		in.ActorType = "test"
+		in.ActorType = testActorType
 		assert.NotNil(t, err)
 	})
 
@@ -90,7 +93,7 @@ func TestRegisterActorReminder(t *testing.T) {
 	t.Run("invoke register actor reminder without period ", func(t *testing.T) {
 		in.ActorType = ""
 		err := testClient.RegisterActorReminder(ctx, in)
-		in.ActorType = "test"
+		in.ActorType = testActorType
 		assert.NotNil(t, err)
 	})
 
@@ -115,7 +118,7 @@ func TestRegisterActorTimer(t *testing.T) {
 	in := &RegisterActorTimerRequest{
 		ActorID:   "fn",
 		Data:      []byte(`{hello}`),
-		ActorType: "test",
+		ActorType: testActorType,
 		Name:      "mockName",
 		Period:    "2s",
 		DueTime:   "4s",
@@ -125,7 +128,7 @@ func TestRegisterActorTimer(t *testing.T) {
 	t.Run("invoke register actor timer without actorType", func(t *testing.T) {
 		in.ActorType = ""
 		err := testClient.RegisterActorTimer(ctx, in)
-		in.ActorType = "test"
+		in.ActorType = testActorType
 		assert.NotNil(t, err)
 	})
 
@@ -146,7 +149,7 @@ func TestRegisterActorTimer(t *testing.T) {
 	t.Run("invoke register actor timer without period ", func(t *testing.T) {
 		in.ActorType = ""
 		err := testClient.RegisterActorTimer(ctx, in)
-		in.ActorType = "test"
+		in.ActorType = testActorType
 		assert.NotNil(t, err)
 	})
 
@@ -184,14 +187,14 @@ func TestUnregisterActorReminder(t *testing.T) {
 	ctx := context.Background()
 	in := &UnregisterActorReminderRequest{
 		ActorID:   "fn",
-		ActorType: "test",
+		ActorType: testActorType,
 		Name:      "mockName",
 	}
 
 	t.Run("invoke unregister actor reminder without actorType", func(t *testing.T) {
 		in.ActorType = ""
 		err := testClient.UnregisterActorReminder(ctx, in)
-		in.ActorType = "test"
+		in.ActorType = testActorType
 		assert.NotNil(t, err)
 	})
 
@@ -212,7 +215,7 @@ func TestUnregisterActorReminder(t *testing.T) {
 	t.Run("invoke unregister actor reminder without period ", func(t *testing.T) {
 		in.ActorType = ""
 		err := testClient.UnregisterActorReminder(ctx, in)
-		in.ActorType = "test"
+		in.ActorType = testActorType
 		assert.NotNil(t, err)
 	})
 
@@ -229,14 +232,14 @@ func TestUnregisterActorTimer(t *testing.T) {
 	ctx := context.Background()
 	in := &UnregisterActorTimerRequest{
 		ActorID:   "fn",
-		ActorType: "test",
+		ActorType: testActorType,
 		Name:      "mockName",
 	}
 
 	t.Run("invoke unregister actor timer without actorType", func(t *testing.T) {
 		in.ActorType = ""
 		err := testClient.UnregisterActorTimer(ctx, in)
-		in.ActorType = "test"
+		in.ActorType = testActorType
 		assert.NotNil(t, err)
 	})
 
@@ -257,7 +260,7 @@ func TestUnregisterActorTimer(t *testing.T) {
 	t.Run("invoke register actor timer without period ", func(t *testing.T) {
 		in.ActorType = ""
 		err := testClient.UnregisterActorTimer(ctx, in)
-		in.ActorType = "test"
+		in.ActorType = testActorType
 		assert.NotNil(t, err)
 	})
 

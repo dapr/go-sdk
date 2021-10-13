@@ -4,7 +4,7 @@ import (
 	"sync"
 )
 
-// Client is the interface that should be impl by user's actor client
+// Client is the interface that should be impl by user's actor client.
 type Client interface {
 	// Type defines the type of the actor server to be invoke
 	Type() string
@@ -15,7 +15,7 @@ type Client interface {
 // Server is the interface that would be impl by user's actor server with ServerImplBase
 /*
 Actor user should only impls func Type() string, and his user-defined-method, Other function could be impl by
-combining  ServerImplBase
+combining  ServerImplBase.
 */
 type Server interface {
 	// ID is impl by ServerImplBase. It can be called by user defined actor function to get the actor ID of it's instance.
@@ -56,6 +56,7 @@ func (b *ServerImplBase) GetStateManager() StateManager {
 func (b *ServerImplBase) ID() string {
 	return b.id
 }
+
 func (b *ServerImplBase) SetID(id string) {
 	b.once.Do(func() {
 		b.id = id

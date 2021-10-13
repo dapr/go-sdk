@@ -1,9 +1,11 @@
 package config
 
 import (
-	"github.com/dapr/go-sdk/actor/codec/constant"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/dapr/go-sdk/actor/codec/constant"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestRegisterActorTimer(t *testing.T) {

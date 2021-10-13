@@ -4,15 +4,18 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	actorErr "github.com/dapr/go-sdk/actor/error"
-	"github.com/dapr/go-sdk/actor/runtime"
-	"github.com/gorilla/mux"
 	"io/ioutil"
 	"net/http"
 	"strings"
 
-	"github.com/dapr/go-sdk/service/common"
+	"github.com/gorilla/mux"
+
+	actorErr "github.com/dapr/go-sdk/actor/error"
+	"github.com/dapr/go-sdk/actor/runtime"
+
 	"github.com/pkg/errors"
+
+	"github.com/dapr/go-sdk/service/common"
 )
 
 const (
@@ -45,7 +48,7 @@ func (s *Server) registerBaseHandler() {
 
 	// register actor config handler
 	fRegister := func(w http.ResponseWriter, r *http.Request) {
-		data, err := runtime.GetActorRuntimeInstance().GetJsonSerializedConfig()
+		data, err := runtime.GetActorRuntimeInstance().GetJSONSerializedConfig()
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
@@ -84,7 +87,7 @@ func (s *Server) registerBaseHandler() {
 		varsMap := mux.Vars(r)
 		actorType := varsMap["actorType"]
 		actorID := varsMap["actorId"]
-		err := runtime.GetActorRuntimeInstance().Deactive(actorType, actorID)
+		err := runtime.GetActorRuntimeInstance().Deactivate(actorType, actorID)
 		if err == actorErr.ErrActorTypeNotFound || err == actorErr.ErrActorIDNotFound {
 			w.WriteHeader(http.StatusNotFound)
 		}

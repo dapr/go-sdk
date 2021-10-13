@@ -1,11 +1,13 @@
 package manager
 
 import (
-	actorErr "github.com/dapr/go-sdk/actor/error"
-	actorMock "github.com/dapr/go-sdk/actor/mock"
+	"testing"
+
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
-	"testing"
+
+	actorErr "github.com/dapr/go-sdk/actor/error"
+	actorMock "github.com/dapr/go-sdk/actor/mock"
 )
 
 const mockActorID = "mockActorID"
