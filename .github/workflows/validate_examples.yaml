@@ -91,7 +91,7 @@ jobs:
       - name: Check Examples
         run: |
           cd examples
-          ./validate.sh actor
           ./validate.sh hello-world
           ./validate.sh pubsub
           ./validate.sh service
+          ./validate.sh actor
