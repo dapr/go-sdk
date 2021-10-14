@@ -16,7 +16,7 @@ output_match_mode: substring
 expected_stdout_lines:
   - "ContentType:text/plain, Verb:POST, QueryString:, hellow"
 background: true
-sleep: 5
+sleep: 15
 -->
 
 ```bash
