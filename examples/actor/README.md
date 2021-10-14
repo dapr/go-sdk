@@ -27,7 +27,7 @@ expected_stdout_lines:
   - '== APP == receive reminder =  testReminderName  state =  "hello" duetime =  5s period =  5s'
   - '== APP == receive reminder =  testReminderName  state =  "hello" duetime =  5s period =  5s'
 background: true
-sleep: 10
+sleep: 60
 -->
 
 ```bash
@@ -68,7 +68,7 @@ expected_stdout_lines:
   - '== APP == get user = {Name: Age:10}'
 
 background: true
-sleep: 100
+sleep: 80
 -->
 
 ```bash
