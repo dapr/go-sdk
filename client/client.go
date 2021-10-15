@@ -6,6 +6,7 @@ import (
 	"net"
 	"os"
 	"sync"
+	"time"
 
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
@@ -141,7 +142,12 @@ func NewClientWithAddress(address string) (client Client, err error) {
 		return nil, errors.New("nil address")
 	}
 	logger.Printf("dapr client initializing for: %s", address)
-	conn, err := grpc.Dial(address, grpc.WithInsecure())
+	conn, err := grpc.Dial(
+		address,
+		grpc.WithInsecure(),
+		grpc.WithBlock(),
+		grpc.WithTimeout(1*time.Second),
+	)
 	if err != nil {
 		return nil, errors.Wrapf(err, "error creating connection to '%s': %v", address, err)
 	}

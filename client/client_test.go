@@ -35,6 +35,11 @@ func TestMain(m *testing.M) {
 }
 
 func TestNewClient(t *testing.T) {
+	t.Run("return error when unable to reach server", func(t *testing.T) {
+		_, err := NewClientWithPort("1")
+		assert.Error(t, err)
+	})
+
 	t.Run("no arg for with port", func(t *testing.T) {
 		_, err := NewClientWithPort("")
 		assert.Error(t, err)
@@ -46,18 +51,11 @@ func TestNewClient(t *testing.T) {
 	})
 
 	t.Run("new client closed with empty token", func(t *testing.T) {
-		c, err := NewClient()
-		assert.NoError(t, err)
-		defer c.Close()
-		c.WithAuthToken("")
+		testClient.WithAuthToken("")
 	})
 
 	t.Run("new client with trace ID", func(t *testing.T) {
-		c, err := NewClient()
-		assert.NoError(t, err)
-		defer c.Close()
-		ctx := c.WithTraceID(context.Background(), "")
-		_ = c.WithTraceID(ctx, "test")
+		_ = testClient.WithTraceID(context.Background(), "test")
 	})
 }
 
