@@ -142,40 +142,54 @@ func NewClientWithAddress(address string) (client Client, err error) {
 		return nil, errors.New("nil address")
 	}
 	logger.Printf("dapr client initializing for: %s", address)
-	conn, err := grpc.Dial(
+
+	ctx, ctxCancel := context.WithTimeout(context.Background(), 1*time.Second)
+	conn, err := grpc.DialContext(
+		ctx,
 		address,
 		grpc.WithInsecure(),
 		grpc.WithBlock(),
-		grpc.WithTimeout(1*time.Second),
 	)
 	if err != nil {
+		ctxCancel()
 		return nil, errors.Wrapf(err, "error creating connection to '%s': %v", address, err)
 	}
 	if hasToken := os.Getenv(apiTokenEnvVarName); hasToken != "" {
 		logger.Println("client uses API token")
 	}
-	return NewClientWithConnection(conn), nil
+
+	return newClientWithConnectionAndCancelFunc(conn, ctxCancel), nil
 }
 
 // NewClientWithConnection instantiates Dapr client using specific connection.
 func NewClientWithConnection(conn *grpc.ClientConn) Client {
+	return newClientWithConnectionAndCancelFunc(conn, func() {})
+}
+
+func newClientWithConnectionAndCancelFunc(
+	conn *grpc.ClientConn,
+	cancelFunc context.CancelFunc,
+) Client {
 	return &GRPCClient{
-		connection:  conn,
-		protoClient: pb.NewDaprClient(conn),
-		authToken:   os.Getenv(apiTokenEnvVarName),
+		connection:    conn,
+		ctxCancelFunc: cancelFunc,
+		protoClient:   pb.NewDaprClient(conn),
+		authToken:     os.Getenv(apiTokenEnvVarName),
 	}
 }
 
 // GRPCClient is the gRPC implementation of Dapr client.
 type GRPCClient struct {
-	connection  *grpc.ClientConn
-	protoClient pb.DaprClient
-	authToken   string
-	mux         sync.Mutex
+	connection    *grpc.ClientConn
+	ctxCancelFunc context.CancelFunc
+	protoClient   pb.DaprClient
+	authToken     string
+	mux           sync.Mutex
 }
 
 // Close cleans up all resources created by the client.
 func (c *GRPCClient) Close() {
+	c.ctxCancelFunc()
 	if c.connection != nil {
 		c.connection.Close()
 	}
