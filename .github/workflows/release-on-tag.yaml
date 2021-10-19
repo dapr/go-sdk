@@ -22,7 +22,7 @@ jobs:
 
     - name: Tidy
       run: |
-        go mod tidy
+        go mod tidy -compat=1.17
         go mod vendor
 
     - name: Test

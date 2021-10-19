@@ -20,7 +20,7 @@ import (
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
 
-	v1 "github.com/dapr/go-sdk/dapr/proto/common/v1"
+	v1 "github.com/dapr/dapr/pkg/proto/common/v1"
 )
 
 const (

@@ -10,7 +10,7 @@ import (
 	status "google.golang.org/grpc/status"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
 
-	v1 "github.com/dapr/go-sdk/dapr/proto/common/v1"
+	v1 "github.com/dapr/dapr/pkg/proto/common/v1"
 )
 
 // This is a compile-time assertion to ensure that this generated file
