@@ -20,7 +20,7 @@ output_match_mode: substring
 expected_stdout_lines:
   - 'event - PubsubName: messages, Topic: neworder'
 background: true
-sleep: 5
+sleep: 15
 -->
 
 ```bash
@@ -67,6 +67,7 @@ name: Shutdown dapr
 
 ```bash
 dapr stop --app-id sub
+(lsof -i:8080 | grep sub) | awk '{print $2}' | xargs  kill
 ```
 
 <!-- END_STEP -->

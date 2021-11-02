@@ -1,6 +1,6 @@
 module github.com/dapr/go-sdk
 
-go 1.17
+go 1.16
 
 require (
 	github.com/dapr/dapr v1.4.3
@@ -12,11 +12,7 @@ require (
 )
 
 require (
-	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/pmezard/go-difflib v1.0.0 // indirect
-	golang.org/x/net v0.0.0-20210614182718-04defd469f4e // indirect
-	golang.org/x/sys v0.0.0-20210616094352-59db8d763f22 // indirect
-	golang.org/x/text v0.3.6 // indirect
-	google.golang.org/genproto v0.0.0-20210524171403-669157292da3 // indirect
-	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
+	github.com/golang/mock v1.6.0
+	github.com/gorilla/mux v1.8.0
+	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 )

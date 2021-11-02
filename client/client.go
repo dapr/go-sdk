@@ -8,12 +8,18 @@ import (
 	"sync"
 	"time"
 
+	"github.com/dapr/go-sdk/actor"
+	"github.com/dapr/go-sdk/actor/config"
+
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/emptypb"
 
 	pb "github.com/dapr/dapr/pkg/proto/runtime/v1"
+
+	// used to import codec implements.
+	_ "github.com/dapr/go-sdk/actor/codec/impl"
 )
 
 const (
@@ -104,6 +110,30 @@ type Client interface {
 
 	// Close cleans up all resources created by the client.
 	Close()
+
+	// RegisterActorTimer registers an actor timer.
+	RegisterActorTimer(ctx context.Context, req *RegisterActorTimerRequest) error
+
+	// UnregisterActorTimer unregisters an actor timer.
+	UnregisterActorTimer(ctx context.Context, req *UnregisterActorTimerRequest) error
+
+	// RegisterActorReminder registers an actor reminder.
+	RegisterActorReminder(ctx context.Context, req *RegisterActorReminderRequest) error
+
+	// UnregisterActorReminder unregisters an actor reminder.
+	UnregisterActorReminder(ctx context.Context, req *UnregisterActorReminderRequest) error
+
+	// InvokeActor calls a method on an actor.
+	InvokeActor(ctx context.Context, req *InvokeActorRequest) (*InvokeActorResponse, error)
+
+	// GetActorState get actor state
+	GetActorState(ctx context.Context, req *GetActorStateRequest) (data *GetActorStateResponse, err error)
+
+	// SaveStateTransactionally save actor state
+	SaveStateTransactionally(ctx context.Context, actorType, actorID string, operations []*ActorStateOperation) error
+
+	// ImplActorClientStub is to impl user defined actor client stub
+	ImplActorClientStub(actorClientStub actor.Client, opt ...config.Option)
 }
 
 // NewClient instantiates Dapr client using DAPR_GRPC_PORT environment variable as port.
