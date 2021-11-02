@@ -67,7 +67,7 @@ func main() {
 		panic(err)
 	}
 	fmt.Println("start timer")
-	<-time.After(time.Second * 30) // timer call for six times
+	<-time.After(time.Second * 10) // timer call for twice
 
 	// Invoke user defined method StopTimer, and server side actor stop actor timer with given params.
 	err = myActor.StopTimer(ctx, &api.TimerRequest{
@@ -90,7 +90,7 @@ func main() {
 		panic(err)
 	}
 	fmt.Println("start reminder")
-	<-time.After(time.Second * 30) // timer call for six times
+	<-time.After(time.Second * 10) // timer call for twice
 
 	// Invoke user defined method StopReminder, and server side actor stop actor reminder with given params.
 	err = myActor.StopReminder(ctx, &api.ReminderRequest{
@@ -101,7 +101,7 @@ func main() {
 	}
 	fmt.Println("stop reminder")
 
-	for i := 0; i < 10; i++ {
+	for i := 0; i < 2; i++ {
 		// Invoke user defined method IncrementAndGet, and server side actor increase the state named testStateKey and return.
 		usr, err := myActor.IncrementAndGet(ctx, "testStateKey")
 		if err != nil {

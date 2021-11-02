@@ -164,6 +164,7 @@ name: Shutdown dapr
 
 ```bash
 dapr stop --app-id serving
+(lsof -i:8080 | grep main) | awk '{print $2}' | xargs  kill
 ```
 
 <!-- END_STEP -->

@@ -67,6 +67,7 @@ name: Shutdown dapr
 
 ```bash
 dapr stop --app-id sub
+(lsof -i:8080 | grep sub) | awk '{print $2}' | xargs  kill
 ```
 
 <!-- END_STEP -->

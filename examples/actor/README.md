@@ -17,17 +17,10 @@ expected_stdout_lines:
   - '== APP == get post request =  laurence'
   - '== APP == get req =  hello'
   - '== APP == get req =  hello'
-  - '== APP == get req =  hello'
-  - '== APP == get req =  hello'
-  - '== APP == get req =  hello'
-  - '== APP == receive reminder =  testReminderName  state =  "hello" duetime =  5s period =  5s'
-  - '== APP == receive reminder =  testReminderName  state =  "hello" duetime =  5s period =  5s'
-  - '== APP == receive reminder =  testReminderName  state =  "hello" duetime =  5s period =  5s'
-  - '== APP == receive reminder =  testReminderName  state =  "hello" duetime =  5s period =  5s'
   - '== APP == receive reminder =  testReminderName  state =  "hello" duetime =  5s period =  5s'
   - '== APP == receive reminder =  testReminderName  state =  "hello" duetime =  5s period =  5s'
 background: true
-sleep: 60
+sleep: 5
 -->
 
 ```bash
@@ -58,17 +51,9 @@ expected_stdout_lines:
   - '== APP == stop reminder'
   - '== APP == get user = {Name: Age:1}'
   - '== APP == get user = {Name: Age:2}'
-  - '== APP == get user = {Name: Age:3}'
-  - '== APP == get user = {Name: Age:4}'
-  - '== APP == get user = {Name: Age:5}'
-  - '== APP == get user = {Name: Age:6}'
-  - '== APP == get user = {Name: Age:7}'
-  - '== APP == get user = {Name: Age:8}'
-  - '== APP == get user = {Name: Age:9}'
-  - '== APP == get user = {Name: Age:10}'
 
 background: true
-sleep: 80
+sleep: 40
 -->
 
 ```bash
@@ -91,6 +76,7 @@ name: Shutdown dapr
 
 ```bash
 dapr stop --app-id  actor-serving
+(lsof -i:8080 | grep main) | awk '{print $2}' | xargs  kill
 ```
 
 <!-- END_STEP -->
@@ -109,14 +95,6 @@ dapr stop --app-id  actor-serving
 == APP == stop reminder
 == APP == get user = {Name: Age:1}
 == APP == get user = {Name: Age:2}
-== APP == get user = {Name: Age:3}
-== APP == get user = {Name: Age:4}
-== APP == get user = {Name: Age:5}
-== APP == get user = {Name: Age:6}
-== APP == get user = {Name: Age:7}
-== APP == get user = {Name: Age:8}
-== APP == get user = {Name: Age:9}
-== APP == get user = {Name: Age:10}
 ✅  Exited App successfully
 
 ```
@@ -128,13 +106,6 @@ dapr stop --app-id  actor-serving
 == APP == get post request =  laurence
 == APP == get req =  hello
 == APP == get req =  hello
-== APP == get req =  hello
-== APP == get req =  hello
-== APP == get req =  hello
-== APP == receive reminder =  testReminderName  state =  "hello" duetime =  5s period =  5s
-== APP == receive reminder =  testReminderName  state =  "hello" duetime =  5s period =  5s
-== APP == receive reminder =  testReminderName  state =  "hello" duetime =  5s period =  5s
-== APP == receive reminder =  testReminderName  state =  "hello" duetime =  5s period =  5s
 == APP == receive reminder =  testReminderName  state =  "hello" duetime =  5s period =  5s
 == APP == receive reminder =  testReminderName  state =  "hello" duetime =  5s period =  5s
 ```
