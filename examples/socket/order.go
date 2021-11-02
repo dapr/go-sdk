@@ -12,7 +12,7 @@ import (
 
 const (
 	stateStoreName = `statestore`
-	socket         = "/tmp/dapr.socket"
+	socket         = "/tmp/dapr-order-app-grpc.socket"
 )
 
 func main() {
@@ -24,7 +24,7 @@ func main() {
 	kingpin.Command("seq", "Stream sequence of orders.")
 
 	// create the client
-	client, err := dapr.NewClientWithPort(socket)
+	client, err := dapr.NewClientWithSocket(socket)
 	if err != nil {
 		panic(err)
 	}
