@@ -11,17 +11,17 @@ type Codec interface {
 // Factory is factory of codec.
 type Factory func() Codec
 
-// codecFacotryMap stores.
-var codecFacotryMap = make(map[string]Factory)
+// codecFactoryMap stores.
+var codecFactoryMap = make(map[string]Factory)
 
 // SetActorCodec set Actor's Codec.
 func SetActorCodec(name string, f Factory) {
-	codecFacotryMap[name] = f
+	codecFactoryMap[name] = f
 }
 
 // GetActorCodec gets the target codec instance.
 func GetActorCodec(name string) (Codec, error) {
-	f, ok := codecFacotryMap[name]
+	f, ok := codecFactoryMap[name]
 	if !ok {
 		return nil, perrors.Errorf("no actor codec implement named %s", name)
 	}
