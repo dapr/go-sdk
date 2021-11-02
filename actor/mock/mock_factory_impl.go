@@ -4,22 +4,14 @@ import (
 	"context"
 
 	"github.com/dapr/go-sdk/actor"
-	dapr "github.com/dapr/go-sdk/client"
 )
 
 func ActorImplFactory() actor.Server {
-	client, err := dapr.NewClient()
-	if err != nil {
-		panic(err)
-	}
-	return &ActorImpl{
-		daprClient: client,
-	}
+	return &ActorImpl{}
 }
 
 type ActorImpl struct {
 	actor.ServerImplBase
-	daprClient dapr.Client
 }
 
 func (t *ActorImpl) Type() string {
@@ -34,18 +26,11 @@ func (t *ActorImpl) ReminderCall(reminderName string, state []byte, dueTime stri
 }
 
 func NotReminderCalleeActorFactory() actor.Server {
-	client, err := dapr.NewClient()
-	if err != nil {
-		panic(err)
-	}
-	return &NotReminderCalleeActor{
-		daprClient: client,
-	}
+	return &NotReminderCalleeActor{}
 }
 
 type NotReminderCalleeActor struct {
 	actor.ServerImplBase
-	daprClient dapr.Client
 }
 
 func (t *NotReminderCalleeActor) Type() string {
