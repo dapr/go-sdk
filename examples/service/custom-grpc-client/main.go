@@ -3,10 +3,11 @@ package main
 import (
 	"context"
 	"fmt"
-	"google.golang.org/grpc"
 	"net"
 	"os"
 	"time"
+
+	"google.golang.org/grpc"
 
 	dapr "github.com/dapr/go-sdk/client"
 )
@@ -29,7 +30,6 @@ func main() {
 	conn, err := grpc.Dial(net.JoinHostPort("127.0.0.1",
 		GetEnvValue("DAPR_GRPC_PORT", "50001")),
 		grpc.WithDefaultCallOptions(opts...), grpc.WithInsecure())
-
 	if err != nil {
 		panic(err)
 	}

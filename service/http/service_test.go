@@ -1,6 +1,7 @@
 package http
 
 import (
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -62,4 +63,16 @@ func testRequest(t *testing.T, s *Server, r *http.Request, expectedStatusCode in
 	defer resp.Body.Close()
 	assert.NotNil(t, resp)
 	assert.Equal(t, expectedStatusCode, resp.StatusCode)
+}
+
+func testRequestWithResponseBody(t *testing.T, s *Server, r *http.Request, expectedStatusCode int, expectedBody []byte) {
+	rr := httptest.NewRecorder()
+	s.mux.ServeHTTP(rr, r)
+	rez := rr.Result()
+	defer rez.Body.Close()
+	rspBody, err := io.ReadAll(rez.Body)
+	assert.Nil(t, err)
+	assert.NotNil(t, rez)
+	assert.Equal(t, expectedStatusCode, rez.StatusCode)
+	assert.Equal(t, expectedBody, rspBody)
 }

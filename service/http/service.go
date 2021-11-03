@@ -5,6 +5,12 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/gorilla/mux"
+
+	"github.com/dapr/go-sdk/actor"
+	"github.com/dapr/go-sdk/actor/config"
+	"github.com/dapr/go-sdk/actor/runtime"
+
 	"github.com/dapr/go-sdk/service/common"
 )
 
@@ -14,21 +20,21 @@ func NewService(address string) common.Service {
 }
 
 // NewServiceWithMux creates new Service with existing http mux.
-func NewServiceWithMux(address string, mux *http.ServeMux) common.Service {
+func NewServiceWithMux(address string, mux *mux.Router) common.Service {
 	return newServer(address, mux)
 }
 
-func newServer(address string, mux *http.ServeMux) *Server {
-	if mux == nil {
-		mux = http.NewServeMux()
+func newServer(address string, router *mux.Router) *Server {
+	if router == nil {
+		router = mux.NewRouter()
 	}
 	return &Server{
 		address: address,
 		httpServer: &http.Server{
 			Addr:    address,
-			Handler: mux,
+			Handler: router,
 		},
-		mux:                mux,
+		mux:                router,
 		topicSubscriptions: make([]*common.Subscription, 0),
 	}
 }
@@ -36,14 +42,18 @@ func newServer(address string, mux *http.ServeMux) *Server {
 // Server is the HTTP server wrapping mux many Dapr helpers.
 type Server struct {
 	address            string
-	mux                *http.ServeMux
+	mux                *mux.Router
 	httpServer         *http.Server
 	topicSubscriptions []*common.Subscription
 }
 
+func (s *Server) RegisterActorImplFactory(f actor.Factory, opts ...config.Option) {
+	runtime.GetActorRuntimeInstance().RegisterActorFactory(f, opts...)
+}
+
 // Start starts the HTTP handler. Blocks while serving.
 func (s *Server) Start() error {
-	s.registerSubscribeHandler()
+	s.registerBaseHandler()
 	return s.httpServer.ListenAndServe()
 }
 

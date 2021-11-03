@@ -4,12 +4,14 @@ import (
 	"context"
 	"net"
 
+	pb "github.com/dapr/dapr/pkg/proto/runtime/v1"
+	"github.com/dapr/go-sdk/actor"
+	"github.com/dapr/go-sdk/actor/config"
+	"github.com/dapr/go-sdk/service/common"
+
 	"github.com/pkg/errors"
 
 	"google.golang.org/grpc"
-
-	pb "github.com/dapr/dapr/pkg/proto/runtime/v1"
-	"github.com/dapr/go-sdk/service/common"
 )
 
 // NewService creates new Service.
@@ -47,6 +49,10 @@ type Server struct {
 	invokeHandlers     map[string]func(ctx context.Context, in *common.InvocationEvent) (out *common.Content, err error)
 	topicSubscriptions map[string]*topicEventHandler
 	bindingHandlers    map[string]func(ctx context.Context, in *common.BindingEvent) (out []byte, err error)
+}
+
+func (s *Server) RegisterActorImplFactory(f actor.Factory, opts ...config.Option) {
+	panic("Actor is not supported by gRPC API")
 }
 
 type topicEventHandler struct {
