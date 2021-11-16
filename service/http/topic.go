@@ -57,7 +57,6 @@ func (s *Server) registerBaseHandler() {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
-		w.WriteHeader(http.StatusOK)
 	}
 	s.mux.HandleFunc("/dapr/config", fRegister).Methods(http.MethodGet)
 
