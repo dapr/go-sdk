@@ -2,10 +2,12 @@ package grpc
 
 import (
 	"context"
+	"os"
 	"testing"
 
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/anypb"
 
 	"github.com/dapr/dapr/pkg/proto/common/v1"
@@ -33,6 +35,39 @@ func TestInvokeErrors(t *testing.T) {
 	assert.Error(t, err)
 	err = server.AddServiceInvocationHandler("test", nil)
 	assert.Error(t, err)
+}
+
+func TestInvokeWithToken(t *testing.T) {
+	_ = os.Setenv(cc.AppAPITokenEnvVar, "app-dapr-token")
+	server := getTestServer()
+	startTestServer(server)
+	methodName := "test"
+	err := server.AddServiceInvocationHandler(methodName, testInvokeHandler)
+	assert.Nil(t, err)
+	t.Run("invoke with token, return success", func(t *testing.T) {
+		grpcMetadata := metadata.New(map[string]string{
+			cc.ApiTokenKey: os.Getenv(cc.AppAPITokenEnvVar),
+		})
+		ctx := metadata.NewIncomingContext(context.Background(), grpcMetadata)
+		in := &common.InvokeRequest{Method: methodName}
+		_, err := server.OnInvoke(ctx, in)
+		assert.Nil(t, err)
+	})
+	t.Run("invoke with empty token, return failed", func(t *testing.T) {
+		in := &common.InvokeRequest{Method: methodName}
+		_, err := server.OnInvoke(context.Background(), in)
+		assert.Error(t, err)
+	})
+	t.Run("invoke with mismatch token, return failed", func(t *testing.T) {
+		grpcMetadata := metadata.New(map[string]string{
+			cc.ApiTokenKey: "mismatch-token",
+		})
+		ctx := metadata.NewOutgoingContext(context.Background(), grpcMetadata)
+		in := &common.InvokeRequest{Method: methodName}
+		_, err := server.OnInvoke(ctx, in)
+		assert.Error(t, err)
+	})
+	_ = os.Unsetenv(cc.AppAPITokenEnvVar)
 }
 
 // go test -timeout 30s ./service/grpc -count 1 -run ^TestInvoke$

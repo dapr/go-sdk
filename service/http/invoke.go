@@ -25,6 +25,14 @@ func (s *Server) AddServiceInvocationHandler(route string, fn func(ctx context.C
 
 	s.mux.Handle(route, optionsHandler(http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
+			if s.authToken != "" {
+				token := r.Header.Get(common.ApiTokenKey)
+				if token == "" || token != s.authToken {
+					http.Error(w, "authentication failed.", http.StatusNonAuthoritativeInfo)
+					return
+				}
+
+			}
 			// capture http args
 			e := &common.InvocationEvent{
 				Verb:        r.Method,

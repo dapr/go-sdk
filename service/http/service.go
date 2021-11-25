@@ -3,6 +3,7 @@ package http
 import (
 	"context"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -36,11 +37,13 @@ func newServer(address string, router *mux.Router) *Server {
 		},
 		mux:                router,
 		topicSubscriptions: make([]*common.Subscription, 0),
+		authToken:          os.Getenv(common.AppAPITokenEnvVar),
 	}
 }
 
 // Server is the HTTP server wrapping mux many Dapr helpers.
 type Server struct {
+	authToken          string
 	address            string
 	mux                *mux.Router
 	httpServer         *http.Server

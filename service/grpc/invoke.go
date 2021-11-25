@@ -6,6 +6,7 @@ import (
 
 	"github.com/golang/protobuf/ptypes/any"
 	"github.com/pkg/errors"
+	"google.golang.org/grpc/metadata"
 
 	cpb "github.com/dapr/dapr/pkg/proto/common/v1"
 	cc "github.com/dapr/go-sdk/service/common"
@@ -27,6 +28,17 @@ func (s *Server) AddServiceInvocationHandler(method string, fn func(ctx context.
 func (s *Server) OnInvoke(ctx context.Context, in *cpb.InvokeRequest) (*cpb.InvokeResponse, error) {
 	if in == nil {
 		return nil, errors.New("nil invoke request")
+	}
+	if s.authToken != "" {
+		if md, ok := metadata.FromIncomingContext(ctx); !ok {
+			return nil, errors.New("authentication failed.")
+		} else if vals := md.Get(cc.ApiTokenKey); len(vals) > 0 {
+			if vals[0] != s.authToken {
+				return nil, errors.New("authentication failed: app token mismatch")
+			}
+		} else {
+			return nil, errors.New("authentication failed. app token key not exist")
+		}
 	}
 	if fn, ok := s.invokeHandlers[in.Method]; ok {
 		e := &cc.InvocationEvent{}

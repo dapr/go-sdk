@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"strings"
 	"testing"
 
@@ -18,6 +19,41 @@ func TestInvocationHandlerWithoutHandler(t *testing.T) {
 	s := newServer("", nil)
 	err := s.AddServiceInvocationHandler("/", nil)
 	assert.Errorf(t, err, "expected error adding event handler")
+}
+
+func TestInvocationHandlerWithToken(t *testing.T) {
+	data := `{"name": "test", "data": hellow}`
+	_ = os.Setenv(common.AppAPITokenEnvVar, "app-dapr-token")
+	s := newServer("", nil)
+	err := s.AddServiceInvocationHandler("/", func(ctx context.Context, in *common.InvocationEvent) (out *common.Content, err error) {
+		if in == nil || in.Data == nil || in.ContentType == "" {
+			err = errors.New("nil input")
+			return
+		}
+		out = &common.Content{
+			Data:        in.Data,
+			ContentType: in.ContentType,
+			DataTypeURL: in.DataTypeURL,
+		}
+		return
+	})
+	assert.NoErrorf(t, err, "error adding event handler")
+
+	// forbbiden.
+	req, err := http.NewRequest(http.MethodPost, "/", strings.NewReader(data))
+	assert.NoErrorf(t, err, "error creating request")
+	req.Header.Set("Content-Type", "application/json")
+
+	resp := httptest.NewRecorder()
+	s.mux.ServeHTTP(resp, req)
+	assert.Equal(t, http.StatusNonAuthoritativeInfo, resp.Code)
+
+	// pass.
+	req.Header.Set(common.ApiTokenKey, os.Getenv(common.AppAPITokenEnvVar))
+	resp = httptest.NewRecorder()
+	s.mux.ServeHTTP(resp, req)
+	assert.Equal(t, http.StatusOK, resp.Code)
+	_ = os.Unsetenv(common.AppAPITokenEnvVar)
 }
 
 func TestInvocationHandlerWithData(t *testing.T) {

@@ -7,6 +7,12 @@ import (
 	"github.com/dapr/go-sdk/actor/config"
 )
 
+const (
+	// AppAPITokenEnvVar is the environment variable for app api token.
+	AppAPITokenEnvVar = "APP_API_TOKEN"
+	ApiTokenKey       = "dapr-api-token" /* #nosec */
+)
+
 // Service represents Dapr callback service.
 type Service interface {
 	// AddServiceInvocationHandler appends provided service invocation handler with its name to the service.
