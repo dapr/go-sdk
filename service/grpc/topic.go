@@ -25,40 +25,31 @@ import (
 
 	pb "github.com/dapr/dapr/pkg/proto/runtime/v1"
 	"github.com/dapr/go-sdk/service/common"
+	"github.com/dapr/go-sdk/service/internal"
 )
 
 // AddTopicEventHandler appends provided event handler with topic name to the service.
-func (s *Server) AddTopicEventHandler(sub *common.Subscription, fn func(ctx context.Context, e *common.TopicEvent) (retry bool, err error)) error {
+func (s *Server) AddTopicEventHandler(sub *common.Subscription, fn common.TopicEventHandler) error {
 	if sub == nil {
 		return errors.New("subscription required")
 	}
-	if sub.Topic == "" {
-		return errors.New("topic name required")
+	if err := s.topicRegistrar.AddSubscription(sub, fn); err != nil {
+		return err
 	}
-	if sub.PubsubName == "" {
-		return errors.New("pub/sub name required")
-	}
-	if fn == nil {
-		return fmt.Errorf("topic handler required")
-	}
-	key := fmt.Sprintf("%s-%s", sub.PubsubName, sub.Topic)
-	s.topicSubscriptions[key] = &topicEventHandler{
-		component: sub.PubsubName,
-		topic:     sub.Topic,
-		fn:        fn,
-		meta:      sub.Metadata,
-	}
+
 	return nil
 }
 
 // ListTopicSubscriptions is called by Dapr to get the list of topics in a pubsub component the app wants to subscribe to.
 func (s *Server) ListTopicSubscriptions(ctx context.Context, in *empty.Empty) (*pb.ListTopicSubscriptionsResponse, error) {
 	subs := make([]*pb.TopicSubscription, 0)
-	for _, v := range s.topicSubscriptions {
+	for _, v := range s.topicRegistrar {
+		s := v.Subscription
 		sub := &pb.TopicSubscription{
-			PubsubName: v.component,
-			Topic:      v.topic,
-			Metadata:   v.meta,
+			PubsubName: s.PubsubName,
+			Topic:      s.Topic,
+			Metadata:   s.Metadata,
+			Routes:     convertRoutes(s.Routes),
 		}
 		subs = append(subs, sub)
 	}
@@ -66,6 +57,23 @@ func (s *Server) ListTopicSubscriptions(ctx context.Context, in *empty.Empty) (*
 	return &pb.ListTopicSubscriptionsResponse{
 		Subscriptions: subs,
 	}, nil
+}
+
+func convertRoutes(routes *internal.TopicRoutes) *pb.TopicRoutes {
+	if routes == nil {
+		return nil
+	}
+	rules := make([]*pb.TopicRule, len(routes.Rules))
+	for i, rule := range routes.Rules {
+		rules[i] = &pb.TopicRule{
+			Match: rule.Match,
+			Path:  rule.Path,
+		}
+	}
+	return &pb.TopicRoutes{
+		Rules:   rules,
+		Default: routes.Default,
+	}
 }
 
 // OnTopicEvent fired whenever a message has been published to a topic that has been subscribed.
@@ -76,8 +84,8 @@ func (s *Server) OnTopicEvent(ctx context.Context, in *pb.TopicEventRequest) (*p
 		// since Dapr will not get updated until long after this event expires, just drop it
 		return &pb.TopicEventResponse{Status: pb.TopicEventResponse_DROP}, errors.New("pub/sub and topic names required")
 	}
-	key := fmt.Sprintf("%s-%s", in.PubsubName, in.Topic)
-	if h, ok := s.topicSubscriptions[key]; ok {
+	key := in.PubsubName + "-" + in.Topic
+	if sub, ok := s.topicRegistrar[key]; ok {
 		data := interface{}(in.Data)
 		if len(in.Data) > 0 {
 			mediaType, _, err := mime.ParseMediaType(in.DataContentType)
@@ -113,7 +121,19 @@ func (s *Server) OnTopicEvent(ctx context.Context, in *pb.TopicEventRequest) (*p
 			Topic:           in.Topic,
 			PubsubName:      in.PubsubName,
 		}
-		retry, err := h.fn(ctx, e)
+		h := sub.DefaultHandler
+		if in.Path != "" {
+			if pathHandler, ok := sub.RouteHandlers[in.Path]; ok {
+				h = pathHandler
+			}
+		}
+		if h == nil {
+			return &pb.TopicEventResponse{Status: pb.TopicEventResponse_RETRY}, fmt.Errorf(
+				"route %s for pub/sub and topic combination not configured: %s/%s",
+				in.Path, in.PubsubName, in.Topic,
+			)
+		}
+		retry, err := h(ctx, e)
 		if err == nil {
 			return &pb.TopicEventResponse{Status: pb.TopicEventResponse_SUCCESS}, nil
 		}

@@ -29,12 +29,12 @@ const (
 // Service represents Dapr callback service.
 type Service interface {
 	// AddServiceInvocationHandler appends provided service invocation handler with its name to the service.
-	AddServiceInvocationHandler(name string, fn func(ctx context.Context, in *InvocationEvent) (out *Content, err error)) error
+	AddServiceInvocationHandler(name string, fn ServiceInvocationHandler) error
 	// AddTopicEventHandler appends provided event handler with its topic and optional metadata to the service.
 	// Note, retries are only considered when there is an error. Lack of error is considered as a success
-	AddTopicEventHandler(sub *Subscription, fn func(ctx context.Context, e *TopicEvent) (retry bool, err error)) error
+	AddTopicEventHandler(sub *Subscription, fn TopicEventHandler) error
 	// AddBindingInvocationHandler appends provided binding invocation handler with its name to the service.
-	AddBindingInvocationHandler(name string, fn func(ctx context.Context, in *BindingEvent) (out []byte, err error)) error
+	AddBindingInvocationHandler(name string, fn BindingInvocationHandler) error
 	// RegisterActorImplFactory Register a new actor to actor runtime of go sdk
 	RegisterActorImplFactory(f actor.Factory, opts ...config.Option)
 	// Start starts service.
@@ -42,3 +42,9 @@ type Service interface {
 	// Stop stops the previously started service.
 	Stop() error
 }
+
+type (
+	ServiceInvocationHandler func(ctx context.Context, in *InvocationEvent) (out *Content, err error)
+	TopicEventHandler        func(ctx context.Context, e *TopicEvent) (retry bool, err error)
+	BindingInvocationHandler func(ctx context.Context, in *BindingEvent) (out []byte, err error)
+)

@@ -26,16 +26,31 @@ import (
 // - PubsubName: is the name of the component configured in the metadata of pubsub.yaml.
 // - Topic: is the name of the topic to subscribe.
 // - Route: tell dapr where to request the API to publish the message to the subscriber when get a message from topic.
-var sub = &common.Subscription{
+// - Match: (Optional) The CEL expression to match on the CloudEvent to select this route.
+// - Priority: (Optional) The priority order of the route when Match is specificed.
+//             If not specified, the matches are evaluated in the order in which they are added.
+var defaultSubscription = &common.Subscription{
 	PubsubName: "messages",
 	Topic:      "neworder",
 	Route:      "/orders",
 }
 
+var importantSubscription = &common.Subscription{
+	PubsubName: "messages",
+	Topic:      "neworder",
+	Route:      "/important",
+	Match:      `event.type == "important"`,
+	Priority:   1,
+}
+
 func main() {
 	s := daprd.NewService(":8080")
 
-	if err := s.AddTopicEventHandler(sub, eventHandler); err != nil {
+	if err := s.AddTopicEventHandler(defaultSubscription, eventHandler); err != nil {
+		log.Fatalf("error adding topic subscription: %v", err)
+	}
+
+	if err := s.AddTopicEventHandler(importantSubscription, importantEventHandler); err != nil {
 		log.Fatalf("error adding topic subscription: %v", err)
 	}
 
@@ -46,5 +61,10 @@ func main() {
 
 func eventHandler(ctx context.Context, e *common.TopicEvent) (retry bool, err error) {
 	log.Printf("event - PubsubName: %s, Topic: %s, ID: %s, Data: %s", e.PubsubName, e.Topic, e.ID, e.Data)
+	return false, nil
+}
+
+func importantEventHandler(ctx context.Context, e *common.TopicEvent) (retry bool, err error) {
+	log.Printf("important event - PubsubName: %s, Topic: %s, ID: %s, Data: %s", e.PubsubName, e.Topic, e.ID, e.Data)
 	return false, nil
 }

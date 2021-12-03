@@ -43,8 +43,8 @@ To handle events from specific topic you need to add at least one topic event ha
 ```go
 sub := &common.Subscription{
 	PubsubName: "messages",
-	Topic: "topic1",
-	Route: "/events",
+	Topic:      "topic1",
+	Route:      "/events",
 }
 err := s.AddTopicEventHandler(sub, eventHandler)
 if err != nil {
@@ -59,6 +59,22 @@ func eventHandler(ctx context.Context, e *common.TopicEvent) (retry bool, err er
 	log.Printf("event - PubsubName:%s, Topic:%s, ID:%s, Data: %v", e.PubsubName, e.Topic, e.ID, e.Data)
 	// do something with the event
 	return true, nil
+}
+```
+
+Optionally, you can use [routing rules](https://docs.dapr.io/developing-applications/building-blocks/pubsub/howto-route-messages/) to send messages to different handlers based on the contents of the CloudEvent.
+
+```go
+sub := &common.Subscription{
+	PubsubName: "messages",
+	Topic:      "topic1",
+	Route:      "/important",
+	Match:      `event.type == "important"`,
+	Priority:   1,
+}
+err := s.AddTopicEventHandler(sub, importantHandler)
+if err != nil {
+	log.Fatalf("error adding topic subscription: %v", err)
 }
 ```
 

@@ -44,17 +44,51 @@ func TestTopicErrors(t *testing.T) {
 }
 
 func TestTopicSubscriptionList(t *testing.T) {
-	sub := &common.Subscription{
+	server := getTestServer()
+
+	// Add default route.
+	sub1 := &common.Subscription{
 		PubsubName: "messages",
 		Topic:      "test",
+		Route:      "/test",
 	}
-	server := getTestServer()
-	err := server.AddTopicEventHandler(sub, eventHandler)
+	err := server.AddTopicEventHandler(sub1, eventHandler)
 	assert.Nil(t, err)
 	resp, err := server.ListTopicSubscriptions(context.Background(), &empty.Empty{})
 	assert.NoError(t, err)
 	assert.NotNil(t, resp)
-	assert.Lenf(t, resp.Subscriptions, 1, "expected 1 handlers")
+	if assert.Lenf(t, resp.Subscriptions, 1, "expected 1 handlers") {
+		sub := resp.Subscriptions[0]
+		assert.Equal(t, "messages", sub.PubsubName)
+		assert.Equal(t, "test", sub.Topic)
+		assert.Nil(t, sub.Routes)
+	}
+
+	// Add routing rule.
+	sub2 := &common.Subscription{
+		PubsubName: "messages",
+		Topic:      "test",
+		Route:      "/other",
+		Match:      `event.type == "other"`,
+	}
+	err = server.AddTopicEventHandler(sub2, eventHandler)
+	assert.Nil(t, err)
+	resp, err = server.ListTopicSubscriptions(context.Background(), &empty.Empty{})
+	assert.NoError(t, err)
+	assert.NotNil(t, resp)
+	if assert.Lenf(t, resp.Subscriptions, 1, "expected 1 handlers") {
+		sub := resp.Subscriptions[0]
+		assert.Equal(t, "messages", sub.PubsubName)
+		assert.Equal(t, "test", sub.Topic)
+		if assert.NotNil(t, sub.Routes) {
+			assert.Equal(t, "/test", sub.Routes.Default)
+			if assert.Len(t, sub.Routes.Rules, 1) {
+				rule := sub.Routes.Rules[0]
+				assert.Equal(t, "/other", rule.Path)
+				assert.Equal(t, `event.type == "other"`, rule.Match)
+			}
+		}
+	}
 }
 
 // go test -timeout 30s ./service/grpc -count 1 -run ^TestTopic$

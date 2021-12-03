@@ -14,7 +14,6 @@ limitations under the License.
 package http
 
 import (
-	"context"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -24,7 +23,7 @@ import (
 )
 
 // AddServiceInvocationHandler appends provided service invocation handler with its route to the service.
-func (s *Server) AddServiceInvocationHandler(route string, fn func(ctx context.Context, in *common.InvocationEvent) (out *common.Content, err error)) error {
+func (s *Server) AddServiceInvocationHandler(route string, fn common.ServiceInvocationHandler) error {
 	if route == "" {
 		return fmt.Errorf("service route required")
 	}

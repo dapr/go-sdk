@@ -14,22 +14,18 @@ limitations under the License.
 package http
 
 import (
-	"context"
 	"encoding/base64"
 	"encoding/json"
-	"fmt"
+	"errors"
 	"io/ioutil"
 	"net/http"
-	"strings"
 
 	"github.com/gorilla/mux"
 
 	actorErr "github.com/dapr/go-sdk/actor/error"
 	"github.com/dapr/go-sdk/actor/runtime"
-
-	"github.com/pkg/errors"
-
 	"github.com/dapr/go-sdk/service/common"
+	"github.com/dapr/go-sdk/service/internal"
 )
 
 const (
@@ -74,8 +70,12 @@ type topicEventJSON struct {
 func (s *Server) registerBaseHandler() {
 	// register subscribe handler
 	f := func(w http.ResponseWriter, r *http.Request) {
+		subs := make([]*internal.TopicSubscription, 0, len(s.topicRegistrar))
+		for _, s := range s.topicRegistrar {
+			subs = append(subs, s.Subscription)
+		}
 		w.Header().Set("Content-Type", "application/json")
-		if err := json.NewEncoder(w).Encode(s.topicSubscriptions); err != nil {
+		if err := json.NewEncoder(w).Encode(subs); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -95,11 +95,10 @@ func (s *Server) registerBaseHandler() {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
+		w.WriteHeader(http.StatusOK)
 		if _, err = w.Write(data); err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
-		w.WriteHeader(http.StatusOK)
 	}
 	s.mux.HandleFunc("/dapr/config", fRegister).Methods(http.MethodGet)
 
@@ -178,28 +177,18 @@ func (s *Server) registerBaseHandler() {
 }
 
 // AddTopicEventHandler appends provided event handler with it's name to the service.
-func (s *Server) AddTopicEventHandler(sub *common.Subscription, fn func(ctx context.Context, e *common.TopicEvent) (retry bool, err error)) error {
+func (s *Server) AddTopicEventHandler(sub *common.Subscription, fn common.TopicEventHandler) error {
 	if sub == nil {
 		return errors.New("subscription required")
 	}
-	if sub.Topic == "" {
-		return errors.New("topic name required")
-	}
-	if sub.PubsubName == "" {
-		return errors.New("pub/sub name required")
-	}
+	// Route is only required for HTTP but should be specified for the
+	// app protocol to be interchangeable.
 	if sub.Route == "" {
 		return errors.New("handler route name")
 	}
-	if fn == nil {
-		return fmt.Errorf("topic handler required")
+	if err := s.topicRegistrar.AddSubscription(sub, fn); err != nil {
+		return err
 	}
-
-	if !strings.HasPrefix(sub.Route, "/") {
-		sub.Route = fmt.Sprintf("/%s", sub.Route)
-	}
-
-	s.topicSubscriptions = append(s.topicSubscriptions, sub)
 
 	s.mux.Handle(sub.Route, optionsHandler(http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {

@@ -14,7 +14,6 @@ limitations under the License.
 package http
 
 import (
-	"context"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -24,7 +23,7 @@ import (
 )
 
 // AddBindingInvocationHandler appends provided binding invocation handler with its route to the service.
-func (s *Server) AddBindingInvocationHandler(route string, fn func(ctx context.Context, in *common.BindingEvent) (out []byte, err error)) error {
+func (s *Server) AddBindingInvocationHandler(route string, fn common.BindingInvocationHandler) error {
 	if route == "" {
 		return fmt.Errorf("binding route required")
 	}

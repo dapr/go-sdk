@@ -18,7 +18,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
+	"net/http/httptest"
+	"sort"
 	"strings"
 	"testing"
 
@@ -26,8 +29,10 @@ import (
 	"github.com/dapr/go-sdk/actor/mock"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/dapr/go-sdk/service/common"
+	"github.com/dapr/go-sdk/service/internal"
 )
 
 func testTopicFunc(ctx context.Context, e *common.TopicEvent) (retry bool, err error) {
@@ -90,7 +95,51 @@ func TestEventHandler(t *testing.T) {
 	err = s.AddTopicEventHandler(sub2, testErrorTopicFunc)
 	assert.NoErrorf(t, err, "error adding error event handler")
 
+	sub3 := &common.Subscription{
+		PubsubName: "messages",
+		Topic:      "test",
+		Route:      "/other",
+		Match:      `event.type == "other"`,
+		Priority:   1,
+	}
+	err = s.AddTopicEventHandler(sub3, testTopicFunc)
+	assert.NoErrorf(t, err, "error adding error event handler")
+
 	s.registerBaseHandler()
+
+	req, err := http.NewRequest(http.MethodGet, "/dapr/subscribe", nil)
+	require.NoErrorf(t, err, "error creating request: %s", data)
+	req.Header.Set("Accept", "application/json")
+	rr := httptest.NewRecorder()
+	s.mux.ServeHTTP(rr, req)
+	resp := rr.Result()
+	defer resp.Body.Close()
+	payload, err := io.ReadAll(resp.Body)
+	require.NoErrorf(t, err, "error reading response")
+	var subs []internal.TopicSubscription
+	require.NoErrorf(t, json.Unmarshal(payload, &subs), "could not decode subscribe response")
+
+	sort.Slice(subs, func(i, j int) bool {
+		less := strings.Compare(subs[i].PubsubName, subs[j].PubsubName)
+		if less != 0 {
+			return less < 0
+		}
+		return strings.Compare(subs[i].Topic, subs[j].Topic) <= 0
+	})
+
+	if assert.Lenf(t, subs, 2, "unexpected subscription count") {
+		assert.Equal(t, "messages", subs[0].PubsubName)
+		assert.Equal(t, "errors", subs[0].Topic)
+
+		assert.Equal(t, "messages", subs[1].PubsubName)
+		assert.Equal(t, "test", subs[1].Topic)
+		assert.Equal(t, "", subs[1].Route)
+		assert.Equal(t, "/", subs[1].Routes.Default)
+		if assert.Lenf(t, subs[1].Routes.Rules, 1, "unexpected rules count") {
+			assert.Equal(t, `event.type == "other"`, subs[1].Routes.Rules[0].Match)
+			assert.Equal(t, "/other", subs[1].Routes.Rules[0].Path)
+		}
+	}
 
 	makeEventRequest(t, s, "/", data, http.StatusOK)
 	makeEventRequest(t, s, "/", "", http.StatusSeeOther)
