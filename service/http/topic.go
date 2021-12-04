@@ -226,14 +226,12 @@ func (s *Server) AddTopicEventHandler(sub *common.Subscription, fn func(ctx cont
 						var vString interface{}
 						if err := json.Unmarshal([]byte(str), &vString); err == nil {
 							data = vString
-						} else {
+						} else if decoded, err := base64.StdEncoding.DecodeString(str); err == nil {
 							// Decoded Base64 encoded JSON does not seem to be in the spec
 							// but it is in existing unit tests so this handles that case.
-							if decoded, err := base64.StdEncoding.DecodeString(str); err == nil {
-								var vBase64 interface{}
-								if err := json.Unmarshal(decoded, &vBase64); err == nil {
-									data = vBase64
-								}
+							var vBase64 interface{}
+							if err := json.Unmarshal(decoded, &vBase64); err == nil {
+								data = vBase64
 							}
 						}
 					}
