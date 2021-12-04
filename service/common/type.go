@@ -1,5 +1,9 @@
 package common
 
+import (
+	"encoding/json"
+)
+
 // TopicEvent is the content of the inbound topic message.
 type TopicEvent struct {
 	// ID identifies the event.
@@ -15,8 +19,12 @@ type TopicEvent struct {
 	// The content of the event.
 	// Note, this is why the gRPC and HTTP implementations need separate structs for cloud events.
 	Data interface{} `json:"data"`
+	// The content of the event represented as raw bytes.
+	// This can be deserialized into a Go struct using `Struct`.
+	RawData []byte `json:"-"`
 	// The base64 encoding content of the event.
-	// Note, this is processing rawPayload and binary content types .
+	// Note, this is processing rawPayload and binary content types.
+	// This field is deprecated and will be removed in the future.
 	DataBase64 string `json:"data_base64,omitempty"`
 	// Cloud event subject
 	Subject string `json:"subject"`
@@ -24,6 +32,12 @@ type TopicEvent struct {
 	Topic string `json:"topic"`
 	// PubsubName is name of the pub/sub this message came from
 	PubsubName string `json:"pubsubname"`
+}
+
+func (e *TopicEvent) Struct(target interface{}) error {
+	// TODO: Enhance to inspect DataContentType for the best
+	// deserialization method.
+	return json.Unmarshal(e.RawData, target)
 }
 
 // InvocationEvent represents the input and output of binding invocation.

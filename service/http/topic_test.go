@@ -85,6 +85,89 @@ func TestEventHandler(t *testing.T) {
 	makeEventRequest(t, s, "/errors", data, http.StatusOK)
 }
 
+func TestEventDataHandling(t *testing.T) {
+	tests := map[string]struct {
+		data string
+	}{
+		"JSON nested": {
+			data: `{
+				"specversion" : "1.0",
+				"type" : "com.github.pull.create",
+				"source" : "https://github.com/cloudevents/spec/pull",
+				"subject" : "123",
+				"id" : "A234-1234-1234",
+				"time" : "2018-04-05T17:31:00Z",
+				"comexampleextension1" : "value",
+				"comexampleothervalue" : 5,
+				"datacontenttype" : "application/json",
+				"data" : {
+					"message":"hello"
+				}
+			}`,
+		},
+		"JSON base64 encoded": {
+			data: `{
+				"specversion" : "1.0",
+				"type" : "com.github.pull.create",
+				"source" : "https://github.com/cloudevents/spec/pull",
+				"subject" : "123",
+				"id" : "A234-1234-1234",
+				"time" : "2018-04-05T17:31:00Z",
+				"comexampleextension1" : "value",
+				"comexampleothervalue" : 5,
+				"datacontenttype" : "application/json",
+				"data" : "eyJtZXNzYWdlIjoiaGVsbG8ifQ=="
+			}`,
+		},
+		"JSON string escaped": {
+			data: `{
+				"specversion" : "1.0",
+				"type" : "com.github.pull.create",
+				"source" : "https://github.com/cloudevents/spec/pull",
+				"subject" : "123",
+				"id" : "A234-1234-1234",
+				"time" : "2018-04-05T17:31:00Z",
+				"comexampleextension1" : "value",
+				"comexampleothervalue" : 5,
+				"datacontenttype" : "application/json",
+				"data" : "{\"message\":\"hello\"}"
+			}`,
+		},
+	}
+
+	s := newServer("", nil)
+
+	sub := &common.Subscription{
+		PubsubName: "messages",
+		Topic:      "test",
+		Route:      "/test",
+		Metadata:   map[string]string{},
+	}
+
+	recv := make(chan struct{}, 1)
+	var topicEvent *common.TopicEvent
+	handler := func(ctx context.Context, e *common.TopicEvent) (retry bool, err error) {
+		topicEvent = e
+		recv <- struct{}{}
+
+		return false, nil
+	}
+	err := s.AddTopicEventHandler(sub, handler)
+	assert.NoErrorf(t, err, "error adding event handler")
+
+	s.registerBaseHandler()
+
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			makeEventRequest(t, s, "/test", tt.data, http.StatusOK)
+			<-recv
+			assert.Equal(t, map[string]interface{}{
+				"message": "hello",
+			}, topicEvent.Data)
+		})
+	}
+}
+
 func TestHealthCheck(t *testing.T) {
 	s := newServer("", nil)
 	s.registerBaseHandler()

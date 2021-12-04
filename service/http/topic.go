@@ -2,6 +2,7 @@ package http
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -28,6 +29,34 @@ const (
 	// PubSubHandlerDropStatusCode is the pubsub event appcallback response code indicating that Dapr should drop that message.
 	PubSubHandlerDropStatusCode int = http.StatusSeeOther
 )
+
+// topicEventJSON is identical to `common.TopicEvent`
+// except for it treats `data` as a json.RawMessage so it can
+// be used as bytes or interface{}.
+type topicEventJSON struct {
+	// ID identifies the event.
+	ID string `json:"id"`
+	// The version of the CloudEvents specification.
+	SpecVersion string `json:"specversion"`
+	// The type of event related to the originating occurrence.
+	Type string `json:"type"`
+	// Source identifies the context in which an event happened.
+	Source string `json:"source"`
+	// The content type of data value.
+	DataContentType string `json:"datacontenttype"`
+	// The content of the event.
+	// Note, this is why the gRPC and HTTP implementations need separate structs for cloud events.
+	Data json.RawMessage `json:"data"`
+	// The base64 encoding content of the event.
+	// Note, this is processing rawPayload and binary content types.
+	DataBase64 string `json:"data_base64,omitempty"`
+	// Cloud event subject
+	Subject string `json:"subject"`
+	// The pubsub topic which publisher sent to.
+	Topic string `json:"topic"`
+	// PubsubName is name of the pub/sub this message came from
+	PubsubName string `json:"pubsubname"`
+}
 
 func (s *Server) registerBaseHandler() {
 	// register subscribe handler
@@ -168,21 +197,77 @@ func (s *Server) AddTopicEventHandler(sub *common.Subscription, fn func(ctx cont
 			}
 
 			// deserialize the event
-			var in common.TopicEvent
+			var in topicEventJSON
 			if err := json.NewDecoder(r.Body).Decode(&in); err != nil {
 				http.Error(w, err.Error(), PubSubHandlerDropStatusCode)
 				return
 			}
 
+			if in.PubsubName == "" {
+				in.Topic = sub.PubsubName
+			}
 			if in.Topic == "" {
 				in.Topic = sub.Topic
+			}
+
+			var data interface{}
+			var rawData []byte
+			if len(in.Data) > 0 {
+				rawData = []byte(in.Data)
+				data = rawData
+				var v interface{}
+				// We can assume that rawData is valid JSON
+				// without checking in.DataContentType == "application/json".
+				if err := json.Unmarshal(rawData, &v); err == nil {
+					data = v
+					// Handling of JSON base64 encoded or escaped in a string.
+					if str, ok := v.(string); ok {
+						// This is the path that will most likely succeed.
+						var vString interface{}
+						if err := json.Unmarshal([]byte(str), &vString); err == nil {
+							data = vString
+						} else {
+							// Decoded Base64 encoded JSON does not seem to be in the spec
+							// but it is in existing unit tests so this handles that case.
+							if decoded, err := base64.StdEncoding.DecodeString(str); err == nil {
+								var vBase64 interface{}
+								if err := json.Unmarshal(decoded, &vBase64); err == nil {
+									data = vBase64
+								}
+							}
+						}
+					}
+				}
+			} else if in.DataBase64 != "" {
+				var err error
+				rawData, err = base64.RawStdEncoding.DecodeString(in.DataBase64)
+				if err == nil && in.DataContentType == "application/json" {
+					var v interface{}
+					if err := json.Unmarshal(rawData, &v); err != nil {
+						data = v
+					}
+				}
+			}
+
+			te := common.TopicEvent{
+				ID:              in.ID,
+				SpecVersion:     in.SpecVersion,
+				Type:            in.Type,
+				Source:          in.Source,
+				DataContentType: in.DataContentType,
+				Data:            data,
+				RawData:         rawData,
+				DataBase64:      in.DataBase64,
+				Subject:         in.Subject,
+				PubsubName:      in.PubsubName,
+				Topic:           in.Topic,
 			}
 
 			w.Header().Add("Content-Type", "application/json")
 			w.WriteHeader(http.StatusOK)
 
 			// execute user handler
-			retry, err := fn(r.Context(), &in)
+			retry, err := fn(r.Context(), &te)
 			if err == nil {
 				writeStatus(w, common.SubscriptionResponseStatusSuccess)
 				return

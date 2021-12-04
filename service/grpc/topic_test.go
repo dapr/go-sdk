@@ -161,3 +161,72 @@ func eventHandlerWithRetryError(ctx context.Context, event *common.TopicEvent) (
 func eventHandlerWithError(ctx context.Context, event *common.TopicEvent) (retry bool, err error) {
 	return false, errors.New("nil event")
 }
+
+func TestEventDataHandling(t *testing.T) {
+	ctx := context.Background()
+
+	tests := map[string]struct {
+		contentType string
+		data        string
+		value       interface{}
+	}{
+		"JSON bytes": {
+			contentType: "application/json",
+			data:        `{"message":"hello"}`,
+			value: map[string]interface{}{
+				"message": "hello",
+			},
+		},
+		"Test": {
+			contentType: "text/plain",
+			data:        `message = hello`,
+			value:       `message = hello`,
+		},
+		"Other": {
+			contentType: "application/octet-stream",
+			data:        `message = hello`,
+			value:       []byte(`message = hello`),
+		},
+	}
+
+	s := getTestServer()
+
+	sub := &common.Subscription{
+		PubsubName: "messages",
+		Topic:      "test",
+		Route:      "/test",
+		Metadata:   map[string]string{},
+	}
+
+	recv := make(chan struct{}, 1)
+	var topicEvent *common.TopicEvent
+	handler := func(ctx context.Context, e *common.TopicEvent) (retry bool, err error) {
+		topicEvent = e
+		recv <- struct{}{}
+
+		return false, nil
+	}
+	err := s.AddTopicEventHandler(sub, handler)
+	assert.NoErrorf(t, err, "error adding event handler")
+
+	startTestServer(s)
+
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			in := runtime.TopicEventRequest{
+				Id:              "a123",
+				Source:          "test",
+				Type:            "test",
+				SpecVersion:     "v1.0",
+				DataContentType: tt.contentType,
+				Data:            []byte(tt.data),
+				Topic:           sub.Topic,
+				PubsubName:      sub.PubsubName,
+			}
+
+			s.OnTopicEvent(ctx, &in)
+			<-recv
+			assert.Equal(t, tt.value, topicEvent.Data)
+		})
+	}
+}

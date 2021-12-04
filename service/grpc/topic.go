@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	"github.com/golang/protobuf/ptypes/empty"
@@ -62,13 +63,28 @@ func (s *Server) OnTopicEvent(ctx context.Context, in *pb.TopicEventRequest) (*p
 	}
 	key := fmt.Sprintf("%s-%s", in.PubsubName, in.Topic)
 	if h, ok := s.topicSubscriptions[key]; ok {
+		data := interface{}(in.Data)
+		if len(in.Data) > 0 {
+			switch in.DataContentType {
+			case "application/json":
+				var v interface{}
+				if err := json.Unmarshal(in.Data, &v); err == nil {
+					data = v
+				}
+			case "text/plain":
+				// Assume UTF-8 encoded string.
+				data = string(in.Data)
+			}
+		}
+
 		e := &common.TopicEvent{
 			ID:              in.Id,
 			Source:          in.Source,
 			Type:            in.Type,
 			SpecVersion:     in.SpecVersion,
 			DataContentType: in.DataContentType,
-			Data:            in.Data,
+			Data:            data,
+			RawData:         in.Data,
 			Topic:           in.Topic,
 			PubsubName:      in.PubsubName,
 		}
