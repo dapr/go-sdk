@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"mime"
+	"strings"
 
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/pkg/errors"
@@ -68,15 +69,22 @@ func (s *Server) OnTopicEvent(ctx context.Context, in *pb.TopicEventRequest) (*p
 		if len(in.Data) > 0 {
 			mediaType, _, err := mime.ParseMediaType(in.DataContentType)
 			if err == nil {
+				var v interface{}
 				switch mediaType {
 				case "application/json":
-					var v interface{}
 					if err := json.Unmarshal(in.Data, &v); err == nil {
 						data = v
 					}
 				case "text/plain":
 					// Assume UTF-8 encoded string.
 					data = string(in.Data)
+				default:
+					if strings.HasPrefix(mediaType, "application/") &&
+						strings.HasSuffix(mediaType, "+json") {
+						if err := json.Unmarshal(in.Data, &v); err == nil {
+							data = v
+						}
+					}
 				}
 			}
 		}

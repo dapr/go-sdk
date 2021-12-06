@@ -177,6 +177,13 @@ func TestEventDataHandling(t *testing.T) {
 				"message": "hello",
 			},
 		},
+		"JSON entension media type bytes": {
+			contentType: "application/extension+json",
+			data:        `{"message":"hello"}`,
+			value: map[string]interface{}{
+				"message": "hello",
+			},
+		},
 		"Test": {
 			contentType: "text/plain",
 			data:        `message = hello`,
