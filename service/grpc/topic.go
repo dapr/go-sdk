@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"mime"
 
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/pkg/errors"
@@ -65,15 +66,18 @@ func (s *Server) OnTopicEvent(ctx context.Context, in *pb.TopicEventRequest) (*p
 	if h, ok := s.topicSubscriptions[key]; ok {
 		data := interface{}(in.Data)
 		if len(in.Data) > 0 {
-			switch in.DataContentType {
-			case "application/json":
-				var v interface{}
-				if err := json.Unmarshal(in.Data, &v); err == nil {
-					data = v
+			mediaType, _, err := mime.ParseMediaType(in.DataContentType)
+			if err == nil {
+				switch mediaType {
+				case "application/json":
+					var v interface{}
+					if err := json.Unmarshal(in.Data, &v); err == nil {
+						data = v
+					}
+				case "text/plain":
+					// Assume UTF-8 encoded string.
+					data = string(in.Data)
 				}
-			case "text/plain":
-				// Assume UTF-8 encoded string.
-				data = string(in.Data)
 			}
 		}
 
