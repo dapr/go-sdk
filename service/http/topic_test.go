@@ -143,7 +143,7 @@ func TestEventDataHandling(t *testing.T) {
 				"message": "hello",
 			},
 		},
-		"Binary base64 encoded": {
+		"Binary base64 encoded in data_base64": {
 			data: `{
 				"specversion" : "1.0",
 				"type" : "com.github.pull.create",
