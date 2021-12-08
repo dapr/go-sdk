@@ -2,6 +2,7 @@ package client
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net"
 	"os"
@@ -147,6 +148,21 @@ func (s *testDaprServer) SaveState(ctx context.Context, req *pb.SaveStateRequest
 		s.state[item.Key] = item.Value
 	}
 	return &empty.Empty{}, nil
+}
+
+func (s *testDaprServer) QueryStateAlpha1(ctx context.Context, req *pb.QueryStateRequest) (*pb.QueryStateResponse, error) {
+	var v map[string]interface{}
+	if err := json.Unmarshal([]byte(req.Query), &v); err != nil {
+		return nil, err
+	}
+
+	ret := &pb.QueryStateResponse{
+		Results: make([]*pb.QueryStateItem, 0, len(s.state)),
+	}
+	for key, value := range s.state {
+		ret.Results = append(ret.Results, &pb.QueryStateItem{Key: key, Data: value})
+	}
+	return ret, nil
 }
 
 func (s *testDaprServer) DeleteState(ctx context.Context, req *pb.DeleteStateRequest) (*empty.Empty, error) {

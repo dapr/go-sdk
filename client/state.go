@@ -134,6 +134,21 @@ type SetStateItem struct {
 	Options  *StateOptions
 }
 
+// QueryItem represents a single query result item.
+type QueryItem struct {
+	Key   string
+	Value []byte
+	Etag  string
+	Error string
+}
+
+// QueryResponse represents a query result.
+type QueryResponse struct {
+	Results  []QueryItem
+	Token    string
+	Metadata map[string]string
+}
+
 // DeleteStateItem represents a single state to be deleted.
 type DeleteStateItem SetStateItem
 
@@ -354,6 +369,39 @@ func (c *GRPCClient) GetStateWithConsistency(ctx context.Context, storeName, key
 		Value:    result.Data,
 		Metadata: result.Metadata,
 	}, nil
+}
+
+// QueryStateAlpha1 runs a query against state store.
+func (c *GRPCClient) QueryStateAlpha1(ctx context.Context, storeName, query string, meta map[string]string) (*QueryResponse, error) {
+	if storeName == "" {
+		return nil, errors.New("store name is not set")
+	}
+	if query == "" {
+		return nil, errors.New("query is not set")
+	}
+	req := &pb.QueryStateRequest{
+		StoreName: storeName,
+		Query:     query,
+		Metadata:  meta,
+	}
+	resp, err := c.protoClient.QueryStateAlpha1(c.withAuthToken(ctx), req)
+	if err != nil {
+		return nil, errors.Wrap(err, "error querying state")
+	}
+
+	ret := &QueryResponse{
+		Results:  make([]QueryItem, len(resp.Results)),
+		Token:    resp.Token,
+		Metadata: resp.Metadata,
+	}
+	for i, item := range resp.Results {
+		ret.Results[i].Key = item.Key
+		ret.Results[i].Value = item.Data
+		ret.Results[i].Etag = item.Etag
+		ret.Results[i].Error = item.Error
+	}
+
+	return ret, nil
 }
 
 // DeleteState deletes content from store using default state options.
