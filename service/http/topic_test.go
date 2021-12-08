@@ -87,7 +87,8 @@ func TestEventHandler(t *testing.T) {
 
 func TestEventDataHandling(t *testing.T) {
 	tests := map[string]struct {
-		data string
+		data   string
+		result interface{}
 	}{
 		"JSON nested": {
 			data: `{
@@ -104,8 +105,11 @@ func TestEventDataHandling(t *testing.T) {
 					"message":"hello"
 				}
 			}`,
+			result: map[string]interface{}{
+				"message": "hello",
+			},
 		},
-		"JSON base64 encoded": {
+		"JSON base64 encoded in data": {
 			data: `{
 				"specversion" : "1.0",
 				"type" : "com.github.pull.create",
@@ -118,6 +122,41 @@ func TestEventDataHandling(t *testing.T) {
 				"datacontenttype" : "application/json",
 				"data" : "eyJtZXNzYWdlIjoiaGVsbG8ifQ=="
 			}`,
+			result: map[string]interface{}{
+				"message": "hello",
+			},
+		},
+		"JSON base64 encoded in data_base64": {
+			data: `{
+				"specversion" : "1.0",
+				"type" : "com.github.pull.create",
+				"source" : "https://github.com/cloudevents/spec/pull",
+				"subject" : "123",
+				"id" : "A234-1234-1234",
+				"time" : "2018-04-05T17:31:00Z",
+				"comexampleextension1" : "value",
+				"comexampleothervalue" : 5,
+				"datacontenttype" : "application/json",
+				"data_base64" : "eyJtZXNzYWdlIjoiaGVsbG8ifQ=="
+			}`,
+			result: map[string]interface{}{
+				"message": "hello",
+			},
+		},
+		"Binary base64 encoded": {
+			data: `{
+				"specversion" : "1.0",
+				"type" : "com.github.pull.create",
+				"source" : "https://github.com/cloudevents/spec/pull",
+				"subject" : "123",
+				"id" : "A234-1234-1234",
+				"time" : "2018-04-05T17:31:00Z",
+				"comexampleextension1" : "value",
+				"comexampleothervalue" : 5,
+				"datacontenttype" : "application/octet-stream",
+				"data_base64" : "eyJtZXNzYWdlIjoiaGVsbG8ifQ=="
+			}`,
+			result: []byte(`{"message":"hello"}`),
 		},
 		"JSON string escaped": {
 			data: `{
@@ -132,6 +171,9 @@ func TestEventDataHandling(t *testing.T) {
 				"datacontenttype" : "application/json",
 				"data" : "{\"message\":\"hello\"}"
 			}`,
+			result: map[string]interface{}{
+				"message": "hello",
+			},
 		},
 	}
 
@@ -161,9 +203,7 @@ func TestEventDataHandling(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			makeEventRequest(t, s, "/test", tt.data, http.StatusOK)
 			<-recv
-			assert.Equal(t, map[string]interface{}{
-				"message": "hello",
-			}, topicEvent.Data)
+			assert.Equal(t, tt.result, topicEvent.Data)
 		})
 	}
 }

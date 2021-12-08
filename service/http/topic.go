@@ -238,11 +238,14 @@ func (s *Server) AddTopicEventHandler(sub *common.Subscription, fn func(ctx cont
 				}
 			} else if in.DataBase64 != "" {
 				var err error
-				rawData, err = base64.RawStdEncoding.DecodeString(in.DataBase64)
-				if err == nil && in.DataContentType == "application/json" {
-					var v interface{}
-					if err := json.Unmarshal(rawData, &v); err != nil {
-						data = v
+				rawData, err = base64.StdEncoding.DecodeString(in.DataBase64)
+				if err == nil {
+					data = rawData
+					if in.DataContentType == "application/json" {
+						var v interface{}
+						if err := json.Unmarshal(rawData, &v); err == nil {
+							data = v
+						}
 					}
 				}
 			}
