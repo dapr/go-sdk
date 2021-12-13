@@ -103,6 +103,7 @@ type RegisterActorReminderRequest struct {
 	Name      string
 	DueTime   string
 	Period    string
+	TTL       string
 	Data      []byte
 }
 
@@ -110,6 +111,7 @@ type RegisterActorReminderRequest struct {
 // invoke actor's ReminderCall function if implemented.
 // If server side actor impls this function, it's asserted to actor.ReminderCallee and can be invoked with call period
 // and state data as param @in defined.
+// Scheduling parameters 'DueTime', 'Period', and 'TTL' are optional.
 func (c *GRPCClient) RegisterActorReminder(ctx context.Context, in *RegisterActorReminderRequest) (err error) {
 	if in == nil {
 		return errors.New("actor register reminder invocation request param required")
@@ -123,12 +125,6 @@ func (c *GRPCClient) RegisterActorReminder(ctx context.Context, in *RegisterActo
 	if in.Name == "" {
 		return errors.New("actor register reminder invocation name required")
 	}
-	if in.DueTime == "" {
-		return errors.New("actor register reminder invocation dueTime required")
-	}
-	if in.Period == "" {
-		return errors.New("actor register reminder invocation period required")
-	}
 
 	req := &pb.RegisterActorReminderRequest{
 		ActorType: in.ActorType,
@@ -136,6 +132,7 @@ func (c *GRPCClient) RegisterActorReminder(ctx context.Context, in *RegisterActo
 		Name:      in.Name,
 		DueTime:   in.DueTime,
 		Period:    in.Period,
+		Ttl:       in.TTL,
 		Data:      in.Data,
 	}
 
@@ -186,11 +183,13 @@ type RegisterActorTimerRequest struct {
 	Name      string
 	DueTime   string
 	Period    string
+	TTL       string
 	Data      []byte
 	CallBack  string
 }
 
 // RegisterActorTimer register actor timer as given param @in defined.
+// Scheduling parameters 'DueTime', 'Period', and 'TTL' are optional.
 func (c *GRPCClient) RegisterActorTimer(ctx context.Context, in *RegisterActorTimerRequest) (err error) {
 	if in == nil {
 		return errors.New("actor register timer invocation request param required")
@@ -204,12 +203,6 @@ func (c *GRPCClient) RegisterActorTimer(ctx context.Context, in *RegisterActorTi
 	if in.Name == "" {
 		return errors.New("actor register timer invocation name required")
 	}
-	if in.DueTime == "" {
-		return errors.New("actor register timer invocation dueTime required")
-	}
-	if in.Period == "" {
-		return errors.New("actor register timer invocation period required")
-	}
 	if in.CallBack == "" {
 		return errors.New("actor register timer invocation callback function required")
 	}
@@ -220,6 +213,7 @@ func (c *GRPCClient) RegisterActorTimer(ctx context.Context, in *RegisterActorTi
 		Name:      in.Name,
 		DueTime:   in.DueTime,
 		Period:    in.Period,
+		Ttl:       in.TTL,
 		Data:      in.Data,
 		Callback:  in.CallBack,
 	}

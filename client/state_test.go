@@ -348,3 +348,38 @@ func TestStateTransactions(t *testing.T) {
 		assert.Len(t, items, 0)
 	})
 }
+
+func TestQueryState(t *testing.T) {
+	ctx := context.Background()
+	data := testData
+	store := testStore
+	key1 := "key1"
+	key2 := "key2"
+
+	t.Run("save data", func(t *testing.T) {
+		err := testClient.SaveState(ctx, store, key1, []byte(data))
+		assert.NoError(t, err)
+		err = testClient.SaveState(ctx, store, key2, []byte(data))
+		assert.NoError(t, err)
+	})
+
+	t.Run("error query", func(t *testing.T) {
+		_, err := testClient.QueryStateAlpha1(ctx, "", "", nil)
+		assert.Error(t, err)
+		_, err = testClient.QueryStateAlpha1(ctx, store, "", nil)
+		assert.Error(t, err)
+		_, err = testClient.QueryStateAlpha1(ctx, store, "bad syntax", nil)
+		assert.Error(t, err)
+	})
+
+	t.Run("query data", func(t *testing.T) {
+		query := `{"query": {}}`
+		resp, err := testClient.QueryStateAlpha1(ctx, store, query, nil)
+		assert.NoError(t, err)
+		assert.Equal(t, 2, len(resp.Results))
+		for _, item := range resp.Results {
+			assert.True(t, item.Key == key1 || item.Key == key2)
+			assert.Equal(t, []byte(data), item.Value)
+		}
+	})
+}

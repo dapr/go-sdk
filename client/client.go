@@ -85,6 +85,9 @@ type Client interface {
 	// GetBulkState retrieves state for multiple keys from specific store.
 	GetBulkState(ctx context.Context, storeName string, keys []string, meta map[string]string, parallelism int32) ([]*BulkStateItem, error)
 
+	// QueryStateAlpha1 runs a query against state store.
+	QueryStateAlpha1(ctx context.Context, storeName, query string, meta map[string]string) (*QueryResponse, error)
+
 	// DeleteState deletes content from store using default state options.
 	DeleteState(ctx context.Context, storeName, key string) error
 
