@@ -46,7 +46,7 @@ func TestInvokeWithToken(t *testing.T) {
 	assert.Nil(t, err)
 	t.Run("invoke with token, return success", func(t *testing.T) {
 		grpcMetadata := metadata.New(map[string]string{
-			cc.ApiTokenKey: os.Getenv(cc.AppAPITokenEnvVar),
+			cc.APITokenKey: os.Getenv(cc.AppAPITokenEnvVar),
 		})
 		ctx := metadata.NewIncomingContext(context.Background(), grpcMetadata)
 		in := &common.InvokeRequest{Method: methodName}
@@ -60,7 +60,7 @@ func TestInvokeWithToken(t *testing.T) {
 	})
 	t.Run("invoke with mismatch token, return failed", func(t *testing.T) {
 		grpcMetadata := metadata.New(map[string]string{
-			cc.ApiTokenKey: "mismatch-token",
+			cc.APITokenKey: "mismatch-token",
 		})
 		ctx := metadata.NewOutgoingContext(context.Background(), grpcMetadata)
 		in := &common.InvokeRequest{Method: methodName}

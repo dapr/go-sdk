@@ -31,8 +31,8 @@ func (s *Server) OnInvoke(ctx context.Context, in *cpb.InvokeRequest) (*cpb.Invo
 	}
 	if s.authToken != "" {
 		if md, ok := metadata.FromIncomingContext(ctx); !ok {
-			return nil, errors.New("authentication failed.")
-		} else if vals := md.Get(cc.ApiTokenKey); len(vals) > 0 {
+			return nil, errors.New("authentication failed")
+		} else if vals := md.Get(cc.APITokenKey); len(vals) > 0 {
 			if vals[0] != s.authToken {
 				return nil, errors.New("authentication failed: app token mismatch")
 			}

@@ -49,7 +49,7 @@ func TestInvocationHandlerWithToken(t *testing.T) {
 	assert.Equal(t, http.StatusNonAuthoritativeInfo, resp.Code)
 
 	// pass.
-	req.Header.Set(common.ApiTokenKey, os.Getenv(common.AppAPITokenEnvVar))
+	req.Header.Set(common.APITokenKey, os.Getenv(common.AppAPITokenEnvVar))
 	resp = httptest.NewRecorder()
 	s.mux.ServeHTTP(resp, req)
 	assert.Equal(t, http.StatusOK, resp.Code)
