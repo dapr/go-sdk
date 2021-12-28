@@ -31,7 +31,6 @@ func (s *Server) AddServiceInvocationHandler(route string, fn func(ctx context.C
 					http.Error(w, "authentication failed.", http.StatusNonAuthoritativeInfo)
 					return
 				}
-
 			}
 			// capture http args
 			e := &common.InvocationEvent{
