@@ -24,7 +24,7 @@ import (
 
 const (
 	daprPortDefault    = "50001"
-	daprPortEnvVarName = "DAPR_GRPC_PORT"
+	daprPortEnvVarName = "DAPR_GRPC_PORT" /* #nosec */
 	traceparentKey     = "traceparent"
 	apiTokenKey        = "dapr-api-token" /* #nosec */
 	apiTokenEnvVarName = "DAPR_API_TOKEN" /* #nosec */

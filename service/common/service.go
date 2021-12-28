@@ -9,7 +9,7 @@ import (
 
 const (
 	// AppAPITokenEnvVar is the environment variable for app api token.
-	AppAPITokenEnvVar = "APP_API_TOKEN"
+	AppAPITokenEnvVar = "APP_API_TOKEN"  /* #nosec */
 	APITokenKey       = "dapr-api-token" /* #nosec */
 )
 
