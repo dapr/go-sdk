@@ -23,9 +23,9 @@ import (
 	"github.com/pkg/errors"
 
 	pb "github.com/dapr/dapr/pkg/proto/runtime/v1"
-	"github.com/dapr/go-sdk/actor"
-	"github.com/dapr/go-sdk/actor/codec"
-	"github.com/dapr/go-sdk/actor/config"
+	"github.com/riza-wartek/go-sdk/actor"
+	"github.com/riza-wartek/go-sdk/actor/codec"
+	"github.com/riza-wartek/go-sdk/actor/config"
 )
 
 type InvokeActorRequest struct {

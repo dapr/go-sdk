@@ -22,7 +22,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	runtime "github.com/dapr/dapr/pkg/proto/runtime/v1"
-	"github.com/dapr/go-sdk/service/common"
+	"github.com/riza-wartek/go-sdk/service/common"
 )
 
 func testBindingHandler(ctx context.Context, in *common.BindingEvent) (out []byte, err error) {

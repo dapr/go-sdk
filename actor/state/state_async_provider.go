@@ -18,9 +18,9 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/dapr/go-sdk/actor/codec"
-	"github.com/dapr/go-sdk/actor/codec/constant"
-	client "github.com/dapr/go-sdk/client"
+	"github.com/riza-wartek/go-sdk/actor/codec"
+	"github.com/riza-wartek/go-sdk/actor/codec/constant"
+	client "github.com/riza-wartek/go-sdk/client"
 )
 
 type DaprStateAsyncProvider struct {

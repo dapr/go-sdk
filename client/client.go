@@ -21,8 +21,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/dapr/go-sdk/actor"
-	"github.com/dapr/go-sdk/actor/config"
+	"github.com/riza-wartek/go-sdk/actor"
+	"github.com/riza-wartek/go-sdk/actor/config"
 
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
@@ -32,7 +32,7 @@ import (
 	pb "github.com/dapr/dapr/pkg/proto/runtime/v1"
 
 	// used to import codec implements.
-	_ "github.com/dapr/go-sdk/actor/codec/impl"
+	_ "github.com/riza-wartek/go-sdk/actor/codec/impl"
 )
 
 const (

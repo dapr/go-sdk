@@ -21,7 +21,7 @@ import (
 	"github.com/pkg/errors"
 
 	pb "github.com/dapr/dapr/pkg/proto/runtime/v1"
-	"github.com/dapr/go-sdk/service/common"
+	"github.com/riza-wartek/go-sdk/service/common"
 )
 
 // AddBindingInvocationHandler appends provided binding invocation handler with its name to the service.

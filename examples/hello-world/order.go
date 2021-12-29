@@ -22,7 +22,7 @@ import (
 
 	"gopkg.in/alecthomas/kingpin.v2"
 
-	dapr "github.com/dapr/go-sdk/client"
+	dapr "github.com/riza-wartek/go-sdk/client"
 )
 
 const (

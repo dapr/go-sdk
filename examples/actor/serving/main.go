@@ -19,11 +19,11 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/dapr/go-sdk/actor"
-	dapr "github.com/dapr/go-sdk/client"
-	"github.com/dapr/go-sdk/examples/actor/api"
+	"github.com/riza-wartek/go-sdk/actor"
+	dapr "github.com/riza-wartek/go-sdk/client"
+	"github.com/riza-wartek/go-sdk/examples/actor/api"
 
-	daprd "github.com/dapr/go-sdk/service/http"
+	daprd "github.com/riza-wartek/go-sdk/service/http"
 )
 
 func testActorFactory() actor.Server {

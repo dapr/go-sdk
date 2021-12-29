@@ -16,7 +16,7 @@ package mock
 import (
 	"context"
 
-	"github.com/dapr/go-sdk/actor"
+	"github.com/riza-wartek/go-sdk/actor"
 )
 
 func ActorImplFactory() actor.Server {

@@ -18,7 +18,7 @@ import (
 	"fmt"
 	"time"
 
-	dapr "github.com/dapr/go-sdk/client"
+	dapr "github.com/riza-wartek/go-sdk/client"
 )
 
 func main() {

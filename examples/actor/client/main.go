@@ -18,8 +18,8 @@ import (
 	"fmt"
 	"time"
 
-	dapr "github.com/dapr/go-sdk/client"
-	"github.com/dapr/go-sdk/examples/actor/api"
+	dapr "github.com/riza-wartek/go-sdk/client"
+	"github.com/riza-wartek/go-sdk/examples/actor/api"
 )
 
 func main() {

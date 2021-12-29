@@ -17,11 +17,11 @@ import (
 	"encoding/json"
 	"sync"
 
-	"github.com/dapr/go-sdk/actor"
-	"github.com/dapr/go-sdk/actor/api"
-	"github.com/dapr/go-sdk/actor/config"
-	actorErr "github.com/dapr/go-sdk/actor/error"
-	"github.com/dapr/go-sdk/actor/manager"
+	"github.com/riza-wartek/go-sdk/actor"
+	"github.com/riza-wartek/go-sdk/actor/api"
+	"github.com/riza-wartek/go-sdk/actor/config"
+	actorErr "github.com/riza-wartek/go-sdk/actor/error"
+	"github.com/riza-wartek/go-sdk/actor/manager"
 )
 
 type ActorRunTime struct {

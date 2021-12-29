@@ -24,7 +24,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/dapr/go-sdk/service/common"
+	"github.com/riza-wartek/go-sdk/service/common"
 )
 
 func TestInvocationHandlerWithoutHandler(t *testing.T) {

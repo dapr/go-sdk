@@ -1,9 +1,9 @@
-module github.com/dapr/go-sdk/examples/service
+module github.com/riza-wartek/go-sdk/examples/service
 
 go 1.17
 
 require (
-	github.com/dapr/go-sdk v1.3.1-0.20211214200612-a38be4e38b7d
+	github.com/riza-wartek/go-sdk v1.3.1-0.20211214200612-a38be4e38b7d
 	google.golang.org/grpc v1.41.0
 )
 

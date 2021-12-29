@@ -18,9 +18,9 @@ import (
 	"net"
 
 	pb "github.com/dapr/dapr/pkg/proto/runtime/v1"
-	"github.com/dapr/go-sdk/actor"
-	"github.com/dapr/go-sdk/actor/config"
-	"github.com/dapr/go-sdk/service/common"
+	"github.com/riza-wartek/go-sdk/actor"
+	"github.com/riza-wartek/go-sdk/actor/config"
+	"github.com/riza-wartek/go-sdk/service/common"
 
 	"github.com/pkg/errors"
 
@@ -78,6 +78,12 @@ type topicEventHandler struct {
 // Start registers the server and starts it.
 func (s *Server) Start() error {
 	gs := grpc.NewServer()
+	pb.RegisterAppCallbackServer(gs, s)
+	return gs.Serve(s.listener)
+}
+
+// Start registers the server and starts it.
+func (s *Server) StartWithServer(gs *grpc.Server) error {
 	pb.RegisterAppCallbackServer(gs, s)
 	return gs.Serve(s.listener)
 }

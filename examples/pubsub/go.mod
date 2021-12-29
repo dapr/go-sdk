@@ -1,8 +1,8 @@
-module github.com/dapr/go-sdk/examples/pubsub
+module github.com/riza-wartek/go-sdk/examples/pubsub
 
 go 1.17
 
-require github.com/dapr/go-sdk v1.3.1-0.20211214200612-a38be4e38b7d
+require github.com/riza-wartek/go-sdk v1.3.1-0.20211214200612-a38be4e38b7d
 
 require (
 	github.com/dapr/dapr v1.5.1 // indirect

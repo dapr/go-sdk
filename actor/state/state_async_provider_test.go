@@ -17,8 +17,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/dapr/go-sdk/actor/codec"
-	"github.com/dapr/go-sdk/client"
+	"github.com/riza-wartek/go-sdk/actor/codec"
+	"github.com/riza-wartek/go-sdk/client"
 )
 
 func TestDaprStateAsyncProvider_Apply(t *testing.T) {

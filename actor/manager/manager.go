@@ -24,10 +24,10 @@ import (
 
 	perrors "github.com/pkg/errors"
 
-	"github.com/dapr/go-sdk/actor"
-	"github.com/dapr/go-sdk/actor/api"
-	"github.com/dapr/go-sdk/actor/codec"
-	actorErr "github.com/dapr/go-sdk/actor/error"
+	"github.com/riza-wartek/go-sdk/actor"
+	"github.com/riza-wartek/go-sdk/actor/api"
+	"github.com/riza-wartek/go-sdk/actor/codec"
+	actorErr "github.com/riza-wartek/go-sdk/actor/error"
 )
 
 type ActorManager interface {

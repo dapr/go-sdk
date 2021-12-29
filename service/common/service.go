@@ -16,8 +16,8 @@ package common
 import (
 	"context"
 
-	"github.com/dapr/go-sdk/actor"
-	"github.com/dapr/go-sdk/actor/config"
+	"github.com/riza-wartek/go-sdk/actor"
+	"github.com/riza-wartek/go-sdk/actor/config"
 )
 
 // Service represents Dapr callback service.

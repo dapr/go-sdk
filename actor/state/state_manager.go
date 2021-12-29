@@ -19,7 +19,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/dapr/go-sdk/actor"
+	"github.com/riza-wartek/go-sdk/actor"
 )
 
 type ActorStateManager struct {

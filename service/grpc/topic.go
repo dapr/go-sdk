@@ -24,7 +24,7 @@ import (
 	"github.com/pkg/errors"
 
 	pb "github.com/dapr/dapr/pkg/proto/runtime/v1"
-	"github.com/dapr/go-sdk/service/common"
+	"github.com/riza-wartek/go-sdk/service/common"
 )
 
 // AddTopicEventHandler appends provided event handler with topic name to the service.

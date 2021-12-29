@@ -18,7 +18,7 @@ The Dapr client package allows you to interact with other Dapr applications from
 
 ## Import the client package 
 ```go
-import "github.com/dapr/go-sdk/client"
+import "github.com/riza-wartek/go-sdk/client"
 ```
 
 ## Building blocks
@@ -216,4 +216,4 @@ func main() {
 - For a full guide on secrets visit [How-To: Retrieve secrets]({{< ref howto-secrets.md >}}).
 
 ## Related links
-- [Go SDK Examples](https://github.com/dapr/go-sdk/tree/main/examples)
+- [Go SDK Examples](https://github.com/riza-wartek/go-sdk/tree/main/examples)

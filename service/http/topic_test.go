@@ -22,12 +22,12 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/dapr/go-sdk/actor/api"
-	"github.com/dapr/go-sdk/actor/mock"
+	"github.com/riza-wartek/go-sdk/actor/api"
+	"github.com/riza-wartek/go-sdk/actor/mock"
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/dapr/go-sdk/service/common"
+	"github.com/riza-wartek/go-sdk/service/common"
 )
 
 func testTopicFunc(ctx context.Context, e *common.TopicEvent) (retry bool, err error) {
