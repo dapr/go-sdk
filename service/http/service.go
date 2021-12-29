@@ -16,6 +16,7 @@ package http
 import (
 	"context"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -49,6 +50,7 @@ func newServer(address string, router *mux.Router) *Server {
 		},
 		mux:                router,
 		topicSubscriptions: make([]*common.Subscription, 0),
+		authToken:          os.Getenv(common.AppAPITokenEnvVar),
 	}
 }
 
@@ -58,6 +60,7 @@ type Server struct {
 	mux                *mux.Router
 	httpServer         *http.Server
 	topicSubscriptions []*common.Subscription
+	authToken          string
 }
 
 func (s *Server) RegisterActorImplFactory(f actor.Factory, opts ...config.Option) {
