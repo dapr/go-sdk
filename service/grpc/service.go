@@ -16,6 +16,7 @@ package grpc
 import (
 	"context"
 	"net"
+	"os"
 
 	pb "github.com/dapr/dapr/pkg/proto/runtime/v1"
 	"github.com/dapr/go-sdk/actor"
@@ -52,6 +53,7 @@ func newService(lis net.Listener) *Server {
 		invokeHandlers:     make(map[string]func(ctx context.Context, in *common.InvocationEvent) (out *common.Content, err error)),
 		topicSubscriptions: make(map[string]*topicEventHandler),
 		bindingHandlers:    make(map[string]func(ctx context.Context, in *common.BindingEvent) (out []byte, err error)),
+		authToken:          os.Getenv(common.AppAPITokenEnvVar),
 	}
 }
 
@@ -62,6 +64,7 @@ type Server struct {
 	invokeHandlers     map[string]func(ctx context.Context, in *common.InvocationEvent) (out *common.Content, err error)
 	topicSubscriptions map[string]*topicEventHandler
 	bindingHandlers    map[string]func(ctx context.Context, in *common.BindingEvent) (out []byte, err error)
+	authToken          string
 }
 
 func (s *Server) RegisterActorImplFactory(f actor.Factory, opts ...config.Option) {
