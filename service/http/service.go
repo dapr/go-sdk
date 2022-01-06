@@ -24,8 +24,8 @@ import (
 	"github.com/dapr/go-sdk/actor"
 	"github.com/dapr/go-sdk/actor/config"
 	"github.com/dapr/go-sdk/actor/runtime"
-
 	"github.com/dapr/go-sdk/service/common"
+	"github.com/dapr/go-sdk/service/internal"
 )
 
 // NewService creates new Service.
@@ -48,19 +48,19 @@ func newServer(address string, router *mux.Router) *Server {
 			Addr:    address,
 			Handler: router,
 		},
-		mux:                router,
-		topicSubscriptions: make([]*common.Subscription, 0),
-		authToken:          os.Getenv(common.AppAPITokenEnvVar),
+		mux:            router,
+		topicRegistrar: make(internal.TopicRegistrar),
+		authToken:      os.Getenv(common.AppAPITokenEnvVar),
 	}
 }
 
 // Server is the HTTP server wrapping mux many Dapr helpers.
 type Server struct {
-	address            string
-	mux                *mux.Router
-	httpServer         *http.Server
-	topicSubscriptions []*common.Subscription
-	authToken          string
+	address        string
+	mux            *mux.Router
+	httpServer     *http.Server
+	topicRegistrar internal.TopicRegistrar
+	authToken      string
 }
 
 func (s *Server) RegisterActorImplFactory(f actor.Factory, opts ...config.Option) {

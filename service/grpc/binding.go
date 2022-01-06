@@ -25,7 +25,7 @@ import (
 )
 
 // AddBindingInvocationHandler appends provided binding invocation handler with its name to the service.
-func (s *Server) AddBindingInvocationHandler(name string, fn func(ctx context.Context, in *common.BindingEvent) (out []byte, err error)) error {
+func (s *Server) AddBindingInvocationHandler(name string, fn common.BindingInvocationHandler) error {
 	if name == "" {
 		return fmt.Errorf("binding name required")
 	}

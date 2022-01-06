@@ -67,6 +67,22 @@ func eventHandler(ctx context.Context, e *common.TopicEvent) (retry bool, err er
 }
 ```
 
+Optionally, you can use [routing rules](https://docs.dapr.io/developing-applications/building-blocks/pubsub/howto-route-messages/) to send messages to different handlers based on the contents of the CloudEvent.
+
+```go
+sub := &common.Subscription{
+	PubsubName: "messages",
+	Topic:      "topic1",
+	Route:      "/important",
+	Match:      `event.type == "important"`,
+	Priority:   1,
+}
+err := s.AddTopicEventHandler(sub, importantHandler)
+if err != nil {
+	log.Fatalf("error adding topic subscription: %v", err)
+}
+```
+
 ### Service Invocation Handler
 To handle service invocations you will need to add at least one service invocation handler before starting the service:
 

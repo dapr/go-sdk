@@ -91,10 +91,14 @@ type Subscription struct {
 	PubsubName string `json:"pubsubname"`
 	// Topic is the name of the topic
 	Topic string `json:"topic"`
-	// Route is the route of the handler where HTTP topic events should be published (not used in gRPC)
-	Route string `json:"route"`
 	// Metadata is the subscription metadata
 	Metadata map[string]string `json:"metadata,omitempty"`
+	// Route is the route of the handler where HTTP topic events should be published (passed as Path in gRPC)
+	Route string `json:"route"`
+	// Match is the CEL expression to match on the CloudEvent envelope.
+	Match string `json:"match"`
+	// Priority is the priority in which to evaluate the match (lower to higher).
+	Priority int `json:"priority"`
 }
 
 const (
