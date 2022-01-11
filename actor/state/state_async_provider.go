@@ -88,6 +88,11 @@ func (d *DaprStateAsyncProvider) Apply(actorType, actorID string, changes []*Act
 			Value:         value,
 		})
 	}
+
+	if len(operations) == 0 {
+		return nil
+	}
+
 	return d.daprClient.SaveStateTransactionally(context.Background(), actorType, actorID, operations)
 }
 

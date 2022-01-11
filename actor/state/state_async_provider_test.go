@@ -37,6 +37,35 @@ func TestDaprStateAsyncProvider_Apply(t *testing.T) {
 		args    args
 		wantErr bool
 	}{
+		{
+			name: "empty changes",
+			args: args{
+				actorType: "testActor",
+				actorID:   "test-0",
+				changes:   nil,
+			},
+			wantErr: false,
+		},
+		{
+			name: "only readonly state changes",
+			args: args{
+				actorType: "testActor",
+				actorID:   "test-0",
+				changes: []*ActorStateChange{
+					{
+						stateName:  "stateName1",
+						value:      "Any",
+						changeKind: None,
+					},
+					{
+						stateName:  "stateName2",
+						value:      "Any",
+						changeKind: None,
+					},
+				},
+			},
+			wantErr: false,
+		},
 		// TODO: Add test cases.
 	}
 	for _, tt := range tests {
