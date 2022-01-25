@@ -58,7 +58,7 @@ type Client interface {
 	GetSecret(ctx context.Context, storeName, key string, meta map[string]string) (data map[string]string, err error)
 
 	// GetBulkSecret retrieves all preconfigred secrets for this application.
-	GetBulkSecret(ctx context.Context, storeName string, meta map[string]string) (data map[string]string, err error)
+	GetBulkSecret(ctx context.Context, storeName string, meta map[string]string) (data map[string]map[string]string, err error)
 
 	// SaveState saves the raw data into store using default state options.
 	SaveState(ctx context.Context, storeName, key string, data []byte) error

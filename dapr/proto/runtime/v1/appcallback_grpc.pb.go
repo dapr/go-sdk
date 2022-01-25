@@ -13,6 +13,7 @@ import (
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
+// Requires gRPC-Go v1.32.0 or later.
 const _ = grpc.SupportPackageIsVersion7
 
 // AppCallbackClient is the client API for AppCallback service.
@@ -136,7 +137,7 @@ type UnsafeAppCallbackServer interface {
 }
 
 func RegisterAppCallbackServer(s grpc.ServiceRegistrar, srv AppCallbackServer) {
-	s.RegisterService(&_AppCallback_serviceDesc, srv)
+	s.RegisterService(&AppCallback_ServiceDesc, srv)
 }
 
 func _AppCallback_OnInvoke_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -229,7 +230,10 @@ func _AppCallback_OnBindingEvent_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
-var _AppCallback_serviceDesc = grpc.ServiceDesc{
+// AppCallback_ServiceDesc is the grpc.ServiceDesc for AppCallback service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var AppCallback_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "dapr.proto.runtime.v1.AppCallback",
 	HandlerType: (*AppCallbackServer)(nil),
 	Methods: []grpc.MethodDesc{

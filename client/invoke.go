@@ -40,15 +40,8 @@ func (c *GRPCClient) invokeServiceWithRequest(ctx context.Context, req *pb.Invok
 }
 
 func queryAndVerbToHTTPExtension(query string, verb string) *v1.HTTPExtension {
-	var queryMap = map[string]string{}
-	for _, item := range strings.Split(query, "&") {
-		kv := strings.Split(item, "=")
-		if len(kv) == 2 {
-			queryMap[kv[0]] = kv[1]
-		}
-	}
 	if v, ok := v1.HTTPExtension_Verb_value[strings.ToUpper(verb)]; ok {
-		return &v1.HTTPExtension{Verb: v1.HTTPExtension_Verb(v), Querystring: queryMap}
+		return &v1.HTTPExtension{Verb: v1.HTTPExtension_Verb(v), Querystring: query}
 	}
 	return &v1.HTTPExtension{Verb: v1.HTTPExtension_NONE}
 }

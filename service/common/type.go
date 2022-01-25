@@ -34,7 +34,7 @@ type InvocationEvent struct {
 	// Verb is the HTTP verb that was used to invoke this service.
 	Verb string `json:"-"`
 	// QueryString is the HTTP query string that was used to invoke this service.
-	QueryString map[string]string `json:"-"`
+	QueryString string `json:"queryString,omitempty"`
 }
 
 // Content is a generic data content

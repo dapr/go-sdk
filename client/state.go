@@ -133,7 +133,7 @@ type StateOptions struct {
 
 func toProtoSaveStateItem(si *SetStateItem) (item *v1.StateItem) {
 	return &v1.StateItem{
-		Etag:     si.Etag,
+		Etag:     &v1.Etag{Value: si.Etag},
 		Key:      si.Key,
 		Metadata: si.Metadata,
 		Value:    si.Value,
@@ -288,9 +288,9 @@ func (c *GRPCClient) GetStateWithConsistency(ctx context.Context, storeName, key
 	}
 
 	return &StateItem{
-		Etag:  result.Etag,
-		Key:   key,
-		Value: result.Data,
+		Etag:     result.Etag,
+		Key:      key,
+		Value:    result.Data,
 		Metadata: result.Metadata,
 	}, nil
 }
@@ -309,7 +309,7 @@ func (c *GRPCClient) DeleteStateWithETag(ctx context.Context, storeName, key, et
 	req := &pb.DeleteStateRequest{
 		StoreName: storeName,
 		Key:       key,
-		Etag:      etag,
+		Etag:      &v1.Etag{Value: etag},
 		Options:   toProtoStateOptions(opts),
 		Metadata:  meta,
 	}

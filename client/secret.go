@@ -35,7 +35,7 @@ func (c *GRPCClient) GetSecret(ctx context.Context, storeName, key string, meta 
 }
 
 // GetBulkSecret retrieves all preconfigred secrets for this application.
-func (c *GRPCClient) GetBulkSecret(ctx context.Context, storeName string, meta map[string]string) (data map[string]string, err error) {
+func (c *GRPCClient) GetBulkSecret(ctx context.Context, storeName string, meta map[string]string) (data map[string]map[string]string, err error) {
 	if storeName == "" {
 		return nil, errors.New("nil storeName")
 	}
@@ -50,8 +50,13 @@ func (c *GRPCClient) GetBulkSecret(ctx context.Context, storeName string, meta m
 		return nil, errors.Wrap(err, "error invoking service")
 	}
 
+	data = map[string]map[string]string{}
+
 	if resp != nil {
-		data = resp.GetData()
+		d := resp.GetData()
+		for k, v := range d {
+			data[k] = v.Secrets
+		}
 	}
 
 	return
