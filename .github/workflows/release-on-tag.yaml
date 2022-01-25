@@ -28,11 +28,6 @@ jobs:
     - name: Test
       run: go test -count=1 -race ./...
 
-    - name: Lint
-      uses: golangci/golangci-lint-action@v2
-      with:
-        version: v1.33
-
     - name: Version
       run: |
         echo "RELEASE_VERSION=$(echo ${GITHUB_REF:10})" >> $GITHUB_ENV
