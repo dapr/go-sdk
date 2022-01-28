@@ -140,6 +140,9 @@ type Client interface {
 	// UnregisterActorReminder unregisters an actor reminder.
 	UnregisterActorReminder(ctx context.Context, req *UnregisterActorReminderRequest) error
 
+	// RenameActorReminder rename an actor reminder.
+	RenameActorReminder(ctx context.Context, req *RenameActorReminderRequest) error
+
 	// InvokeActor calls a method on an actor.
 	InvokeActor(ctx context.Context, req *InvokeActorRequest) (*InvokeActorResponse, error)
 

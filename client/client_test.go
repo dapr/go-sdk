@@ -327,6 +327,10 @@ func (s *testDaprServer) UnregisterActorReminder(ctx context.Context, req *pb.Un
 	return &empty.Empty{}, nil
 }
 
+func (s *testDaprServer) RenameActorReminder(ctx context.Context, req *pb.RenameActorReminderRequest) (*empty.Empty, error) {
+	return &empty.Empty{}, nil
+}
+
 func (s *testDaprServer) InvokeActor(context.Context, *pb.InvokeActorRequest) (*pb.InvokeActorResponse, error) {
 	return &pb.InvokeActorResponse{
 		Data: []byte("mockValue"),
