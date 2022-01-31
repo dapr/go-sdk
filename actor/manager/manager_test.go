@@ -64,7 +64,7 @@ func TestInvokeMethod(t *testing.T) {
 	assert.Equal(t, actorErr.Success, err)
 }
 
-func TestDetectiveActor(t *testing.T) {
+func TestDeactivateActor(t *testing.T) {
 	mng, err := NewDefaultActorManager("json")
 	assert.NotNil(t, mng)
 	assert.Equal(t, actorErr.Success, err)

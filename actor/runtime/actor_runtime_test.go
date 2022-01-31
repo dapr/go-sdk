@@ -68,7 +68,7 @@ func TestDeactive(t *testing.T) {
 	mockServer.EXPECT().RegisterActorImplFactory(gomock.Any())
 	rt.RegisterActorFactory(actorMock.ActorImplFactory)
 
-	mockServer.EXPECT().DetectiveActor("mockActorID").Return(actorErr.Success)
+	mockServer.EXPECT().DeactivateActor("mockActorID").Return(actorErr.Success)
 	err = rt.Deactivate("testActorType", "mockActorID")
 
 	assert.Equal(t, actorErr.Success, err)

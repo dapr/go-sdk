@@ -120,8 +120,8 @@ func (m *DefaultActorManager) InvokeMethod(actorID, methodName string, request [
 	return rspData, actorErr.Success
 }
 
-// DetectiveActor removes actor from actor manager.
-func (m *DefaultActorManager) DetectiveActor(actorID string) actorErr.ActorErr {
+// DeactivateActor removes actor from actor manager.
+func (m *DefaultActorManager) DeactivateActor(actorID string) actorErr.ActorErr {
 	_, ok := m.activeActors.Load(actorID)
 	if !ok {
 		return actorErr.ErrActorIDNotFound
