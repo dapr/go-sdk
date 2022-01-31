@@ -319,7 +319,7 @@ func (c *GRPCClient) implActor(actor actor.Client, serializer codec.Codec) {
 
 	// check incoming interface, the incoming interface's elem must be a struct.
 	if typeOfActor.Kind() != reflect.Struct {
-		fmt.Println("[Actor] ERROR: imple actor client stub failed, incoming interface is not struct")
+		fmt.Println("[Actor] ERROR: impl actor client stub failed, incoming interface is not struct")
 		return
 	}
 
@@ -335,14 +335,14 @@ func (c *GRPCClient) implActor(actor actor.Client, serializer codec.Codec) {
 			outNum := t.Type.NumOut()
 
 			if outNum != 1 && outNum != 2 {
-				fmt.Printf("[Actor] ERRROR: method %s of mtype %v has wrong number of in out parameters %d; needs exactly 1/2\n",
+				fmt.Printf("[Actor] ERROR: method %s of mtype %v has wrong number of in out parameters %d; needs exactly 1/2\n",
 					t.Name, t.Type.String(), outNum)
 				continue
 			}
 
 			// The latest return type of the method must be error.
 			if returnType := t.Type.Out(outNum - 1); returnType != reflect.Zero(reflect.TypeOf((*error)(nil)).Elem()).Type() {
-				fmt.Printf("[Actor] ERRROR: the latest return type %s of method %q is not error\n", returnType, t.Name)
+				fmt.Printf("[Actor] ERROR: the latest return type %s of method %q is not error\n", returnType, t.Name)
 				continue
 			}
 

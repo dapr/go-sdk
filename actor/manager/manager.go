@@ -33,7 +33,7 @@ import (
 type ActorManager interface {
 	RegisterActorImplFactory(f actor.Factory)
 	InvokeMethod(actorID, methodName string, request []byte) ([]byte, actorErr.ActorErr)
-	DetectiveActor(actorID string) actorErr.ActorErr
+	DeactivateActor(actorID string) actorErr.ActorErr
 	InvokeReminder(actorID, reminderName string, params []byte) actorErr.ActorErr
 	InvokeTimer(actorID, timerName string, params []byte) actorErr.ActorErr
 }
