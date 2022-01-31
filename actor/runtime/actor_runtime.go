@@ -80,7 +80,7 @@ func (r *ActorRunTime) Deactivate(actorTypeName, actorID string) actorErr.ActorE
 	if !ok {
 		return actorErr.ErrActorTypeNotFound
 	}
-	return targetManager.(manager.ActorManager).DetectiveActor(actorID)
+	return targetManager.(manager.ActorManager).DeactivateActor(actorID)
 }
 
 func (r *ActorRunTime) InvokeReminder(actorTypeName, actorID, reminderName string, params []byte) actorErr.ActorErr {

@@ -33,7 +33,7 @@ import (
 type ActorManager interface {
 	RegisterActorImplFactory(f actor.Factory)
 	InvokeMethod(actorID, methodName string, request []byte) ([]byte, actorErr.ActorErr)
-	DetectiveActor(actorID string) actorErr.ActorErr
+	DeactivateActor(actorID string) actorErr.ActorErr
 	InvokeReminder(actorID, reminderName string, params []byte) actorErr.ActorErr
 	InvokeTimer(actorID, timerName string, params []byte) actorErr.ActorErr
 }
@@ -120,8 +120,8 @@ func (m *DefaultActorManager) InvokeMethod(actorID, methodName string, request [
 	return rspData, actorErr.Success
 }
 
-// DetectiveActor removes actor from actor manager.
-func (m *DefaultActorManager) DetectiveActor(actorID string) actorErr.ActorErr {
+// DeactivateActor removes actor from actor manager.
+func (m *DefaultActorManager) DeactivateActor(actorID string) actorErr.ActorErr {
 	_, ok := m.activeActors.Load(actorID)
 	if !ok {
 		return actorErr.ErrActorIDNotFound

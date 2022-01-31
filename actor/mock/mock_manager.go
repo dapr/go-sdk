@@ -36,18 +36,18 @@ func (m *MockActorManager) EXPECT() *MockActorManagerMockRecorder {
 	return m.recorder
 }
 
-// DetectiveActor mocks base method.
-func (m *MockActorManager) DetectiveActor(arg0 string) error.ActorErr {
+// DeactivateActor mocks base method.
+func (m *MockActorManager) DeactivateActor(arg0 string) error.ActorErr {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DetectiveActor", arg0)
+	ret := m.ctrl.Call(m, "DeactivateActor", arg0)
 	ret0, _ := ret[0].(error.ActorErr)
 	return ret0
 }
 
-// DetectiveActor indicates an expected call of DetectiveActor.
-func (mr *MockActorManagerMockRecorder) DetectiveActor(arg0 interface{}) *gomock.Call {
+// DeactivateActor indicates an expected call of DeactivateActor.
+func (mr *MockActorManagerMockRecorder) DeactivateActor(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DetectiveActor", reflect.TypeOf((*MockActorManager)(nil).DetectiveActor), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeactivateActor", reflect.TypeOf((*MockActorManager)(nil).DeactivateActor), arg0)
 }
 
 // InvokeMethod mocks base method.

@@ -64,20 +64,20 @@ func TestInvokeMethod(t *testing.T) {
 	assert.Equal(t, actorErr.Success, err)
 }
 
-func TestDetectiveActor(t *testing.T) {
+func TestDeactivateActor(t *testing.T) {
 	mng, err := NewDefaultActorManager("json")
 	assert.NotNil(t, mng)
 	assert.Equal(t, actorErr.Success, err)
 	assert.Nil(t, mng.(*DefaultActorManager).factory)
 
-	err = mng.DetectiveActor("testActorID")
+	err = mng.DeactivateActor("testActorID")
 	assert.Equal(t, actorErr.ErrActorIDNotFound, err)
 
 	mng.RegisterActorImplFactory(mock.ActorImplFactory)
 	assert.NotNil(t, mng.(*DefaultActorManager).factory)
 	mng.InvokeMethod("testActorID", "Invoke", []byte(`"hello"`))
 
-	err = mng.DetectiveActor("testActorID")
+	err = mng.DeactivateActor("testActorID")
 	assert.Equal(t, actorErr.Success, err)
 }
 
