@@ -182,7 +182,7 @@ resp, err = client.InvokeMethodWithContent(ctx, "app-id", "method-name", "post",
 
 Similarly to Service, Dapr client provides two methods to invoke an operation on a [Dapr-defined binding](https://docs.dapr.io/developing-applications/building-blocks/bindings/). Dapr supports input, output, and bidirectional bindings.
 
-For simple, output only biding:
+For simple, output only binding:
 
 ```go
 in := &dapr.InvokeBindingRequest{ Name: "binding-name", Operation: "operation-name" }
@@ -204,7 +204,7 @@ out, err := client.InvokeBinding(ctx, in)
 
 ##### Secrets
 
-The Dapr client also provides access to the runtime secrets that can be backed by any number of secrete stores (e.g. Kubernetes Secrets, HashiCorp Vault, or Azure KeyVault):
+The Dapr client also provides access to the runtime secrets that can be backed by any number of secret stores (e.g. Kubernetes Secrets, HashiCorp Vault, or Azure KeyVault):
 
 ```go
 opt := map[string]string{
