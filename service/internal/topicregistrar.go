@@ -37,6 +37,7 @@ func (m TopicRegistrar) AddSubscription(sub *common.Subscription, fn common.Topi
 			RouteHandlers:  make(map[string]common.TopicEventHandler),
 			DefaultHandler: nil,
 		}
+		ts.Subscription.SetMetadata(sub.Metadata)
 		m[key] = ts
 	}
 
