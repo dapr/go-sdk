@@ -71,3 +71,25 @@ func TestTopicRegistrarValidation(t *testing.T) {
 		})
 	}
 }
+
+func TestTopicAddSubscriptionMetadata(t *testing.T) {
+	handler := func(ctx context.Context, e *common.TopicEvent) (retry bool, err error) {
+		return false, nil
+	}
+	topicRegistrar := internal.TopicRegistrar{}
+	sub := &common.Subscription{
+		PubsubName: "pubsubname",
+		Topic:      "topic",
+		Metadata:   map[string]string{"key": "value"},
+	}
+
+	assert.NoError(t, topicRegistrar.AddSubscription(sub, handler))
+
+	actual := topicRegistrar["pubsubname-topic"].Subscription
+	expected := &internal.TopicSubscription{
+		PubsubName: sub.PubsubName,
+		Topic:      sub.Topic,
+		Metadata:   sub.Metadata,
+	}
+	assert.Equal(t, expected, actual)
+}
