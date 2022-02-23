@@ -275,7 +275,7 @@ func (c *GRPCClient) ExecuteStateTransaction(ctx context.Context, storeName stri
 }
 
 // SaveState saves the raw data into store, default options: strong, last-write.
-func (c *GRPCClient) SaveState(ctx context.Context, storeName, key string, data []byte, so ...StateOption) error {
+func (c *GRPCClient) SaveState(ctx context.Context, storeName, key string, data []byte, meta map[string]string, so ...StateOption) error {
 	stateOptions := new(StateOptions)
 	for _, o := range so {
 		o(stateOptions)
@@ -283,7 +283,12 @@ func (c *GRPCClient) SaveState(ctx context.Context, storeName, key string, data 
 	if len(so) == 0 {
 		stateOptions = copyStateOptionDefault()
 	}
-	item := &SetStateItem{Key: key, Value: data, Options: stateOptions}
+	item := &SetStateItem{
+		Key:      key,
+		Value:    data,
+		Metadata: meta,
+		Options:  stateOptions,
+	}
 	return c.SaveBulkState(ctx, storeName, item)
 }
 
@@ -354,8 +359,8 @@ func (c *GRPCClient) GetBulkState(ctx context.Context, storeName string, keys []
 }
 
 // GetState retrieves state from specific store using default consistency option.
-func (c *GRPCClient) GetState(ctx context.Context, storeName, key string) (item *StateItem, err error) {
-	return c.GetStateWithConsistency(ctx, storeName, key, nil, StateConsistencyStrong)
+func (c *GRPCClient) GetState(ctx context.Context, storeName, key string, meta map[string]string) (item *StateItem, err error) {
+	return c.GetStateWithConsistency(ctx, storeName, key, meta, StateConsistencyStrong)
 }
 
 // GetStateWithConsistency retrieves state from specific store using provided state consistency.
@@ -418,8 +423,8 @@ func (c *GRPCClient) QueryStateAlpha1(ctx context.Context, storeName, query stri
 }
 
 // DeleteState deletes content from store using default state options.
-func (c *GRPCClient) DeleteState(ctx context.Context, storeName, key string) error {
-	return c.DeleteStateWithETag(ctx, storeName, key, nil, nil, nil)
+func (c *GRPCClient) DeleteState(ctx context.Context, storeName, key string, meta map[string]string) error {
+	return c.DeleteStateWithETag(ctx, storeName, key, nil, meta, nil)
 }
 
 // DeleteStateWithETag deletes content from store using provided state options and etag.
@@ -450,7 +455,7 @@ func (c *GRPCClient) DeleteStateWithETag(ctx context.Context, storeName, key str
 }
 
 // DeleteBulkState deletes content for multiple keys from store.
-func (c *GRPCClient) DeleteBulkState(ctx context.Context, storeName string, keys []string) error {
+func (c *GRPCClient) DeleteBulkState(ctx context.Context, storeName string, keys []string, meta map[string]string) error {
 	if len(keys) == 0 {
 		return nil
 	}
@@ -458,7 +463,8 @@ func (c *GRPCClient) DeleteBulkState(ctx context.Context, storeName string, keys
 	items := make([]*DeleteStateItem, 0, len(keys))
 	for i := 0; i < len(keys); i++ {
 		item := &DeleteStateItem{
-			Key: keys[i],
+			Key:      keys[i],
+			Metadata: meta,
 		}
 		items = append(items, item)
 	}

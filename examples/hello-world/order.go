@@ -58,7 +58,7 @@ func main() {
 
 	case "get":
 		fmt.Printf("Getting order\n")
-		item, err := client.GetState(ctx, stateStoreName, "order")
+		item, err := client.GetState(ctx, stateStoreName, "order", nil)
 		if err != nil {
 			fmt.Printf("Failed to get state: %v\n", err)
 		}
@@ -69,7 +69,7 @@ func main() {
 		}
 	case "put":
 		fmt.Printf("Sending order ID %d\n", orderID)
-		err := client.SaveState(ctx, stateStoreName, "order", []byte(strconv.Itoa(orderID)))
+		err := client.SaveState(ctx, stateStoreName, "order", []byte(strconv.Itoa(orderID)), nil)
 		if err != nil {
 			fmt.Printf("Failed to persist state: %v\n", err)
 		} else {
@@ -77,7 +77,7 @@ func main() {
 		}
 	case "del":
 		fmt.Printf("Deleting order\n")
-		err := client.DeleteState(ctx, stateStoreName, "order")
+		err := client.DeleteState(ctx, stateStoreName, "order", nil)
 		if err != nil {
 			fmt.Printf("Failed to delete state: %v\n", err)
 		} else {
@@ -87,7 +87,7 @@ func main() {
 		fmt.Printf("Streaming sequence of orders\n")
 		for {
 			orderID++
-			err := client.SaveState(ctx, stateStoreName, "order", []byte(strconv.Itoa(orderID)))
+			err := client.SaveState(ctx, stateStoreName, "order", []byte(strconv.Itoa(orderID)), nil)
 			if err != nil {
 				fmt.Printf("Failed to persist state: %v\n", err)
 				break

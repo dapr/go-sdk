@@ -36,15 +36,15 @@ Then, depending on the command line argument, the app invokes corresponding meth
 
 Persist the state:
 ```go
-    err := client.SaveState(ctx, stateStoreName, "order", []byte(strconv.Itoa(orderID)))
+    err := client.SaveState(ctx, stateStoreName, "order", []byte(strconv.Itoa(orderID)), nil)
 ```
 Retrieve the state:
 ```go
-    item, err := client.GetState(ctx, stateStoreName, "order")
+    item, err := client.GetState(ctx, stateStoreName, "order", nil)
 ```
 Delete the state:
 ```go
-    err := client.DeleteState(ctx, stateStoreName, "order")
+    err := client.DeleteState(ctx, stateStoreName, "order", nil)
 ```
 
 ## Step 3 - Run the app with Dapr

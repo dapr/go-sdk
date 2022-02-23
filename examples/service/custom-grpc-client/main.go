@@ -60,7 +60,7 @@ func main() {
 	key := "my_key"
 
 	// save state with the key my_key, default options: strong, last-write
-	if err := client.SaveState(ctx, store, key, data); err != nil {
+	if err := client.SaveState(ctx, store, key, data, nil); err != nil {
 		panic(err)
 	}
 	fmt.Println("Saved the large data blob...")
@@ -69,7 +69,7 @@ func main() {
 
 	// get state for key my_key
 	fmt.Println("Getting data from the large data blob...")
-	_, err = client.GetState(ctx, store, key)
+	_, err = client.GetState(ctx, store, key, nil)
 	if err != nil {
 		panic(err)
 	}
@@ -77,7 +77,7 @@ func main() {
 	fmt.Printf("Reading from statestore took %s\n", elapsed2)
 
 	// delete state for key my_key
-	if err := client.DeleteState(ctx, store, key); err != nil {
+	if err := client.DeleteState(ctx, store, key, nil); err != nil {
 		panic(err)
 	}
 	elapsed3 := time.Since(start)

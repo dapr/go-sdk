@@ -63,12 +63,12 @@ func TestSaveState(t *testing.T) {
 	key := "key1"
 
 	t.Run("save data", func(t *testing.T) {
-		err := testClient.SaveState(ctx, store, key, []byte(data))
+		err := testClient.SaveState(ctx, store, key, []byte(data), nil)
 		assert.Nil(t, err)
 	})
 
 	t.Run("get saved data", func(t *testing.T) {
-		item, err := testClient.GetState(ctx, store, key)
+		item, err := testClient.GetState(ctx, store, key, nil)
 		assert.Nil(t, err)
 		assert.NotNil(t, item)
 		assert.NotEmpty(t, item.Etag)
@@ -98,7 +98,7 @@ func TestSaveState(t *testing.T) {
 	})
 
 	t.Run("delete data", func(t *testing.T) {
-		err := testClient.DeleteState(ctx, store, key)
+		err := testClient.DeleteState(ctx, store, key, nil)
 		assert.Nil(t, err)
 	})
 }
@@ -111,7 +111,7 @@ func TestDeleteState(t *testing.T) {
 	key := "key1"
 
 	t.Run("delete not exist data", func(t *testing.T) {
-		err := testClient.DeleteState(ctx, store, key)
+		err := testClient.DeleteState(ctx, store, key, nil)
 		assert.Nil(t, err)
 	})
 	t.Run("delete not exist data with etag and meta", func(t *testing.T) {
@@ -121,11 +121,11 @@ func TestDeleteState(t *testing.T) {
 	})
 
 	t.Run("save data", func(t *testing.T) {
-		err := testClient.SaveState(ctx, store, key, []byte(data))
+		err := testClient.SaveState(ctx, store, key, []byte(data), nil)
 		assert.Nil(t, err)
 	})
 	t.Run("confirm data saved", func(t *testing.T) {
-		item, err := testClient.GetState(ctx, store, key)
+		item, err := testClient.GetState(ctx, store, key, nil)
 		assert.Nil(t, err)
 		assert.NotNil(t, item)
 		assert.NotEmpty(t, item.Etag)
@@ -134,11 +134,11 @@ func TestDeleteState(t *testing.T) {
 	})
 
 	t.Run("delete exist data", func(t *testing.T) {
-		err := testClient.DeleteState(ctx, store, key)
+		err := testClient.DeleteState(ctx, store, key, nil)
 		assert.Nil(t, err)
 	})
 	t.Run("confirm data deleted", func(t *testing.T) {
-		item, err := testClient.GetState(ctx, store, key)
+		item, err := testClient.GetState(ctx, store, key, nil)
 		assert.Nil(t, err)
 		assert.NotNil(t, item)
 		assert.NotEmpty(t, item.Etag)
@@ -189,7 +189,7 @@ func TestDeleteBulkState(t *testing.T) {
 	keys := []string{"key1", "key2", "key3"}
 
 	t.Run("delete not exist data", func(t *testing.T) {
-		err := testClient.DeleteBulkState(ctx, store, keys)
+		err := testClient.DeleteBulkState(ctx, store, keys, nil)
 		assert.Nil(t, err)
 	})
 
@@ -233,7 +233,7 @@ func TestDeleteBulkState(t *testing.T) {
 		assert.Equal(t, len(keys), len(getItems))
 
 		// delete
-		err = testClient.DeleteBulkState(ctx, store, keys)
+		err = testClient.DeleteBulkState(ctx, store, keys, nil)
 		assert.NoError(t, err)
 
 		// confirm data deleted
@@ -370,9 +370,9 @@ func TestQueryState(t *testing.T) {
 	key2 := "key2"
 
 	t.Run("save data", func(t *testing.T) {
-		err := testClient.SaveState(ctx, store, key1, []byte(data))
+		err := testClient.SaveState(ctx, store, key1, []byte(data), nil)
 		assert.NoError(t, err)
-		err = testClient.SaveState(ctx, store, key2, []byte(data))
+		err = testClient.SaveState(ctx, store, key2, []byte(data), nil)
 		assert.NoError(t, err)
 	})
 
