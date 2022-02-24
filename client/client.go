@@ -84,13 +84,13 @@ type Client interface {
 	GetBulkSecret(ctx context.Context, storeName string, meta map[string]string) (data map[string]map[string]string, err error)
 
 	// SaveState saves the raw data into store using default state options.
-	SaveState(ctx context.Context, storeName, key string, data []byte, so ...StateOption) error
+	SaveState(ctx context.Context, storeName, key string, data []byte, meta map[string]string, so ...StateOption) error
 
 	// SaveBulkState saves multiple state item to store with specified options.
 	SaveBulkState(ctx context.Context, storeName string, items ...*SetStateItem) error
 
 	// GetState retrieves state from specific store using default consistency option.
-	GetState(ctx context.Context, storeName, key string) (item *StateItem, err error)
+	GetState(ctx context.Context, storeName, key string, meta map[string]string) (item *StateItem, err error)
 
 	// GetStateWithConsistency retrieves state from specific store using provided state consistency.
 	GetStateWithConsistency(ctx context.Context, storeName, key string, meta map[string]string, sc StateConsistency) (item *StateItem, err error)
@@ -102,7 +102,7 @@ type Client interface {
 	QueryStateAlpha1(ctx context.Context, storeName, query string, meta map[string]string) (*QueryResponse, error)
 
 	// DeleteState deletes content from store using default state options.
-	DeleteState(ctx context.Context, storeName, key string) error
+	DeleteState(ctx context.Context, storeName, key string, meta map[string]string) error
 
 	// DeleteStateWithETag deletes content from store using provided state options and etag.
 	DeleteStateWithETag(ctx context.Context, storeName, key string, etag *ETag, meta map[string]string, opts *StateOptions) error
@@ -111,7 +111,7 @@ type Client interface {
 	ExecuteStateTransaction(ctx context.Context, storeName string, meta map[string]string, ops []*StateOperation) error
 
 	// DeleteBulkState deletes content for multiple keys from store.
-	DeleteBulkState(ctx context.Context, storeName string, keys []string) error
+	DeleteBulkState(ctx context.Context, storeName string, keys []string, meta map[string]string) error
 
 	// DeleteBulkState deletes content for multiple keys from store.
 	DeleteBulkStateItems(ctx context.Context, storeName string, items []*DeleteStateItem) error

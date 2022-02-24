@@ -44,13 +44,13 @@ func main() {
 
 	// save state with the key key1
 	fmt.Printf("saving data: %s\n", string(data))
-	if err := client.SaveState(ctx, store, "key1", data); err != nil {
+	if err := client.SaveState(ctx, store, "key1", data, nil); err != nil {
 		panic(err)
 	}
 	fmt.Println("data saved")
 
 	// get state for key key1
-	item, err := client.GetState(ctx, store, "key1")
+	item, err := client.GetState(ctx, store, "key1", nil)
 	if err != nil {
 		panic(err)
 	}
@@ -77,7 +77,7 @@ func main() {
 	fmt.Println("data item saved")
 
 	// delete state for key key1
-	if err := client.DeleteState(ctx, store, "key1"); err != nil {
+	if err := client.DeleteState(ctx, store, "key1", nil); err != nil {
 		panic(err)
 	}
 	fmt.Println("data deleted")
