@@ -96,11 +96,11 @@ dapr stop --app-id  actor-serving
 == APP == get user = {Name: Age:1}
 == APP == get user = {Name: Age:2}
 ✅  Exited App successfully
-
 ```
+
 - server side
-```
 
+```
 == APP == call get user req =  &{abc 123}
 == APP == get req =  laurence
 == APP == get post request =  laurence

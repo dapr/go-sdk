@@ -35,8 +35,8 @@ func GetConfigFromOptions(opts ...Option) *ActorConfig {
 	conf := &ActorConfig{
 		SerializerType: constant.DefaultSerializerType,
 	}
-	for _, opt := range opts {
-		opt(conf)
+	for _, o := range opts {
+		o(conf)
 	}
 	return conf
 }
