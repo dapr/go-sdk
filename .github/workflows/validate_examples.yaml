@@ -92,7 +92,6 @@ jobs:
         run: |
           cd examples
           ./validate.sh hello-world
-          ./validate.sh configuration
           ./validate.sh pubsub
           ./validate.sh service
           ./validate.sh actor
