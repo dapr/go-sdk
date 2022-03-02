@@ -24,11 +24,14 @@ expected_stdout_lines:
   - '== APP == get updated config key = mySubscribeKey3, value = mySubscribeValue3'
   - '== APP == dapr configuration subscribe finished.'
 background: false
-sleep: 30
+sleep: 40
 -->
 
 ```bash
 dapr run --app-id configuration-api\
+         --app-protocol grpc \
+         --app-port 5005 \
+         --dapr-http-port 3006 \
          --log-level debug \
          --components-path ./config/ \
          go run ./main.go
