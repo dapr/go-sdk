@@ -50,7 +50,7 @@ func (c *GRPCClient) GetConfigurationItems(ctx context.Context, storeName string
 		return nil, err
 	}
 
-	configItems := make([]*ConfigurationItem, 0, len(rsp.Items))
+	configItems := make([]*ConfigurationItem, 0)
 	for _, v := range rsp.Items {
 		configItems = append(configItems, &ConfigurationItem{
 			Key:      v.Key,
