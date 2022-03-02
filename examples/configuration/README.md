@@ -14,14 +14,14 @@ output_match_mode: substring
 expected_stdout_lines:
   - '== APP == get config = myConfigValue'
   - '== APP == get updated config key = mySubscribeKey1, value = mySubscribeValue1'
-  - '== APP == get updated config key = mySubscribeKey2, value = mySubscribeValue1 '
-  - '== APP == get updated config key = mySubscribeKey3, value = mySubscribeValue1 '
+  - '== APP == get updated config key = mySubscribeKey2, value = mySubscribeValue1'
+  - '== APP == get updated config key = mySubscribeKey3, value = mySubscribeValue1'
   - '== APP == get updated config key = mySubscribeKey1, value = mySubscribeValue2'
-  - '== APP == get updated config key = mySubscribeKey2, value = mySubscribeValue2 '
-  - '== APP == get updated config key = mySubscribeKey3, value = mySubscribeValue2 '
+  - '== APP == get updated config key = mySubscribeKey2, value = mySubscribeValue2'
+  - '== APP == get updated config key = mySubscribeKey3, value = mySubscribeValue2'
   - '== APP == get updated config key = mySubscribeKey1, value = mySubscribeValue3'
-  - '== APP == get updated config key = mySubscribeKey2, value = mySubscribeValue3 '
-  - '== APP == get updated config key = mySubscribeKey3, value = mySubscribeValue3 '
+  - '== APP == get updated config key = mySubscribeKey2, value = mySubscribeValue3'
+  - '== APP == get updated config key = mySubscribeKey3, value = mySubscribeValue3'
   - '== APP == dapr configuration subscribe finished.'
 background: false
 sleep: 30
