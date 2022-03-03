@@ -358,14 +358,14 @@ func (s *testDaprServer) Shutdown(ctx context.Context, req *empty.Empty) (*empty
 }
 
 func (s *testDaprServer) GetConfigurationAlpha1(ctx context.Context, in *pb.GetConfigurationRequest) (*pb.GetConfigurationResponse, error) {
-	items := make([]*commonv1pb.ConfigurationItem, 0)
 	if in.GetStoreName() == "" {
 		return &pb.GetConfigurationResponse{}, errors.New("store name notfound")
 	}
+	items := make([]*commonv1pb.ConfigurationItem, 0)
 	for _, v := range in.GetKeys() {
 		items = append(items, &commonv1pb.ConfigurationItem{
 			Key:   v,
-			Value: v + "_value",
+			Value: v + valueSuffix,
 		})
 	}
 	return &pb.GetConfigurationResponse{

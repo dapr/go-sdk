@@ -38,8 +38,8 @@ func (c *GRPCClient) GetConfigurationItem(ctx context.Context, storeName, key st
 
 func (c *GRPCClient) GetConfigurationItems(ctx context.Context, storeName string, keys []string, opts ...ConfigurationOpt) ([]*ConfigurationItem, error) {
 	metadata := make(map[string]string)
-	for _, o := range opts {
-		o(metadata)
+	for _, opt := range opts {
+		opt(metadata)
 	}
 	rsp, err := c.protoClient.GetConfigurationAlpha1(ctx, &pb.GetConfigurationRequest{
 		StoreName: storeName,
@@ -66,8 +66,8 @@ type ConfigurationHandleFunction func(string, []*ConfigurationItem)
 
 func (c *GRPCClient) SubscribeConfigurationItems(ctx context.Context, storeName string, keys []string, handler ConfigurationHandleFunction, opts ...ConfigurationOpt) error {
 	metadata := make(map[string]string)
-	for _, o := range opts {
-		o(metadata)
+	for _, opt := range opts {
+		opt(metadata)
 	}
 
 	client, err := c.protoClient.SubscribeConfigurationAlpha1(ctx, &pb.SubscribeConfigurationRequest{

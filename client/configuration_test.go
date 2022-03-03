@@ -11,13 +11,17 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+const (
+	valueSuffix = "_value"
+)
+
 func TestGetConfigurationItem(t *testing.T) {
 	ctx := context.Background()
 
 	t.Run("get configuration item", func(t *testing.T) {
 		resp, err := testClient.GetConfigurationItem(ctx, "example-config", "mykey")
 		assert.Nil(t, err)
-		assert.Equal(t, "mykey_value", resp.Value)
+		assert.Equal(t, "mykey"+valueSuffix, resp.Value)
 	})
 
 	t.Run("get configuration item with invalid storeName", func(t *testing.T) {
@@ -33,7 +37,7 @@ func TestGetConfigurationItems(t *testing.T) {
 		resp, err := testClient.GetConfigurationItems(ctx, "example-config", []string{"mykey1", "mykey2", "mykey3"})
 		assert.Nil(t, err)
 		for i, v := range resp {
-			assert.Equal(t, "mykey"+strconv.Itoa(i+1)+"_value", v.Value)
+			assert.Equal(t, "mykey"+strconv.Itoa(i+1)+valueSuffix, v.Value)
 		}
 	})
 }
