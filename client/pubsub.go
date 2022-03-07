@@ -23,6 +23,11 @@ import (
 	pb "github.com/dapr/dapr/pkg/proto/runtime/v1"
 )
 
+const (
+	rawPayload = "rawPayload"
+	trueValue  = "true"
+)
+
 // PublishEventOption is the type for the functional option.
 type PublishEventOption func(*pb.PublishEventRequest)
 
@@ -78,6 +83,17 @@ func PublishEventWithContentType(contentType string) PublishEventOption {
 func PublishEventWithMetadata(metadata map[string]string) PublishEventOption {
 	return func(e *pb.PublishEventRequest) {
 		e.Metadata = metadata
+	}
+}
+
+// PublishEventWithRawPayload can be passed as option to PublishEvent to set rawPayload metadata.
+func PublishEventWithRawPayload() PublishEventOption {
+	return func(e *pb.PublishEventRequest) {
+		if e.Metadata == nil {
+			e.Metadata = map[string]string{rawPayload: trueValue}
+		} else {
+			e.Metadata[rawPayload] = trueValue
+		}
 	}
 }
 
