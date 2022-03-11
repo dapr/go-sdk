@@ -2,7 +2,7 @@
 
 Client library to help you build Dapr application in Go. This client supports all public [Dapr APIs](https://docs.dapr.io/reference/api/) while focusing on idiomatic Go experience and developer productivity. 
 
-[![Test](https://github.com/dapr/go-sdk/workflows/Test/badge.svg)](https://github.com/dapr/go-sdk/actions?query=workflow%3ATest) [![Release](https://github.com/dapr/go-sdk/workflows/Release/badge.svg)](https://github.com/dapr/go-sdk/actions?query=workflow%3ARelease) [![Go Report Card](https://goreportcard.com/badge/github.com/dapr/go-sdk)](https://goreportcard.com/report/github.com/dapr/go-sdk) ![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/dapr/go-sdk) [![codecov](https://codecov.io/gh/dapr/go-sdk/branch/main/graph/badge.svg)](https://codecov.io/gh/dapr/go-sdk)
+[![Test](https://github.com/dapr/go-sdk/workflows/Test/badge.svg)](https://github.com/dapr/go-sdk/actions?query=workflow%3ATest) [![Release](https://github.com/dapr/go-sdk/workflows/Release/badge.svg)](https://github.com/dapr/go-sdk/actions?query=workflow%3ARelease) [![Go Report Card](https://goreportcard.com/badge/github.com/dapr/go-sdk)](https://goreportcard.com/report/github.com/dapr/go-sdk) ![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/dapr/go-sdk) [![codecov](https://codecov.io/gh/dapr/go-sdk/branch/main/graph/badge.svg)](https://codecov.io/gh/dapr/go-sdk) [![FOSSA Status](https://app.fossa.com/api/projects/custom%2B162%2Fgithub.com%2Fdapr%2Fgo-sdk.svg?type=shield)](https://app.fossa.com/projects/custom%2B162%2Fgithub.com%2Fdapr%2Fgo-sdk?ref=badge_shield)
 
 ## Usage
 > Assuming you already have [installed](https://golang.org/doc/install) Go
