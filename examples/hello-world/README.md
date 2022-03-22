@@ -1,7 +1,7 @@
 # Hello World
 
 This tutorial will demonstrate how to instrument your application with Dapr, and run it locally on your machine.
-You will deploying `order` applications with the flow identical to [Hello World](https://github.com/dapr/quickstarts/tree/master/hello-world).
+You will deploying `order` applications with the flow identical to [Hello World](https://github.com/dapr/quickstarts/tree/master/tutorials/hello-world).
 
 The application invokes Dapr API via Dapr client, which, in turn, calls Dapr runtime.
 
