@@ -84,4 +84,9 @@ func TestPublishEvent(t *testing.T) {
 		err := testClient.PublishEventfromCustomContent(ctx, "messages", "test", make(chan struct{}))
 		assert.Error(t, err)
 	})
+
+	t.Run("raw payload", func(t *testing.T) {
+		err := testClient.PublishEvent(ctx, "messages", "test", []byte("ping"), PublishEventWithRawPayload())
+		assert.Nil(t, err)
+	})
 }
