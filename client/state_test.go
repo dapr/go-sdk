@@ -386,7 +386,7 @@ func TestQueryState(t *testing.T) {
 	})
 
 	t.Run("query data", func(t *testing.T) {
-		query := `{"query": {}}`
+		query := `{}`
 		resp, err := testClient.QueryStateAlpha1(ctx, store, query, nil)
 		assert.NoError(t, err)
 		assert.Equal(t, 2, len(resp.Results))
