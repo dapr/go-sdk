@@ -81,6 +81,10 @@ func (s *Server) Stop() error {
 	return s.httpServer.Shutdown(ctxShutDown)
 }
 
+func (s *Server) GracefulStop() error {
+	return s.Stop()
+}
+
 func setOptions(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Methods", "POST,OPTIONS")

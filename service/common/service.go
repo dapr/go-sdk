@@ -41,6 +41,8 @@ type Service interface {
 	Start() error
 	// Stop stops the previously started service.
 	Stop() error
+	// Gracefully stops the previous started service
+	GracefulStop() error
 }
 
 type (

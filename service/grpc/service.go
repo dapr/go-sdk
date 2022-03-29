@@ -65,6 +65,7 @@ type Server struct {
 	topicRegistrar  internal.TopicRegistrar
 	bindingHandlers map[string]common.BindingInvocationHandler
 	authToken       string
+	grpcServer      *grpc.Server
 }
 
 func (s *Server) RegisterActorImplFactory(f actor.Factory, opts ...config.Option) {
@@ -75,10 +76,16 @@ func (s *Server) RegisterActorImplFactory(f actor.Factory, opts ...config.Option
 func (s *Server) Start() error {
 	gs := grpc.NewServer()
 	pb.RegisterAppCallbackServer(gs, s)
+	s.grpcServer = gs
 	return gs.Serve(s.listener)
 }
 
 // Stop stops the previously started service.
 func (s *Server) Stop() error {
 	return s.listener.Close()
+}
+
+func (s *Server) GracefulStop() error {
+	s.grpcServer.GracefulStop()
+	return nil
 }
