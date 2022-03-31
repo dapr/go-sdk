@@ -29,7 +29,15 @@ func (m TopicRegistrar) AddSubscription(sub *common.Subscription, fn common.Topi
 	if fn == nil {
 		return fmt.Errorf("topic handler required")
 	}
-	key := sub.PubsubName + "-" + sub.Topic
+
+	var key string
+	if !sub.DisableTopicValidation {
+		key = sub.PubsubName + "-" + sub.Topic
+
+	} else {
+		key = sub.PubsubName
+	}
+
 	ts, ok := m[key]
 	if !ok {
 		ts = &TopicRegistration{

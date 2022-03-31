@@ -85,7 +85,17 @@ func (s *Server) OnTopicEvent(ctx context.Context, in *pb.TopicEventRequest) (*p
 		return &pb.TopicEventResponse{Status: pb.TopicEventResponse_DROP}, errors.New("pub/sub and topic names required")
 	}
 	key := in.PubsubName + "-" + in.Topic
-	if sub, ok := s.topicRegistrar[key]; ok {
+	noValidationKey := in.PubsubName
+
+	var sub *internal.TopicRegistration
+	var ok bool
+
+	sub, ok = s.topicRegistrar[key]
+	if !ok {
+		sub, ok = s.topicRegistrar[noValidationKey]
+	}
+
+	if ok {
 		data := interface{}(in.Data)
 		if len(in.Data) > 0 {
 			mediaType, _, err := mime.ParseMediaType(in.DataContentType)

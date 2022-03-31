@@ -137,6 +137,36 @@ func TestTopic(t *testing.T) {
 	stopTestServer(t, server)
 }
 
+func TestTopicWithValidationDisabled(t *testing.T) {
+	ctx := context.Background()
+
+	sub := &common.Subscription{
+		PubsubName:             "messages",
+		Topic:                  "*",
+		DisableTopicValidation: true,
+	}
+	server := getTestServer()
+
+	err := server.AddTopicEventHandler(sub, eventHandler)
+	assert.Nil(t, err)
+
+	startTestServer(server)
+
+	in := &runtime.TopicEventRequest{
+		Id:              "a123",
+		Source:          "test",
+		Type:            "test",
+		SpecVersion:     "v1.0",
+		DataContentType: "text/plain",
+		Data:            []byte("test"),
+		Topic:           "test",
+		PubsubName:      sub.PubsubName,
+	}
+
+	_, err = server.OnTopicEvent(ctx, in)
+	assert.NoError(t, err)
+}
+
 func TestTopicWithErrors(t *testing.T) {
 	ctx := context.Background()
 
