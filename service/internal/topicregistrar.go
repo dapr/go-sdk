@@ -33,7 +33,6 @@ func (m TopicRegistrar) AddSubscription(sub *common.Subscription, fn common.Topi
 	var key string
 	if !sub.DisableTopicValidation {
 		key = sub.PubsubName + "-" + sub.Topic
-
 	} else {
 		key = sub.PubsubName
 	}
