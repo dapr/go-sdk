@@ -99,6 +99,8 @@ type Subscription struct {
 	Match string `json:"match"`
 	// Priority is the priority in which to evaluate the match (lower to higher).
 	Priority int `json:"priority"`
+	// DisableTopicValidation allows to receive events from publisher topics that differ from the subscribed topic.
+	DisableTopicValidation bool `json:"disableTopicValidation"`
 }
 
 const (
