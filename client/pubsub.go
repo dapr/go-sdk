@@ -44,8 +44,8 @@ func (c *GRPCClient) PublishEvent(ctx context.Context, pubsubName, topicName str
 		PubsubName: pubsubName,
 		Topic:      topicName,
 	}
-	for _, opt := range opts {
-		opt(request)
+	for _, o := range opts {
+		o(request)
 	}
 
 	if data != nil {

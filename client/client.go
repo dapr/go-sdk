@@ -110,6 +110,18 @@ type Client interface {
 	// ExecuteStateTransaction provides way to execute multiple operations on a specified store.
 	ExecuteStateTransaction(ctx context.Context, storeName string, meta map[string]string, ops []*StateOperation) error
 
+	// GetConfigurationItem can get target configuration item by storeName and key
+	GetConfigurationItem(ctx context.Context, storeName, key string, opts ...ConfigurationOpt) (*ConfigurationItem, error)
+
+	// GetConfigurationItems can get a list of configuration item by storeName and keys
+	GetConfigurationItems(ctx context.Context, storeName string, keys []string, opts ...ConfigurationOpt) ([]*ConfigurationItem, error)
+
+	// SubscribeConfigurationItems can subscribe the change of configuration items by storeName and keys, and return subscription id
+	SubscribeConfigurationItems(ctx context.Context, storeName string, keys []string, handler ConfigurationHandleFunction, opts ...ConfigurationOpt) error
+
+	// UnsubscribeConfigurationItems can stop the subscription with target store's and id
+	UnsubscribeConfigurationItems(ctx context.Context, storeName string, id string, opts ...ConfigurationOpt) error
+
 	// DeleteBulkState deletes content for multiple keys from store.
 	DeleteBulkState(ctx context.Context, storeName string, keys []string, meta map[string]string) error
 

@@ -19,11 +19,15 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"strconv"
+	"sync"
 	"testing"
+	"time"
 
 	"github.com/golang/protobuf/ptypes/empty"
+	"github.com/google/uuid"
+	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
-
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/test/bufconn"
 	"google.golang.org/protobuf/types/known/anypb"
@@ -130,7 +134,8 @@ func TestShutdown(t *testing.T) {
 func getTestClient(ctx context.Context) (client Client, closer func()) {
 	s := grpc.NewServer()
 	pb.RegisterDaprServer(s, &testDaprServer{
-		state: make(map[string][]byte),
+		state:                       make(map[string][]byte),
+		configurationSubscriptionID: map[string]chan struct{}{},
 	})
 
 	l := bufconn.Listen(testBufSize)
@@ -161,7 +166,8 @@ func getTestClient(ctx context.Context) (client Client, closer func()) {
 func getTestClientWithSocket(ctx context.Context) (client Client, closer func()) {
 	s := grpc.NewServer()
 	pb.RegisterDaprServer(s, &testDaprServer{
-		state: make(map[string][]byte),
+		state:                       make(map[string][]byte),
+		configurationSubscriptionID: map[string]chan struct{}{},
 	})
 
 	var lc net.ListenConfig
@@ -191,7 +197,9 @@ func getTestClientWithSocket(ctx context.Context) (client Client, closer func())
 
 type testDaprServer struct {
 	pb.UnimplementedDaprServer
-	state map[string][]byte
+	state                             map[string][]byte
+	configurationSubscriptionIDMapLoc sync.Mutex
+	configurationSubscriptionID       map[string]chan struct{}
 }
 
 func (s *testDaprServer) InvokeService(ctx context.Context, req *pb.InvokeServiceRequest) (*commonv1pb.InvokeResponse, error) {
@@ -347,4 +355,63 @@ func (s *testDaprServer) UnregisterActorTimer(context.Context, *pb.UnregisterAct
 
 func (s *testDaprServer) Shutdown(ctx context.Context, req *empty.Empty) (*empty.Empty, error) {
 	return &empty.Empty{}, nil
+}
+
+func (s *testDaprServer) GetConfigurationAlpha1(ctx context.Context, in *pb.GetConfigurationRequest) (*pb.GetConfigurationResponse, error) {
+	if in.GetStoreName() == "" {
+		return &pb.GetConfigurationResponse{}, errors.New("store name notfound")
+	}
+	items := make([]*commonv1pb.ConfigurationItem, 0)
+	for _, v := range in.GetKeys() {
+		items = append(items, &commonv1pb.ConfigurationItem{
+			Key:   v,
+			Value: v + valueSuffix,
+		})
+	}
+	return &pb.GetConfigurationResponse{
+		Items: items,
+	}, nil
+}
+
+func (s *testDaprServer) SubscribeConfigurationAlpha1(in *pb.SubscribeConfigurationRequest, server pb.Dapr_SubscribeConfigurationAlpha1Server) error {
+	stopCh := make(chan struct{})
+	id, _ := uuid.NewUUID()
+	s.configurationSubscriptionIDMapLoc.Lock()
+	s.configurationSubscriptionID[id.String()] = stopCh
+	s.configurationSubscriptionIDMapLoc.Unlock()
+	for i := 0; i < 5; i++ {
+		select {
+		case <-stopCh:
+			return nil
+		default:
+		}
+		items := make([]*commonv1pb.ConfigurationItem, 0)
+		for _, v := range in.GetKeys() {
+			items = append(items, &commonv1pb.ConfigurationItem{
+				Key:   v,
+				Value: v + "_" + strconv.Itoa(i),
+			},
+			)
+		}
+		if err := server.Send(&pb.SubscribeConfigurationResponse{
+			Id:    id.String(),
+			Items: items,
+		}); err != nil {
+			return err
+		}
+		time.Sleep(time.Second)
+	}
+	return nil
+}
+
+func (s *testDaprServer) UnsubscribeConfigurationAlpha1(ctx context.Context, in *pb.UnsubscribeConfigurationRequest) (*pb.UnsubscribeConfigurationResponse, error) {
+	s.configurationSubscriptionIDMapLoc.Lock()
+	defer s.configurationSubscriptionIDMapLoc.Unlock()
+	ch, ok := s.configurationSubscriptionID[in.Id]
+	if !ok {
+		return &pb.UnsubscribeConfigurationResponse{Ok: true}, nil
+	}
+	close(ch)
+	delete(s.configurationSubscriptionID, in.Id)
+	return &pb.UnsubscribeConfigurationResponse{Ok: true}, nil
 }
