@@ -6,7 +6,7 @@ require (
 	github.com/dapr/dapr v1.6.1-0.20220223052122-c503710ab2d1
 	github.com/golang/protobuf v1.5.2
 	github.com/pkg/errors v0.9.1
-	github.com/stretchr/testify v1.7.0
+	github.com/stretchr/testify v1.7.1
 	google.golang.org/grpc v1.40.0
 	google.golang.org/protobuf v1.27.1
 )
