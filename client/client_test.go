@@ -415,3 +415,9 @@ func (s *testDaprServer) UnsubscribeConfigurationAlpha1(ctx context.Context, in 
 	delete(s.configurationSubscriptionID, in.Id)
 	return &pb.UnsubscribeConfigurationResponse{Ok: true}, nil
 }
+
+func TestGrpcClient(t *testing.T) {
+	protoClient := pb.NewDaprClient(nil)
+	client := &GRPCClient{protoClient: protoClient}
+	assert.Equal(t, protoClient, client.GrpcClient())
+}
