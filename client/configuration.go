@@ -79,7 +79,7 @@ func (c *GRPCClient) SubscribeConfigurationItems(ctx context.Context, storeName 
 		return errors.Errorf("subscribe configuration failed with error = %s", err)
 	}
 
-	var subcribeID string
+	var subscribeID string
 	stopCh := make(chan struct{})
 	go func() {
 		for {
@@ -90,7 +90,7 @@ func (c *GRPCClient) SubscribeConfigurationItems(ctx context.Context, storeName 
 				close(stopCh)
 				break
 			}
-			subcribeID = rsp.Id
+			subscribeID = rsp.Id
 			configurationItems := make([]*ConfigurationItem, 0)
 			for _, v := range rsp.Items {
 				configurationItems = append(configurationItems, &ConfigurationItem{
@@ -105,7 +105,7 @@ func (c *GRPCClient) SubscribeConfigurationItems(ctx context.Context, storeName 
 	}()
 	select {
 	case <-ctx.Done():
-		return c.UnsubscribeConfigurationItems(context.Background(), storeName, subcribeID)
+		return c.UnsubscribeConfigurationItems(context.Background(), storeName, subscribeID)
 	case <-stopCh:
 		return nil
 	}
