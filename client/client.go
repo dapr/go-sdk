@@ -194,7 +194,7 @@ func NewClient() (client Client, err error) {
 	return defaultClient, onceErr
 }
 
-// NewClientWithPort instantiates Dapr using specific port.
+// NewClientWithPort instantiates Dapr using specific gRPC port.
 func NewClientWithPort(port string) (client Client, err error) {
 	if port == "" {
 		return nil, errors.New("nil port")
