@@ -125,7 +125,7 @@ type Client interface {
 	// DeleteBulkState deletes content for multiple keys from store.
 	DeleteBulkState(ctx context.Context, storeName string, keys []string, meta map[string]string) error
 
-	// DeleteBulkState deletes content for multiple keys from store.
+	// DeleteBulkStateItems deletes content for multiple items from store.
 	DeleteBulkStateItems(ctx context.Context, storeName string, items []*DeleteStateItem) error
 
 	// Shutdown the sidecar.

@@ -472,7 +472,7 @@ func (c *GRPCClient) DeleteBulkState(ctx context.Context, storeName string, keys
 	return c.DeleteBulkStateItems(ctx, storeName, items)
 }
 
-// DeleteBulkState deletes content for multiple keys from store.
+// DeleteBulkStateItems deletes content for multiple items from store.
 func (c *GRPCClient) DeleteBulkStateItems(ctx context.Context, storeName string, items []*DeleteStateItem) error {
 	if len(items) == 0 {
 		return nil
