@@ -46,6 +46,10 @@ func TestInvokeErrors(t *testing.T) {
 	server := getTestServer()
 	err := server.AddServiceInvocationHandler("", nil)
 	assert.Error(t, err)
+
+	err = server.AddServiceInvocationHandler("/", nil)
+	assert.Error(t, err)
+
 	err = server.AddServiceInvocationHandler("test", nil)
 	assert.Error(t, err)
 }
