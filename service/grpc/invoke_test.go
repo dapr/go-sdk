@@ -94,7 +94,7 @@ func TestInvoke(t *testing.T) {
 	ctx := context.Background()
 
 	server := getTestServer()
-	err := server.AddServiceInvocationHandler(methodName, testInvokeHandler)
+	err := server.AddServiceInvocationHandler("/"+methodName, testInvokeHandler)
 	assert.Nil(t, err)
 
 	err = server.AddServiceInvocationHandler(methodNameWithError, testInvokeHandlerWithError)
