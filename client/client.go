@@ -128,6 +128,12 @@ type Client interface {
 	// DeleteBulkStateItems deletes content for multiple items from store.
 	DeleteBulkStateItems(ctx context.Context, storeName string, items []*DeleteStateItem) error
 
+	// TryLockAlpha1 attempts to grab a lock from a lock store.
+	TryLockAlpha1(ctx context.Context, storeName string, request *LockRequest) (*LockResponse, error)
+
+	// UnlockAlpha1 deletes unlocks a lock from a lock store.
+	UnlockAlpha1(ctx context.Context, storeName string, request *UnlockRequest) (*UnlockResponse, error)
+
 	// Shutdown the sidecar.
 	Shutdown(ctx context.Context) error
 

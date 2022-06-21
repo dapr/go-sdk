@@ -202,6 +202,18 @@ type testDaprServer struct {
 	configurationSubscriptionID       map[string]chan struct{}
 }
 
+func (s *testDaprServer) TryLockAlpha1(ctx context.Context, req *pb.TryLockRequest) (*pb.TryLockResponse, error) {
+	return &pb.TryLockResponse{
+		Success: true,
+	}, nil
+}
+
+func (s *testDaprServer) UnlockAlpha1(ctx context.Context, req *pb.UnlockRequest) (*pb.UnlockResponse, error) {
+	return &pb.UnlockResponse{
+		Status: pb.UnlockResponse_SUCCESS,
+	}, nil
+}
+
 func (s *testDaprServer) InvokeService(ctx context.Context, req *pb.InvokeServiceRequest) (*commonv1pb.InvokeResponse, error) {
 	if req.Message == nil {
 		return &commonv1pb.InvokeResponse{
