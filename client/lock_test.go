@@ -17,8 +17,9 @@ import (
 	"context"
 	"testing"
 
-	pb "github.com/dapr/dapr/pkg/proto/runtime/v1"
 	"github.com/stretchr/testify/assert"
+
+	pb "github.com/dapr/dapr/pkg/proto/runtime/v1"
 )
 
 const (

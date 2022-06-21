@@ -29,6 +29,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/test/bufconn"
 	"google.golang.org/protobuf/types/known/anypb"
 
@@ -149,7 +150,7 @@ func getTestClient(ctx context.Context) (client Client, closer func()) {
 		return l.Dial()
 	})
 
-	c, err := grpc.DialContext(ctx, "", d, grpc.WithInsecure())
+	c, err := grpc.DialContext(ctx, "", d, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		logger.Fatalf("failed to dial test context: %v", err)
 	}
