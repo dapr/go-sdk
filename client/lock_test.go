@@ -52,6 +52,21 @@ func TestLock(t *testing.T) {
 		assert.True(t, r.Success)
 	})
 
+	t.Run("unlock invalid store name", func(t *testing.T) {
+		r, err := testClient.UnlockAlpha1(ctx, "", &UnlockRequest{
+			OwnerID:    "owner1",
+			ResourceID: "resource1",
+		})
+		assert.Nil(t, r)
+		assert.Error(t, err)
+	})
+
+	t.Run("unlock invalid request", func(t *testing.T) {
+		r, err := testClient.UnlockAlpha1(ctx, "testLockStore", nil)
+		assert.Nil(t, r)
+		assert.Error(t, err)
+	})
+
 	t.Run("unlock", func(t *testing.T) {
 		r, err := testClient.UnlockAlpha1(ctx, testLockStore, &UnlockRequest{
 			OwnerID:    "owner1",
