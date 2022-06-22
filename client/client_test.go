@@ -29,6 +29,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/test/bufconn"
 	"google.golang.org/protobuf/types/known/anypb"
 
@@ -149,7 +150,7 @@ func getTestClient(ctx context.Context) (client Client, closer func()) {
 		return l.Dial()
 	})
 
-	c, err := grpc.DialContext(ctx, "", d, grpc.WithInsecure())
+	c, err := grpc.DialContext(ctx, "", d, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		logger.Fatalf("failed to dial test context: %v", err)
 	}
@@ -200,6 +201,18 @@ type testDaprServer struct {
 	state                             map[string][]byte
 	configurationSubscriptionIDMapLoc sync.Mutex
 	configurationSubscriptionID       map[string]chan struct{}
+}
+
+func (s *testDaprServer) TryLockAlpha1(ctx context.Context, req *pb.TryLockRequest) (*pb.TryLockResponse, error) {
+	return &pb.TryLockResponse{
+		Success: true,
+	}, nil
+}
+
+func (s *testDaprServer) UnlockAlpha1(ctx context.Context, req *pb.UnlockRequest) (*pb.UnlockResponse, error) {
+	return &pb.UnlockResponse{
+		Status: pb.UnlockResponse_SUCCESS,
+	}, nil
 }
 
 func (s *testDaprServer) InvokeService(ctx context.Context, req *pb.InvokeServiceRequest) (*commonv1pb.InvokeResponse, error) {

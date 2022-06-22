@@ -27,6 +27,7 @@ import (
 
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/emptypb"
 
@@ -128,6 +129,12 @@ type Client interface {
 	// DeleteBulkStateItems deletes content for multiple items from store.
 	DeleteBulkStateItems(ctx context.Context, storeName string, items []*DeleteStateItem) error
 
+	// TryLockAlpha1 attempts to grab a lock from a lock store.
+	TryLockAlpha1(ctx context.Context, storeName string, request *LockRequest) (*LockResponse, error)
+
+	// UnlockAlpha1 deletes unlocks a lock from a lock store.
+	UnlockAlpha1(ctx context.Context, storeName string, request *UnlockRequest) (*UnlockResponse, error)
+
 	// Shutdown the sidecar.
 	Shutdown(ctx context.Context) error
 
@@ -213,7 +220,7 @@ func NewClientWithAddress(address string) (client Client, err error) {
 	conn, err := grpc.DialContext(
 		ctx,
 		address,
-		grpc.WithInsecure(),
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithBlock(),
 	)
 	if err != nil {
@@ -234,7 +241,7 @@ func NewClientWithSocket(socket string) (client Client, err error) {
 	}
 	logger.Printf("dapr client initializing for: %s", socket)
 	addr := fmt.Sprintf("unix://%s", socket)
-	conn, err := grpc.Dial(addr, grpc.WithInsecure())
+	conn, err := grpc.Dial(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return nil, errors.Wrapf(err, "error creating connection to '%s': %v", addr, err)
 	}
