@@ -225,7 +225,7 @@ ctx := context.Background()
 store := "my-store" // defined in the component YAML 
 
 r, err := testClient.TryLockAlpha1(ctx, testLockStore, &LockRequest{
-    OwnerID:         "owner1",
+    LockOwner:         "owner1",
 	ResourceID:      "resource1",
     ExpiryInSeconds: 5,
 })
@@ -235,7 +235,7 @@ Unlock a lock:
 
 ```go
 r, err := testClient.UnlockAlpha1(ctx, testLockStore, &UnlockRequest{
-	OwnerID:    "owner1",
+	LockOwner:    "owner1",
 	ResourceID: "resource1",
 })
 ```
