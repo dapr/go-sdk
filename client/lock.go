@@ -24,14 +24,14 @@ import (
 // LockRequest is the lock request object.
 type LockRequest struct {
 	ResourceID      string
-	OwnerID         string
+	LockOwner       string
 	ExpiryInSeconds int32
 }
 
 // UnlockRequest is the unlock request object.
 type UnlockRequest struct {
 	ResourceID string
-	OwnerID    string
+	LockOwner  string
 }
 
 // LockResponse is the lock operation response object.
@@ -57,7 +57,7 @@ func (c *GRPCClient) TryLockAlpha1(ctx context.Context, storeName string, reques
 
 	req := pb.TryLockRequest{
 		ResourceId:      request.ResourceID,
-		LockOwner:       request.OwnerID,
+		LockOwner:       request.LockOwner,
 		ExpiryInSeconds: request.ExpiryInSeconds,
 		StoreName:       storeName,
 	}
@@ -84,7 +84,7 @@ func (c *GRPCClient) UnlockAlpha1(ctx context.Context, storeName string, request
 
 	req := pb.UnlockRequest{
 		ResourceId: request.ResourceID,
-		LockOwner:  request.OwnerID,
+		LockOwner:  request.LockOwner,
 		StoreName:  storeName,
 	}
 
