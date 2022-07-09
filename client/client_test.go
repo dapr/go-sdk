@@ -374,12 +374,11 @@ func (s *testDaprServer) GetConfigurationAlpha1(ctx context.Context, in *pb.GetC
 	if in.GetStoreName() == "" {
 		return &pb.GetConfigurationResponse{}, errors.New("store name notfound")
 	}
-	items := make([]*commonv1pb.ConfigurationItem, 0)
+	items := make(map[string]*commonv1pb.ConfigurationItem, 0)
 	for _, v := range in.GetKeys() {
-		items = append(items, &commonv1pb.ConfigurationItem{
-			Key:   v,
+		items[v] = &commonv1pb.ConfigurationItem{
 			Value: v + valueSuffix,
-		})
+		}
 	}
 	return &pb.GetConfigurationResponse{
 		Items: items,
@@ -398,13 +397,11 @@ func (s *testDaprServer) SubscribeConfigurationAlpha1(in *pb.SubscribeConfigurat
 			return nil
 		default:
 		}
-		items := make([]*commonv1pb.ConfigurationItem, 0)
+		items := make(map[string]*commonv1pb.ConfigurationItem, 0)
 		for _, v := range in.GetKeys() {
-			items = append(items, &commonv1pb.ConfigurationItem{
-				Key:   v,
+			items[v] = &commonv1pb.ConfigurationItem{
 				Value: v + "_" + strconv.Itoa(i),
-			},
-			)
+			}
 		}
 		if err := server.Send(&pb.SubscribeConfigurationResponse{
 			Id:    id.String(),

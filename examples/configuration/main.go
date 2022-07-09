@@ -3,12 +3,13 @@ package main
 import (
 	"context"
 	"fmt"
+	"strconv"
+	"time"
+
 	daprTracing "github.com/dapr/dapr/pkg/diagnostics"
 	dapr "github.com/dapr/go-sdk/client"
 	"github.com/go-redis/redis/v8"
 	"google.golang.org/grpc/metadata"
-	"strconv"
-	"time"
 )
 
 func init() {
@@ -38,11 +39,11 @@ func main() {
 		panic(err)
 	}
 
-	items, err := client.GetConfigurationItem(ctx, "example-config", "mykey")
+	item, err := client.GetConfigurationItem(ctx, "example-config", "mykey")
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("get config = %s\n", (*items).Value)
+	fmt.Printf("get config = %s\n", (*item).Value)
 
 	ctx, f := context.WithTimeout(ctx, 60*time.Second)
 	md := metadata.Pairs(daprTracing.GRPCProxyAppIDKey, "configuration-api")
@@ -50,9 +51,9 @@ func main() {
 	defer f()
 	var subscribeID string
 	go func() {
-		if err := client.SubscribeConfigurationItems(ctx, "example-config", []string{"mySubscribeKey1", "mySubscribeKey2", "mySubscribeKey3"}, func(id string, items []*dapr.ConfigurationItem) {
-			for _, v := range items {
-				fmt.Printf("get updated config key = %s, value = %s \n", (*v).Key, (*v).Value)
+		if err := client.SubscribeConfigurationItems(ctx, "example-config", []string{"mySubscribeKey1", "mySubscribeKey2", "mySubscribeKey3"}, func(id string, items map[string]*dapr.ConfigurationItem) {
+			for k, v := range items {
+				fmt.Printf("get updated config key = %s, value = %s \n", k, (*v).Value)
 			}
 			subscribeID = id
 		}); err != nil {

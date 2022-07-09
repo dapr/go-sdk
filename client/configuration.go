@@ -33,10 +33,10 @@ func (c *GRPCClient) GetConfigurationItem(ctx context.Context, storeName, key st
 	if len(items) == 0 {
 		return nil, nil
 	}
-	return items[0], nil
+	return items[key], nil
 }
 
-func (c *GRPCClient) GetConfigurationItems(ctx context.Context, storeName string, keys []string, opts ...ConfigurationOpt) ([]*ConfigurationItem, error) {
+func (c *GRPCClient) GetConfigurationItems(ctx context.Context, storeName string, keys []string, opts ...ConfigurationOpt) (map[string]*ConfigurationItem, error) {
 	metadata := make(map[string]string)
 	for _, opt := range opts {
 		opt(metadata)
@@ -50,19 +50,19 @@ func (c *GRPCClient) GetConfigurationItems(ctx context.Context, storeName string
 		return nil, err
 	}
 
-	configItems := make([]*ConfigurationItem, 0)
-	for _, v := range rsp.Items {
-		configItems = append(configItems, &ConfigurationItem{
-			Key:      v.Key,
-			Value:    v.Value,
-			Version:  v.Version,
-			Metadata: v.Metadata,
-		})
+	configItems := make(map[string]*ConfigurationItem, len(rsp.Items))
+	for k, item := range rsp.Items {
+		configItems[k] = &ConfigurationItem{
+			Key:      k,
+			Value:    item.Value,
+			Version:  item.Version,
+			Metadata: item.Metadata,
+		}
 	}
 	return configItems, nil
 }
 
-type ConfigurationHandleFunction func(string, []*ConfigurationItem)
+type ConfigurationHandleFunction func(string, map[string]*ConfigurationItem)
 
 func (c *GRPCClient) SubscribeConfigurationItems(ctx context.Context, storeName string, keys []string, handler ConfigurationHandleFunction, opts ...ConfigurationOpt) error {
 	metadata := make(map[string]string)
@@ -91,14 +91,14 @@ func (c *GRPCClient) SubscribeConfigurationItems(ctx context.Context, storeName 
 				break
 			}
 			subscribeID = rsp.Id
-			configurationItems := make([]*ConfigurationItem, 0)
-			for _, v := range rsp.Items {
-				configurationItems = append(configurationItems, &ConfigurationItem{
-					Key:      v.Key,
+			configurationItems := make(map[string]*ConfigurationItem, 0)
+			for k, v := range rsp.Items {
+				configurationItems[k] = &ConfigurationItem{
+					Key:      k,
 					Value:    v.Value,
 					Version:  v.Version,
 					Metadata: v.Metadata,
-				})
+				}
 			}
 			handler(rsp.Id, configurationItems)
 		}

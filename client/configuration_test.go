@@ -36,8 +36,8 @@ func TestGetConfigurationItems(t *testing.T) {
 	t.Run("Test get configuration items", func(t *testing.T) {
 		resp, err := testClient.GetConfigurationItems(ctx, "example-config", []string{"mykey1", "mykey2", "mykey3"})
 		assert.Nil(t, err)
-		for i, v := range resp {
-			assert.Equal(t, "mykey"+strconv.Itoa(i+1)+valueSuffix, v.Value)
+		for k, v := range resp {
+			assert.Equal(t, k+valueSuffix, v.Value)
 		}
 	})
 }
@@ -49,10 +49,10 @@ func TestSubscribeConfigurationItems(t *testing.T) {
 	totalCounter := 0
 	t.Run("Test subscribe configuration items", func(t *testing.T) {
 		err := testClient.SubscribeConfigurationItems(ctx, "example-config",
-			[]string{"mykey", "mykey2", "mykey3"}, func(s string, items []*ConfigurationItem) {
+			[]string{"mykey", "mykey2", "mykey3"}, func(s string, items map[string]*ConfigurationItem) {
 				counter++
-				for _, v := range items {
-					assert.Equal(t, v.Value, v.Key+"_"+strconv.Itoa(counter-1))
+				for k, v := range items {
+					assert.Equal(t, v.Value, k+"_"+strconv.Itoa(counter-1))
 					totalCounter++
 				}
 			})
@@ -73,10 +73,10 @@ func TestUnSubscribeConfigurationItems(t *testing.T) {
 		subscribeIDChan := make(chan string)
 		go func() {
 			err := testClient.SubscribeConfigurationItems(ctx, "example-config",
-				[]string{"mykey", "mykey2", "mykey3"}, func(id string, items []*ConfigurationItem) {
+				[]string{"mykey", "mykey2", "mykey3"}, func(id string, items map[string]*ConfigurationItem) {
 					counter.Inc()
-					for _, v := range items {
-						assert.Equal(t, v.Value, v.Key+"_"+strconv.Itoa(int(counter.Load()-1)))
+					for k, v := range items {
+						assert.Equal(t, v.Value, k+"_"+strconv.Itoa(int(counter.Load()-1)))
 						totalCounter.Inc()
 					}
 					select {
