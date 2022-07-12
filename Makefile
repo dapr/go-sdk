@@ -7,7 +7,7 @@ all: help
 
 .PHONY: tidy
 tidy: ## Updates the go modules
-	go mod tidy -compat=1.17
+	go mod tidy
 
 .PHONY: test
 test: tidy ## Tests the entire project 
