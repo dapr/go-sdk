@@ -24,9 +24,10 @@ import (
 
 // AddServiceInvocationHandler appends provided service invocation handler with its route to the service.
 func (s *Server) AddServiceInvocationHandler(route string, fn common.ServiceInvocationHandler) error {
-	if route == "" {
+	if route == "" || route == "/" {
 		return fmt.Errorf("service route required")
 	}
+
 	if fn == nil {
 		return fmt.Errorf("invocation handler required")
 	}
