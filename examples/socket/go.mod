@@ -1,6 +1,6 @@
 module github.com/dapr/go-sdk/examples/socket
 
-go 1.18
+go 1.17
 
 require (
 	github.com/dapr/go-sdk v1.2.0
