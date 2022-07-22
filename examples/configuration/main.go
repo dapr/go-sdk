@@ -3,12 +3,12 @@ package main
 import (
 	"context"
 	"fmt"
-	daprTracing "github.com/dapr/dapr/pkg/diagnostics"
+	"strconv"
+	"time"
+
 	dapr "github.com/dapr/go-sdk/client"
 	"github.com/go-redis/redis/v8"
 	"google.golang.org/grpc/metadata"
-	"strconv"
-	"time"
 )
 
 func init() {
@@ -45,7 +45,7 @@ func main() {
 	fmt.Printf("get config = %s\n", (*items).Value)
 
 	ctx, f := context.WithTimeout(ctx, 60*time.Second)
-	md := metadata.Pairs(daprTracing.GRPCProxyAppIDKey, "configuration-api")
+	md := metadata.Pairs("dapr-app-id", "configuration-api")
 	ctx = metadata.NewOutgoingContext(ctx, md)
 	defer f()
 	var subscribeID string
