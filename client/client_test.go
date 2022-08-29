@@ -196,6 +196,40 @@ func getTestClientWithSocket(ctx context.Context) (client Client, closer func())
 	return
 }
 
+func Test_getClientTimeoutSeconds(t *testing.T) {
+	t.Run("empty env var", func(t *testing.T) {
+		os.Setenv(clientTimoutSecondsEnvVarName, "")
+		got, err := getClientTimeoutSeconds()
+		assert.NoError(t, err)
+		assert.Equal(t, clientDefaultTimoutSeconds, got)
+	})
+
+	t.Run("invalid env var", func(t *testing.T) {
+		os.Setenv(clientTimoutSecondsEnvVarName, "invalid")
+		_, err := getClientTimeoutSeconds()
+		assert.Error(t, err)
+	})
+
+	t.Run("normal env var", func(t *testing.T) {
+		os.Setenv(clientTimoutSecondsEnvVarName, "7")
+		got, err := getClientTimeoutSeconds()
+		assert.NoError(t, err)
+		assert.Equal(t, 7, got)
+	})
+
+	t.Run("zero env var", func(t *testing.T) {
+		os.Setenv(clientTimoutSecondsEnvVarName, "0")
+		_, err := getClientTimeoutSeconds()
+		assert.Error(t, err)
+	})
+
+	t.Run("negative env var", func(t *testing.T) {
+		os.Setenv(clientTimoutSecondsEnvVarName, "-3")
+		_, err := getClientTimeoutSeconds()
+		assert.Error(t, err)
+	})
+}
+
 type testDaprServer struct {
 	pb.UnimplementedDaprServer
 	state                             map[string][]byte

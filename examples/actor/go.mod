@@ -1,17 +1,13 @@
-module github.com/dapr/go-sdk/examples/socket
+module github.com/dapr/go-sdk/examples/actor
 
 go 1.17
 
-require (
-	github.com/dapr/go-sdk v1.2.0
-	gopkg.in/alecthomas/kingpin.v2 v2.2.6
-)
+require github.com/dapr/go-sdk v0.0.0-00010101000000-000000000000
 
 require (
-	github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751 // indirect
-	github.com/alecthomas/units v0.0.0-20210927113745-59d0afb8317a // indirect
 	github.com/dapr/dapr v1.8.0 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
+	github.com/gorilla/mux v1.8.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	golang.org/x/net v0.0.0-20220621193019-9d032be2e588 // indirect
 	golang.org/x/sys v0.0.0-20220520151302-bc2c85ada10a // indirect
