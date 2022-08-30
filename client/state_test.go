@@ -86,14 +86,7 @@ func TestSaveState(t *testing.T) {
 	})
 
 	t.Run("save data with version", func(t *testing.T) {
-		item := &SetStateItem{
-			Etag: &ETag{
-				Value: "1",
-			},
-			Key:   key,
-			Value: []byte(data),
-		}
-		err := testClient.SaveBulkState(ctx, store, item)
+		err := testClient.SaveStateWithETag(ctx, store, key, []byte(data), "1", nil)
 		assert.Nil(t, err)
 	})
 
@@ -147,15 +140,8 @@ func TestDeleteState(t *testing.T) {
 	})
 
 	t.Run("save data again with etag, meta", func(t *testing.T) {
-		err := testClient.SaveBulkState(ctx, store, &SetStateItem{
-			Key:   key,
-			Value: []byte(data),
-			Etag: &ETag{
-				Value: "1",
-			},
-			Metadata: map[string]string{"meta1": "value1"},
-			Options:  &StateOptions{Concurrency: StateConcurrencyFirstWrite, Consistency: StateConsistencyEventual},
-		})
+		meta := map[string]string{"meta1": "value1"}
+		err := testClient.SaveStateWithETag(ctx, store, key, []byte(data), "1", meta, WithConsistency(StateConsistencyEventual), WithConcurrency(StateConcurrencyFirstWrite))
 		assert.Nil(t, err)
 	})
 	t.Run("confirm data saved", func(t *testing.T) {
