@@ -46,7 +46,6 @@ func TestHealthCheckHandler(t *testing.T) {
 		resp := httptest.NewRecorder()
 		s.mux.ServeHTTP(resp, req)
 		assert.Equal(t, http.StatusOK, resp.Code)
-
 	})
 
 	t.Run("health check with http status 500", func(t *testing.T) {

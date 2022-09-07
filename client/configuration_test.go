@@ -32,7 +32,7 @@ func TestGetConfigurationItem(t *testing.T) {
 func TestGetConfigurationItems(t *testing.T) {
 	ctx := context.Background()
 
-	var keys = []string{"mykey1", "mykey2", "mykey3"}
+	keys := []string{"mykey1", "mykey2", "mykey3"}
 	t.Run("Test get configuration items", func(t *testing.T) {
 		resp, err := testClient.GetConfigurationItems(ctx, "example-config", keys)
 		assert.Nil(t, err)
@@ -47,7 +47,7 @@ func TestSubscribeConfigurationItems(t *testing.T) {
 
 	counter := 0
 	totalCounter := 0
-	var keys = []string{"mykey1", "mykey2", "mykey3"}
+	keys := []string{"mykey1", "mykey2", "mykey3"}
 	t.Run("Test subscribe configuration items", func(t *testing.T) {
 		err := testClient.SubscribeConfigurationItems(ctx, "example-config",
 			keys, func(s string, items map[string]*ConfigurationItem) {
@@ -73,7 +73,7 @@ func TestUnSubscribeConfigurationItems(t *testing.T) {
 		subscribeID := ""
 		subscribeIDChan := make(chan string)
 		go func() {
-			var keys = []string{"mykey1", "mykey2", "mykey3"}
+			keys := []string{"mykey1", "mykey2", "mykey3"}
 			err := testClient.SubscribeConfigurationItems(ctx, "example-config",
 				keys, func(id string, items map[string]*ConfigurationItem) {
 					counter.Inc()
