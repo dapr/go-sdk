@@ -51,7 +51,7 @@ func TestHealthCheck(t *testing.T) {
 	assert.Nil(t, err)
 
 	t.Run("health check with handler", func(t *testing.T) {
-		_, err := server.HealthCheck(ctx, nil)
+		_, err = server.HealthCheck(ctx, nil)
 		assert.Nil(t, err)
 	})
 
@@ -59,7 +59,7 @@ func TestHealthCheck(t *testing.T) {
 	assert.Nil(t, err)
 
 	t.Run("health check with error handler", func(t *testing.T) {
-		_, err := server.HealthCheck(ctx, nil)
+		_, err = server.HealthCheck(ctx, nil)
 		assert.Error(t, err)
 	})
 

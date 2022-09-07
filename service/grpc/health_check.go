@@ -19,6 +19,7 @@ import (
 
 	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
 	"github.com/dapr/go-sdk/service/common"
+
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
