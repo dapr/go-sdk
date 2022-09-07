@@ -23,7 +23,8 @@ import (
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/pkg/errors"
 
-	pb "github.com/dapr/dapr/pkg/proto/runtime/v1"
+	commonv1pb "github.com/dapr/go-sdk/dapr/proto/common/v1"
+	runtimev1pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
 	"github.com/dapr/go-sdk/service/common"
 	"github.com/dapr/go-sdk/service/internal"
 )
@@ -41,11 +42,11 @@ func (s *Server) AddTopicEventHandler(sub *common.Subscription, fn common.TopicE
 }
 
 // ListTopicSubscriptions is called by Dapr to get the list of topics in a pubsub component the app wants to subscribe to.
-func (s *Server) ListTopicSubscriptions(ctx context.Context, in *empty.Empty) (*pb.ListTopicSubscriptionsResponse, error) {
-	subs := make([]*pb.TopicSubscription, 0)
+func (s *Server) ListTopicSubscriptions(ctx context.Context, in *empty.Empty) (*runtimev1pb.ListTopicSubscriptionsResponse, error) {
+	subs := make([]*commonv1pb.TopicSubscription, 0)
 	for _, v := range s.topicRegistrar {
 		s := v.Subscription
-		sub := &pb.TopicSubscription{
+		sub := &commonv1pb.TopicSubscription{
 			PubsubName: s.PubsubName,
 			Topic:      s.Topic,
 			Metadata:   s.Metadata,
@@ -54,23 +55,23 @@ func (s *Server) ListTopicSubscriptions(ctx context.Context, in *empty.Empty) (*
 		subs = append(subs, sub)
 	}
 
-	return &pb.ListTopicSubscriptionsResponse{
+	return &runtimev1pb.ListTopicSubscriptionsResponse{
 		Subscriptions: subs,
 	}, nil
 }
 
-func convertRoutes(routes *internal.TopicRoutes) *pb.TopicRoutes {
+func convertRoutes(routes *internal.TopicRoutes) *commonv1pb.TopicRoutes {
 	if routes == nil {
 		return nil
 	}
-	rules := make([]*pb.TopicRule, len(routes.Rules))
+	rules := make([]*commonv1pb.TopicRule, len(routes.Rules))
 	for i, rule := range routes.Rules {
-		rules[i] = &pb.TopicRule{
+		rules[i] = &commonv1pb.TopicRule{
 			Match: rule.Match,
 			Path:  rule.Path,
 		}
 	}
-	return &pb.TopicRoutes{
+	return &commonv1pb.TopicRoutes{
 		Rules:   rules,
 		Default: routes.Default,
 	}
@@ -78,11 +79,11 @@ func convertRoutes(routes *internal.TopicRoutes) *pb.TopicRoutes {
 
 // OnTopicEvent fired whenever a message has been published to a topic that has been subscribed.
 // Dapr sends published messages in a CloudEvents v1.0 envelope.
-func (s *Server) OnTopicEvent(ctx context.Context, in *pb.TopicEventRequest) (*pb.TopicEventResponse, error) {
+func (s *Server) OnTopicEvent(ctx context.Context, in *runtimev1pb.TopicEventRequest) (*runtimev1pb.TopicEventResponse, error) {
 	if in == nil || in.Topic == "" || in.PubsubName == "" {
 		// this is really Dapr issue more than the event request format.
 		// since Dapr will not get updated until long after this event expires, just drop it
-		return &pb.TopicEventResponse{Status: pb.TopicEventResponse_DROP}, errors.New("pub/sub and topic names required")
+		return &runtimev1pb.TopicEventResponse{Status: runtimev1pb.TopicEventResponse_DROP}, errors.New("pub/sub and topic names required")
 	}
 	key := in.PubsubName + "-" + in.Topic
 	noValidationKey := in.PubsubName
@@ -138,21 +139,21 @@ func (s *Server) OnTopicEvent(ctx context.Context, in *pb.TopicEventRequest) (*p
 			}
 		}
 		if h == nil {
-			return &pb.TopicEventResponse{Status: pb.TopicEventResponse_RETRY}, fmt.Errorf(
+			return &runtimev1pb.TopicEventResponse{Status: runtimev1pb.TopicEventResponse_RETRY}, fmt.Errorf(
 				"route %s for pub/sub and topic combination not configured: %s/%s",
 				in.Path, in.PubsubName, in.Topic,
 			)
 		}
 		retry, err := h(ctx, e)
 		if err == nil {
-			return &pb.TopicEventResponse{Status: pb.TopicEventResponse_SUCCESS}, nil
+			return &runtimev1pb.TopicEventResponse{Status: runtimev1pb.TopicEventResponse_SUCCESS}, nil
 		}
 		if retry {
-			return &pb.TopicEventResponse{Status: pb.TopicEventResponse_RETRY}, err
+			return &runtimev1pb.TopicEventResponse{Status: runtimev1pb.TopicEventResponse_RETRY}, err
 		}
-		return &pb.TopicEventResponse{Status: pb.TopicEventResponse_DROP}, err
+		return &runtimev1pb.TopicEventResponse{Status: runtimev1pb.TopicEventResponse_DROP}, err
 	}
-	return &pb.TopicEventResponse{Status: pb.TopicEventResponse_RETRY}, fmt.Errorf(
+	return &runtimev1pb.TopicEventResponse{Status: runtimev1pb.TopicEventResponse_RETRY}, fmt.Errorf(
 		"pub/sub and topic combination not configured: %s/%s",
 		in.PubsubName, in.Topic,
 	)
