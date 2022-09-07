@@ -19,6 +19,7 @@ import (
 	"log"
 	"net"
 	"os"
+	"strconv"
 	"sync"
 	"time"
 
@@ -38,11 +39,13 @@ import (
 )
 
 const (
-	daprPortDefault    = "50001"
-	daprPortEnvVarName = "DAPR_GRPC_PORT" /* #nosec */
-	traceparentKey     = "traceparent"
-	apiTokenKey        = "dapr-api-token" /* #nosec */
-	apiTokenEnvVarName = "DAPR_API_TOKEN" /* #nosec */
+	daprPortDefault               = "50001"
+	daprPortEnvVarName            = "DAPR_GRPC_PORT" /* #nosec */
+	traceparentKey                = "traceparent"
+	apiTokenKey                   = "dapr-api-token" /* #nosec */
+	apiTokenEnvVarName            = "DAPR_API_TOKEN" /* #nosec */
+	clientDefaultTimoutSeconds    = 5
+	clientTimoutSecondsEnvVarName = "DAPR_CLIENT_TIMEOUT_SECONDS"
 )
 
 var (
@@ -182,10 +185,11 @@ type Client interface {
 // Note, this default factory function creates Dapr client only once. All subsequent invocations
 // will return the already created instance. To create multiple instances of the Dapr client,
 // use one of the parameterized factory functions:
-//   NewClientWithPort(port string) (client Client, err error)
-//   NewClientWithAddress(address string) (client Client, err error)
-//   NewClientWithConnection(conn *grpc.ClientConn) Client
-//   NewClientWithSocket(socket string) (client Client, err error)
+//
+//	NewClientWithPort(port string) (client Client, err error)
+//	NewClientWithAddress(address string) (client Client, err error)
+//	NewClientWithConnection(conn *grpc.ClientConn) Client
+//	NewClientWithSocket(socket string) (client Client, err error)
 func NewClient() (client Client, err error) {
 	port := os.Getenv(daprPortEnvVarName)
 	if port == "" {
@@ -216,7 +220,11 @@ func NewClientWithAddress(address string) (client Client, err error) {
 	}
 	logger.Printf("dapr client initializing for: %s", address)
 
-	ctx, ctxCancel := context.WithTimeout(context.Background(), 1*time.Second)
+	timeoutSeconds, err := getClientTimeoutSeconds()
+	if err != nil {
+		return nil, err
+	}
+	ctx, ctxCancel := context.WithTimeout(context.Background(), time.Duration(timeoutSeconds)*time.Second)
 	conn, err := grpc.DialContext(
 		ctx,
 		address,
@@ -232,6 +240,21 @@ func NewClientWithAddress(address string) (client Client, err error) {
 	}
 
 	return newClientWithConnectionAndCancelFunc(conn, ctxCancel), nil
+}
+
+func getClientTimeoutSeconds() (int, error) {
+	timeoutStr := os.Getenv(clientTimoutSecondsEnvVarName)
+	if len(timeoutStr) == 0 {
+		return clientDefaultTimoutSeconds, nil
+	}
+	timeoutVar, err := strconv.Atoi(timeoutStr)
+	if err != nil {
+		return 0, err
+	}
+	if timeoutVar <= 0 {
+		return 0, errors.New("incorrect value")
+	}
+	return timeoutVar, nil
 }
 
 // NewClientWithSocket instantiates Dapr using specific socket.

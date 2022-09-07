@@ -36,6 +36,27 @@ func main() {
 }
 ```
 
+`NewClient` function has a default timeout for 5s, but you can customize this timeout by setting the environment variable `DAPR_CLIENT_TIMEOUT_SECONDS`.  
+For example: 
+```go
+package main
+
+import (
+	"os"
+	
+	dapr "github.com/dapr/go-sdk/client"
+)
+
+func main() {
+    os.Setenv("DAPR_CLIENT_TIMEOUT_SECONDS", "3")
+    client, err := dapr.NewClient()
+    if err != nil {
+        panic(err)
+    }
+    defer client.Close()
+}
+```
+  
 Assuming you have [Dapr CLI](https://docs.dapr.io/getting-started/install-dapr/) installed, you can then launch your app locally like this:
 
 ```shell
