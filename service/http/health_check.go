@@ -38,7 +38,7 @@ func (s *Server) AddHealthCheckHandler(route string, fn common.HealthCheckHandle
 				return
 			}
 
-			w.WriteHeader(http.StatusOK)
+			w.WriteHeader(http.StatusNoContent)
 		})))
 
 	return nil
