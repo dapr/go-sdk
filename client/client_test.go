@@ -19,7 +19,6 @@ import (
 	"fmt"
 	"net"
 	"os"
-	"strconv"
 	"sync"
 	"testing"
 	"time"
@@ -33,8 +32,8 @@ import (
 	"google.golang.org/grpc/test/bufconn"
 	"google.golang.org/protobuf/types/known/anypb"
 
-	commonv1pb "github.com/dapr/dapr/pkg/proto/common/v1"
-	pb "github.com/dapr/dapr/pkg/proto/runtime/v1"
+	commonv1pb "github.com/dapr/go-sdk/dapr/proto/common/v1"
+	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
 )
 
 const (
@@ -408,12 +407,11 @@ func (s *testDaprServer) GetConfigurationAlpha1(ctx context.Context, in *pb.GetC
 	if in.GetStoreName() == "" {
 		return &pb.GetConfigurationResponse{}, errors.New("store name notfound")
 	}
-	items := make([]*commonv1pb.ConfigurationItem, 0)
+	items := make(map[string]*commonv1pb.ConfigurationItem)
 	for _, v := range in.GetKeys() {
-		items = append(items, &commonv1pb.ConfigurationItem{
-			Key:   v,
+		items[v] = &commonv1pb.ConfigurationItem{
 			Value: v + valueSuffix,
-		})
+		}
 	}
 	return &pb.GetConfigurationResponse{
 		Items: items,
@@ -432,13 +430,11 @@ func (s *testDaprServer) SubscribeConfigurationAlpha1(in *pb.SubscribeConfigurat
 			return nil
 		default:
 		}
-		items := make([]*commonv1pb.ConfigurationItem, 0)
+		items := make(map[string]*commonv1pb.ConfigurationItem)
 		for _, v := range in.GetKeys() {
-			items = append(items, &commonv1pb.ConfigurationItem{
-				Key:   v,
-				Value: v + "_" + strconv.Itoa(i),
-			},
-			)
+			items[v] = &commonv1pb.ConfigurationItem{
+				Value: v + valueSuffix,
+			}
 		}
 		if err := server.Send(&pb.SubscribeConfigurationResponse{
 			Id:    id.String(),
