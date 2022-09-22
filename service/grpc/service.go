@@ -16,6 +16,7 @@ package grpc
 import (
 	"net"
 	"os"
+	"sync/atomic"
 
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
@@ -72,6 +73,7 @@ type Server struct {
 	bindingHandlers map[string]common.BindingInvocationHandler
 	authToken       string
 	grpcServer      *grpc.Server
+	started         atomic.Bool
 }
 
 func (s *Server) RegisterActorImplFactory(f actor.Factory, opts ...config.Option) {
@@ -80,15 +82,15 @@ func (s *Server) RegisterActorImplFactory(f actor.Factory, opts ...config.Option
 
 // Start registers the server and starts it.
 func (s *Server) Start() error {
-	if s.grpcServer == nil {
-		return errors.New("cannot restart a stopped gRPC server")
+	if !s.started.CompareAndSwap(false, true) {
+		return errors.New("a gRPC server can only be started once")
 	}
 	return s.grpcServer.Serve(s.listener)
 }
 
 // Stop stops the previously-started service.
 func (s *Server) Stop() error {
-	if s.grpcServer == nil {
+	if !s.started.Load() {
 		return nil
 	}
 	s.grpcServer.Stop()
@@ -98,7 +100,7 @@ func (s *Server) Stop() error {
 
 // GrecefulStop stops the previously-started service gracefully.
 func (s *Server) GracefulStop() error {
-	if s.grpcServer == nil {
+	if !s.started.Load() {
 		return nil
 	}
 	s.grpcServer.GracefulStop()
