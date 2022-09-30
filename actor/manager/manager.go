@@ -206,7 +206,7 @@ func suitableMethods(typ reflect.Type) map[string]*MethodType {
 	methods := make(map[string]*MethodType)
 	for m := 0; m < typ.NumMethod(); m++ {
 		method := typ.Method(m)
-		if mt, err := suiteMethod(method); mt != nil && err != nil {
+		if mt, err := suiteMethod(method); err != nil {
 			log.Printf("method %s is illegal, err = %s, just skip it", method.Name, err)
 		} else {
 			methods[method.Name] = mt

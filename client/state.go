@@ -276,6 +276,11 @@ func (c *GRPCClient) ExecuteStateTransaction(ctx context.Context, storeName stri
 
 // SaveState saves the raw data into store, default options: strong, last-write.
 func (c *GRPCClient) SaveState(ctx context.Context, storeName, key string, data []byte, meta map[string]string, so ...StateOption) error {
+	return c.SaveStateWithETag(ctx, storeName, key, data, "", meta, so...)
+}
+
+// SaveStateWithETag saves the raw data into store using provided state options and etag.
+func (c *GRPCClient) SaveStateWithETag(ctx context.Context, storeName, key string, data []byte, etag string, meta map[string]string, so ...StateOption) error {
 	stateOptions := new(StateOptions)
 	for _, o := range so {
 		o(stateOptions)
@@ -288,6 +293,9 @@ func (c *GRPCClient) SaveState(ctx context.Context, storeName, key string, data 
 		Value:    data,
 		Metadata: meta,
 		Options:  stateOptions,
+	}
+	if etag != "" {
+		item.Etag = &ETag{Value: etag}
 	}
 	return c.SaveBulkState(ctx, storeName, item)
 }

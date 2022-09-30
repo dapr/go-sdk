@@ -90,6 +90,9 @@ type Client interface {
 	// SaveState saves the raw data into store using default state options.
 	SaveState(ctx context.Context, storeName, key string, data []byte, meta map[string]string, so ...StateOption) error
 
+	// SaveState saves the raw data into store using provided state options and etag.
+	SaveStateWithETag(ctx context.Context, storeName, key string, data []byte, etag string, meta map[string]string, so ...StateOption) error
+
 	// SaveBulkState saves multiple state item to store with specified options.
 	SaveBulkState(ctx context.Context, storeName string, items ...*SetStateItem) error
 
