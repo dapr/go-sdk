@@ -73,7 +73,7 @@ type Server struct {
 	bindingHandlers map[string]common.BindingInvocationHandler
 	authToken       string
 	grpcServer      *grpc.Server
-	started         atomic.Bool
+	started         uint32
 }
 
 func (s *Server) RegisterActorImplFactory(f actor.Factory, opts ...config.Option) {
@@ -82,7 +82,7 @@ func (s *Server) RegisterActorImplFactory(f actor.Factory, opts ...config.Option
 
 // Start registers the server and starts it.
 func (s *Server) Start() error {
-	if !s.started.CompareAndSwap(false, true) {
+	if !atomic.CompareAndSwapUint32(&s.started, 0, 1) {
 		return errors.New("a gRPC server can only be started once")
 	}
 	return s.grpcServer.Serve(s.listener)
@@ -90,7 +90,7 @@ func (s *Server) Start() error {
 
 // Stop stops the previously-started service.
 func (s *Server) Stop() error {
-	if !s.started.Load() {
+	if atomic.LoadUint32(&s.started) == 0 {
 		return nil
 	}
 	s.grpcServer.Stop()
@@ -100,7 +100,7 @@ func (s *Server) Stop() error {
 
 // GrecefulStop stops the previously-started service gracefully.
 func (s *Server) GracefulStop() error {
-	if !s.started.Load() {
+	if atomic.LoadUint32(&s.started) == 0 {
 		return nil
 	}
 	s.grpcServer.GracefulStop()
