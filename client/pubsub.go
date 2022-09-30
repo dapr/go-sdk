@@ -20,7 +20,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	pb "github.com/dapr/dapr/pkg/proto/runtime/v1"
+	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
 )
 
 const (

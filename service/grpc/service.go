@@ -20,10 +20,9 @@ import (
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
 
-	pb "github.com/dapr/dapr/pkg/proto/runtime/v1"
-
 	"github.com/dapr/go-sdk/actor"
 	"github.com/dapr/go-sdk/actor/config"
+	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
 	"github.com/dapr/go-sdk/service/common"
 	"github.com/dapr/go-sdk/service/internal"
 )

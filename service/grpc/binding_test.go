@@ -21,7 +21,7 @@ import (
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/stretchr/testify/assert"
 
-	runtime "github.com/dapr/dapr/pkg/proto/runtime/v1"
+	runtime "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
 	"github.com/dapr/go-sdk/service/common"
 )
 
