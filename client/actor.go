@@ -22,10 +22,10 @@ import (
 	anypb "github.com/golang/protobuf/ptypes/any"
 	"github.com/pkg/errors"
 
-	pb "github.com/dapr/dapr/pkg/proto/runtime/v1"
 	"github.com/dapr/go-sdk/actor"
 	"github.com/dapr/go-sdk/actor/codec"
 	"github.com/dapr/go-sdk/actor/config"
+	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
 )
 
 type InvokeActorRequest struct {

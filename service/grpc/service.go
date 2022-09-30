@@ -20,7 +20,7 @@ import (
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
 
-	pb "github.com/dapr/dapr/pkg/proto/runtime/v1"
+	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
 
 	"github.com/dapr/go-sdk/actor"
 	"github.com/dapr/go-sdk/actor/config"
@@ -60,12 +60,14 @@ func newService(lis net.Listener) *Server {
 // Server is the gRPC service implementation for Dapr.
 type Server struct {
 	pb.UnimplementedAppCallbackServer
-	listener        net.Listener
-	invokeHandlers  map[string]common.ServiceInvocationHandler
-	topicRegistrar  internal.TopicRegistrar
-	bindingHandlers map[string]common.BindingInvocationHandler
-	authToken       string
-	grpcServer      *grpc.Server
+	pb.UnimplementedAppCallbackHealthCheckServer
+	listener           net.Listener
+	invokeHandlers     map[string]common.ServiceInvocationHandler
+	topicRegistrar     internal.TopicRegistrar
+	bindingHandlers    map[string]common.BindingInvocationHandler
+	healthCheckHandler common.HealthCheckHandler
+	authToken          string
+	grpcServer         *grpc.Server
 }
 
 func (s *Server) RegisterActorImplFactory(f actor.Factory, opts ...config.Option) {
@@ -76,6 +78,7 @@ func (s *Server) RegisterActorImplFactory(f actor.Factory, opts ...config.Option
 func (s *Server) Start() error {
 	gs := grpc.NewServer()
 	pb.RegisterAppCallbackServer(gs, s)
+	pb.RegisterAppCallbackHealthCheckServer(gs, s)
 	s.grpcServer = gs
 	return gs.Serve(s.listener)
 }
