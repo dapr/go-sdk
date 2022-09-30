@@ -2,7 +2,6 @@ package client
 
 import (
 	"context"
-	"strconv"
 	"testing"
 	"time"
 
@@ -33,11 +32,12 @@ func TestGetConfigurationItem(t *testing.T) {
 func TestGetConfigurationItems(t *testing.T) {
 	ctx := context.Background()
 
+	keys := []string{"mykey1", "mykey2", "mykey3"}
 	t.Run("Test get configuration items", func(t *testing.T) {
-		resp, err := testClient.GetConfigurationItems(ctx, "example-config", []string{"mykey1", "mykey2", "mykey3"})
+		resp, err := testClient.GetConfigurationItems(ctx, "example-config", keys)
 		assert.Nil(t, err)
-		for i, v := range resp {
-			assert.Equal(t, "mykey"+strconv.Itoa(i+1)+valueSuffix, v.Value)
+		for _, k := range keys {
+			assert.Equal(t, k+valueSuffix, resp[k].Value)
 		}
 	})
 }
@@ -47,12 +47,13 @@ func TestSubscribeConfigurationItems(t *testing.T) {
 
 	counter := 0
 	totalCounter := 0
+	keys := []string{"mykey1", "mykey2", "mykey3"}
 	t.Run("Test subscribe configuration items", func(t *testing.T) {
 		err := testClient.SubscribeConfigurationItems(ctx, "example-config",
-			[]string{"mykey", "mykey2", "mykey3"}, func(s string, items []*ConfigurationItem) {
+			keys, func(s string, items map[string]*ConfigurationItem) {
 				counter++
-				for _, v := range items {
-					assert.Equal(t, v.Value, v.Key+"_"+strconv.Itoa(counter-1))
+				for _, k := range keys {
+					assert.Equal(t, k+valueSuffix, items[k].Value)
 					totalCounter++
 				}
 			})
@@ -72,11 +73,12 @@ func TestUnSubscribeConfigurationItems(t *testing.T) {
 		subscribeID := ""
 		subscribeIDChan := make(chan string)
 		go func() {
+			keys := []string{"mykey1", "mykey2", "mykey3"}
 			err := testClient.SubscribeConfigurationItems(ctx, "example-config",
-				[]string{"mykey", "mykey2", "mykey3"}, func(id string, items []*ConfigurationItem) {
+				keys, func(id string, items map[string]*ConfigurationItem) {
 					counter.Inc()
-					for _, v := range items {
-						assert.Equal(t, v.Value, v.Key+"_"+strconv.Itoa(int(counter.Load()-1)))
+					for _, k := range keys {
+						assert.Equal(t, k+valueSuffix, items[k].Value)
 						totalCounter.Inc()
 					}
 					select {

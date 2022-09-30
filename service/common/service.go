@@ -28,6 +28,8 @@ const (
 
 // Service represents Dapr callback service.
 type Service interface {
+	// AddHealthCheckHandler sets a health check handler, name: http (router) and grpc (invalid).
+	AddHealthCheckHandler(name string, fn HealthCheckHandler) error
 	// AddServiceInvocationHandler appends provided service invocation handler with its name to the service.
 	AddServiceInvocationHandler(name string, fn ServiceInvocationHandler) error
 	// AddTopicEventHandler appends provided event handler with its topic and optional metadata to the service.
@@ -49,4 +51,5 @@ type (
 	ServiceInvocationHandler func(ctx context.Context, in *InvocationEvent) (out *Content, err error)
 	TopicEventHandler        func(ctx context.Context, e *TopicEvent) (retry bool, err error)
 	BindingInvocationHandler func(ctx context.Context, in *BindingEvent) (out []byte, err error)
+	HealthCheckHandler       func(context.Context) error
 )

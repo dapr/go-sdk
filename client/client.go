@@ -32,7 +32,7 @@ import (
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/emptypb"
 
-	pb "github.com/dapr/dapr/pkg/proto/runtime/v1"
+	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
 
 	// used to import codec implements.
 	_ "github.com/dapr/go-sdk/actor/codec/impl"
@@ -121,7 +121,7 @@ type Client interface {
 	GetConfigurationItem(ctx context.Context, storeName, key string, opts ...ConfigurationOpt) (*ConfigurationItem, error)
 
 	// GetConfigurationItems can get a list of configuration item by storeName and keys
-	GetConfigurationItems(ctx context.Context, storeName string, keys []string, opts ...ConfigurationOpt) ([]*ConfigurationItem, error)
+	GetConfigurationItems(ctx context.Context, storeName string, keys []string, opts ...ConfigurationOpt) (map[string]*ConfigurationItem, error)
 
 	// SubscribeConfigurationItems can subscribe the change of configuration items by storeName and keys, and return subscription id
 	SubscribeConfigurationItems(ctx context.Context, storeName string, keys []string, handler ConfigurationHandleFunction, opts ...ConfigurationOpt) error
