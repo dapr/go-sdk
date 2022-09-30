@@ -300,7 +300,6 @@ type GRPCClient struct {
 	ctxCancelFunc context.CancelFunc
 	protoClient   pb.DaprClient
 	authToken     string
-	mux           sync.Mutex
 }
 
 // Close cleans up all resources created by the client.
@@ -308,15 +307,14 @@ func (c *GRPCClient) Close() {
 	c.ctxCancelFunc()
 	if c.connection != nil {
 		c.connection.Close()
+		c.connection = nil
 	}
 }
 
 // WithAuthToken sets Dapr API token on the instantiated client.
 // Allows empty string to reset token on existing client.
 func (c *GRPCClient) WithAuthToken(token string) {
-	c.mux.Lock()
 	c.authToken = token
-	c.mux.Unlock()
 }
 
 // WithTraceID adds existing trace ID to the outgoing context.
@@ -348,4 +346,9 @@ func (c *GRPCClient) Shutdown(ctx context.Context) error {
 // GrpcClient returns the base grpc client.
 func (c *GRPCClient) GrpcClient() pb.DaprClient {
 	return c.protoClient
+}
+
+// GrpcClientConn returns the grpc.ClientConn object used by this client.
+func (c *GRPCClient) GrpcClientConn() *grpc.ClientConn {
+	return c.connection
 }

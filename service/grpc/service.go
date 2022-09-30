@@ -16,6 +16,7 @@ package grpc
 import (
 	"net"
 	"os"
+	"sync/atomic"
 
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
@@ -48,13 +49,20 @@ func NewServiceWithListener(lis net.Listener) common.Service {
 }
 
 func newService(lis net.Listener) *Server {
-	return &Server{
+	s := &Server{
 		listener:        lis,
 		invokeHandlers:  make(map[string]common.ServiceInvocationHandler),
 		topicRegistrar:  make(internal.TopicRegistrar),
 		bindingHandlers: make(map[string]common.BindingInvocationHandler),
 		authToken:       os.Getenv(common.AppAPITokenEnvVar),
 	}
+
+	gs := grpc.NewServer()
+	pb.RegisterAppCallbackServer(gs, s)
+	pb.RegisterAppCallbackHealthCheckServer(gs, s)
+	s.grpcServer = gs
+
+	return s
 }
 
 // Server is the gRPC service implementation for Dapr.
@@ -68,6 +76,7 @@ type Server struct {
 	healthCheckHandler common.HealthCheckHandler
 	authToken          string
 	grpcServer         *grpc.Server
+	started            uint32
 }
 
 func (s *Server) RegisterActorImplFactory(f actor.Factory, opts ...config.Option) {
@@ -76,19 +85,33 @@ func (s *Server) RegisterActorImplFactory(f actor.Factory, opts ...config.Option
 
 // Start registers the server and starts it.
 func (s *Server) Start() error {
-	gs := grpc.NewServer()
-	pb.RegisterAppCallbackServer(gs, s)
-	pb.RegisterAppCallbackHealthCheckServer(gs, s)
-	s.grpcServer = gs
-	return gs.Serve(s.listener)
+	if !atomic.CompareAndSwapUint32(&s.started, 0, 1) {
+		return errors.New("a gRPC server can only be started once")
+	}
+	return s.grpcServer.Serve(s.listener)
 }
 
-// Stop stops the previously started service.
+// Stop stops the previously-started service.
 func (s *Server) Stop() error {
-	return s.listener.Close()
+	if atomic.LoadUint32(&s.started) == 0 {
+		return nil
+	}
+	s.grpcServer.Stop()
+	s.grpcServer = nil
+	return nil
 }
 
+// GrecefulStop stops the previously-started service gracefully.
 func (s *Server) GracefulStop() error {
+	if atomic.LoadUint32(&s.started) == 0 {
+		return nil
+	}
 	s.grpcServer.GracefulStop()
+	s.grpcServer = nil
 	return nil
+}
+
+// GrpcServer returns the grpc.Server object managed by the server.
+func (s *Server) GrpcServer() *grpc.Server {
+	return s.grpcServer
 }
