@@ -334,18 +334,24 @@ func TestActorHandler(t *testing.T) {
 }
 
 func makeRequest(t *testing.T, s *Server, route, data, method string, expectedStatusCode int) {
+	t.Helper()
+
 	req, err := http.NewRequest(method, route, strings.NewReader(data))
 	assert.NoErrorf(t, err, "error creating request: %s", data)
 	testRequest(t, s, req, expectedStatusCode)
 }
 
 func makeRequestWithExpectedBody(t *testing.T, s *Server, route, data, method string, expectedStatusCode int, expectedBody []byte) {
+	t.Helper()
+
 	req, err := http.NewRequest(method, route, strings.NewReader(data))
 	assert.NoErrorf(t, err, "error creating request: %s", data)
 	testRequestWithResponseBody(t, s, req, expectedStatusCode, expectedBody)
 }
 
 func makeEventRequest(t *testing.T, s *Server, route, data string, expectedStatusCode int) {
+	t.Helper()
+
 	req, err := http.NewRequest(http.MethodPost, route, strings.NewReader(data))
 	assert.NoErrorf(t, err, "error creating request: %s", data)
 	req.Header.Set("Content-Type", "application/json")

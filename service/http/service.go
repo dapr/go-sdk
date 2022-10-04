@@ -44,7 +44,7 @@ func newServer(address string, router *mux.Router) *Server {
 	}
 	return &Server{
 		address: address,
-		httpServer: &http.Server{
+		httpServer: &http.Server{ //nolint:gosec
 			Addr:    address,
 			Handler: router,
 		},

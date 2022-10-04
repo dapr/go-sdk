@@ -1,14 +1,11 @@
 package version
 
 import (
-	// Required for go:embed
+	// Required for go:embed.
 	_ "embed"
 )
 
-// This weird redirection is courtesy of our linter 💄
+// SDKVersion contains the version of the SDK.
 //
 //go:embed sdk-version
-var sdkVersion string
-
-// SDKVersion contains the version of the SDK.
-var SDKVersion string = sdkVersion
+var SDKVersion string

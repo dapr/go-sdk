@@ -14,6 +14,7 @@ limitations under the License.
 package http
 
 import (
+	"errors"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -35,7 +36,7 @@ func TestStoppingStartedService(t *testing.T) {
 	assert.NotNil(t, s)
 
 	go func() {
-		if err := s.Start(); err != nil && err != http.ErrServerClosed {
+		if err := s.Start(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			panic(err)
 		}
 	}()
@@ -70,6 +71,8 @@ func TestSettingOptions(t *testing.T) {
 }
 
 func testRequest(t *testing.T, s *Server, r *http.Request, expectedStatusCode int) {
+	t.Helper()
+
 	rr := httptest.NewRecorder()
 	s.mux.ServeHTTP(rr, r)
 	resp := rr.Result()
@@ -79,6 +82,8 @@ func testRequest(t *testing.T, s *Server, r *http.Request, expectedStatusCode in
 }
 
 func testRequestWithResponseBody(t *testing.T, s *Server, r *http.Request, expectedStatusCode int, expectedBody []byte) {
+	t.Helper()
+
 	rr := httptest.NewRecorder()
 	s.mux.ServeHTTP(rr, r)
 	rez := rr.Result()
