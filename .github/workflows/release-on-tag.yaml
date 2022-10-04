@@ -20,6 +20,14 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
 
+    - name: Check sdk-version file
+      run: |
+        if [[ "$(head -n1 version/sdk-version)" != "${{ github.ref }}" ]]; then
+          echo "File version/sdk-version needs to be updated to ${{ github.ref }}"
+          exit 1
+        fi
+      shell: bash
+
     - name: Tidy
       run: |
         go mod tidy -compat=1.17
@@ -39,7 +47,7 @@ jobs:
       with:
         tag_name: ${{ github.ref }}
         release_name: Release ${{ github.ref }}
-        body: Automatic go Dapr client release
+        body: Automatic Go Dapr client release
         draft: false
         prerelease: false
 
@@ -49,5 +57,5 @@ jobs:
         severity: info
         details: Release ${{ github.ref }} published
         description: Release
-        webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}        
+        webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
         avatarUrl: https://github.githubassets.com/images/modules/logos_page/Octocat.png
