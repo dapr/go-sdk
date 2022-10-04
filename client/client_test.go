@@ -197,33 +197,33 @@ func getTestClientWithSocket(ctx context.Context) (client Client, closer func())
 
 func Test_getClientTimeoutSeconds(t *testing.T) {
 	t.Run("empty env var", func(t *testing.T) {
-		os.Setenv(clientTimoutSecondsEnvVarName, "")
+		os.Setenv(clientTimeoutSecondsEnvVarName, "")
 		got, err := getClientTimeoutSeconds()
 		assert.NoError(t, err)
-		assert.Equal(t, clientDefaultTimoutSeconds, got)
+		assert.Equal(t, clientDefaultTimeoutSeconds, got)
 	})
 
 	t.Run("invalid env var", func(t *testing.T) {
-		os.Setenv(clientTimoutSecondsEnvVarName, "invalid")
+		os.Setenv(clientTimeoutSecondsEnvVarName, "invalid")
 		_, err := getClientTimeoutSeconds()
 		assert.Error(t, err)
 	})
 
 	t.Run("normal env var", func(t *testing.T) {
-		os.Setenv(clientTimoutSecondsEnvVarName, "7")
+		os.Setenv(clientTimeoutSecondsEnvVarName, "7")
 		got, err := getClientTimeoutSeconds()
 		assert.NoError(t, err)
 		assert.Equal(t, 7, got)
 	})
 
 	t.Run("zero env var", func(t *testing.T) {
-		os.Setenv(clientTimoutSecondsEnvVarName, "0")
+		os.Setenv(clientTimeoutSecondsEnvVarName, "0")
 		_, err := getClientTimeoutSeconds()
 		assert.Error(t, err)
 	})
 
 	t.Run("negative env var", func(t *testing.T) {
-		os.Setenv(clientTimoutSecondsEnvVarName, "-3")
+		os.Setenv(clientTimeoutSecondsEnvVarName, "-3")
 		_, err := getClientTimeoutSeconds()
 		assert.Error(t, err)
 	})
