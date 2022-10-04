@@ -27,6 +27,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/test/bufconn"
@@ -85,7 +86,7 @@ func TestNewClient(t *testing.T) {
 	t.Run("new client closed with token", func(t *testing.T) {
 		t.Setenv(apiTokenEnvVarName, "test")
 		c, err := NewClientWithSocket(testSocket)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		defer c.Close()
 		c.WithAuthToken("")
 	})
@@ -101,21 +102,21 @@ func TestNewClient(t *testing.T) {
 	t.Run("new socket client closed with token", func(t *testing.T) {
 		t.Setenv(apiTokenEnvVarName, "test")
 		c, err := NewClientWithSocket(testSocket)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		defer c.Close()
 		c.WithAuthToken("")
 	})
 
 	t.Run("new socket client closed with empty token", func(t *testing.T) {
 		c, err := NewClientWithSocket(testSocket)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		defer c.Close()
 		c.WithAuthToken("")
 	})
 
 	t.Run("new socket client with trace ID", func(t *testing.T) {
 		c, err := NewClientWithSocket(testSocket)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		defer c.Close()
 		ctx := c.WithTraceID(context.Background(), "")
 		_ = c.WithTraceID(ctx, "test")

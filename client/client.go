@@ -268,20 +268,12 @@ func NewClientWithSocket(socket string) (client Client, err error) {
 		return nil, errors.New("nil socket")
 	}
 	logger.Printf("dapr client initializing for: %s", socket)
-	timeoutSeconds, err := getClientTimeoutSeconds()
-	if err != nil {
-		return nil, err
-	}
 	addr := "unix://" + socket
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeoutSeconds)*time.Second)
-	conn, err := grpc.DialContext(
-		ctx,
+	conn, err := grpc.Dial(
 		addr,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithUserAgent("dapr-sdk-go/"+version.SDKVersion),
-		grpc.WithBlock(),
 	)
-	cancel()
 	if err != nil {
 		return nil, fmt.Errorf("error creating connection to '%s': %w", addr, err)
 	}
