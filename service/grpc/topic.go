@@ -23,7 +23,6 @@ import (
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/pkg/errors"
 
-	commonv1pb "github.com/dapr/go-sdk/dapr/proto/common/v1"
 	runtimev1pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
 	"github.com/dapr/go-sdk/service/common"
 	"github.com/dapr/go-sdk/service/internal"
@@ -43,10 +42,10 @@ func (s *Server) AddTopicEventHandler(sub *common.Subscription, fn common.TopicE
 
 // ListTopicSubscriptions is called by Dapr to get the list of topics in a pubsub component the app wants to subscribe to.
 func (s *Server) ListTopicSubscriptions(ctx context.Context, in *empty.Empty) (*runtimev1pb.ListTopicSubscriptionsResponse, error) {
-	subs := make([]*commonv1pb.TopicSubscription, 0)
+	subs := make([]*runtimev1pb.TopicSubscription, 0)
 	for _, v := range s.topicRegistrar {
 		s := v.Subscription
-		sub := &commonv1pb.TopicSubscription{
+		sub := &runtimev1pb.TopicSubscription{
 			PubsubName: s.PubsubName,
 			Topic:      s.Topic,
 			Metadata:   s.Metadata,
@@ -60,18 +59,18 @@ func (s *Server) ListTopicSubscriptions(ctx context.Context, in *empty.Empty) (*
 	}, nil
 }
 
-func convertRoutes(routes *internal.TopicRoutes) *commonv1pb.TopicRoutes {
+func convertRoutes(routes *internal.TopicRoutes) *runtimev1pb.TopicRoutes {
 	if routes == nil {
 		return nil
 	}
-	rules := make([]*commonv1pb.TopicRule, len(routes.Rules))
+	rules := make([]*runtimev1pb.TopicRule, len(routes.Rules))
 	for i, rule := range routes.Rules {
-		rules[i] = &commonv1pb.TopicRule{
+		rules[i] = &runtimev1pb.TopicRule{
 			Match: rule.Match,
 			Path:  rule.Path,
 		}
 	}
-	return &commonv1pb.TopicRoutes{
+	return &runtimev1pb.TopicRoutes{
 		Rules:   rules,
 		Default: routes.Default,
 	}

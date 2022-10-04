@@ -8,7 +8,6 @@ package runtime
 
 import (
 	context "context"
-
 	v1 "github.com/dapr/go-sdk/dapr/proto/common/v1"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
