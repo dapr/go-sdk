@@ -50,9 +50,9 @@ func main() {
 	defer f()
 	var subscribeID string
 	go func() {
-		if err := client.SubscribeConfigurationItems(ctx, "example-config", []string{"mySubscribeKey1", "mySubscribeKey2", "mySubscribeKey3"}, func(id string, items []*dapr.ConfigurationItem) {
-			for _, v := range items {
-				fmt.Printf("get updated config key = %s, value = %s \n", (*v).Key, (*v).Value)
+		if err := client.SubscribeConfigurationItems(ctx, "example-config", []string{"mySubscribeKey1", "mySubscribeKey2", "mySubscribeKey3"}, func(id string, items map[string]*dapr.ConfigurationItem) {
+			for k, v := range items {
+				fmt.Printf("get updated config key = %s, value = %s \n", k, v.Value)
 			}
 			subscribeID = id
 		}); err != nil {
