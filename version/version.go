@@ -5,7 +5,10 @@ import (
 	_ "embed"
 )
 
-// SDKVersion contains the version of the SDK.
+// This weird redirection is courtesy of our linter 💄
 //
 //go:embed sdk-version
-var SDKVersion string
+var sdkVersion string
+
+// SDKVersion contains the version of the SDK.
+var SDKVersion string = sdkVersion
