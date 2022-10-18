@@ -464,3 +464,26 @@ func TestGrpcClient(t *testing.T) {
 	client := &GRPCClient{protoClient: protoClient}
 	assert.Equal(t, protoClient, client.GrpcClient())
 }
+
+func TestGrpcWait(t *testing.T) {
+	ctx := context.Background()
+
+	t.Run("Happy Case Client test", func(t *testing.T) {
+		err := testClient.Wait(ctx, 10*time.Second)
+		assert.NoError(t, err)
+	})
+
+	t.Run("Waiting after shutdown fails as there is nothing to wait for", func(t *testing.T) {
+		testClient.Shutdown(ctx)
+		err := testClient.Wait(ctx, 1*time.Second)
+
+		assert.Error(t, err, "Waiting after shutdown should fail as there is no connection left")
+		assert.Equal(t, errWaitTimedOut, err)
+	})
+
+	t.Run("No wait just doesn't work because there is always a delay to accept connections", func(t *testing.T) {
+		err := testClient.Wait(ctx, 0*time.Second)
+		assert.Error(t, err)
+		assert.Equal(t, errWaitTimedOut, err)
+	})
+}
