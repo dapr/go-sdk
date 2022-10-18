@@ -28,7 +28,6 @@ import (
 
 	"github.com/pkg/errors"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/connectivity"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -54,12 +53,6 @@ var (
 	_             Client = (*GRPCClient)(nil)
 	defaultClient Client
 	doOnce        sync.Once
-)
-
-// The following errors are returned from Wait
-var (
-	// A call to Wait timed out while waiting for a gRPC connection to reach a Ready state.
-	errWaitTimedOut = errors.New("Timed out waiting for client connectivity")
 )
 
 // Client is the interface for Dapr client implementation.
@@ -351,20 +344,6 @@ func (c *GRPCClient) Shutdown(ctx context.Context) error {
 		return errors.Wrap(err, "error shutting down the sidecar")
 	}
 	return nil
-}
-
-func (c *GRPCClient) Wait(ctx context.Context, timeout time.Duration) error {
-	timeoutCtx, cancel := context.WithTimeout(ctx, timeout)
-	defer cancel()
-
-	// SDKs for other languages implement Wait by attempting to connect to a TCP endpoint
-	// with a timeout. Go's SDKs handles more endpoints than just TCP ones. To simplify
-	// the code here, we piggy back on GRPCs connectivity state management instead.
-	if c.connection.WaitForStateChange(timeoutCtx, connectivity.Ready) {
-		return nil
-	} else {
-		return errWaitTimedOut
-	}
 }
 
 // GrpcClient returns the base grpc client.
