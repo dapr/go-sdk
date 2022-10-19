@@ -27,7 +27,7 @@ import (
 
 const (
 	unresponsiveServerHost         = "127.0.0.1"
-	unresponsiveTcpPort            = "0" // Port set to 0 so OS auto-selects one
+	unresponsiveTcpPort            = "0" // Port set to 0 so O.S. auto-selects one for us
 	unresponsiveUnixSocketFilePath = "/tmp/unresponsive-server.socket"
 	autoCloseTimeout               = 1 * time.Minute
 )
@@ -38,7 +38,6 @@ func listenButKeepSilent(serverListener net.Listener, serverAddr string) {
 		if err == nil {
 			break
 		} else {
-			// logger.Printf("Server on address %s got a new connection", serverAddr)
 			go func(conn net.Conn) {
 				time.Sleep(autoCloseTimeout)
 				conn.Close()
@@ -48,25 +47,18 @@ func listenButKeepSilent(serverListener net.Listener, serverAddr string) {
 }
 
 func createUnresponsiveTcpServer() (serverAddr string, serverListener net.Listener, err error) {
-	serverAddr = "" // default
-	serverListener, err = net.Listen("tcp", net.JoinHostPort(unresponsiveServerHost, unresponsiveTcpPort))
-	if err != nil {
-		logger.Fatal(err)
-		return "", nil, err
-	}
-
-	serverAddr = serverListener.Addr().String()
-	logger.Println("Created TCP server on address", serverAddr)
-
-	go listenButKeepSilent(serverListener, serverAddr)
-
-	return serverAddr, serverListener, nil
+	return createUnresponsiveServer("tcp", net.JoinHostPort(unresponsiveServerHost, unresponsiveTcpPort))
 }
 
 func createUnresponsiveUnixServer() (serverAddr string, serverListener net.Listener, err error) {
-	serverListener, err = net.Listen("unix", unresponsiveUnixSocketFilePath)
+	return createUnresponsiveServer("unix", unresponsiveUnixSocketFilePath)
+}
+
+func createUnresponsiveServer(network string, unresponsiveServerAddress string) (serverAddr string, serverListener net.Listener, err error) {
+	serverListener, err = net.Listen(network, unresponsiveServerAddress)
 	if err != nil {
-		logger.Fatalf("socket test server created with error: %v", err)
+		logger.Fatalf("Creation of test server on network %s and address %s failed with error: %v",
+			network, unresponsiveServerAddress, err)
 		return "", nil, err
 	}
 
