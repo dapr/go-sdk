@@ -15,37 +15,142 @@ package client
 
 import (
 	"context"
+	"net"
 	"os"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
+const (
+	unresponsiveServerHost         = "127.0.0.1"
+	unresponsiveTcpPort            = "0" // Port set to 0 so OS auto-selects one
+	unresponsiveUnixSocketFilePath = "/tmp/unresponsive-server.socket"
+	autoCloseTimeout               = 1 * time.Minute
+)
+
+func listenButKeepSilent(serverListener net.Listener, serverAddr string) {
+	for {
+		conn, err := serverListener.Accept() // Accept connections but that's it!
+		if err == nil {
+			break
+		} else {
+			// logger.Printf("Server on address %s got a new connection", serverAddr)
+			go func(conn net.Conn) {
+				time.Sleep(autoCloseTimeout)
+				conn.Close()
+			}(conn)
+		}
+	}
+}
+
+func createUnresponsiveTcpServer() (serverAddr string, serverListener net.Listener, err error) {
+	serverAddr = "" // default
+	serverListener, err = net.Listen("tcp", net.JoinHostPort(unresponsiveServerHost, unresponsiveTcpPort))
+	if err != nil {
+		logger.Fatal(err)
+		return "", nil, err
+	}
+
+	serverAddr = serverListener.Addr().String()
+	logger.Println("Created TCP server on address", serverAddr)
+
+	go listenButKeepSilent(serverListener, serverAddr)
+
+	return serverAddr, serverListener, nil
+}
+
+func createUnresponsiveUnixServer() (serverAddr string, serverListener net.Listener, err error) {
+	serverListener, err = net.Listen("unix", unresponsiveUnixSocketFilePath)
+	if err != nil {
+		logger.Fatalf("socket test server created with error: %v", err)
+		return "", nil, err
+	}
+
+	serverAddr = serverListener.Addr().String()
+
+	go listenButKeepSilent(serverListener, serverAddr)
+
+	return serverAddr, serverListener, nil
+}
+
+func createClientConnection(ctx context.Context, serverAddr string) (client Client, err error) {
+	conn, err := grpc.DialContext(
+		ctx,
+		serverAddr,
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
+	if err != nil {
+		logger.Fatal(err)
+		return nil, err
+	}
+	return NewClientWithConnection(conn), nil
+}
+
 func TestGrpcWait(t *testing.T) {
+	const (
+		waitTimeout       = 5 * time.Second
+		connectionTimeout = 4 * waitTimeout // Larger than waitTimeout but still bounded
+	)
 	ctx := context.Background()
 
-	// Clean up env. var just in case
-	os.Setenv(clientTimoutSecondsEnvVarName, "")
-	_, err := getClientTimeoutSeconds()
-	assert.NoError(t, err)
+	// // Clean up env. var just in case
+	// os.Setenv(clientTimoutSecondsEnvVarName, "")
+	// _, err := getClientTimeoutSeconds()
+	// assert.NoError(t, err)
 
-	t.Run("Happy Case Client test", func(t *testing.T) {
-		err := testClient.Wait(ctx, 5*time.Second)
+	// t.Run("Happy Case Client test", func(t *testing.T) {
+	// 	err := testClient.Wait(ctx, 5*time.Second)
+	// 	assert.NoError(t, err)
+	// })
+
+	t.Run("Non-responding TCP server times out", func(t *testing.T) {
+		serverAddr, serverListener, err := createUnresponsiveTcpServer()
 		assert.NoError(t, err)
-	})
+		defer serverListener.Close()
 
-	t.Run("Waiting after shutdown fails as there is nothing to wait for", func(t *testing.T) {
-		testClient.Shutdown(ctx)
-		err := testClient.Wait(ctx, 5*time.Second)
+		clientConnectionTimeoutCtx, cancel := context.WithTimeout(ctx, connectionTimeout)
+		defer cancel()
 
-		assert.Error(t, err, "Waiting after shutdown should fail as there is no connection left")
-		assert.Equal(t, errWaitTimedOut, err)
-	})
+		client, err := createClientConnection(clientConnectionTimeoutCtx, serverAddr)
+		assert.NoError(t, err)
 
-	t.Run("No wait just doesn't work because there is always a delay to accept connections", func(t *testing.T) {
-		err := testClient.Wait(ctx, 0*time.Second)
+		err = client.Wait(ctx, waitTimeout)
 		assert.Error(t, err)
 		assert.Equal(t, errWaitTimedOut, err)
 	})
+
+	t.Run("Non-responding Unix Domain Socket server times out", func(t *testing.T) {
+		serverAddr, serverListener, err := createUnresponsiveUnixServer()
+		assert.NoError(t, err)
+		defer serverListener.Close()
+		defer os.Remove(unresponsiveUnixSocketFilePath)
+
+		clientConnectionTimeoutCtx, cancel := context.WithTimeout(ctx, connectionTimeout)
+		defer cancel()
+
+		client, err := createClientConnection(clientConnectionTimeoutCtx, serverAddr)
+		assert.NoError(t, err)
+
+		err = client.Wait(ctx, waitTimeout)
+		assert.Error(t, err)
+		assert.Equal(t, errWaitTimedOut, err)
+	})
+
+	// t.Run("Waiting after shutdown fails as there is nothing to wait for", func(t *testing.T) {
+	// 	testClient.Shutdown(ctx)
+	// 	err := testClient.Wait(ctx, 5*time.Second)
+
+	// 	assert.Error(t, err, "Waiting after shutdown should fail as there is no connection left")
+	// 	assert.Equal(t, errWaitTimedOut, err)
+	// })
+
+	// t.Run("No wait just doesn't work because there is always a delay to accept connections", func(t *testing.T) {
+	// 	err := testClient.Wait(ctx, 0*time.Second)
+	// 	assert.Error(t, err)
+	// 	assert.Equal(t, errWaitTimedOut, err)
+	// })
 }
