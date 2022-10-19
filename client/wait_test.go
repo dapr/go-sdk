@@ -97,15 +97,10 @@ func TestGrpcWait(t *testing.T) {
 	)
 	ctx := context.Background()
 
-	// // Clean up env. var just in case
-	// os.Setenv(clientTimoutSecondsEnvVarName, "")
-	// _, err := getClientTimeoutSeconds()
-	// assert.NoError(t, err)
-
-	// t.Run("Happy Case Client test", func(t *testing.T) {
-	// 	err := testClient.Wait(ctx, 5*time.Second)
-	// 	assert.NoError(t, err)
-	// })
+	t.Run("Happy Case Client test", func(t *testing.T) {
+		err := testClient.Wait(ctx, waitTimeout)
+		assert.NoError(t, err)
+	})
 
 	t.Run("Non-responding TCP server times out", func(t *testing.T) {
 		serverAddr, serverListener, err := createUnresponsiveTcpServer()
@@ -139,18 +134,4 @@ func TestGrpcWait(t *testing.T) {
 		assert.Error(t, err)
 		assert.Equal(t, errWaitTimedOut, err)
 	})
-
-	// t.Run("Waiting after shutdown fails as there is nothing to wait for", func(t *testing.T) {
-	// 	testClient.Shutdown(ctx)
-	// 	err := testClient.Wait(ctx, 5*time.Second)
-
-	// 	assert.Error(t, err, "Waiting after shutdown should fail as there is no connection left")
-	// 	assert.Equal(t, errWaitTimedOut, err)
-	// })
-
-	// t.Run("No wait just doesn't work because there is always a delay to accept connections", func(t *testing.T) {
-	// 	err := testClient.Wait(ctx, 0*time.Second)
-	// 	assert.Error(t, err)
-	// 	assert.Equal(t, errWaitTimedOut, err)
-	// })
 }
