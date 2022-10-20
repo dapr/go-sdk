@@ -17,6 +17,7 @@ import (
 	"context"
 	"net"
 	"os"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -29,16 +30,41 @@ const (
 	unresponsiveServerHost         = "127.0.0.1"
 	unresponsiveTcpPort            = "0" // Port set to 0 so O.S. auto-selects one for us
 	unresponsiveUnixSocketFilePath = "/tmp/unresponsive-server.socket"
-	autoCloseTimeout               = 1 * time.Minute
+
+	waitTimeout       = 5 * time.Second
+	connectionTimeout = 4 * waitTimeout       // Larger than waitTimeout but still bounded
+	autoCloseTimeout  = 2 * connectionTimeout // Server will close connections after this
 )
 
-func listenButKeepSilent(serverListener net.Listener, serverAddr string) {
+type Server struct {
+	listener     net.Listener
+	address      string
+	done         chan bool
+	nClientsSeen uint64
+}
+
+func (s *Server) Close() {
+	close(s.done)
+	if err := s.listener.Close(); err != nil {
+		logger.Fatal(err)
+	}
+	os.Remove(unresponsiveUnixSocketFilePath)
+}
+
+func (s *Server) listenButKeepSilent() {
 	for {
-		conn, err := serverListener.Accept() // Accept connections but that's it!
-		if err == nil {
-			break
+		conn, err := s.listener.Accept() // Accept connections but that's it!
+		if err != nil {
+			select {
+			case <-s.done:
+				return
+			default:
+				logger.Fatal(err)
+				break
+			}
 		} else {
 			go func(conn net.Conn) {
+				atomic.AddUint64(&s.nClientsSeen, 1)
 				time.Sleep(autoCloseTimeout)
 				conn.Close()
 			}(conn)
@@ -46,27 +72,32 @@ func listenButKeepSilent(serverListener net.Listener, serverAddr string) {
 	}
 }
 
-func createUnresponsiveTcpServer() (serverAddr string, serverListener net.Listener, err error) {
+func createUnresponsiveTcpServer() (*Server, error) {
 	return createUnresponsiveServer("tcp", net.JoinHostPort(unresponsiveServerHost, unresponsiveTcpPort))
 }
 
-func createUnresponsiveUnixServer() (serverAddr string, serverListener net.Listener, err error) {
+func createUnresponsiveUnixServer() (*Server, error) {
 	return createUnresponsiveServer("unix", unresponsiveUnixSocketFilePath)
 }
 
-func createUnresponsiveServer(network string, unresponsiveServerAddress string) (serverAddr string, serverListener net.Listener, err error) {
-	serverListener, err = net.Listen(network, unresponsiveServerAddress)
+func createUnresponsiveServer(network string, unresponsiveServerAddress string) (*Server, error) {
+	serverListener, err := net.Listen(network, unresponsiveServerAddress)
 	if err != nil {
 		logger.Fatalf("Creation of test server on network %s and address %s failed with error: %v",
 			network, unresponsiveServerAddress, err)
-		return "", nil, err
+		return nil, err
 	}
 
-	serverAddr = serverListener.Addr().String()
+	server := &Server{
+		listener:     serverListener,
+		address:      serverListener.Addr().String(),
+		done:         make(chan bool),
+		nClientsSeen: 0,
+	}
 
-	go listenButKeepSilent(serverListener, serverAddr)
+	go server.listenButKeepSilent()
 
-	return serverAddr, serverListener, nil
+	return server, nil
 }
 
 func createClientConnection(ctx context.Context, serverAddr string) (client Client, err error) {
@@ -82,48 +113,45 @@ func createClientConnection(ctx context.Context, serverAddr string) (client Clie
 	return NewClientWithConnection(conn), nil
 }
 
-func TestGrpcWait(t *testing.T) {
-	const (
-		waitTimeout       = 5 * time.Second
-		connectionTimeout = 4 * waitTimeout // Larger than waitTimeout but still bounded
-	)
+func TestGrpcWaitHappyCase(t *testing.T) {
 	ctx := context.Background()
 
-	t.Run("Happy Case Client test", func(t *testing.T) {
-		err := testClient.Wait(ctx, waitTimeout)
-		assert.NoError(t, err)
-	})
+	err := testClient.Wait(ctx, waitTimeout)
+	assert.NoError(t, err)
+}
 
-	t.Run("Non-responding TCP server times out", func(t *testing.T) {
-		serverAddr, serverListener, err := createUnresponsiveTcpServer()
-		assert.NoError(t, err)
-		defer serverListener.Close()
+func TestGrpcWaitUnresponsiveTcpServer(t *testing.T) {
+	ctx := context.Background()
 
-		clientConnectionTimeoutCtx, cancel := context.WithTimeout(ctx, connectionTimeout)
-		defer cancel()
+	server, err := createUnresponsiveTcpServer()
+	assert.NoError(t, err)
+	defer server.Close()
 
-		client, err := createClientConnection(clientConnectionTimeoutCtx, serverAddr)
-		assert.NoError(t, err)
+	clientConnectionTimeoutCtx, cancel := context.WithTimeout(ctx, connectionTimeout)
+	defer cancel()
+	client, err := createClientConnection(clientConnectionTimeoutCtx, server.address)
+	assert.NoError(t, err)
 
-		err = client.Wait(ctx, waitTimeout)
-		assert.Error(t, err)
-		assert.Equal(t, errWaitTimedOut, err)
-	})
+	err = client.Wait(ctx, waitTimeout)
+	assert.Error(t, err)
+	assert.Equal(t, errWaitTimedOut, err)
+	assert.Equal(t, uint64(1), atomic.LoadUint64(&server.nClientsSeen))
+}
 
-	t.Run("Non-responding Unix Domain Socket server times out", func(t *testing.T) {
-		serverAddr, serverListener, err := createUnresponsiveUnixServer()
-		assert.NoError(t, err)
-		defer serverListener.Close()
-		defer os.Remove(unresponsiveUnixSocketFilePath)
+func TestGrpcWaitUnresponsiveUnixServer(t *testing.T) {
+	ctx := context.Background()
 
-		clientConnectionTimeoutCtx, cancel := context.WithTimeout(ctx, connectionTimeout)
-		defer cancel()
+	server, err := createUnresponsiveUnixServer()
+	assert.NoError(t, err)
+	defer server.Close()
 
-		client, err := createClientConnection(clientConnectionTimeoutCtx, serverAddr)
-		assert.NoError(t, err)
+	clientConnectionTimeoutCtx, cancel := context.WithTimeout(ctx, connectionTimeout)
+	defer cancel()
+	client, err := createClientConnection(clientConnectionTimeoutCtx, "unix://"+server.address)
+	assert.NoError(t, err)
 
-		err = client.Wait(ctx, waitTimeout)
-		assert.Error(t, err)
-		assert.Equal(t, errWaitTimedOut, err)
-	})
+	err = client.Wait(ctx, waitTimeout)
+	assert.Error(t, err)
+	assert.Equal(t, errWaitTimedOut, err)
+	assert.Equal(t, uint64(1), atomic.LoadUint64(&server.nClientsSeen))
 }

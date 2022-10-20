@@ -34,16 +34,18 @@ func (c *GRPCClient) Wait(ctx context.Context, timeout time.Duration) error {
 	// SDKs for other languages implement Wait by attempting to connect to a TCP endpoint
 	// with a timeout. Go's SDKs handles more endpoints than just TCP ones. To simplify
 	// the code here, we piggy back on GRPCs connectivity state management instead.
-	curState := c.connection.GetState()
-	if curState == connectivity.Ready {
-		return nil
-	}
-	// Not ready? Wait for a state change
-	if c.connection.WaitForStateChange(timeoutCtx, curState) {
-		if c.connection.GetState() == connectivity.Ready {
+	for {
+		curState := c.connection.GetState()
+		if curState == connectivity.Ready {
 			return nil
 		}
+
+		select {
+		case <-timeoutCtx.Done():
+			return errWaitTimedOut
+		default:
+			// Multiple state changes can happen: keep waiting for a successful one or time out
+			c.connection.WaitForStateChange(timeoutCtx, curState)
+		}
 	}
-	// Sorry, it timed out.
-	return errWaitTimedOut // .New(fmt.Sprint("YOLO %n", c.connection.GetState()))
 }
