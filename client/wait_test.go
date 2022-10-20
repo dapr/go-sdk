@@ -100,7 +100,7 @@ func createUnresponsiveServer(network string, unresponsiveServerAddress string) 
 	return server, nil
 }
 
-func createClientConnection(ctx context.Context, serverAddr string) (client Client, err error) {
+func createNonBlockingClient(ctx context.Context, serverAddr string) (client Client, err error) {
 	conn, err := grpc.DialContext(
 		ctx,
 		serverAddr,
@@ -129,7 +129,7 @@ func TestGrpcWaitUnresponsiveTcpServer(t *testing.T) {
 
 	clientConnectionTimeoutCtx, cancel := context.WithTimeout(ctx, connectionTimeout)
 	defer cancel()
-	client, err := createClientConnection(clientConnectionTimeoutCtx, server.address)
+	client, err := createNonBlockingClient(clientConnectionTimeoutCtx, server.address)
 	assert.NoError(t, err)
 
 	err = client.Wait(ctx, waitTimeout)
@@ -147,7 +147,7 @@ func TestGrpcWaitUnresponsiveUnixServer(t *testing.T) {
 
 	clientConnectionTimeoutCtx, cancel := context.WithTimeout(ctx, connectionTimeout)
 	defer cancel()
-	client, err := createClientConnection(clientConnectionTimeoutCtx, "unix://"+server.address)
+	client, err := createNonBlockingClient(clientConnectionTimeoutCtx, "unix://"+server.address)
 	assert.NoError(t, err)
 
 	err = client.Wait(ctx, waitTimeout)
