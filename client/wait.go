@@ -21,7 +21,7 @@ import (
 	"google.golang.org/grpc/connectivity"
 )
 
-// The following errors are returned from Wait
+// The following errors are returned from Wait.
 var (
 	// A call to Wait timed out while waiting for a gRPC connection to reach a Ready state.
 	errWaitTimedOut = errors.New("timed out waiting for client connectivity")
