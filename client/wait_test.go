@@ -28,7 +28,7 @@ import (
 
 const (
 	unresponsiveServerHost         = "127.0.0.1"
-	unresponsiveTcpPort            = "0" // Port set to 0 so O.S. auto-selects one for us
+	unresponsiveTCPPort            = "0" // Port set to 0 so O.S. auto-selects one for us
 	unresponsiveUnixSocketFilePath = "/tmp/unresponsive-server.socket"
 
 	waitTimeout       = 5 * time.Second
@@ -72,8 +72,8 @@ func (s *Server) listenButKeepSilent() {
 	}
 }
 
-func createUnresponsiveTcpServer() (*Server, error) {
-	return createUnresponsiveServer("tcp", net.JoinHostPort(unresponsiveServerHost, unresponsiveTcpPort))
+func createUnresponsiveTCPServer() (*Server, error) {
+	return createUnresponsiveServer("tcp", net.JoinHostPort(unresponsiveServerHost, unresponsiveTCPPort))
 }
 
 func createUnresponsiveUnixServer() (*Server, error) {
@@ -123,7 +123,7 @@ func TestGrpcWaitHappyCase(t *testing.T) {
 func TestGrpcWaitUnresponsiveTcpServer(t *testing.T) {
 	ctx := context.Background()
 
-	server, err := createUnresponsiveTcpServer()
+	server, err := createUnresponsiveTCPServer()
 	assert.NoError(t, err)
 	defer server.Close()
 
