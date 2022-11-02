@@ -144,6 +144,9 @@ type Client interface {
 	// Shutdown the sidecar.
 	Shutdown(ctx context.Context) error
 
+	// Wait for a  sidecar to become available for at most `timeout` seconds. Returns errWaitTimedOut if timeout is reached.
+	Wait(ctx context.Context, timeout time.Duration) error
+
 	// WithTraceID adds existing trace ID to the outgoing context.
 	WithTraceID(ctx context.Context, id string) context.Context
 
