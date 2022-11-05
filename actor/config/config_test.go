@@ -31,8 +31,16 @@ func TestRegisterActorTimer(t *testing.T) {
 	t.Run("get config with option", func(t *testing.T) {
 		config := GetConfigFromOptions(
 			WithSerializerName("mockSerializerType"),
+			WithIdleTimeout("1m"),
+			WithScanInterval("10s"),
+			WithDrainOngingCallTimeout("10s"),
+			WithDrainBalancedActors(true),
 		)
 		assert.NotNil(t, config)
 		assert.Equal(t, "mockSerializerType", config.SerializerType)
+		assert.Equal(t, "1m", config.IdleTimeout)
+		assert.Equal(t, "10s", config.ScanInterval)
+		assert.Equal(t, "10s", config.DrainOngingCallTimeout)
+		assert.Equal(t, true, config.DrainBalancedActors)
 	})
 }
