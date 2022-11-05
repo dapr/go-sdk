@@ -114,3 +114,11 @@ func (mr *MockServerMockRecorder) Type() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Type", reflect.TypeOf((*MockServer)(nil).Type))
 }
+
+func (m *MockServer) Activate() error {
+	return nil
+}
+
+func (m *MockServer) Deactivate() error {
+	return nil
+}
