@@ -18,8 +18,8 @@ import "github.com/dapr/go-sdk/actor/codec/constant"
 // ActorConfig is Actor's configuration struct.
 type ActorConfig struct {
 	SerializerType         string
-	IdleTimeout            string
-	ScanInterval           string
+	ActorIdleTimeout       string
+	ActorScanInterval      string
 	DrainOngingCallTimeout string
 	DrainBalancedActors    bool
 }
@@ -34,28 +34,28 @@ func WithSerializerName(serializerType string) Option {
 	}
 }
 
-// WithIdleTimeout set serializer type of the actor as @idleTimeout.
-func WithIdleTimeout(idleTimeout string) Option {
+// WithActorIdleTimeout set actorIdleTimeout type of the actor as @actorIdleTimeout.
+func WithActorIdleTimeout(actorIdleTimeout string) Option {
 	return func(config *ActorConfig) {
-		config.IdleTimeout = idleTimeout
+		config.ActorIdleTimeout = actorIdleTimeout
 	}
 }
 
-// WithScanInterval set serializer type of the actor as @scanInterval.
-func WithScanInterval(scanInterval string) Option {
+// WithActorScanInterval set actorScanInterval type of the actor as @actorScanInterval.
+func WithActorScanInterval(actorScanInterval string) Option {
 	return func(config *ActorConfig) {
-		config.ScanInterval = scanInterval
+		config.ActorScanInterval = actorScanInterval
 	}
 }
 
-// WithDrainOngingCallTimeout set serializer type of the actor as @drainOngingCallTimeout.
+// WithDrainOngingCallTimeout set drainOngingCallTimeout type of the actor as @drainOngingCallTimeout.
 func WithDrainOngingCallTimeout(drainOngingCallTimeout string) Option {
 	return func(config *ActorConfig) {
 		config.DrainOngingCallTimeout = drainOngingCallTimeout
 	}
 }
 
-// WithDrainBalancedActors set serializer type of the actor as @drainBalancedActors.
+// WithDrainBalancedActors set drainBalancedActors type of the actor as @drainBalancedActors.
 func WithDrainBalancedActors(drainBalancedActors bool) Option {
 	return func(config *ActorConfig) {
 		config.DrainBalancedActors = drainBalancedActors

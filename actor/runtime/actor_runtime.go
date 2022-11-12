@@ -49,6 +49,10 @@ func (r *ActorRunTime) RegisterActorFactory(f actor.Factory, opt ...config.Optio
 	conf := config.GetConfigFromOptions(opt...)
 	actType := f().Type()
 	r.config.RegisteredActorTypes = append(r.config.RegisteredActorTypes, actType)
+	r.config.ActorIdleTimeout = conf.ActorIdleTimeout
+	r.config.ActorScanInterval = conf.ActorScanInterval
+	r.config.DrainOngingCallTimeout = conf.DrainOngingCallTimeout
+	r.config.DrainBalancedActors = conf.DrainBalancedActors
 	mng, ok := r.actorManagers.Load(actType)
 	if !ok {
 		newMng, err := manager.NewDefaultActorManager(conf.SerializerType)
