@@ -56,11 +56,11 @@ func (d *DaprStateAsyncProvider) Load(actorType, actorID, stateName string, repl
 		return errors.Errorf("get actor state error = %s", err.Error())
 	}
 	if len(result.Data) == 0 {
-		log.Printf("get actor state result empty, with actorType: %s, actorID: %s, stateName %s", actorType, actorID, stateName)
+		log.Errorf("get actor state result empty, with actorType: %s, actorID: %s, stateName %s", actorType, actorID, stateName)
 		return ErrStateEmpty
 	}
 	if err := d.stateSerializer.Unmarshal(result.Data, reply); err != nil {
-		log.Printf("unmarshal state data error = %s", err.Error())
+		log.Errorf("unmarshal state data error = %s", err.Error())
 		return ErrStateUnmarshal
 	}
 	return nil
