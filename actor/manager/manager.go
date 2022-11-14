@@ -122,10 +122,11 @@ func (m *DefaultActorManager) InvokeMethod(actorID, methodName string, request [
 
 // DeactivateActor removes actor from actor manager.
 func (m *DefaultActorManager) DeactivateActor(actorID string) actorErr.ActorErr {
-	_, ok := m.activeActors.Load(actorID)
+	actor, ok := m.activeActors.Load(actorID)
 	if !ok {
 		return actorErr.ErrActorIDNotFound
 	}
+	actor.(ActorContainer).Deactivate()
 	m.activeActors.Delete(actorID)
 	return actorErr.Success
 }

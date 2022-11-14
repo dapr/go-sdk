@@ -28,6 +28,7 @@ import (
 type ActorContainer interface {
 	Invoke(methodName string, param []byte) ([]reflect.Value, actorErr.ActorErr)
 	GetActor() actor.Server
+	Deactivate() error
 }
 
 // DefaultActorContainer contains actor instance and methods type info generated from actor.
@@ -43,8 +44,12 @@ func NewDefaultActorContainer(actorID string, impl actor.Server, serializer code
 	daprClient, _ := dapr.NewClient()
 	// create state manager for this new actor
 	impl.SetStateManager(state.NewActorStateManager(impl.Type(), actorID, state.NewDaprStateAsyncProvider(daprClient)))
+	err := impl.Activate()
+	if err != nil {
+		return nil, actorErr.ErrSaveStateFailed
+	}
 	// save state of this actor
-	err := impl.SaveState()
+	err = impl.SaveState()
 	if err != nil {
 		return nil, actorErr.ErrSaveStateFailed
 	}
@@ -83,4 +88,8 @@ func (d *DefaultActorContainer) Invoke(methodName string, param []byte) ([]refle
 	}
 	returnValue := methodType.method.Func.Call(argsValues)
 	return returnValue, actorErr.Success
+}
+
+func (d *DefaultActorContainer) Deactivate() error {
+	return d.actor.Deactivate()
 }
