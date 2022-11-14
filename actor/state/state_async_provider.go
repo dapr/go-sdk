@@ -15,12 +15,18 @@ package state
 
 import (
 	"context"
+	"log"
 
 	"github.com/pkg/errors"
 
 	"github.com/dapr/go-sdk/actor/codec"
 	"github.com/dapr/go-sdk/actor/codec/constant"
 	client "github.com/dapr/go-sdk/client"
+)
+
+var (
+	ErrStateEmpty     = errors.New("get actor state result empty")
+	ErrStateUnmarshal = errors.New("unmarshal state data error")
 )
 
 type DaprStateAsyncProvider struct {
@@ -50,10 +56,12 @@ func (d *DaprStateAsyncProvider) Load(actorType, actorID, stateName string, repl
 		return errors.Errorf("get actor state error = %s", err.Error())
 	}
 	if len(result.Data) == 0 {
-		return errors.Errorf("get actor state result empty, with actorType: %s, actorID: %s, stateName %s", actorType, actorID, stateName)
+		log.Errorf("get actor state result empty, with actorType: %s, actorID: %s, stateName %s", actorType, actorID, stateName)
+		return ErrStateEmpty
 	}
 	if err := d.stateSerializer.Unmarshal(result.Data, reply); err != nil {
-		return errors.Errorf("unmarshal state data error = %s", err.Error())
+		log.Errorf("unmarshal state data error = %s", err.Error())
+		return ErrStateUnmarshal
 	}
 	return nil
 }
