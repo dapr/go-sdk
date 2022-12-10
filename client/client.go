@@ -50,9 +50,9 @@ const (
 
 var (
 	logger               = log.New(os.Stdout, "", 0)
+	lock                 = &sync.Mutex{}
 	_             Client = (*GRPCClient)(nil)
 	defaultClient Client
-	doOnce        sync.Once
 )
 
 // Client is the interface for Dapr client implementation.
@@ -201,14 +201,21 @@ func NewClient() (client Client, err error) {
 	if port == "" {
 		port = daprPortDefault
 	}
-	var onceErr error
-	doOnce.Do(func() {
-		c, err := NewClientWithPort(port)
-		onceErr = errors.Wrap(err, "error creating default client")
-		defaultClient = c
-	})
+	if defaultClient != nil {
+		return defaultClient, nil
+	}
+	lock.Lock()
+	defer lock.Unlock()
+	if defaultClient != nil {
+		return defaultClient, nil
+	}
+	c, err := NewClientWithPort(port)
+	if err != nil {
+		return nil, errors.Wrap(err, "error creating default client")
+	}
+	defaultClient = c
 
-	return defaultClient, onceErr
+	return defaultClient, nil
 }
 
 // NewClientWithPort instantiates Dapr using specific gRPC port.
