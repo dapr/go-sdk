@@ -49,6 +49,8 @@ func startTestServer(server *Server) {
 }
 
 func stopTestServer(t *testing.T, server *Server) {
+	t.Helper()
+
 	assert.NotNil(t, server)
 	err := server.Stop()
 	assert.Nilf(t, err, "error stopping server")

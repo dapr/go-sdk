@@ -83,8 +83,8 @@ func (c *GRPCClient) SubscribeConfigurationItems(ctx context.Context, storeName 
 	go func() {
 		for {
 			rsp, err := client.Recv()
-			if err == io.EOF || rsp == nil {
-				// receive goroutine would close if unsubscribe is called
+			if errors.Is(err, io.EOF) || rsp == nil {
+				// receive goroutine would close if unsubscribe is called.
 				fmt.Println("dapr configuration subscribe finished.")
 				close(stopCh)
 				break

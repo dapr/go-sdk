@@ -39,7 +39,7 @@ func TestInvocationHandlerWithoutHandler(t *testing.T) {
 
 func TestInvocationHandlerWithToken(t *testing.T) {
 	data := `{"name": "test", "data": hello}`
-	_ = os.Setenv(common.AppAPITokenEnvVar, "app-dapr-token")
+	t.Setenv(common.AppAPITokenEnvVar, "app-dapr-token")
 	s := newServer("", nil)
 	err := s.AddServiceInvocationHandler("/hello", func(ctx context.Context, in *common.InvocationEvent) (out *common.Content, err error) {
 		if in == nil || in.Data == nil || in.ContentType == "" {

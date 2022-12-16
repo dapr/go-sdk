@@ -70,7 +70,6 @@ func TestUnSubscribeConfigurationItems(t *testing.T) {
 	counter := atomic.Int32{}
 	totalCounter := atomic.Int32{}
 	t.Run("Test unsubscribe configuration items", func(t *testing.T) {
-		subscribeID := ""
 		subscribeIDChan := make(chan string)
 		go func() {
 			keys := []string{"mykey1", "mykey2", "mykey3"}
@@ -88,7 +87,7 @@ func TestUnSubscribeConfigurationItems(t *testing.T) {
 				})
 			assert.Nil(t, err)
 		}()
-		subscribeID = <-subscribeIDChan
+		subscribeID := <-subscribeIDChan
 		time.Sleep(time.Second * 2)
 		time.Sleep(time.Millisecond * 500)
 		err := testClient.UnsubscribeConfigurationItems(ctx, "example-config", subscribeID)

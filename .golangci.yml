@@ -244,9 +244,28 @@ linters:
     - goerr113
     - nestif
     - nlreturn
+    - tagliatelle
+    - ifshort
+    - forbidigo
     - exhaustive
+    - contextcheck
+    - exhaustruct
+    - exhaustivestruct
+    - wrapcheck
+    - predeclared
+    - varnamelen
+    - ireturn
     - noctx
+    - forcetypeassert
+    - cyclop
+    - errchkjson
+    - godot
     - gci
+    - paralleltest
+    - nonamedreturns
+    - nosnakecase
+    - nilnil
+    - staticcheck
 issues:
   exclude-rules:
     - path: .*_test.go
