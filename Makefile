@@ -1,16 +1,17 @@
 RELEASE_VERSION  =v1.0.0-rc-3
 GDOC_PORT        =8888
 PROTO_ROOT       =https://raw.githubusercontent.com/dapr/dapr/master/dapr/proto/
+GO_COMPAT_VERSION=1.18
 
 .PHONY: all
 all: help
 
 .PHONY: tidy
 tidy: ## Updates the go modules
-	go mod tidy -compat=1.17
+	go mod tidy -compat=$(GO_COMPAT_VERSION)
 
 .PHONY: test
-test: tidy ## Tests the entire project 
+test:
 	go test -count=1 \
 			-race \
 			-coverprofile=coverage.txt \
@@ -23,7 +24,7 @@ spell: ## Checks spelling across the entire project
 	@misspell -locale US -error go=golang client/**/* examples/**/* service/**/* actor/**/* .
 
 .PHONY: cover
-cover: tidy ## Displays test coverage in the client and service packages
+cover: ## Displays test coverage in the client and service packages
 	go test -coverprofile=cover-client.out ./client && go tool cover -html=cover-client.out
 	go test -coverprofile=cover-grpc.out ./service/grpc && go tool cover -html=cover-grpc.out
 	go test -coverprofile=cover-http.out ./service/http && go tool cover -html=cover-http.out

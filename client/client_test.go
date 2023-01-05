@@ -16,6 +16,7 @@ package client
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net"
 	"os"
@@ -25,7 +26,6 @@ import (
 
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/google/uuid"
-	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc"

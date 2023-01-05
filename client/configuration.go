@@ -2,10 +2,9 @@ package client
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
-
-	"github.com/pkg/errors"
 
 	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
 )
@@ -75,7 +74,7 @@ func (c *GRPCClient) SubscribeConfigurationItems(ctx context.Context, storeName 
 		Metadata:  metadata,
 	})
 	if err != nil {
-		return errors.Errorf("subscribe configuration failed with error = %s", err)
+		return fmt.Errorf("subscribe configuration failed with error = %w", err)
 	}
 
 	var subscribeID string
@@ -115,10 +114,10 @@ func (c *GRPCClient) UnsubscribeConfigurationItems(ctx context.Context, storeNam
 		Id:        id,
 	})
 	if err != nil {
-		return err
+		return fmt.Errorf("unsubscribe failed with error = %w", err)
 	}
 	if !alpha1.Ok {
-		return errors.Errorf("unsubscribe error message = %s", alpha1.GetMessage())
+		return fmt.Errorf("unsubscribe error message = %s", alpha1.GetMessage())
 	}
 	return nil
 }

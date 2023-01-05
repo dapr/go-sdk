@@ -17,7 +17,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
-	"io/ioutil"
+	"io"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -108,7 +108,7 @@ func (s *Server) registerBaseHandler() {
 		actorType := varsMap["actorType"]
 		actorID := varsMap["actorId"]
 		methodName := varsMap["methodName"]
-		reqData, _ := ioutil.ReadAll(r.Body)
+		reqData, _ := io.ReadAll(r.Body)
 		rspData, err := runtime.GetActorRuntimeInstance().InvokeActorMethod(actorType, actorID, methodName, reqData)
 		if err == actorErr.ErrActorTypeNotFound {
 			w.WriteHeader(http.StatusNotFound)
@@ -145,7 +145,7 @@ func (s *Server) registerBaseHandler() {
 		actorType := varsMap["actorType"]
 		actorID := varsMap["actorId"]
 		reminderName := varsMap["reminderName"]
-		reqData, _ := ioutil.ReadAll(r.Body)
+		reqData, _ := io.ReadAll(r.Body)
 		err := runtime.GetActorRuntimeInstance().InvokeReminder(actorType, actorID, reminderName, reqData)
 		if err == actorErr.ErrActorTypeNotFound {
 			w.WriteHeader(http.StatusNotFound)
@@ -163,7 +163,7 @@ func (s *Server) registerBaseHandler() {
 		actorType := varsMap["actorType"]
 		actorID := varsMap["actorId"]
 		timerName := varsMap["timerName"]
-		reqData, _ := ioutil.ReadAll(r.Body)
+		reqData, _ := io.ReadAll(r.Body)
 		err := runtime.GetActorRuntimeInstance().InvokeTimer(actorType, actorID, timerName, reqData)
 		if err == actorErr.ErrActorTypeNotFound {
 			w.WriteHeader(http.StatusNotFound)

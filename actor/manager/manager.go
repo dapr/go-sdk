@@ -15,14 +15,13 @@ package manager
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"reflect"
 	"sync"
 	"unicode"
 	"unicode/utf8"
-
-	perrors "github.com/pkg/errors"
 
 	"github.com/dapr/go-sdk/actor"
 	"github.com/dapr/go-sdk/actor/api"
@@ -224,7 +223,7 @@ func suiteMethod(method reflect.Method) (*MethodType, error) {
 
 	// Method must be exported.
 	if method.PkgPath != "" {
-		return nil, perrors.New("method is not exported")
+		return nil, errors.New("method is not exported")
 	}
 
 	var (
@@ -233,19 +232,19 @@ func suiteMethod(method reflect.Method) (*MethodType, error) {
 	)
 
 	if outNum > 2 || outNum == 0 {
-		return nil, perrors.New("num out invalid")
+		return nil, errors.New("num out invalid")
 	}
 
 	// The latest return type of the method must be error.
 	if returnType := mtype.Out(outNum - 1); returnType != typeOfError {
-		return nil, perrors.New(fmt.Sprintf("the latest return type %s of method %q is not error", returnType, mname))
+		return nil, fmt.Errorf("the latest return type %s of method %q is not error", returnType, mname)
 	}
 
 	// replyType
 	if outNum == 2 {
 		replyType = mtype.Out(0)
 		if !isExportedOrBuiltinType(replyType) {
-			return nil, perrors.New(fmt.Sprintf("reply type of method %s not exported{%v}", mname, replyType))
+			return nil, fmt.Errorf("reply type of method %s not exported{%v}", mname, replyType)
 		}
 	}
 
@@ -261,7 +260,7 @@ func suiteMethod(method reflect.Method) (*MethodType, error) {
 		argsType = append(argsType, mtype.In(index))
 		// need not be a pointer.
 		if !isExportedOrBuiltinType(mtype.In(index)) {
-			return nil, perrors.New(fmt.Sprintf("argument type of method %q is not exported %v", mname, mtype.In(index)))
+			return nil, fmt.Errorf("argument type of method %q is not exported %v", mname, mtype.In(index))
 		}
 	}
 

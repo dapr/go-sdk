@@ -12,8 +12,8 @@ jobs:
     name: Test and Lint on Push
     runs-on: ubuntu-latest
     env:
-      GOVER: 1.17
-      GOLANGCILINT_VER: v1.48.0
+      GOVER: 1.18
+      GOLANGCILINT_VER: v1.50.1
 
     steps:
 
@@ -34,12 +34,10 @@ jobs:
           ${{ runner.os }}-go-
 
     - name: Tidy
-      run: |
-        go mod tidy -compat=1.17
-        go mod vendor
+      run: make tidy
 
     - name: Test
-      run: go test -race -coverprofile=coverage.txt -covermode=atomic ./...
+      run: make test
       
     - name: Cover
       uses: codecov/codecov-action@v1

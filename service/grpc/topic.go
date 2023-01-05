@@ -16,12 +16,12 @@ package grpc
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"mime"
 	"strings"
 
 	"github.com/golang/protobuf/ptypes/empty"
-	"github.com/pkg/errors"
 
 	runtimev1pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
 	"github.com/dapr/go-sdk/service/common"

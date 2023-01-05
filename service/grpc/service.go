@@ -14,17 +14,17 @@ limitations under the License.
 package grpc
 
 import (
+	"errors"
+	"fmt"
 	"net"
 	"os"
 	"sync/atomic"
 
-	"github.com/pkg/errors"
 	"google.golang.org/grpc"
-
-	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
 
 	"github.com/dapr/go-sdk/actor"
 	"github.com/dapr/go-sdk/actor/config"
+	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
 	"github.com/dapr/go-sdk/service/common"
 	"github.com/dapr/go-sdk/service/internal"
 )
@@ -32,11 +32,11 @@ import (
 // NewService creates new Service.
 func NewService(address string) (s common.Service, err error) {
 	if address == "" {
-		return nil, errors.New("nil address")
+		return nil, errors.New("empty address")
 	}
 	lis, err := net.Listen("tcp", address)
 	if err != nil {
-		err = errors.Wrapf(err, "failed to TCP listen on: %s", address)
+		err = fmt.Errorf("failed to TCP listen on %s: %w", address, err)
 		return
 	}
 	s = newService(lis)
@@ -76,7 +76,7 @@ type Server struct {
 	healthCheckHandler common.HealthCheckHandler
 	authToken          string
 	grpcServer         *grpc.Server
-	started            uint32
+	started            atomic.Bool
 }
 
 func (s *Server) RegisterActorImplFactory(f actor.Factory, opts ...config.Option) {
@@ -85,7 +85,7 @@ func (s *Server) RegisterActorImplFactory(f actor.Factory, opts ...config.Option
 
 // Start registers the server and starts it.
 func (s *Server) Start() error {
-	if !atomic.CompareAndSwapUint32(&s.started, 0, 1) {
+	if !s.started.CompareAndSwap(false, true) {
 		return errors.New("a gRPC server can only be started once")
 	}
 	return s.grpcServer.Serve(s.listener)
@@ -93,7 +93,7 @@ func (s *Server) Start() error {
 
 // Stop stops the previously-started service.
 func (s *Server) Stop() error {
-	if atomic.LoadUint32(&s.started) == 0 {
+	if !s.started.Load() {
 		return nil
 	}
 	s.grpcServer.Stop()
@@ -103,7 +103,7 @@ func (s *Server) Stop() error {
 
 // GrecefulStop stops the previously-started service gracefully.
 func (s *Server) GracefulStop() error {
-	if atomic.LoadUint32(&s.started) == 0 {
+	if !s.started.Load() {
 		return nil
 	}
 	s.grpcServer.GracefulStop()

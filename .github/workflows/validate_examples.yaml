@@ -14,13 +14,13 @@ jobs:
     runs-on: ubuntu-latest
     env:
       PYTHON_VER: 3.7
-      GOVER: 1.16
+      GOVER: 1.18
       GOOS: linux
       GOARCH: amd64
       GOPROXY: https://proxy.golang.org
       DAPR_INSTALL_URL: https://raw.githubusercontent.com/dapr/cli/master/install/install.sh
-      DAPR_CLI_REF:
-      DAPR_REF: 
+      DAPR_CLI_REF: ""
+      DAPR_REF: ""
     steps:
       - uses: actions/checkout@v2
       - uses: azure/setup-helm@v1

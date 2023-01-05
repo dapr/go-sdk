@@ -15,10 +15,10 @@ package grpc
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/golang/protobuf/ptypes/empty"
-	"github.com/pkg/errors"
 
 	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
 	"github.com/dapr/go-sdk/service/common"
@@ -61,7 +61,7 @@ func (s *Server) OnBindingEvent(ctx context.Context, in *pb.BindingEventRequest)
 		}
 		data, err := fn(ctx, e)
 		if err != nil {
-			return nil, errors.Wrapf(err, "error executing %s binding", in.Name)
+			return nil, fmt.Errorf("error executing %s binding: %w", in.Name, err)
 		}
 		return &pb.BindingEventResponse{
 			Data: data,
