@@ -24,15 +24,15 @@ jobs:
     steps:
 
     - name: Setup
-      uses: actions/setup-go@v2
+      uses: actions/setup-go@v3
       with:
         go-version: ${{ env.GOVER }}
 
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Cache
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         path: ~/go/pkg/mod
         key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
@@ -44,11 +44,12 @@ jobs:
 
     - name: Test
       run: make test
-      
+
     - name: Cover
-      uses: codecov/codecov-action@v1
-      
+      uses: codecov/codecov-action@v3
+
     - name: Lint
-      uses: golangci/golangci-lint-action@v3.1.0
+      uses: golangci/golangci-lint-action@v3.3.1
       with:
         version: ${{ env.GOLANGCILINT_VER }}
+        skip-cache: true
