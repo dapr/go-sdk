@@ -56,9 +56,10 @@ func NewServiceWithListener(lis net.Listener) common.Service {
 	return newService(lis)
 }
 
-// NewServiceFromClient creates a new Service by making an outbound connection to Dapr, without creating a listener.
+// NewServiceFromCallbackChannel creates a new Service by using the callback channel.
+// This makes an outbound connection to Dapr, without creating a listener.
 // It requires an existing gRPC client connection to Dapr.
-func NewServiceFromClient(ctx context.Context, client DaprClienter) (common.Service, error) {
+func NewServiceFromCallbackChannel(ctx context.Context, client DaprClienter) (common.Service, error) {
 	res, err := client.GrpcClient().ConnectAppCallback(ctx, &pb.ConnectAppCallbackRequest{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to invoke ConnectAppCallback: %w", err)
@@ -75,6 +76,11 @@ func NewServiceFromClient(ctx context.Context, client DaprClienter) (common.Serv
 	conn, err := net.DialTCP("tcp", nil, addr)
 	if err != nil {
 		return nil, fmt.Errorf("failed to dial TCP connection with Dapr at address %v", addr)
+	}
+
+	err = conn.SetKeepAlive(true)
+	if err != nil {
+		return nil, fmt.Errorf("failed to enable keep-alives in the TCP connection with Dapr at address %v", addr)
 	}
 
 	return NewServiceWithConnection(conn), nil
