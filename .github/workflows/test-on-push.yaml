@@ -9,10 +9,16 @@ on:
 jobs:
 
   build:
-    name: Test and Lint on Push
+    name: Test on ${{ matrix.gover }}
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        gover:
+          - "1.18"
+          - "1.19"
     env:
-      GOVER: 1.18
+      GOVER: ${{ matrix.gover }}
       GOLANGCILINT_VER: v1.50.1
 
     steps:
