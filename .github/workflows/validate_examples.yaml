@@ -26,6 +26,7 @@ jobs:
       - uses: azure/setup-helm@v1
       - name: Determine latest Dapr Runtime version
         run: |
+          helm init
           helm repo add dapr https://dapr.github.io/helm-charts/ && helm repo update && export RUNTIME_VERSION=$(helm show chart dapr/dapr --devel | grep "appVersion: [0-9]\+\.[0-9]\+\.[0-9]\+.*" | cut -d ' ' -f2)
           echo "DAPR_RUNTIME_VER=$RUNTIME_VERSION" >> $GITHUB_ENV
           echo "Found $RUNTIME_VERSION"
