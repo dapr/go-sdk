@@ -207,7 +207,9 @@ func NewClient() (client Client, err error) {
 	var onceErr error
 	doOnce.Do(func() {
 		c, err := NewClientWithPort(port)
-		onceErr = fmt.Errorf("error creating default client: %w", err)
+		if err != nil {
+			onceErr = fmt.Errorf("error creating default client: %w", err)
+		}
 		defaultClient = c
 	})
 
