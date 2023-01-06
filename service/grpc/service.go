@@ -33,7 +33,6 @@ import (
 
 // DaprClienter is an interface implemented by the gRPC client of this SDK.
 type DaprClienter interface {
-	GrpcClient() pb.DaprClient
 	GrpcClientConn() *grpc.ClientConn
 }
 
@@ -60,8 +59,11 @@ func NewServiceWithListener(lis net.Listener) common.Service {
 // This makes an outbound connection to Dapr, without creating a listener.
 // It requires an existing gRPC client connection to Dapr.
 func NewServiceFromCallbackChannel(ctx context.Context, client DaprClienter) (common.Service, error) {
+	clientConn := client.GrpcClientConn()
+
 	// Invoke ConnectAppCallback to get the port we should connect to
-	res, err := client.GrpcClient().ConnectAppCallback(ctx, &pb.ConnectAppCallbackRequest{})
+	appCallbackClient := pb.NewDaprAppCallbackClient(clientConn)
+	res, err := appCallbackClient.ConnectAppCallback(ctx, &pb.ConnectAppCallbackRequest{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to invoke ConnectAppCallback: %w", err)
 	}
