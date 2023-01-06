@@ -22,20 +22,19 @@ jobs:
       DAPR_CLI_REF: ""
       DAPR_REF: ""
     steps:
-      - uses: actions/checkout@v2
-      - uses: azure/setup-helm@v1
+      - uses: actions/checkout@v3
       - name: Determine latest Dapr Runtime version
         run: |
-          helm repo add dapr https://dapr.github.io/helm-charts/ && helm repo update && export RUNTIME_VERSION=$(helm show chart dapr/dapr --devel | grep "appVersion: [0-9]\+\.[0-9]\+\.[0-9]\+.*" | cut -d ' ' -f2)
+          RUNTIME_VERSION=$(curl -s "https://api.github.com/repos/dapr/dapr/releases/latest" | grep '"tag_name"' | cut -d ':' -f2 | tr -d '",v')
           echo "DAPR_RUNTIME_VER=$RUNTIME_VERSION" >> $GITHUB_ENV
           echo "Found $RUNTIME_VERSION"
       - name: Determine latest Dapr Cli version
         run: |
-          export CLI_VERSION=$(curl "https://api.github.com/repos/dapr/cli/releases?per_page=1&page=1" | grep '"tag_name"' | cut -d ':' -f2 | tr -d '",v')
+          CLI_VERSION=$(curl -s "https://api.github.com/repos/dapr/cli/releases/latest" | grep '"tag_name"' | cut -d ':' -f2 | tr -d '",v')
           echo "DAPR_CLI_VER=$CLI_VERSION" >> $GITHUB_ENV
           echo "Found $CLI_VERSION"
       - name: Set up Python ${{ env.PYTHON_VER }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ env.PYTHON_VER }}
       - name: Install Mechanical Markdown
@@ -46,18 +45,18 @@ jobs:
         run: wget -q ${{ env.DAPR_INSTALL_URL }} -O - | /bin/bash -s ${{ env.DAPR_CLI_VER }}
       - name: Set up Go ${{ env.GOVER }}
         if: env.DAPR_REF != '' || env.DAPR_CLI_REF != ''
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v3
         with:
           go-version: ${{ env.GOVER }}
       - name: Checkout Dapr CLI repo to override dapr command.
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         if: env.DAPR_CLI_REF != ''
         with:
           repository: dapr/cli
           ref: ${{ env.DAPR_CLI_REF }}
           path: cli
       - name: Checkout Dapr repo to override daprd.
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         if: env.DAPR_REF != ''
         with:
           repository: dapr/dapr

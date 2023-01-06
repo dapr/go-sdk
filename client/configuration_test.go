@@ -66,18 +66,17 @@ func TestSubscribeConfigurationItems(t *testing.T) {
 func TestUnSubscribeConfigurationItems(t *testing.T) {
 	ctx := context.Background()
 
-	counter := atomic.Uint32{}
-	totalCounter := atomic.Uint32{}
+	var counter, totalCounter uint32
 	t.Run("Test unsubscribe configuration items", func(t *testing.T) {
 		subscribeIDChan := make(chan string)
 		go func() {
 			keys := []string{"mykey1", "mykey2", "mykey3"}
 			err := testClient.SubscribeConfigurationItems(ctx, "example-config",
 				keys, func(id string, items map[string]*ConfigurationItem) {
-					counter.Add(1)
+					atomic.AddUint32(&counter, 1)
 					for _, k := range keys {
 						assert.Equal(t, k+valueSuffix, items[k].Value)
-						totalCounter.Add(1)
+						atomic.AddUint32(&totalCounter, 1)
 					}
 					select {
 					case subscribeIDChan <- id:
@@ -93,6 +92,6 @@ func TestUnSubscribeConfigurationItems(t *testing.T) {
 		assert.Nil(t, err)
 	})
 	time.Sleep(time.Second * 5)
-	assert.Equal(t, uint32(3), counter.Load())
-	assert.Equal(t, uint32(9), totalCounter.Load())
+	assert.Equal(t, uint32(3), atomic.LoadUint32(&counter))
+	assert.Equal(t, uint32(9), atomic.LoadUint32(&totalCounter))
 }

@@ -13,12 +13,12 @@ jobs:
     steps:
 
     - name: Setup
-      uses: actions/setup-go@v2
+      uses: actions/setup-go@v3
       with:
         go-version: ^1.18
 
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Check sdk-version file
       run: |
