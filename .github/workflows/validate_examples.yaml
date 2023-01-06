@@ -23,16 +23,14 @@ jobs:
       DAPR_REF: ""
     steps:
       - uses: actions/checkout@v3
-      - uses: azure/setup-helm@v3
       - name: Determine latest Dapr Runtime version
         run: |
-          helm init --stable-repo-url=https://charts.helm.sh/stable --client-only 
-          helm repo add dapr https://dapr.github.io/helm-charts/ && helm repo update && export RUNTIME_VERSION=$(helm show chart dapr/dapr --devel | grep "appVersion: [0-9]\+\.[0-9]\+\.[0-9]\+.*" | cut -d ' ' -f2)
+          RUNTIME_VERSION=$(curl -s "https://api.github.com/repos/dapr/dapr/releases/latest" | grep '"tag_name"' | cut -d ':' -f2 | tr -d '",v')
           echo "DAPR_RUNTIME_VER=$RUNTIME_VERSION" >> $GITHUB_ENV
           echo "Found $RUNTIME_VERSION"
       - name: Determine latest Dapr Cli version
         run: |
-          export CLI_VERSION=$(curl "https://api.github.com/repos/dapr/cli/releases?per_page=1&page=1" | grep '"tag_name"' | cut -d ':' -f2 | tr -d '",v')
+          CLI_VERSION=$(curl -s "https://api.github.com/repos/dapr/cli/releases/latest" | grep '"tag_name"' | cut -d ':' -f2 | tr -d '",v')
           echo "DAPR_CLI_VER=$CLI_VERSION" >> $GITHUB_ENV
           echo "Found $CLI_VERSION"
       - name: Set up Python ${{ env.PYTHON_VER }}
