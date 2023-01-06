@@ -33,8 +33,8 @@ import (
 
 // DaprClienter is an interface implemented by the gRPC client of this SDK.
 type DaprClienter interface {
-	// GrpcClient returns the base grpc client if grpc is used and nil otherwise
 	GrpcClient() pb.DaprClient
+	GrpcClientConn() *grpc.ClientConn
 }
 
 // NewService creates new Service.
@@ -60,6 +60,7 @@ func NewServiceWithListener(lis net.Listener) common.Service {
 // This makes an outbound connection to Dapr, without creating a listener.
 // It requires an existing gRPC client connection to Dapr.
 func NewServiceFromCallbackChannel(ctx context.Context, client DaprClienter) (common.Service, error) {
+	// Invoke ConnectAppCallback to get the port we should connect to
 	res, err := client.GrpcClient().ConnectAppCallback(ctx, &pb.ConnectAppCallbackRequest{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to invoke ConnectAppCallback: %w", err)
@@ -69,7 +70,19 @@ func NewServiceFromCallbackChannel(ctx context.Context, client DaprClienter) (co
 		return nil, fmt.Errorf("response from ConnectAppCallback does not contain a port")
 	}
 
-	addr, err := net.ResolveTCPAddr("tcp", net.JoinHostPort("127.0.0.1", strconv.Itoa(int(res.Port))))
+	// Determine the host from the target of the gRPC connection, if present
+	host := "127.0.0.1"
+	target := client.GrpcClientConn().Target()
+	if target != "" {
+		var h string
+		h, _, err = net.SplitHostPort(target)
+		if err == nil && h != "" {
+			host = h
+		}
+	}
+
+	// Establish the TCP connection to daprd
+	addr, err := net.ResolveTCPAddr("tcp", net.JoinHostPort(host, strconv.Itoa(int(res.Port))))
 	if err != nil {
 		return nil, fmt.Errorf("failed to resolve TCP address for Dapr at port %d", res.Port)
 	}
@@ -83,6 +96,7 @@ func NewServiceFromCallbackChannel(ctx context.Context, client DaprClienter) (co
 		return nil, fmt.Errorf("failed to enable keep-alives in the TCP connection with Dapr at address %v", addr)
 	}
 
+	// Use the established connection to create a new common.Service
 	return NewServiceWithConnection(conn), nil
 }
 
