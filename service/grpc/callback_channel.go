@@ -42,12 +42,84 @@ type DaprClienter interface {
 // NewServiceFromCallbackChannel creates a new Service by using the callback channel.
 // This makes an outbound connection to Dapr, without creating a listener.
 // It requires an existing gRPC client connection to Dapr.
-func NewServiceFromCallbackChannel(ctx context.Context, client DaprClienter, grpcOpts ...grpc.ServerOption) (common.Service, error) {
+func NewServiceFromCallbackChannel(client DaprClienter, grpcOpts ...grpc.ServerOption) (common.Service, error) {
 	clientConn := client.GrpcClientConn()
 
+	// Establish a connection using the callback channel
+	lis := newlistenerFromCallbackChannel(clientConn)
+	err := lis.Connect()
+	if err != nil {
+		return nil, err
+	}
+
+	// Create a server on the connection and return it
+	srv := newService(lis, grpcOpts...)
+	pb.RegisterDaprAppChannelCallbackServer(srv.grpcServer, srv)
+	return srv, nil
+}
+
+// HealthCheck check app health status.
+func (s *Server) Ping(stream pb.DaprAppChannelCallback_PingServer) error {
+	// Send a ping every 5s, including as soon as it's connected (Dapr expects a first ping to validate the server is up)
+	const pingInterval = 5 * time.Second
+
+	for {
+		// In case of error, reconnect
+		if stream.Context().Err() != nil {
+			break
+		}
+		in := emptyPbPool.Get()
+		err := stream.SendMsg(in)
+		emptyPbPool.Put(in)
+
+		// If there's an error, we can assume that the channel is down, so force a reconnection
+		if err != nil {
+			break
+		}
+		time.Sleep(pingInterval)
+	}
+
+	if lis, ok := s.listener.(*listenerFromCallbackChannel); ok && lis != nil {
+		fmt.Println("recreating callback channel connection")
+		go lis.Connect()
+	}
+
+	return nil
+}
+
+func newlistenerFromCallbackChannel(grpcConn *grpc.ClientConn) *listenerFromCallbackChannel {
+	return &listenerFromCallbackChannel{
+		grpcConn: grpcConn,
+		connCh:   make(chan net.Conn, 1),
+	}
+}
+
+// listenerFromCallbackChannel implements net.Listener that uses connections established through the app callback channel
+type listenerFromCallbackChannel struct {
+	grpcConn *grpc.ClientConn
+	connCh   chan net.Conn
+	lock     sync.Mutex
+}
+
+// Connect creates a new connection.
+func (l *listenerFromCallbackChannel) Connect() error {
+	conn, err := l.doConnect()
+	if err != nil {
+		return err
+	}
+	l.AddConn(conn)
+	return nil
+}
+
+func (l *listenerFromCallbackChannel) doConnect() (net.Conn, error) {
 	// Invoke ConnectAppCallback to get the port we should connect to
-	appCallbackClient := pb.NewDaprAppChannelClient(clientConn)
-	res, err := appCallbackClient.ConnectAppCallback(ctx, &pb.ConnectAppCallbackRequest{})
+	// We use WaitForReady and a background context to block until the connection is up
+	appCallbackClient := pb.NewDaprAppChannelClient(l.grpcConn)
+	res, err := appCallbackClient.ConnectAppCallback(
+		context.Background(),
+		&pb.ConnectAppCallbackRequest{},
+		grpc.WaitForReady(true),
+	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to invoke ConnectAppCallback: %w", err)
 	}
@@ -58,7 +130,7 @@ func NewServiceFromCallbackChannel(ctx context.Context, client DaprClienter, grp
 
 	// Determine the host from the target of the gRPC connection, if present
 	host := "127.0.0.1"
-	target := client.GrpcClientConn().Target()
+	target := l.grpcConn.Target()
 	if target != "" {
 		var h string
 		h, _, err = net.SplitHostPort(target)
@@ -83,80 +155,40 @@ func NewServiceFromCallbackChannel(ctx context.Context, client DaprClienter, grp
 		return nil, fmt.Errorf("failed to disable keep-alives in the TCP connection with Dapr at address %v", addr)
 	}
 
-	// Use the established connection to create a new common.Service
-	lis := newListenerFromConn()
-	lis.conn <- conn
-	srv := newService(lis, grpcOpts...)
-	pb.RegisterDaprAppChannelCallbackServer(srv.grpcServer, srv)
-	return srv, nil
-}
-
-// HealthCheck check app health status.
-func (s *Server) Ping(stream pb.DaprAppChannelCallback_PingServer) error {
-	// Send a ping every 5s, including as soon as it's connected (Dapr expects a first ping to validate the server is up)
-	const pingInterval = 5 * time.Second
-	for stream.Context().Err() == nil {
-		in := emptyPbPool.Get()
-		err := stream.SendMsg(in)
-		emptyPbPool.Put(in)
-		if err != nil {
-			// TODO: CLOSE THE CHANNEL
-			break
-		}
-		time.Sleep(pingInterval)
-	}
-	return nil
-}
-
-// NewServiceWithConnection creates a new Service based on an already-established TCP connection.
-func NewServiceWithConnection(conn net.Conn, grpcOpts ...grpc.ServerOption) common.Service {
-	lis := newListenerFromConn()
-	return newService(lis, grpcOpts...)
-}
-
-func newListenerFromConn() *listenerFromConn {
-	return &listenerFromConn{
-		conn: make(chan net.Conn, 1),
-	}
-}
-
-// listenerFromConn implements net.Listener returning an existing net.Conn
-type listenerFromConn struct {
-	conn chan net.Conn
-	lock sync.Mutex
+	return conn, nil
 }
 
 // AddConn adds a conection so it's the next one to be accepted
-func (l *listenerFromConn) AddConn(conn net.Conn) {
+func (l *listenerFromCallbackChannel) AddConn(conn net.Conn) {
 	l.lock.Lock()
 	defer l.lock.Unlock()
 
 	// Drain the channel first
 	l.drain()
 
-	l.conn <- conn
+	l.connCh <- conn
 }
 
-func (l *listenerFromConn) drain() {
+func (l *listenerFromCallbackChannel) drain() {
 	for {
 		select {
-		case c := <-l.conn:
+		case c := <-l.connCh:
 			_ = c.Close()
 		default:
-			break
+			return
 		}
 	}
 }
 
-func (l *listenerFromConn) Accept() (net.Conn, error) {
+func (l *listenerFromCallbackChannel) Accept() (net.Conn, error) {
 	// This blocks until a connection is added
-	return <-l.conn, nil
+	return <-l.connCh, nil
 }
 
-func (l *listenerFromConn) Close() error {
+func (l *listenerFromCallbackChannel) Close() error {
 	return nil
 }
 
-func (l *listenerFromConn) Addr() net.Addr {
+func (l *listenerFromCallbackChannel) Addr() net.Addr {
 	return &net.TCPAddr{}
 }
