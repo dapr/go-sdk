@@ -19,12 +19,20 @@ import (
 	"net"
 	"strconv"
 	"sync"
+	"time"
 
 	"google.golang.org/grpc"
+	"google.golang.org/protobuf/types/known/emptypb"
 
 	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
 	"github.com/dapr/go-sdk/service/common"
 )
+
+var emptyPbPool = sync.Pool{
+	New: func() any {
+		return &emptypb.Empty{}
+	},
+}
 
 // DaprClienter is an interface implemented by the gRPC client of this SDK.
 type DaprClienter interface {
@@ -34,11 +42,11 @@ type DaprClienter interface {
 // NewServiceFromCallbackChannel creates a new Service by using the callback channel.
 // This makes an outbound connection to Dapr, without creating a listener.
 // It requires an existing gRPC client connection to Dapr.
-func NewServiceFromCallbackChannel(ctx context.Context, client DaprClienter) (common.Service, error) {
+func NewServiceFromCallbackChannel(ctx context.Context, client DaprClienter, grpcOpts ...grpc.ServerOption) (common.Service, error) {
 	clientConn := client.GrpcClientConn()
 
 	// Invoke ConnectAppCallback to get the port we should connect to
-	appCallbackClient := pb.NewDaprAppCallbackClient(clientConn)
+	appCallbackClient := pb.NewDaprAppChannelClient(clientConn)
 	res, err := appCallbackClient.ConnectAppCallback(ctx, &pb.ConnectAppCallbackRequest{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to invoke ConnectAppCallback: %w", err)
@@ -76,8 +84,28 @@ func NewServiceFromCallbackChannel(ctx context.Context, client DaprClienter) (co
 	}
 
 	// Use the established connection to create a new common.Service
-	srv := NewServiceWithConnection(conn)
+	lis := newListenerFromConn()
+	lis.conn <- conn
+	srv := newService(lis, grpcOpts...)
+	pb.RegisterDaprAppChannelCallbackServer(srv.grpcServer, srv)
 	return srv, nil
+}
+
+// HealthCheck check app health status.
+func (s *Server) Ping(stream pb.DaprAppChannelCallback_PingServer) error {
+	// Send a ping every 5s, including as soon as it's connected (Dapr expects a first ping to validate the server is up)
+	const pingInterval = 5 * time.Second
+	for stream.Context().Err() == nil {
+		in := emptyPbPool.Get()
+		err := stream.SendMsg(in)
+		emptyPbPool.Put(in)
+		if err != nil {
+			// TODO: CLOSE THE CHANNEL
+			break
+		}
+		time.Sleep(pingInterval)
+	}
+	return nil
 }
 
 // NewServiceWithConnection creates a new Service based on an already-established TCP connection.
@@ -112,7 +140,7 @@ func (l *listenerFromConn) AddConn(conn net.Conn) {
 func (l *listenerFromConn) drain() {
 	for {
 		select {
-		case c:=<-l.conn:
+		case c := <-l.conn:
 			_ = c.Close()
 		default:
 			break
