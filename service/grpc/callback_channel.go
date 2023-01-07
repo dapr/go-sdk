@@ -60,23 +60,47 @@ func NewServiceFromCallbackChannel(client DaprClienter, grpcOpts ...grpc.ServerO
 
 // HealthCheck check app health status.
 func (s *Server) Ping(stream pb.DaprAppChannelCallback_PingServer) error {
-	// Send a ping every 5s, including as soon as it's connected (Dapr expects a first ping to validate the server is up)
+	// Send a ping every 5s
 	const pingInterval = 5 * time.Second
 
+	t := time.NewTicker(pingInterval)
+	defer t.Stop()
+	ctxDoneCh := stream.Context().Done()
+	// Send a ping as soon as the stream is up too
+	// Dapr expects a first ping to validate the server is up
+	firstMsg := make(chan struct{})
+	close(firstMsg)
+loop:
 	for {
-		// In case of error, reconnect
-		if stream.Context().Err() != nil {
-			break
-		}
-		in := emptyPbPool.Get()
-		err := stream.SendMsg(in)
-		emptyPbPool.Put(in)
+		select {
+		case <-ctxDoneCh:
+			// Force a reconnection
+			break loop
+		case <-firstMsg:
+			firstMsg = nil
+			in := emptyPbPool.Get()
+			err := stream.SendMsg(in)
+			emptyPbPool.Put(in)
 
-		// If there's an error, we can assume that the channel is down, so force a reconnection
-		if err != nil {
-			break
+			// If there's an error, we can assume that the channel is down, so force a reconnection
+			if err != nil {
+				break loop
+			}
+		case <-t.C:
+			// On the interval, send a ping
+			if stream.Context().Err() != nil {
+				// Check for context errors again
+				break loop
+			}
+			in := emptyPbPool.Get()
+			err := stream.SendMsg(in)
+			emptyPbPool.Put(in)
+
+			// If there's an error, we can assume that the channel is down, so force a reconnection
+			if err != nil {
+				break loop
+			}
 		}
-		time.Sleep(pingInterval)
 	}
 
 	if lis, ok := s.listener.(*listenerFromCallbackChannel); ok && lis != nil {
