@@ -14,10 +14,10 @@ limitations under the License.
 package state
 
 import (
+	"errors"
+	"fmt"
 	"reflect"
 	"sync"
-
-	"github.com/pkg/errors"
 
 	"github.com/dapr/go-sdk/actor"
 )
@@ -31,7 +31,7 @@ type ActorStateManager struct {
 
 func (a *ActorStateManager) Add(stateName string, value interface{}) error {
 	if stateName == "" {
-		return errors.Errorf("state's name can't be empty")
+		return errors.New("state name can't be empty")
 	}
 	exists, err := a.stateAsyncProvider.Contains(a.ActorTypeName, a.ActorID, stateName)
 	if err != nil {
@@ -47,10 +47,10 @@ func (a *ActorStateManager) Add(stateName string, value interface{}) error {
 			})
 			return nil
 		}
-		return errors.Errorf("Duplicate cached state: %s", stateName)
+		return fmt.Errorf("duplicate cached state: %s", stateName)
 	}
 	if exists {
-		return errors.Errorf("Duplicate state: %s", stateName)
+		return fmt.Errorf("duplicate state: %s", stateName)
 	}
 	a.stateChangeTracker.Store(stateName, &ChangeMetadata{
 		Kind:  Add,
@@ -61,13 +61,13 @@ func (a *ActorStateManager) Add(stateName string, value interface{}) error {
 
 func (a *ActorStateManager) Get(stateName string, reply interface{}) error {
 	if stateName == "" {
-		return errors.Errorf("state's name can't be empty")
+		return errors.New("state name can't be empty")
 	}
 
 	if val, ok := a.stateChangeTracker.Load(stateName); ok {
 		metadata := val.(*ChangeMetadata)
 		if metadata.Kind == Remove {
-			return errors.Errorf("state is marked for remove: %s", stateName)
+			return fmt.Errorf("state is marked for removal: %s", stateName)
 		}
 		replyVal := reflect.ValueOf(reply).Elem()
 		metadataValue := reflect.ValueOf(metadata.Value)
@@ -90,7 +90,7 @@ func (a *ActorStateManager) Get(stateName string, reply interface{}) error {
 
 func (a *ActorStateManager) Set(stateName string, value interface{}) error {
 	if stateName == "" {
-		return errors.Errorf("state's name can't be empty")
+		return errors.New("state name can't be empty")
 	}
 	if val, ok := a.stateChangeTracker.Load(stateName); ok {
 		metadata := val.(*ChangeMetadata)
@@ -109,7 +109,7 @@ func (a *ActorStateManager) Set(stateName string, value interface{}) error {
 
 func (a *ActorStateManager) Remove(stateName string) error {
 	if stateName == "" {
-		return errors.Errorf("state's name can't be empty")
+		return errors.New("state name can't be empty")
 	}
 	if val, ok := a.stateChangeTracker.Load(stateName); ok {
 		metadata := val.(*ChangeMetadata)
@@ -138,7 +138,7 @@ func (a *ActorStateManager) Remove(stateName string) error {
 
 func (a *ActorStateManager) Contains(stateName string) (bool, error) {
 	if stateName == "" {
-		return false, errors.Errorf("state's name can't be empty")
+		return false, errors.New("state name can't be empty")
 	}
 	if val, ok := a.stateChangeTracker.Load(stateName); ok {
 		metadata := val.(*ChangeMetadata)

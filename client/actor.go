@@ -16,11 +16,11 @@ package client
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"reflect"
 
 	anypb "github.com/golang/protobuf/ptypes/any"
-	"github.com/pkg/errors"
 
 	"github.com/dapr/go-sdk/actor"
 	"github.com/dapr/go-sdk/actor/codec"
@@ -64,7 +64,7 @@ func (c *GRPCClient) InvokeActor(ctx context.Context, in *InvokeActorRequest) (o
 
 	resp, err := c.protoClient.InvokeActor(c.withAuthToken(ctx), req)
 	if err != nil {
-		return nil, errors.Wrapf(err, "error invoking binding %s/%s", in.ActorType, in.ActorID)
+		return nil, fmt.Errorf("error invoking binding %s/%s: %w", in.ActorType, in.ActorID, err)
 	}
 
 	out = &InvokeActorResponse{}
@@ -151,7 +151,7 @@ func (c *GRPCClient) RegisterActorReminder(ctx context.Context, in *RegisterActo
 
 	_, err = c.protoClient.RegisterActorReminder(c.withAuthToken(ctx), req)
 	if err != nil {
-		return errors.Wrapf(err, "error invoking register actor reminder %s/%s", in.ActorType, in.ActorID)
+		return fmt.Errorf("error invoking register actor reminder %s/%s: %w", in.ActorType, in.ActorID, err)
 	}
 	return nil
 }
@@ -185,7 +185,7 @@ func (c *GRPCClient) UnregisterActorReminder(ctx context.Context, in *Unregister
 
 	_, err := c.protoClient.UnregisterActorReminder(c.withAuthToken(ctx), req)
 	if err != nil {
-		return errors.Wrapf(err, "error invoking unregister actor reminder %s/%s", in.ActorType, in.ActorID)
+		return fmt.Errorf("error invoking unregister actor reminder %s/%s: %w", in.ActorType, in.ActorID, err)
 	}
 	return nil
 }
@@ -224,7 +224,7 @@ func (c *GRPCClient) RenameActorReminder(ctx context.Context, in *RenameActorRem
 
 	_, err := c.protoClient.RenameActorReminder(c.withAuthToken(ctx), req)
 	if err != nil {
-		return errors.Wrapf(err, "error invoking rename actor reminder %s/%s", in.ActorType, in.ActorID)
+		return fmt.Errorf("error invoking rename actor reminder %s/%s: %w", in.ActorType, in.ActorID, err)
 	}
 	return nil
 }
@@ -272,7 +272,7 @@ func (c *GRPCClient) RegisterActorTimer(ctx context.Context, in *RegisterActorTi
 
 	_, err = c.protoClient.RegisterActorTimer(c.withAuthToken(ctx), req)
 	if err != nil {
-		return errors.Wrapf(err, "error invoking actor register timer %s/%s", in.ActorType, in.ActorID)
+		return fmt.Errorf("error invoking actor register timer %s/%s: %w", in.ActorType, in.ActorID, err)
 	}
 
 	return nil
@@ -306,7 +306,7 @@ func (c *GRPCClient) UnregisterActorTimer(ctx context.Context, in *UnregisterAct
 
 	_, err := c.protoClient.UnregisterActorTimer(c.withAuthToken(ctx), req)
 	if err != nil {
-		return errors.Wrapf(err, "error invoking binding %s/%s", in.ActorType, in.ActorID)
+		return fmt.Errorf("error invoking binding %s/%s: %w", in.ActorType, in.ActorID, err)
 	}
 
 	return nil
@@ -454,7 +454,7 @@ func (c *GRPCClient) GetActorState(ctx context.Context, in *GetActorStateRequest
 		Key:       in.KeyName,
 	})
 	if err != nil {
-		return nil, errors.Wrapf(err, "error invoking actor get state %s/%s", in.ActorType, in.ActorID)
+		return nil, fmt.Errorf("error invoking actor get state %s/%s: %w", in.ActorType, in.ActorID, err)
 	}
 	return &GetActorStateResponse{Data: rsp.Data}, nil
 }

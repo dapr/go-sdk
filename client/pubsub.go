@@ -16,9 +16,9 @@ package client
 import (
 	"context"
 	"encoding/json"
+	"errors"
+	"fmt"
 	"log"
-
-	"github.com/pkg/errors"
 
 	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
 )
@@ -59,14 +59,14 @@ func (c *GRPCClient) PublishEvent(ctx context.Context, pubsubName, topicName str
 			request.DataContentType = "application/json"
 			request.Data, err = json.Marshal(d)
 			if err != nil {
-				return errors.WithMessage(err, "error serializing input struct")
+				return fmt.Errorf("error serializing input struct: %w", err)
 			}
 		}
 	}
 
 	_, err := c.protoClient.PublishEvent(c.withAuthToken(ctx), request)
 	if err != nil {
-		return errors.Wrapf(err, "error publishing event unto %s topic", topicName)
+		return fmt.Errorf("error publishing event unto %s topic: %w", topicName, err)
 	}
 
 	return nil
@@ -105,7 +105,7 @@ func (c *GRPCClient) PublishEventfromCustomContent(ctx context.Context, pubsubNa
 	// Perform the JSON marshaling here just in case someone passed a []byte or string as data
 	enc, err := json.Marshal(data)
 	if err != nil {
-		return errors.WithMessage(err, "error serializing input struct")
+		return fmt.Errorf("error serializing input struct: %w", err)
 	}
 
 	return c.PublishEvent(ctx, pubsubName, topicName, enc, PublishEventWithContentType("application/json"))
