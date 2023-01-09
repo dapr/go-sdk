@@ -182,7 +182,7 @@ func (l *listenerFromCallbackChannel) doConnect() (net.Conn, error) {
 	return conn, nil
 }
 
-// AddConn adds a conection so it's the next one to be accepted
+// AddConn adds a connection so it's the next one to be accepted
 func (l *listenerFromCallbackChannel) AddConn(conn net.Conn) {
 	l.lock.Lock()
 	defer l.lock.Unlock()
