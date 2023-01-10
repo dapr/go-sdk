@@ -14,17 +14,17 @@ limitations under the License.
 package grpc
 
 import (
+	"errors"
+	"fmt"
 	"net"
 	"os"
 	"sync/atomic"
 
-	"github.com/pkg/errors"
 	"google.golang.org/grpc"
-
-	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
 
 	"github.com/dapr/go-sdk/actor"
 	"github.com/dapr/go-sdk/actor/config"
+	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
 	"github.com/dapr/go-sdk/service/common"
 	"github.com/dapr/go-sdk/service/internal"
 )
@@ -32,11 +32,11 @@ import (
 // NewService creates new Service.
 func NewService(address string) (s common.Service, err error) {
 	if address == "" {
-		return nil, errors.New("nil address")
+		return nil, errors.New("empty address")
 	}
 	lis, err := net.Listen("tcp", address)
 	if err != nil {
-		err = errors.Wrapf(err, "failed to TCP listen on: %s", address)
+		err = fmt.Errorf("failed to TCP listen on %s: %w", address, err)
 		return
 	}
 	s = newService(lis)

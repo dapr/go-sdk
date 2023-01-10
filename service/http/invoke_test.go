@@ -16,7 +16,7 @@ package http
 import (
 	"context"
 	"errors"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -97,7 +97,7 @@ func TestInvocationHandlerWithData(t *testing.T) {
 	s.mux.ServeHTTP(resp, req)
 	assert.Equal(t, http.StatusOK, resp.Code)
 
-	b, err := ioutil.ReadAll(resp.Body)
+	b, err := io.ReadAll(resp.Body)
 	assert.NoErrorf(t, err, "reading response body success")
 	assert.Equal(t, data, string(b))
 }
@@ -121,7 +121,7 @@ func TestInvocationHandlerWithoutInputData(t *testing.T) {
 	s.mux.ServeHTTP(resp, req)
 	assert.Equal(t, http.StatusOK, resp.Code)
 
-	b, err := ioutil.ReadAll(resp.Body)
+	b, err := io.ReadAll(resp.Body)
 	assert.NoErrorf(t, err, "reading response body success")
 	assert.NotNil(t, b)
 	assert.Equal(t, "", string(b))

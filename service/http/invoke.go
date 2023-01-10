@@ -15,7 +15,7 @@ package http
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 
@@ -33,7 +33,7 @@ func (s *Server) AddServiceInvocationHandler(route string, fn common.ServiceInvo
 	}
 
 	if !strings.HasPrefix(route, "/") {
-		route = fmt.Sprintf("/%s", route)
+		route = "/" + route
 	}
 
 	s.mux.Handle(route, optionsHandler(http.HandlerFunc(
@@ -54,7 +54,7 @@ func (s *Server) AddServiceInvocationHandler(route string, fn common.ServiceInvo
 
 			// check for post with no data
 			if r.ContentLength > 0 {
-				content, err := ioutil.ReadAll(r.Body)
+				content, err := io.ReadAll(r.Body)
 				if err != nil {
 					http.Error(w, err.Error(), http.StatusBadRequest)
 					return

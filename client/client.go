@@ -15,6 +15,7 @@ package client
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"net"
@@ -27,7 +28,6 @@ import (
 	"github.com/dapr/go-sdk/actor/config"
 	"github.com/dapr/go-sdk/version"
 
-	"github.com/pkg/errors"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
@@ -57,6 +57,8 @@ var (
 )
 
 // Client is the interface for Dapr client implementation.
+//
+//nolint:interfacebloat
 type Client interface {
 	// InvokeBinding invokes specific operation on the configured Dapr binding.
 	// This method covers input, output, and bi-directional bindings.
@@ -205,7 +207,9 @@ func NewClient() (client Client, err error) {
 	var onceErr error
 	doOnce.Do(func() {
 		c, err := NewClientWithPort(port)
-		onceErr = errors.Wrap(err, "error creating default client")
+		if err != nil {
+			onceErr = fmt.Errorf("error creating default client: %w", err)
+		}
 		defaultClient = c
 	})
 
@@ -337,7 +341,7 @@ func (c *GRPCClient) withAuthToken(ctx context.Context) context.Context {
 func (c *GRPCClient) Shutdown(ctx context.Context) error {
 	_, err := c.protoClient.Shutdown(c.withAuthToken(ctx), &emptypb.Empty{})
 	if err != nil {
-		return errors.Wrap(err, "error shutting down the sidecar")
+		return fmt.Errorf("error shutting down the sidecar: %w", err)
 	}
 	return nil
 }
