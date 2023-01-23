@@ -349,3 +349,207 @@ var AppCallbackHealthCheck_ServiceDesc = grpc.ServiceDesc{
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "dapr/proto/runtime/v1/appcallback.proto",
 }
+
+// DaprAppChannelCallbackClient is the client API for DaprAppChannelCallback service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+type DaprAppChannelCallbackClient interface {
+	// Bi-directional streaming that allows each side to send a "ping".
+	Ping(ctx context.Context, opts ...grpc.CallOption) (DaprAppChannelCallback_PingClient, error)
+}
+
+type daprAppChannelCallbackClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewDaprAppChannelCallbackClient(cc grpc.ClientConnInterface) DaprAppChannelCallbackClient {
+	return &daprAppChannelCallbackClient{cc}
+}
+
+func (c *daprAppChannelCallbackClient) Ping(ctx context.Context, opts ...grpc.CallOption) (DaprAppChannelCallback_PingClient, error) {
+	stream, err := c.cc.NewStream(ctx, &DaprAppChannelCallback_ServiceDesc.Streams[0], "/dapr.proto.runtime.v1.DaprAppChannelCallback/Ping", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &daprAppChannelCallbackPingClient{stream}
+	return x, nil
+}
+
+type DaprAppChannelCallback_PingClient interface {
+	Send(*emptypb.Empty) error
+	Recv() (*emptypb.Empty, error)
+	grpc.ClientStream
+}
+
+type daprAppChannelCallbackPingClient struct {
+	grpc.ClientStream
+}
+
+func (x *daprAppChannelCallbackPingClient) Send(m *emptypb.Empty) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *daprAppChannelCallbackPingClient) Recv() (*emptypb.Empty, error) {
+	m := new(emptypb.Empty)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+// DaprAppChannelCallbackServer is the server API for DaprAppChannelCallback service.
+// All implementations should embed UnimplementedDaprAppChannelCallbackServer
+// for forward compatibility
+type DaprAppChannelCallbackServer interface {
+	// Bi-directional streaming that allows each side to send a "ping".
+	Ping(DaprAppChannelCallback_PingServer) error
+}
+
+// UnimplementedDaprAppChannelCallbackServer should be embedded to have forward compatible implementations.
+type UnimplementedDaprAppChannelCallbackServer struct {
+}
+
+func (UnimplementedDaprAppChannelCallbackServer) Ping(DaprAppChannelCallback_PingServer) error {
+	return status.Errorf(codes.Unimplemented, "method Ping not implemented")
+}
+
+// UnsafeDaprAppChannelCallbackServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to DaprAppChannelCallbackServer will
+// result in compilation errors.
+type UnsafeDaprAppChannelCallbackServer interface {
+	mustEmbedUnimplementedDaprAppChannelCallbackServer()
+}
+
+func RegisterDaprAppChannelCallbackServer(s grpc.ServiceRegistrar, srv DaprAppChannelCallbackServer) {
+	s.RegisterService(&DaprAppChannelCallback_ServiceDesc, srv)
+}
+
+func _DaprAppChannelCallback_Ping_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(DaprAppChannelCallbackServer).Ping(&daprAppChannelCallbackPingServer{stream})
+}
+
+type DaprAppChannelCallback_PingServer interface {
+	Send(*emptypb.Empty) error
+	Recv() (*emptypb.Empty, error)
+	grpc.ServerStream
+}
+
+type daprAppChannelCallbackPingServer struct {
+	grpc.ServerStream
+}
+
+func (x *daprAppChannelCallbackPingServer) Send(m *emptypb.Empty) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *daprAppChannelCallbackPingServer) Recv() (*emptypb.Empty, error) {
+	m := new(emptypb.Empty)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+// DaprAppChannelCallback_ServiceDesc is the grpc.ServiceDesc for DaprAppChannelCallback service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var DaprAppChannelCallback_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "dapr.proto.runtime.v1.DaprAppChannelCallback",
+	HandlerType: (*DaprAppChannelCallbackServer)(nil),
+	Methods:     []grpc.MethodDesc{},
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "Ping",
+			Handler:       _DaprAppChannelCallback_Ping_Handler,
+			ServerStreams: true,
+			ClientStreams: true,
+		},
+	},
+	Metadata: "dapr/proto/runtime/v1/appcallback.proto",
+}
+
+// AppCallbackAlphaClient is the client API for AppCallbackAlpha service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+type AppCallbackAlphaClient interface {
+	// Subscribes bulk events from Pubsub
+	OnBulkTopicEventAlpha1(ctx context.Context, in *TopicEventBulkRequest, opts ...grpc.CallOption) (*TopicEventBulkResponse, error)
+}
+
+type appCallbackAlphaClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewAppCallbackAlphaClient(cc grpc.ClientConnInterface) AppCallbackAlphaClient {
+	return &appCallbackAlphaClient{cc}
+}
+
+func (c *appCallbackAlphaClient) OnBulkTopicEventAlpha1(ctx context.Context, in *TopicEventBulkRequest, opts ...grpc.CallOption) (*TopicEventBulkResponse, error) {
+	out := new(TopicEventBulkResponse)
+	err := c.cc.Invoke(ctx, "/dapr.proto.runtime.v1.AppCallbackAlpha/OnBulkTopicEventAlpha1", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// AppCallbackAlphaServer is the server API for AppCallbackAlpha service.
+// All implementations should embed UnimplementedAppCallbackAlphaServer
+// for forward compatibility
+type AppCallbackAlphaServer interface {
+	// Subscribes bulk events from Pubsub
+	OnBulkTopicEventAlpha1(context.Context, *TopicEventBulkRequest) (*TopicEventBulkResponse, error)
+}
+
+// UnimplementedAppCallbackAlphaServer should be embedded to have forward compatible implementations.
+type UnimplementedAppCallbackAlphaServer struct {
+}
+
+func (UnimplementedAppCallbackAlphaServer) OnBulkTopicEventAlpha1(context.Context, *TopicEventBulkRequest) (*TopicEventBulkResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method OnBulkTopicEventAlpha1 not implemented")
+}
+
+// UnsafeAppCallbackAlphaServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to AppCallbackAlphaServer will
+// result in compilation errors.
+type UnsafeAppCallbackAlphaServer interface {
+	mustEmbedUnimplementedAppCallbackAlphaServer()
+}
+
+func RegisterAppCallbackAlphaServer(s grpc.ServiceRegistrar, srv AppCallbackAlphaServer) {
+	s.RegisterService(&AppCallbackAlpha_ServiceDesc, srv)
+}
+
+func _AppCallbackAlpha_OnBulkTopicEventAlpha1_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TopicEventBulkRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AppCallbackAlphaServer).OnBulkTopicEventAlpha1(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/dapr.proto.runtime.v1.AppCallbackAlpha/OnBulkTopicEventAlpha1",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AppCallbackAlphaServer).OnBulkTopicEventAlpha1(ctx, req.(*TopicEventBulkRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// AppCallbackAlpha_ServiceDesc is the grpc.ServiceDesc for AppCallbackAlpha service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var AppCallbackAlpha_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "dapr.proto.runtime.v1.AppCallbackAlpha",
+	HandlerType: (*AppCallbackAlphaServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "OnBulkTopicEventAlpha1",
+			Handler:    _AppCallbackAlpha_OnBulkTopicEventAlpha1_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "dapr/proto/runtime/v1/appcallback.proto",
+}

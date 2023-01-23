@@ -186,8 +186,11 @@ type Client interface {
 	// ImplActorClientStub is to impl user defined actor client stub
 	ImplActorClientStub(actorClientStub actor.Client, opt ...config.Option)
 
-	// GrpcClient returns the base grpc client if grpc is used and nil otherwise
+	// GrpcClient returns the base gRPC client.
 	GrpcClient() pb.DaprClient
+
+	// GrpcClientConn returns the grpc.ClientConn object used by this client.
+	GrpcClientConn() *grpc.ClientConn
 }
 
 // NewClient instantiates Dapr client using DAPR_GRPC_PORT environment variable as port.
@@ -346,7 +349,7 @@ func (c *GRPCClient) Shutdown(ctx context.Context) error {
 	return nil
 }
 
-// GrpcClient returns the base grpc client.
+// GrpcClient returns the base gRPC client.
 func (c *GRPCClient) GrpcClient() pb.DaprClient {
 	return c.protoClient
 }
