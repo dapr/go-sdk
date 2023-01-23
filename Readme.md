@@ -32,7 +32,7 @@ func main() {
         panic(err)
     }
     defer client.Close()
-    //TODO: use the client here, see below for examples 
+    // TODO: use the client here, see below for examples 
 }
 ```
 
@@ -57,7 +57,7 @@ func main() {
 }
 ```
   
-Assuming you have [Dapr CLI](https://docs.dapr.io/getting-started/install-dapr/) installed, you can then launch your app locally like this:
+Assuming you have [Dapr CLI](https://docs.dapr.io/getting-started/install-dapr-cli/) installed, you can then launch your app locally like this:
 
 ```shell
 dapr run --app-id example-service \
@@ -143,7 +143,7 @@ Similarly, `GetBulkState` method provides a way to retrieve multiple state items
 
 ```go
 keys := []string{"key1", "key2", "key3"}
-items, err := client.GetBulkState(ctx, store, keys, nil,100)
+items, err := client.GetBulkState(ctx, store, keys, nil, 100)
 ```
 
 And the `ExecuteStateTransaction` method to execute multiple `upsert` or `delete` operations transactionally.
@@ -286,7 +286,7 @@ func main() {
 
 ### Service (callback)
 
-In addition to the client capabilities that allow you to call into the Dapr API, the Go SDK also provides `service` package to help you bootstrap Dapr callback services in either gRPC or HTTP. Instructions on how to use it are located [here](./service/Readme.md)
+In addition to the client capabilities that allow you to call into the Dapr API, the Go SDK also provides `service` package to help you bootstrap Dapr callback services in either gRPC or HTTP. Instructions on how to use it are located [here](./service/Readme.md).
 
 ## Contributing to Dapr Go client
 
@@ -294,4 +294,4 @@ See the [Contribution Guide](./CONTRIBUTING.md) to get started with building and
 
 ## Code of Conduct
 
-Please refer to our [Dapr Community Code of Conduct](https://github.com/dapr/community/blob/master/CODE-OF-CONDUCT.md)
+Please refer to our [Dapr Community Code of Conduct](https://github.com/dapr/community/blob/master/CODE-OF-CONDUCT.md).
