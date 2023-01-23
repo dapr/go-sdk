@@ -217,7 +217,7 @@ func TestTopicWithErrors(t *testing.T) {
 			PubsubName:      sub2.PubsubName,
 		}
 		resp, err := server.OnTopicEvent(ctx, in)
-		assert.Error(t, err)
+		assert.NoError(t, err)
 		assert.Equal(t, resp.GetStatus(), runtime.TopicEventResponse_DROP)
 	})
 
