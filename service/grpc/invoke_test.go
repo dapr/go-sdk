@@ -15,10 +15,10 @@ package grpc
 
 import (
 	"context"
+	"errors"
 	"os"
 	"testing"
 
-	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/anypb"
@@ -55,7 +55,7 @@ func TestInvokeErrors(t *testing.T) {
 }
 
 func TestInvokeWithToken(t *testing.T) {
-	_ = os.Setenv(cc.AppAPITokenEnvVar, "app-dapr-token")
+	t.Setenv(cc.AppAPITokenEnvVar, "app-dapr-token")
 	server := getTestServer()
 	startTestServer(server)
 	methodName := "test"

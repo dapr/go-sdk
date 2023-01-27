@@ -16,7 +16,7 @@ package http
 import (
 	"context"
 	"errors"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -39,7 +39,7 @@ func TestInvocationHandlerWithoutHandler(t *testing.T) {
 
 func TestInvocationHandlerWithToken(t *testing.T) {
 	data := `{"name": "test", "data": hello}`
-	_ = os.Setenv(common.AppAPITokenEnvVar, "app-dapr-token")
+	t.Setenv(common.AppAPITokenEnvVar, "app-dapr-token")
 	s := newServer("", nil)
 	err := s.AddServiceInvocationHandler("/hello", func(ctx context.Context, in *common.InvocationEvent) (out *common.Content, err error) {
 		if in == nil || in.Data == nil || in.ContentType == "" {
@@ -97,7 +97,7 @@ func TestInvocationHandlerWithData(t *testing.T) {
 	s.mux.ServeHTTP(resp, req)
 	assert.Equal(t, http.StatusOK, resp.Code)
 
-	b, err := ioutil.ReadAll(resp.Body)
+	b, err := io.ReadAll(resp.Body)
 	assert.NoErrorf(t, err, "reading response body success")
 	assert.Equal(t, data, string(b))
 }
@@ -121,7 +121,7 @@ func TestInvocationHandlerWithoutInputData(t *testing.T) {
 	s.mux.ServeHTTP(resp, req)
 	assert.Equal(t, http.StatusOK, resp.Code)
 
-	b, err := ioutil.ReadAll(resp.Body)
+	b, err := io.ReadAll(resp.Body)
 	assert.NoErrorf(t, err, "reading response body success")
 	assert.NotNil(t, b)
 	assert.Equal(t, "", string(b))

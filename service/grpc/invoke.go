@@ -15,10 +15,10 @@ package grpc
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/golang/protobuf/ptypes/any"
-	"github.com/pkg/errors"
 	"google.golang.org/grpc/metadata"
 
 	cpb "github.com/dapr/go-sdk/dapr/proto/common/v1"
