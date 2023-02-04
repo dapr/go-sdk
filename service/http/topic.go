@@ -20,7 +20,7 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/gorilla/mux"
+	"github.com/go-chi/chi/v5"
 
 	actorErr "github.com/dapr/go-sdk/actor/error"
 	"github.com/dapr/go-sdk/actor/runtime"
@@ -86,7 +86,7 @@ func (s *Server) registerBaseHandler() {
 	fHealth := func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	}
-	s.mux.HandleFunc("/healthz", fHealth).Methods(http.MethodGet)
+	s.mux.Get("/healthz", fHealth)
 
 	// register actor config handler
 	fRegister := func(w http.ResponseWriter, r *http.Request) {
@@ -100,14 +100,13 @@ func (s *Server) registerBaseHandler() {
 			return
 		}
 	}
-	s.mux.HandleFunc("/dapr/config", fRegister).Methods(http.MethodGet)
+	s.mux.Get("/dapr/config", fRegister)
 
 	// register actor method invoke handler
 	fInvoke := func(w http.ResponseWriter, r *http.Request) {
-		varsMap := mux.Vars(r)
-		actorType := varsMap["actorType"]
-		actorID := varsMap["actorId"]
-		methodName := varsMap["methodName"]
+		actorType := chi.URLParam(r, "actorType")
+		actorID := chi.URLParam(r, "actorId")
+		methodName := chi.URLParam(r, "methodName")
 		reqData, _ := io.ReadAll(r.Body)
 		rspData, err := runtime.GetActorRuntimeInstance().InvokeActorMethod(actorType, actorID, methodName, reqData)
 		if err == actorErr.ErrActorTypeNotFound {
@@ -121,13 +120,12 @@ func (s *Server) registerBaseHandler() {
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write(rspData)
 	}
-	s.mux.HandleFunc("/actors/{actorType}/{actorId}/method/{methodName}", fInvoke).Methods(http.MethodPut)
+	s.mux.Put("/actors/{actorType}/{actorId}/method/{methodName}", fInvoke)
 
 	// register deactivate actor handler
 	fDelete := func(w http.ResponseWriter, r *http.Request) {
-		varsMap := mux.Vars(r)
-		actorType := varsMap["actorType"]
-		actorID := varsMap["actorId"]
+		actorType := chi.URLParam(r, "actorType")
+		actorID := chi.URLParam(r, "actorId")
 		err := runtime.GetActorRuntimeInstance().Deactivate(actorType, actorID)
 		if err == actorErr.ErrActorTypeNotFound || err == actorErr.ErrActorIDNotFound {
 			w.WriteHeader(http.StatusNotFound)
@@ -137,14 +135,13 @@ func (s *Server) registerBaseHandler() {
 		}
 		w.WriteHeader(http.StatusOK)
 	}
-	s.mux.HandleFunc("/actors/{actorType}/{actorId}", fDelete).Methods(http.MethodDelete)
+	s.mux.Delete("/actors/{actorType}/{actorId}", fDelete)
 
 	// register actor reminder invoke handler
 	fReminder := func(w http.ResponseWriter, r *http.Request) {
-		varsMap := mux.Vars(r)
-		actorType := varsMap["actorType"]
-		actorID := varsMap["actorId"]
-		reminderName := varsMap["reminderName"]
+		actorType := chi.URLParam(r, "actorType")
+		actorID := chi.URLParam(r, "actorId")
+		reminderName := chi.URLParam(r, "reminderName")
 		reqData, _ := io.ReadAll(r.Body)
 		err := runtime.GetActorRuntimeInstance().InvokeReminder(actorType, actorID, reminderName, reqData)
 		if err == actorErr.ErrActorTypeNotFound {
@@ -155,14 +152,13 @@ func (s *Server) registerBaseHandler() {
 		}
 		w.WriteHeader(http.StatusOK)
 	}
-	s.mux.HandleFunc("/actors/{actorType}/{actorId}/method/remind/{reminderName}", fReminder).Methods(http.MethodPut)
+	s.mux.Put("/actors/{actorType}/{actorId}/method/remind/{reminderName}", fReminder)
 
 	// register actor timer invoke handler
 	fTimer := func(w http.ResponseWriter, r *http.Request) {
-		varsMap := mux.Vars(r)
-		actorType := varsMap["actorType"]
-		actorID := varsMap["actorId"]
-		timerName := varsMap["timerName"]
+		actorType := chi.URLParam(r, "actorType")
+		actorID := chi.URLParam(r, "actorId")
+		timerName := chi.URLParam(r, "timerName")
 		reqData, _ := io.ReadAll(r.Body)
 		err := runtime.GetActorRuntimeInstance().InvokeTimer(actorType, actorID, timerName, reqData)
 		if err == actorErr.ErrActorTypeNotFound {
@@ -173,7 +169,7 @@ func (s *Server) registerBaseHandler() {
 		}
 		w.WriteHeader(http.StatusOK)
 	}
-	s.mux.HandleFunc("/actors/{actorType}/{actorId}/method/timer/{timerName}", fTimer).Methods(http.MethodPut)
+	s.mux.Put("/actors/{actorType}/{actorId}/method/timer/{timerName}", fTimer)
 }
 
 // AddTopicEventHandler appends provided event handler with it's name to the service.
