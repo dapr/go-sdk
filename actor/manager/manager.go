@@ -14,6 +14,7 @@ limitations under the License.
 package manager
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -32,9 +33,11 @@ import (
 type ActorManager interface {
 	RegisterActorImplFactory(f actor.Factory)
 	InvokeMethod(actorID, methodName string, request []byte) ([]byte, actorErr.ActorErr)
+	InvokeMethodContext(ctx context.Context, actorID, methodName string, request []byte) ([]byte, actorErr.ActorErr)
 	DeactivateActor(actorID string) actorErr.ActorErr
 	InvokeReminder(actorID, reminderName string, params []byte) actorErr.ActorErr
 	InvokeTimer(actorID, timerName string, params []byte) actorErr.ActorErr
+	InvokeTimerContext(ctx context.Context, actorID, timerName string, params []byte) actorErr.ActorErr
 }
 
 // DefaultActorManager is to manage one type of actor.
@@ -80,6 +83,11 @@ func (m *DefaultActorManager) getAndCreateActorContainerIfNotExist(actorID strin
 
 // InvokeMethod to invoke local function by @actorID, @methodName and @request request param.
 func (m *DefaultActorManager) InvokeMethod(actorID, methodName string, request []byte) ([]byte, actorErr.ActorErr) {
+	return m.InvokeMethodContext(context.Background(), actorID, methodName, request)
+}
+
+// InvokeMethodContext to invoke local function by @ctx, @actorID, @methodName and @request request param.
+func (m *DefaultActorManager) InvokeMethodContext(ctx context.Context, actorID, methodName string, request []byte) ([]byte, actorErr.ActorErr) {
 	if m.factory == nil {
 		return nil, actorErr.ErrActorFactoryNotSet
 	}
@@ -88,7 +96,7 @@ func (m *DefaultActorManager) InvokeMethod(actorID, methodName string, request [
 	if aerr != actorErr.Success {
 		return nil, aerr
 	}
-	returnValue, aerr := actorContainer.Invoke(methodName, request)
+	returnValue, aerr := actorContainer.InvokeContext(ctx, methodName, request)
 	if aerr != actorErr.Success {
 		return nil, aerr
 	}
@@ -113,7 +121,7 @@ func (m *DefaultActorManager) InvokeMethod(actorID, methodName string, request [
 	if err != nil {
 		return nil, actorErr.ErrActorMethodSerializeFailed
 	}
-	if err := actorContainer.GetActor().SaveState(); err != nil {
+	if err := actorContainer.GetActor().SaveStateContext(ctx); err != nil {
 		return nil, actorErr.ErrSaveStateFailed
 	}
 	return rspData, actorErr.Success
@@ -152,8 +160,14 @@ func (m *DefaultActorManager) InvokeReminder(actorID, reminderName string, param
 	return actorErr.Success
 }
 
-// InvokeTimer invoke timer callback function with given  params.
+// InvokeTimer invoke timer callback function with given params.
+// Uses background context.
 func (m *DefaultActorManager) InvokeTimer(actorID, timerName string, params []byte) actorErr.ActorErr {
+	return m.InvokeTimerContext(context.Background(), actorID, timerName, params)
+}
+
+// InvokeTimer invoke timer callback function with given params.
+func (m *DefaultActorManager) InvokeTimerContext(ctx context.Context, actorID, timerName string, params []byte) actorErr.ActorErr {
 	if m.factory == nil {
 		return actorErr.ErrActorFactoryNotSet
 	}
@@ -166,7 +180,7 @@ func (m *DefaultActorManager) InvokeTimer(actorID, timerName string, params []by
 	if aerr != actorErr.Success {
 		return aerr
 	}
-	_, aerr = actorContainer.Invoke(timerParams.CallBack, timerParams.Data)
+	_, aerr = actorContainer.InvokeContext(ctx, timerParams.CallBack, timerParams.Data)
 	return aerr
 }
 

@@ -14,6 +14,7 @@ limitations under the License.
 package actor
 
 import (
+	"context"
 	"sync"
 )
 
@@ -43,6 +44,8 @@ type Server interface {
 	// SaveState is impl by ServerImplBase, It saves the state cache of this actor instance to state store component by calling api of daprd.
 	// Save state is called at two places: 1. On invocation of this actor instance. 2. When new actor starts.
 	SaveState() error
+	// SaveStateContext is the same as SaveState, but with context.
+	SaveStateContext(ctx context.Context) error
 }
 
 type ReminderCallee interface {
@@ -78,8 +81,12 @@ func (b *ServerImplBase) SetID(id string) {
 
 // SaveState is to saves the state cache of this actor instance to state store component by calling api of daprd.
 func (b *ServerImplBase) SaveState() error {
+	return b.SaveStateContext(context.Background())
+}
+
+func (b *ServerImplBase) SaveStateContext(ctx context.Context) error {
 	if b.stateManager != nil {
-		return b.stateManager.Save()
+		return b.stateManager.SaveContext(ctx)
 	}
 	return nil
 }
@@ -87,16 +94,26 @@ func (b *ServerImplBase) SaveState() error {
 type StateManager interface {
 	// Add is to add new state store with @stateName and @value
 	Add(stateName string, value interface{}) error
+	// Add is the same as Add, but with context.
+	AddContext(ctx context.Context, stateName string, value interface{}) error
 	// Get is to get state store of @stateName with type @reply
 	Get(stateName string, reply interface{}) error
+	// GetContext is the same as Get, but with context.
+	GetContext(ctx context.Context, stateName string, reply interface{}) error
 	// Set is to set new state store with @stateName and @value
 	Set(stateName string, value interface{}) error
 	// Remove is to remove state store with @stateName
 	Remove(stateName string) error
+	// RemoveContext is the same as Remove, but with context.
+	RemoveContext(ctx context.Context, stateName string) error
 	// Contains is to check if state store contains @stateName
 	Contains(stateName string) (bool, error)
+	// ContainsContext is same as Contains, but with context
+	ContainsContext(ctx context.Context, stateName string) (bool, error)
 	// Save is to saves the state cache of this actor instance to state store component by calling api of daprd.
 	Save() error
+	// Save is the same as Save, but with context.
+	SaveContext(context.Context) error
 	// Flush is called by stateManager after Save
 	Flush()
 }

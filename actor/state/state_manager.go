@@ -14,6 +14,7 @@ limitations under the License.
 package state
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"reflect"
@@ -30,10 +31,14 @@ type ActorStateManager struct {
 }
 
 func (a *ActorStateManager) Add(stateName string, value interface{}) error {
+	return a.AddContext(context.Background(), stateName, value)
+}
+
+func (a *ActorStateManager) AddContext(ctx context.Context, stateName string, value interface{}) error {
 	if stateName == "" {
 		return errors.New("state name can't be empty")
 	}
-	exists, err := a.stateAsyncProvider.Contains(a.ActorTypeName, a.ActorID, stateName)
+	exists, err := a.stateAsyncProvider.ContainsContext(ctx, a.ActorTypeName, a.ActorID, stateName)
 	if err != nil {
 		return err
 	}
@@ -60,6 +65,10 @@ func (a *ActorStateManager) Add(stateName string, value interface{}) error {
 }
 
 func (a *ActorStateManager) Get(stateName string, reply interface{}) error {
+	return a.GetContext(context.Background(), stateName, reply)
+}
+
+func (a *ActorStateManager) GetContext(ctx context.Context, stateName string, reply interface{}) error {
 	if stateName == "" {
 		return errors.New("state name can't be empty")
 	}
@@ -80,7 +89,7 @@ func (a *ActorStateManager) Get(stateName string, reply interface{}) error {
 		return nil
 	}
 
-	err := a.stateAsyncProvider.Load(a.ActorTypeName, a.ActorID, stateName, reply)
+	err := a.stateAsyncProvider.LoadContext(ctx, a.ActorTypeName, a.ActorID, stateName, reply)
 	a.stateChangeTracker.Store(stateName, &ChangeMetadata{
 		Kind:  None,
 		Value: reply,
@@ -108,6 +117,10 @@ func (a *ActorStateManager) Set(stateName string, value interface{}) error {
 }
 
 func (a *ActorStateManager) Remove(stateName string) error {
+	return a.RemoveContext(context.Background(), stateName)
+}
+
+func (a *ActorStateManager) RemoveContext(ctx context.Context, stateName string) error {
 	if stateName == "" {
 		return errors.New("state name can't be empty")
 	}
@@ -127,7 +140,7 @@ func (a *ActorStateManager) Remove(stateName string) error {
 		})
 		return nil
 	}
-	if exist, err := a.stateAsyncProvider.Contains(a.ActorTypeName, a.ActorID, stateName); err != nil && exist {
+	if exist, err := a.stateAsyncProvider.ContainsContext(ctx, a.ActorTypeName, a.ActorID, stateName); err != nil && exist {
 		a.stateChangeTracker.Store(stateName, &ChangeMetadata{
 			Kind:  Remove,
 			Value: nil,
@@ -137,6 +150,10 @@ func (a *ActorStateManager) Remove(stateName string) error {
 }
 
 func (a *ActorStateManager) Contains(stateName string) (bool, error) {
+	return a.ContainsContext(context.Background(), stateName)
+}
+
+func (a *ActorStateManager) ContainsContext(ctx context.Context, stateName string) (bool, error) {
 	if stateName == "" {
 		return false, errors.New("state name can't be empty")
 	}
@@ -147,10 +164,14 @@ func (a *ActorStateManager) Contains(stateName string) (bool, error) {
 		}
 		return true, nil
 	}
-	return a.stateAsyncProvider.Contains(a.ActorTypeName, a.ActorID, stateName)
+	return a.stateAsyncProvider.ContainsContext(ctx, a.ActorTypeName, a.ActorID, stateName)
 }
 
 func (a *ActorStateManager) Save() error {
+	return a.SaveContext(context.Background())
+}
+
+func (a *ActorStateManager) SaveContext(ctx context.Context) error {
 	changes := make([]*ActorStateChange, 0)
 	a.stateChangeTracker.Range(func(key, value interface{}) bool {
 		stateName := key.(string)
@@ -158,7 +179,7 @@ func (a *ActorStateManager) Save() error {
 		changes = append(changes, NewActorStateChange(stateName, metadata.Value, metadata.Kind))
 		return true
 	})
-	if err := a.stateAsyncProvider.Apply(a.ActorTypeName, a.ActorID, changes); err != nil {
+	if err := a.stateAsyncProvider.ApplyContext(ctx, a.ActorTypeName, a.ActorID, changes); err != nil {
 		return err
 	}
 	a.Flush()

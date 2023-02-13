@@ -14,6 +14,7 @@ limitations under the License.
 package runtime
 
 import (
+	"context"
 	"testing"
 
 	actorErr "github.com/dapr/go-sdk/actor/error"
@@ -47,7 +48,7 @@ func TestRegisterActorFactoryAndInvokeMethod(t *testing.T) {
 	mockServer.EXPECT().RegisterActorImplFactory(gomock.Any())
 	rt.RegisterActorFactory(actorMock.ActorImplFactory)
 
-	mockServer.EXPECT().InvokeMethod("mockActorID", "Invoke", []byte("param")).Return([]byte("response"), actorErr.Success)
+	mockServer.EXPECT().InvokeMethodContext(context.Background(), "mockActorID", "Invoke", []byte("param")).Return([]byte("response"), actorErr.Success)
 	rspData, err := rt.InvokeActorMethod("testActorType", "mockActorID", "Invoke", []byte("param"))
 
 	assert.Equal(t, []byte("response"), rspData)
@@ -108,7 +109,7 @@ func TestInvokeTimer(t *testing.T) {
 	mockServer.EXPECT().RegisterActorImplFactory(gomock.Any())
 	rt.RegisterActorFactory(actorMock.ActorImplFactory)
 
-	mockServer.EXPECT().InvokeTimer("mockActorID", "mockTimer", []byte("param")).Return(actorErr.Success)
+	mockServer.EXPECT().InvokeTimerContext(context.Background(), "mockActorID", "mockTimer", []byte("param")).Return(actorErr.Success)
 	err = rt.InvokeTimer("testActorType", "mockActorID", "mockTimer", []byte("param"))
 
 	assert.Equal(t, actorErr.Success, err)

@@ -33,7 +33,7 @@ func TestNewDefaultContainer(t *testing.T) {
 
 	mockServer.EXPECT().SetID(mockActorID)
 	mockServer.EXPECT().SetStateManager(gomock.Any())
-	mockServer.EXPECT().SaveState()
+	mockServer.EXPECT().SaveStateContext(gomock.Any())
 	mockServer.EXPECT().Type()
 
 	newContainer, aerr := NewDefaultActorContainer(mockActorID, mockServer, mockCodec)
@@ -56,7 +56,7 @@ func TestContainerInvoke(t *testing.T) {
 
 	mockServer.EXPECT().SetID(mockActorID)
 	mockServer.EXPECT().SetStateManager(gomock.Any())
-	mockServer.EXPECT().SaveState()
+	mockServer.EXPECT().SaveStateContext(gomock.Any())
 	mockServer.EXPECT().Type()
 
 	newContainer, aerr := NewDefaultActorContainer("mockActorID", mockServer, mockCodec)

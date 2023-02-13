@@ -14,6 +14,7 @@ limitations under the License.
 package runtime
 
 import (
+	"context"
 	"encoding/json"
 	"sync"
 
@@ -68,11 +69,15 @@ func (r *ActorRunTime) GetJSONSerializedConfig() ([]byte, error) {
 }
 
 func (r *ActorRunTime) InvokeActorMethod(actorTypeName, actorID, actorMethod string, payload []byte) ([]byte, actorErr.ActorErr) {
+	return r.InvokeActorMethodContext(context.Background(), actorTypeName, actorID, actorMethod, payload)
+}
+
+func (r *ActorRunTime) InvokeActorMethodContext(ctx context.Context, actorTypeName, actorID, actorMethod string, payload []byte) ([]byte, actorErr.ActorErr) {
 	mng, ok := r.actorManagers.Load(actorTypeName)
 	if !ok {
 		return nil, actorErr.ErrActorTypeNotFound
 	}
-	return mng.(manager.ActorManager).InvokeMethod(actorID, actorMethod, payload)
+	return mng.(manager.ActorManager).InvokeMethodContext(ctx, actorID, actorMethod, payload)
 }
 
 func (r *ActorRunTime) Deactivate(actorTypeName, actorID string) actorErr.ActorErr {
@@ -93,10 +98,14 @@ func (r *ActorRunTime) InvokeReminder(actorTypeName, actorID, reminderName strin
 }
 
 func (r *ActorRunTime) InvokeTimer(actorTypeName, actorID, timerName string, params []byte) actorErr.ActorErr {
+	return r.InvokeTimerContext(context.Background(), actorTypeName, actorID, timerName, params)
+}
+
+func (r *ActorRunTime) InvokeTimerContext(ctx context.Context, actorTypeName, actorID, timerName string, params []byte) actorErr.ActorErr {
 	targetManager, ok := r.actorManagers.Load(actorTypeName)
 	if !ok {
 		return actorErr.ErrActorTypeNotFound
 	}
 	mng := targetManager.(manager.ActorManager)
-	return mng.InvokeTimer(actorID, timerName, params)
+	return mng.InvokeTimerContext(ctx, actorID, timerName, params)
 }

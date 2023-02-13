@@ -27,6 +27,7 @@ import (
 
 type ActorContainer interface {
 	Invoke(methodName string, param []byte) ([]reflect.Value, actorErr.ActorErr)
+	InvokeContext(ctx context.Context, methodName string, param []byte) ([]reflect.Value, actorErr.ActorErr)
 	GetActor() actor.Server
 }
 
@@ -39,12 +40,17 @@ type DefaultActorContainer struct {
 
 // NewDefaultActorContainer creates a new ActorContainer with provider impl actor and serializer.
 func NewDefaultActorContainer(actorID string, impl actor.Server, serializer codec.Codec) (ActorContainer, actorErr.ActorErr) {
+	return NewDefaultActorContainerContext(context.Background(), actorID, impl, serializer)
+}
+
+// NewDefaultActorContainerContext is the same as NewDefaultActorContainer, but with initial context.
+func NewDefaultActorContainerContext(ctx context.Context, actorID string, impl actor.Server, serializer codec.Codec) (ActorContainer, actorErr.ActorErr) {
 	impl.SetID(actorID)
 	daprClient, _ := dapr.NewClient()
 	// create state manager for this new actor
 	impl.SetStateManager(state.NewActorStateManager(impl.Type(), actorID, state.NewDaprStateAsyncProvider(daprClient)))
 	// save state of this actor
-	err := impl.SaveState()
+	err := impl.SaveStateContext(ctx)
 	if err != nil {
 		return nil, actorErr.ErrSaveStateFailed
 	}
@@ -66,12 +72,17 @@ func (d *DefaultActorContainer) GetActor() actor.Server {
 
 // Invoke call actor method with given methodName and param.
 func (d *DefaultActorContainer) Invoke(methodName string, param []byte) ([]reflect.Value, actorErr.ActorErr) {
+	return d.InvokeContext(context.Background(), methodName, param)
+}
+
+// Invoke call actor method with given context, methodName and param.
+func (d *DefaultActorContainer) InvokeContext(ctx context.Context, methodName string, param []byte) ([]reflect.Value, actorErr.ActorErr) {
 	methodType, ok := d.methodType[methodName]
 	if !ok {
 		return nil, actorErr.ErrActorMethodNoFound
 	}
 	argsValues := make([]reflect.Value, 0)
-	argsValues = append(argsValues, reflect.ValueOf(d.actor), reflect.ValueOf(context.Background()))
+	argsValues = append(argsValues, reflect.ValueOf(d.actor), reflect.ValueOf(ctx))
 	if len(methodType.argsType) > 0 {
 		typ := methodType.argsType[0]
 		paramValue := reflect.New(typ)
