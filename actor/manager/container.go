@@ -28,7 +28,6 @@ import (
 // Deprecated: use ActorContainerContext instead.
 type ActorContainer interface {
 	Invoke(methodName string, param []byte) ([]reflect.Value, actorErr.ActorErr)
-	//nolint:staticcheck
 	GetActor() actor.Server
 }
 

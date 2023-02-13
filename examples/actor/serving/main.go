@@ -106,11 +106,19 @@ func (t *TestActor) Post(ctx context.Context, req string) error {
 
 func (t *TestActor) IncrementAndGet(ctx context.Context, stateKey string) (*api.User, error) {
 	stateData := api.User{}
+<<<<<<< HEAD
 	if exist, err := t.GetStateManager().Contains(ctx, stateKey); err != nil {
 		fmt.Println("state manager call contains with key " + stateKey + "err = " + err.Error())
 		return &stateData, err
 	} else if exist {
 		if err := t.GetStateManager().Get(ctx, stateKey, &stateData); err != nil {
+=======
+	if exist, err := t.GetStateManager().ContainsContext(ctx, stateKey); err != nil {
+		fmt.Println("state manager call contains with key " + stateKey + "err = " + err.Error())
+		return &stateData, err
+	} else if exist {
+		if err := t.GetStateManager().GetContext(ctx, stateKey, &stateData); err != nil {
+>>>>>>> b7c0b37 (Adds context to rest of funcs, so context can always be propagated.)
 			fmt.Println("state manager call get with key " + stateKey + "err = " + err.Error())
 			return &stateData, err
 		}

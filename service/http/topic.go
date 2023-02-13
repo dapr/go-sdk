@@ -160,7 +160,11 @@ func (s *Server) registerBaseHandler() {
 		actorID := chi.URLParam(r, "actorId")
 		timerName := chi.URLParam(r, "timerName")
 		reqData, _ := io.ReadAll(r.Body)
+<<<<<<< HEAD
 		err := runtime.GetActorRuntimeInstanceContext().InvokeTimer(r.Context(), actorType, actorID, timerName, reqData)
+=======
+		err := runtime.GetActorRuntimeInstance().InvokeTimerContext(r.Context(), actorType, actorID, timerName, reqData)
+>>>>>>> b7c0b37 (Adds context to rest of funcs, so context can always be propagated.)
 		if err == actorErr.ErrActorTypeNotFound {
 			w.WriteHeader(http.StatusNotFound)
 		}

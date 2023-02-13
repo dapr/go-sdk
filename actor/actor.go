@@ -188,8 +188,12 @@ type StateManager interface {
 	Set(stateName string, value any) error
 	// Remove is to remove state store with @stateName
 	Remove(stateName string) error
+	// RemoveContext is the same as Remove, but with context.
+	RemoveContext(ctx context.Context, stateName string) error
 	// Contains is to check if state store contains @stateName
 	Contains(stateName string) (bool, error)
+	// ContainsContext is same as Contains, but with context
+	ContainsContext(ctx context.Context, stateName string) (bool, error)
 	// Save is to saves the state cache of this actor instance to state store component by calling api of daprd.
 	Save() error
 	// Flush is called by StateManager after Save
