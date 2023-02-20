@@ -91,6 +91,7 @@ func (b *ServerImplBase) SaveStateContext(ctx context.Context) error {
 	return nil
 }
 
+//nolint:interfacebloat
 type StateManager interface {
 	// Add is to add new state store with @stateName and @value
 	Add(stateName string, value interface{}) error
