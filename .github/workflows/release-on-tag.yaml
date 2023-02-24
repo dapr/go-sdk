@@ -22,8 +22,10 @@ jobs:
 
     - name: Check sdk-version file
       run: |
-        if [[ "$(head -n1 version/sdk-version)" != "${{ github.ref }}" ]]; then
-          echo "File version/sdk-version needs to be updated to ${{ github.ref }}"
+        SDK_VERSION="$(head -n1 version/sdk-version)"
+        SDK_VERSION_GIT="refs/tags/${SDK_VERSION}"
+        if [[ "${SDK_VERSION_GIT}" != "${{ github.ref }}" ]]; then
+          echo "File version/sdk-version (${SDK_VERSION}) needs to be updated to ${{ github.ref }}"
           exit 1
         fi
       shell: bash
