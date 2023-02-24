@@ -44,11 +44,11 @@ func NewService(address string) (s common.Service, err error) {
 }
 
 // NewServiceWithListener creates new Service with specific listener.
-func NewServiceWithListener(lis net.Listener) common.Service {
-	return newService(lis)
+func NewServiceWithListener(lis net.Listener, opts ...grpc.ServerOption) common.Service {
+	return newService(lis, opts...)
 }
 
-func newService(lis net.Listener) *Server {
+func newService(lis net.Listener, opts ...grpc.ServerOption) *Server {
 	s := &Server{
 		listener:        lis,
 		invokeHandlers:  make(map[string]common.ServiceInvocationHandler),
@@ -57,7 +57,7 @@ func newService(lis net.Listener) *Server {
 		authToken:       os.Getenv(common.AppAPITokenEnvVar),
 	}
 
-	gs := grpc.NewServer()
+	gs := grpc.NewServer(opts...)
 	pb.RegisterAppCallbackServer(gs, s)
 	pb.RegisterAppCallbackHealthCheckServer(gs, s)
 	s.grpcServer = gs
