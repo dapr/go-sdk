@@ -78,6 +78,7 @@ type (
 type ServerImplBase struct {
 	stateManager StateManager
 	ctx          ServerImplBaseCtx
+	lock         sync.RWMutex
 }
 
 type ServerImplBaseCtx struct {
@@ -89,7 +90,9 @@ type ServerImplBaseCtx struct {
 
 // Deprecated: Use ServerImplBaseCtx instead.
 func (b *ServerImplBase) SetStateManager(stateManager StateManager) {
+	b.lock.Lock()
 	b.ctx.lock.Lock()
+	defer b.lock.Unlock()
 	defer b.ctx.lock.Unlock()
 	b.stateManager = stateManager
 	b.ctx.stateManager = stateManager.WithContext()
@@ -113,6 +116,8 @@ func (b *ServerImplBase) ID() string {
 
 // Deprecated: Use ServerImplBaseCtx instead.
 func (b *ServerImplBase) SetID(id string) {
+	b.lock.RLock()
+	defer b.lock.RUnlock()
 	b.ctx.SetID(id)
 }
 
@@ -120,6 +125,8 @@ func (b *ServerImplBase) SetID(id string) {
 // component by calling api of daprd.
 // Deprecated: Use ServerImplBaseCtx instead.
 func (b *ServerImplBase) SaveState() error {
+	b.lock.RLock()
+	defer b.lock.RUnlock()
 	return b.ctx.SaveState(context.Background())
 }
 
