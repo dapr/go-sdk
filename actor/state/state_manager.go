@@ -23,30 +23,70 @@ import (
 	"github.com/dapr/go-sdk/actor"
 )
 
-type ActorStateManager struct {
-	ActorTypeName      string
-	ActorID            string
+type stateManager struct {
+	*stateManagerCtx
+}
+
+type stateManagerCtx struct {
+	actorTypeName      string
+	actorID            string
 	stateChangeTracker sync.Map // map[string]*ChangeMetadata
 	stateAsyncProvider *DaprStateAsyncProvider
 }
 
-func (a *ActorStateManager) Add(stateName string, value interface{}) error {
-	return a.AddContext(context.Background(), stateName, value)
+// Deprecated: use NewActorStateManagerContext instead.
+func (s *stateManager) Add(stateName string, value any) error {
+	return s.stateManagerCtx.Add(context.Background(), stateName, value)
 }
 
-func (a *ActorStateManager) AddContext(ctx context.Context, stateName string, value interface{}) error {
+// Deprecated: use NewActorStateManagerContext instead.
+func (s *stateManager) Get(stateName string, reply any) error {
+	return s.stateManagerCtx.Get(context.Background(), stateName, reply)
+}
+
+// Deprecated: use NewActorStateManagerContext instead.
+func (s *stateManager) Set(stateName string, value any) error {
+	return s.stateManagerCtx.Set(context.Background(), stateName, value)
+}
+
+// Deprecated: use NewActorStateManagerContext instead.
+func (s *stateManager) Remove(stateName string) error {
+	return s.stateManagerCtx.Remove(context.Background(), stateName)
+}
+
+// Deprecated: use NewActorStateManagerContext instead.
+func (s *stateManager) Contains(stateName string) (bool, error) {
+	return s.stateManagerCtx.Contains(context.Background(), stateName)
+}
+
+// Deprecated: use NewActorStateManagerContext instead.
+func (s *stateManager) Save() error {
+	return s.stateManagerCtx.Save(context.Background())
+}
+
+// Deprecated: use NewActorStateManagerContext instead.
+func (s *stateManager) Flush() {
+	s.stateManagerCtx.Flush(context.Background())
+}
+
+// Deprecated: use NewActorStateManagerContext instead.
+func (s *stateManager) WithContext() actor.StateManagerContext {
+	return s.stateManagerCtx
+}
+
+func (s *stateManagerCtx) Add(ctx context.Context, stateName string, value any) error {
 	if stateName == "" {
 		return errors.New("state name can't be empty")
 	}
-	exists, err := a.stateAsyncProvider.ContainsContext(ctx, a.ActorTypeName, a.ActorID, stateName)
+	exists, err := s.stateAsyncProvider.ContainsContext(ctx, s.actorTypeName, s.actorID, stateName)
 	if err != nil {
 		return err
 	}
 
-	if val, ok := a.stateChangeTracker.Load(stateName); ok {
+	if val, ok := s.stateChangeTracker.Load(stateName); ok {
 		metadata := val.(*ChangeMetadata)
 		if metadata.Kind == Remove {
-			a.stateChangeTracker.Store(stateName, &ChangeMetadata{
+			s.stateChangeTracker.Store(stateName, &ChangeMetadata{
 				Kind:  Update,
 				Value: value,
 			})
@@ -57,23 +97,19 @@ func (a *ActorStateManager) AddContext(ctx context.Context, stateName string, va
 	if exists {
 		return fmt.Errorf("duplicate state: %s", stateName)
 	}
-	a.stateChangeTracker.Store(stateName, &ChangeMetadata{
+	s.stateChangeTracker.Store(stateName, &ChangeMetadata{
 		Kind:  Add,
 		Value: value,
 	})
 	return nil
 }
 
-func (a *ActorStateManager) Get(stateName string, reply interface{}) error {
-	return a.GetContext(context.Background(), stateName, reply)
-}
-
-func (a *ActorStateManager) GetContext(ctx context.Context, stateName string, reply interface{}) error {
+func (s *stateManagerCtx) Get(ctx context.Context, stateName string, reply any) error {
 	if stateName == "" {
 		return errors.New("state name can't be empty")
 	}
 
-	if val, ok := a.stateChangeTracker.Load(stateName); ok {
+	if val, ok := s.stateChangeTracker.Load(stateName); ok {
 		metadata := val.(*ChangeMetadata)
 		if metadata.Kind == Remove {
 			return fmt.Errorf("state is marked for removal: %s", stateName)
@@ -89,59 +125,55 @@ func (a *ActorStateManager) GetContext(ctx context.Context, stateName string, re
 		return nil
 	}
 
-	err := a.stateAsyncProvider.LoadContext(ctx, a.ActorTypeName, a.ActorID, stateName, reply)
-	a.stateChangeTracker.Store(stateName, &ChangeMetadata{
+	err := s.stateAsyncProvider.LoadContext(ctx, s.actorTypeName, s.actorID, stateName, reply)
+	s.stateChangeTracker.Store(stateName, &ChangeMetadata{
 		Kind:  None,
 		Value: reply,
 	})
 	return err
 }
 
-func (a *ActorStateManager) Set(stateName string, value interface{}) error {
+func (s *stateManagerCtx) Set(_ context.Context, stateName string, value any) error {
 	if stateName == "" {
 		return errors.New("state name can't be empty")
 	}
-	if val, ok := a.stateChangeTracker.Load(stateName); ok {
+	if val, ok := s.stateChangeTracker.Load(stateName); ok {
 		metadata := val.(*ChangeMetadata)
 		if metadata.Kind == None || metadata.Kind == Remove {
 			metadata.Kind = Update
 		}
-		a.stateChangeTracker.Store(stateName, NewChangeMetadata(metadata.Kind, value))
+		s.stateChangeTracker.Store(stateName, NewChangeMetadata(metadata.Kind, value))
 		return nil
 	}
-	a.stateChangeTracker.Store(stateName, &ChangeMetadata{
+	s.stateChangeTracker.Store(stateName, &ChangeMetadata{
 		Kind:  Add,
 		Value: value,
 	})
 	return nil
 }
 
-func (a *ActorStateManager) Remove(stateName string) error {
-	return a.RemoveContext(context.Background(), stateName)
-}
-
-func (a *ActorStateManager) RemoveContext(ctx context.Context, stateName string) error {
+func (s *stateManagerCtx) Remove(ctx context.Context, stateName string) error {
 	if stateName == "" {
 		return errors.New("state name can't be empty")
 	}
-	if val, ok := a.stateChangeTracker.Load(stateName); ok {
+	if val, ok := s.stateChangeTracker.Load(stateName); ok {
 		metadata := val.(*ChangeMetadata)
 		if metadata.Kind == Remove {
 			return nil
 		}
 		if metadata.Kind == Add {
-			a.stateChangeTracker.Delete(stateName)
+			s.stateChangeTracker.Delete(stateName)
 			return nil
 		}
 
-		a.stateChangeTracker.Store(stateName, &ChangeMetadata{
+		s.stateChangeTracker.Store(stateName, &ChangeMetadata{
 			Kind:  Remove,
 			Value: nil,
 		})
 		return nil
 	}
-	if exist, err := a.stateAsyncProvider.ContainsContext(ctx, a.ActorTypeName, a.ActorID, stateName); err != nil && exist {
-		a.stateChangeTracker.Store(stateName, &ChangeMetadata{
+	if exist, err := s.stateAsyncProvider.ContainsContext(ctx, s.actorTypeName, s.actorID, stateName); err != nil && exist {
+		s.stateChangeTracker.Store(stateName, &ChangeMetadata{
 			Kind:  Remove,
 			Value: nil,
 		})
@@ -149,61 +181,64 @@ func (a *ActorStateManager) RemoveContext(ctx context.Context, stateName string)
 	return nil
 }
 
-func (a *ActorStateManager) Contains(stateName string) (bool, error) {
-	return a.ContainsContext(context.Background(), stateName)
-}
-
-func (a *ActorStateManager) ContainsContext(ctx context.Context, stateName string) (bool, error) {
+func (s *stateManagerCtx) Contains(ctx context.Context, stateName string) (bool, error) {
 	if stateName == "" {
 		return false, errors.New("state name can't be empty")
 	}
-	if val, ok := a.stateChangeTracker.Load(stateName); ok {
+	if val, ok := s.stateChangeTracker.Load(stateName); ok {
 		metadata := val.(*ChangeMetadata)
 		if metadata.Kind == Remove {
 			return false, nil
 		}
 		return true, nil
 	}
-	return a.stateAsyncProvider.ContainsContext(ctx, a.ActorTypeName, a.ActorID, stateName)
+	return s.stateAsyncProvider.ContainsContext(ctx, s.actorTypeName, s.actorID, stateName)
 }
 
-func (a *ActorStateManager) Save() error {
-	return a.SaveContext(context.Background())
-}
-
-func (a *ActorStateManager) SaveContext(ctx context.Context) error {
+func (s *stateManagerCtx) Save(ctx context.Context) error {
 	changes := make([]*ActorStateChange, 0)
-	a.stateChangeTracker.Range(func(key, value interface{}) bool {
+	s.stateChangeTracker.Range(func(key, value any) bool {
 		stateName := key.(string)
 		metadata := value.(*ChangeMetadata)
 		changes = append(changes, NewActorStateChange(stateName, metadata.Value, metadata.Kind))
 		return true
 	})
-	if err := a.stateAsyncProvider.ApplyContext(ctx, a.ActorTypeName, a.ActorID, changes); err != nil {
+	if err := s.stateAsyncProvider.ApplyContext(ctx, s.actorTypeName, s.actorID, changes); err != nil {
 		return err
 	}
-	a.Flush()
+	s.Flush(ctx)
 	return nil
 }
 
-func (a *ActorStateManager) Flush() {
-	a.stateChangeTracker.Range(func(key, value interface{}) bool {
+func (s *stateManagerCtx) Flush(_ context.Context) {
+	s.stateChangeTracker.Range(func(key, value any) bool {
 		stateName := key.(string)
 		metadata := value.(*ChangeMetadata)
 		if metadata.Kind == Remove {
-			a.stateChangeTracker.Delete(stateName)
+			s.stateChangeTracker.Delete(stateName)
 			return true
 		}
 		metadata = NewChangeMetadata(None, metadata.Value)
-		a.stateChangeTracker.Store(stateName, metadata)
+		s.stateChangeTracker.Store(stateName, metadata)
 		return true
 	})
 }
 
+// Deprecated: use NewActorStateManagerContext instead.
 func NewActorStateManager(actorTypeName string, actorID string, provider *DaprStateAsyncProvider) actor.StateManager {
-	return &ActorStateManager{
+	return &stateManager{
+		stateManagerCtx: &stateManagerCtx{
+			stateAsyncProvider: provider,
+			actorTypeName:      actorTypeName,
+			actorID:            actorID,
+		},
+	}
+}
+
+func NewActorStateManagerContext(actorTypeName string, actorID string, provider *DaprStateAsyncProvider) actor.StateManagerContext {
+	return &stateManagerCtx{
 		stateAsyncProvider: provider,
-		ActorTypeName:      actorTypeName,
-		ActorID:            actorID,
+		actorTypeName:      actorTypeName,
+		actorID:            actorID,
 	}
 }

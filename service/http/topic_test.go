@@ -311,7 +311,7 @@ func TestActorHandler(t *testing.T) {
 	makeRequest(t, s, "/actors/testActorType/testActorID/method/timer/testTimerName", string(timerReqData), http.MethodPut, http.StatusNotFound)
 
 	// register test actor factory
-	s.RegisterActorImplFactory(mock.ActorImplFactory)
+	s.RegisterActorImplFactoryContext(mock.ActorImplFactoryCtx)
 
 	// invoke actor API with internal error
 	makeRequest(t, s, "/actors/testActorType/testActorID/method/remind/testReminderName", `{
@@ -328,7 +328,7 @@ func TestActorHandler(t *testing.T) {
 	makeRequest(t, s, "/actors/testActorType/testActorID", "", http.MethodDelete, http.StatusOK)
 
 	// register not reminder callee actor factory
-	s.RegisterActorImplFactory(mock.NotReminderCalleeActorFactory)
+	s.RegisterActorImplFactoryContext(mock.NotReminderCalleeActorFactory)
 	// invoke call reminder to not reminder callee actor type
 	makeRequest(t, s, "/actors/testActorNotReminderCalleeType/testActorID/method/remind/testReminderName", string(reminderReqData), http.MethodPut, http.StatusInternalServerError)
 }

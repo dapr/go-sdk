@@ -27,6 +27,7 @@ type DaprStateAsyncProvider struct {
 	stateSerializer codec.Codec
 }
 
+// Deprecated: use ContainsContext instead.
 func (d *DaprStateAsyncProvider) Contains(actorType string, actorID string, stateName string) (bool, error) {
 	return d.ContainsContext(context.Background(), actorType, actorID, stateName)
 }
@@ -43,6 +44,7 @@ func (d *DaprStateAsyncProvider) ContainsContext(ctx context.Context, actorType 
 	return len(result.Data) > 0, err
 }
 
+// Deprecated: use LoadContext instead.
 func (d *DaprStateAsyncProvider) Load(actorType, actorID, stateName string, reply interface{}) error {
 	return d.LoadContext(context.Background(), actorType, actorID, stateName, reply)
 }
@@ -65,6 +67,7 @@ func (d *DaprStateAsyncProvider) LoadContext(ctx context.Context, actorType, act
 	return nil
 }
 
+// Deprecated: use ApplyContext instead.
 func (d *DaprStateAsyncProvider) Apply(actorType, actorID string, changes []*ActorStateChange) error {
 	return d.ApplyContext(context.Background(), actorType, actorID, changes)
 }

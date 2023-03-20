@@ -79,7 +79,12 @@ type Server struct {
 	started            uint32
 }
 
+// Deprecated: Use RegisterActorImplFactoryContext instead.
 func (s *Server) RegisterActorImplFactory(f actor.Factory, opts ...config.Option) {
+	panic("Actor is not supported by gRPC API")
+}
+
+func (s *Server) RegisterActorImplFactoryContext(f actor.FactoryContext, opts ...config.Option) {
 	panic("Actor is not supported by gRPC API")
 }
 

@@ -225,6 +225,7 @@ func NewClientWithPort(port string) (client Client, err error) {
 }
 
 // NewClientWithAddress instantiates Dapr using specific address (including port).
+// Deprecated: use NewClientWithAddressContext instead.
 func NewClientWithAddress(address string) (client Client, err error) {
 	return NewClientWithAddressContext(context.Background(), address)
 }
