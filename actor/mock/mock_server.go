@@ -74,19 +74,6 @@ type MockServerMockRecorder struct {
 	mock *MockServer
 }
 
-func (mr *MockServerMockRecorder) Invoke(arg0, arg1 interface{}) *gomock.Call {
-  mr.mock.ctrl.T.Helper()
-  return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Invoke", reflect.TypeOf((*MockServer)(nil).Invoke), arg0, arg1)
-}
-
-func (m *MockServer) Invoke(ctx context.Context, input string) (string, error) {
-  m.ctrl.T.Helper()
-  ret := m.ctrl.Call(m, "Invoke", ctx, input)
-  ret0, _ := ret[0].(string)
-  ret1, _ := ret[1].(error)
-  return ret0, ret1
-}
-
 // NewMockServer creates a new mock instance.
 func NewMockServer(ctrl *gomock.Controller) *MockServer {
 	mock := &MockServer{ctrl: ctrl}
@@ -127,20 +114,6 @@ func (mr *MockServerMockRecorder) SaveState() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveState", reflect.TypeOf((*MockServer)(nil).SaveState))
 }
 
-// SaveStateContext mocks base method.
-func (m *MockServer) SaveStateContext(ctx context.Context) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SaveStateContext", ctx)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// SaveStateContext indicates an expected call of SaveStateContext.
-func (mr *MockServerMockRecorder) SaveStateContext(ctx interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveStateContext", reflect.TypeOf((*MockServer)(nil).SaveStateContext), ctx)
-}
-
 // SetID mocks base method.
 func (m *MockServer) SetID(arg0 string) {
 	m.ctrl.T.Helper()
@@ -179,7 +152,6 @@ func (mr *MockServerMockRecorder) Type() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Type", reflect.TypeOf((*MockServer)(nil).Type))
 }
 
-<<<<<<< HEAD
 // WithContext mocks base method.
 func (m *MockServer) WithContext() actor.ServerContext {
 	m.ctrl.T.Helper()
@@ -296,8 +268,6 @@ func (m *MockServerContext) Invoke(ctx context.Context, input string) (string, e
   return ret0, ret1
 }
 
-=======
->>>>>>> b7c0b37 (Adds context to rest of funcs, so context can always be propagated.)
 // MockReminderCallee is a mock of ReminderCallee interface.
 type MockReminderCallee struct {
 	ctrl     *gomock.Controller
@@ -357,11 +327,7 @@ func (m *MockStateManager) EXPECT() *MockStateManagerMockRecorder {
 }
 
 // Add mocks base method.
-<<<<<<< HEAD
 func (m *MockStateManager) Add(stateName string, value any) error {
-=======
-func (m *MockStateManager) Add(stateName string, value interface{}) error {
->>>>>>> b7c0b37 (Adds context to rest of funcs, so context can always be propagated.)
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Add", stateName, value)
 	ret0, _ := ret[0].(error)
@@ -374,23 +340,6 @@ func (mr *MockStateManagerMockRecorder) Add(stateName, value interface{}) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Add", reflect.TypeOf((*MockStateManager)(nil).Add), stateName, value)
 }
 
-<<<<<<< HEAD
-=======
-// AddContext mocks base method.
-func (m *MockStateManager) AddContext(ctx context.Context, stateName string, value interface{}) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AddContext", ctx, stateName, value)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// AddContext indicates an expected call of AddContext.
-func (mr *MockStateManagerMockRecorder) AddContext(ctx, stateName, value interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddContext", reflect.TypeOf((*MockStateManager)(nil).AddContext), ctx, stateName, value)
-}
-
->>>>>>> b7c0b37 (Adds context to rest of funcs, so context can always be propagated.)
 // Contains mocks base method.
 func (m *MockStateManager) Contains(stateName string) (bool, error) {
 	m.ctrl.T.Helper()
@@ -406,24 +355,6 @@ func (mr *MockStateManagerMockRecorder) Contains(stateName interface{}) *gomock.
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Contains", reflect.TypeOf((*MockStateManager)(nil).Contains), stateName)
 }
 
-<<<<<<< HEAD
-=======
-// ContainsContext mocks base method.
-func (m *MockStateManager) ContainsContext(ctx context.Context, stateName string) (bool, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ContainsContext", ctx, stateName)
-	ret0, _ := ret[0].(bool)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// ContainsContext indicates an expected call of ContainsContext.
-func (mr *MockStateManagerMockRecorder) ContainsContext(ctx, stateName interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ContainsContext", reflect.TypeOf((*MockStateManager)(nil).ContainsContext), ctx, stateName)
-}
-
->>>>>>> b7c0b37 (Adds context to rest of funcs, so context can always be propagated.)
 // Flush mocks base method.
 func (m *MockStateManager) Flush() {
 	m.ctrl.T.Helper()
@@ -437,11 +368,7 @@ func (mr *MockStateManagerMockRecorder) Flush() *gomock.Call {
 }
 
 // Get mocks base method.
-<<<<<<< HEAD
 func (m *MockStateManager) Get(stateName string, reply any) error {
-=======
-func (m *MockStateManager) Get(stateName string, reply interface{}) error {
->>>>>>> b7c0b37 (Adds context to rest of funcs, so context can always be propagated.)
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Get", stateName, reply)
 	ret0, _ := ret[0].(error)
@@ -454,23 +381,6 @@ func (mr *MockStateManagerMockRecorder) Get(stateName, reply interface{}) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockStateManager)(nil).Get), stateName, reply)
 }
 
-<<<<<<< HEAD
-=======
-// GetContext mocks base method.
-func (m *MockStateManager) GetContext(ctx context.Context, stateName string, reply interface{}) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetContext", ctx, stateName, reply)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// GetContext indicates an expected call of GetContext.
-func (mr *MockStateManagerMockRecorder) GetContext(ctx, stateName, reply interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetContext", reflect.TypeOf((*MockStateManager)(nil).GetContext), ctx, stateName, reply)
-}
-
->>>>>>> b7c0b37 (Adds context to rest of funcs, so context can always be propagated.)
 // Remove mocks base method.
 func (m *MockStateManager) Remove(stateName string) error {
 	m.ctrl.T.Helper()
@@ -485,23 +395,6 @@ func (mr *MockStateManagerMockRecorder) Remove(stateName interface{}) *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Remove", reflect.TypeOf((*MockStateManager)(nil).Remove), stateName)
 }
 
-<<<<<<< HEAD
-=======
-// RemoveContext mocks base method.
-func (m *MockStateManager) RemoveContext(ctx context.Context, stateName string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RemoveContext", ctx, stateName)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// RemoveContext indicates an expected call of RemoveContext.
-func (mr *MockStateManagerMockRecorder) RemoveContext(ctx, stateName interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveContext", reflect.TypeOf((*MockStateManager)(nil).RemoveContext), ctx, stateName)
-}
-
->>>>>>> b7c0b37 (Adds context to rest of funcs, so context can always be propagated.)
 // Save mocks base method.
 func (m *MockStateManager) Save() error {
 	m.ctrl.T.Helper()
@@ -516,27 +409,8 @@ func (mr *MockStateManagerMockRecorder) Save() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Save", reflect.TypeOf((*MockStateManager)(nil).Save))
 }
 
-<<<<<<< HEAD
 // Set mocks base method.
 func (m *MockStateManager) Set(stateName string, value any) error {
-=======
-// SaveContext mocks base method.
-func (m *MockStateManager) SaveContext(arg0 context.Context) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SaveContext", arg0)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// SaveContext indicates an expected call of SaveContext.
-func (mr *MockStateManagerMockRecorder) SaveContext(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveContext", reflect.TypeOf((*MockStateManager)(nil).SaveContext), arg0)
-}
-
-// Set mocks base method.
-func (m *MockStateManager) Set(stateName string, value interface{}) error {
->>>>>>> b7c0b37 (Adds context to rest of funcs, so context can always be propagated.)
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Set", stateName, value)
 	ret0, _ := ret[0].(error)
@@ -548,7 +422,6 @@ func (mr *MockStateManagerMockRecorder) Set(stateName, value interface{}) *gomoc
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Set", reflect.TypeOf((*MockStateManager)(nil).Set), stateName, value)
 }
-<<<<<<< HEAD
 
 // WithContext mocks base method.
 func (m *MockStateManager) WithContext() actor.StateManagerContext {
@@ -683,5 +556,3 @@ func (mr *MockStateManagerContextMockRecorder) Set(ctx, stateName, value interfa
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Set", reflect.TypeOf((*MockStateManagerContext)(nil).Set), ctx, stateName, value)
 }
-=======
->>>>>>> b7c0b37 (Adds context to rest of funcs, so context can always be propagated.)
