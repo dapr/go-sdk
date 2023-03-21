@@ -19,7 +19,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/gorilla/mux"
+	"github.com/go-chi/chi/v5"
 
 	"github.com/dapr/go-sdk/actor"
 	"github.com/dapr/go-sdk/actor/config"
@@ -34,13 +34,13 @@ func NewService(address string) common.Service {
 }
 
 // NewServiceWithMux creates new Service with existing http mux.
-func NewServiceWithMux(address string, mux *mux.Router) common.Service {
+func NewServiceWithMux(address string, mux *chi.Mux) common.Service {
 	return newServer(address, mux)
 }
 
-func newServer(address string, router *mux.Router) *Server {
+func newServer(address string, router *chi.Mux) *Server {
 	if router == nil {
-		router = mux.NewRouter()
+		router = chi.NewRouter()
 	}
 	return &Server{
 		address: address,
@@ -57,7 +57,7 @@ func newServer(address string, router *mux.Router) *Server {
 // Server is the HTTP server wrapping mux many Dapr helpers.
 type Server struct {
 	address        string
-	mux            *mux.Router
+	mux            *chi.Mux
 	httpServer     *http.Server
 	topicRegistrar internal.TopicRegistrar
 	authToken      string
