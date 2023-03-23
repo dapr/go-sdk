@@ -100,6 +100,7 @@ func (d *DaprStateAsyncProvider) ApplyContext(ctx context.Context, actorType, ac
 			OperationType: daprOperationName,
 			Key:           stateChange.stateName,
 			Value:         value,
+			TTLInSeconds:  stateChange.ttlInSeconds,
 		})
 	}
 

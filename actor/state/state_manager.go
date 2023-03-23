@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"reflect"
 	"sync"
+	"time"
 
 	"github.com/dapr/go-sdk/actor"
 )
@@ -133,7 +134,7 @@ func (s *stateManagerCtx) Get(ctx context.Context, stateName string, reply any) 
 	return err
 }
 
-func (s *stateManagerCtx) Set(_ context.Context, stateName string, value any) error {
+func (s *stateManagerCtx) Set(ctx context.Context, stateName string, value any) error {
 	if stateName == "" {
 		return errors.New("state name can't be empty")
 	}
@@ -149,6 +150,30 @@ func (s *stateManagerCtx) Set(_ context.Context, stateName string, value any) er
 		Kind:  Add,
 		Value: value,
 	})
+	return nil
+}
+
+func (s *stateManagerCtx) SetWithTTL(_ context.Context, stateName string, value any, ttl time.Duration) error {
+	if stateName == "" {
+		return errors.New("state name can't be empty")
+	}
+
+	if ttl < 0 {
+		return errors.New("ttl can't be negative")
+	}
+
+	if val, ok := s.stateChangeTracker.Load(stateName); ok {
+		metadata := val.(*ChangeMetadata)
+		if metadata.Kind == None || metadata.Kind == Remove {
+			metadata.Kind = Update
+		}
+		s.stateChangeTracker.Store(stateName, NewChangeMetadata(metadata.Kind, value))
+		return nil
+	}
+	s.stateChangeTracker.Store(stateName, (&ChangeMetadata{
+		Kind:  Add,
+		Value: value,
+	}).WithTTL(ttl))
 	return nil
 }
 
@@ -200,7 +225,7 @@ func (s *stateManagerCtx) Save(ctx context.Context) error {
 	s.stateChangeTracker.Range(func(key, value any) bool {
 		stateName := key.(string)
 		metadata := value.(*ChangeMetadata)
-		changes = append(changes, NewActorStateChange(stateName, metadata.Value, metadata.Kind))
+		changes = append(changes, NewActorStateChange(stateName, metadata.Value, metadata.Kind, metadata.TTL))
 		return true
 	})
 	if err := s.stateAsyncProvider.ApplyContext(ctx, s.actorTypeName, s.actorID, changes); err != nil {
