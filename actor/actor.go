@@ -206,13 +206,14 @@ type StateManagerContext interface {
 	Add(ctx context.Context, stateName string, value any) error
 	// Get is to get state store of @stateName with type @reply
 	Get(ctx context.Context, stateName string, reply any) error
-	// Set is to set new state store with @stateName and @value.
-	// You should use SetWithTTL unless you also intend to implement your own
-	// state expiration logic to prevent the state store from growing
-	// indefinitely.
+	// Set sets a state store with @stateName and @value.
+	// You should always use SetWithTTL unless you also intend to implement your
+	// own state expiration logic. This is to prevent the state store from
+	// growing indefinitely.
 	Set(ctx context.Context, stateName string, value any) error
-	// SetWithTTL is to set new state store with @stateName and @value, for the
-	// given TTL. After TTL, the value will no longer be available with `Get`.
+	// SetWithTTL sets a state store with @stateName and @value, for the given
+	// TTL. After the TTL has passed, the value will no longer be available with
+	// `Get`. Always preferred over `Set`.
 	SetWithTTL(ctx context.Context, stateName string, value any, ttl time.Duration) error
 	// Remove is to remove state store with @stateName
 	Remove(ctx context.Context, stateName string) error
