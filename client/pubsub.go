@@ -21,6 +21,7 @@ import (
 	"log"
 
 	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
+	"github.com/google/uuid"
 )
 
 const (
@@ -109,4 +110,102 @@ func (c *GRPCClient) PublishEventfromCustomContent(ctx context.Context, pubsubNa
 	}
 
 	return c.PublishEvent(ctx, pubsubName, topicName, enc, PublishEventWithContentType("application/json"))
+}
+
+// PublishEventsEvent is a type of event that can be published using PublishEvents.
+type PublishEventsEvent struct {
+	EntryID     string
+	Event       []byte
+	ContentType string
+	Metadata    map[string]string
+}
+
+// PublishEventsOption is the type for the functional option.
+type PublishEventsOption func(*pb.BulkPublishRequest)
+
+// PublishEvents publishes a list of events onto specific pubsub topic.
+func (c *GRPCClient) PublishEvents(ctx context.Context, pubsubName, topicName string, events []interface{}, opts ...PublishEventsOption) error {
+	if pubsubName == "" {
+		return errors.New("pubsubName name required")
+	}
+	if topicName == "" {
+		return errors.New("topic name required")
+	}
+
+	request := &pb.BulkPublishRequest{
+		PubsubName: pubsubName,
+		Topic:      topicName,
+	}
+	for _, o := range opts {
+		o(request)
+	}
+
+	entries := make([]*pb.BulkPublishRequestEntry, len(events))
+	for i, event := range events {
+		entry := &pb.BulkPublishRequestEntry{}
+		switch e := event.(type) {
+		case PublishEventsEvent:
+			entry.EntryId = e.EntryID
+			entry.Event = e.Event
+			entry.ContentType = e.ContentType
+			entry.Metadata = e.Metadata
+		case []byte:
+			entry.Event = e
+			entry.ContentType = "application/octet-stream"
+		case string:
+			entry.Event = []byte(e)
+			entry.ContentType = "text/plain"
+		default:
+			var err error
+			entry.ContentType = "application/json"
+			entry.Event, err = json.Marshal(e)
+			if err != nil {
+				return fmt.Errorf("error serializing input struct: %w", err)
+			}
+
+			if isCloudEvent(entry.Event) {
+				entry.ContentType = "application/cloudevents+json"
+			}
+		}
+
+		if entry.EntryId == "" {
+			entry.EntryId = uuid.New().String()
+		}
+
+		entries[i] = entry
+	}
+
+	_, err := c.protoClient.BulkPublishEventAlpha1(c.withAuthToken(ctx), request)
+	if err != nil {
+		return fmt.Errorf("error publishing events unto %s topic: %w", topicName, err)
+	}
+
+	return nil
+}
+
+// PublishEventsWithContentType can be passed as option to PublishEvents to explicitly set the same Content-Type for all events.
+func PublishEventsWithContentType(contentType string) PublishEventsOption {
+	return func(r *pb.BulkPublishRequest) {
+		for _, entry := range r.Entries {
+			entry.ContentType = contentType
+		}
+	}
+}
+
+// PublishEventsWithMetadata can be passed as option to PublishEvents to set metadata.
+func PublishEventsWithMetadata(metadata map[string]string) PublishEventsOption {
+	return func(r *pb.BulkPublishRequest) {
+		r.Metadata = metadata
+	}
+}
+
+// PublishEventsWithRawPayload can be passed as option to PublishEvents to set rawPayload metadata.
+func PublishEventsWithRawPayload() PublishEventsOption {
+	return func(r *pb.BulkPublishRequest) {
+		if r.Metadata == nil {
+			r.Metadata = map[string]string{rawPayload: trueValue}
+		} else {
+			r.Metadata[rawPayload] = trueValue
+		}
+	}
 }
