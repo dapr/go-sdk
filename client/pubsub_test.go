@@ -90,3 +90,78 @@ func TestPublishEvent(t *testing.T) {
 		assert.Nil(t, err)
 	})
 }
+
+// go test -timeout 30s ./client -count 1 -run ^TestPublishEvents$
+func TestPublishEvents(t *testing.T) {
+	ctx := context.Background()
+
+	t.Run("without pubsub name", func(t *testing.T) {
+		failedEntries := testClient.PublishEvents(ctx, "", "test", []interface{}{"ping", "pong"})
+		assert.Len(t, failedEntries, 2)
+		// TODO: assert the data
+	})
+
+	t.Run("without topic name", func(t *testing.T) {
+		failedEntries := testClient.PublishEvents(ctx, "messages", "", []interface{}{"ping", "pong"})
+		assert.Len(t, failedEntries, 2)
+		// TODO: assert the data
+	})
+
+	t.Run("with data", func(t *testing.T) {
+		failedEntries := testClient.PublishEvents(ctx, "messages", "test", []interface{}{"ping", "pong"})
+		assert.Len(t, failedEntries, 0)
+	})
+
+	t.Run("without data", func(t *testing.T) {
+		failedEntries := testClient.PublishEvents(ctx, "messages", "test", nil)
+		assert.Len(t, failedEntries, 0)
+	})
+
+	t.Run("from struct with text", func(t *testing.T) {
+		testdata := _testStructwithText{
+			Key1: "value1",
+			Key2: "value2",
+		}
+		failedEntries := testClient.PublishEvents(ctx, "messages", "test", []interface{}{testdata})
+		assert.Len(t, failedEntries, 0)
+	})
+
+	t.Run("from struct with text and numbers", func(t *testing.T) {
+		testdata := _testStructwithTextandNumbers{
+			Key1: "value1",
+			Key2: 2500,
+		}
+		failedEntries := testClient.PublishEvents(ctx, "messages", "test", []interface{}{testdata})
+		assert.Len(t, failedEntries, 0)
+	})
+
+	t.Run("from struct with slices", func(t *testing.T) {
+		testdata := _testStructwithSlices{
+			Key1: []string{"value1", "value2", "value3"},
+			Key2: []int{25, 40, 600},
+		}
+		failedEntries := testClient.PublishEvents(ctx, "messages", "test", []interface{}{testdata})
+		assert.Len(t, failedEntries, 0)
+	})
+
+	t.Run("error serializing one event", func(t *testing.T) {
+		failedEntries := testClient.PublishEvents(ctx, "messages", "test", []interface{}{make(chan struct{}), "pong"})
+		assert.Len(t, failedEntries, 1)
+		assert.Equal(t, failedEntries[0].Event, PublishEventsEvent{})
+	})
+
+	t.Run("with raw payload", func(t *testing.T) {
+		failedEntries := testClient.PublishEvents(ctx, "messages", "test", []interface{}{"ping", "pong"}, PublishEventsWithRawPayload())
+		assert.Len(t, failedEntries, 0)
+	})
+
+	t.Run("with metadata", func(t *testing.T) {
+		failedEntries := testClient.PublishEvents(ctx, "messages", "test", []interface{}{"ping", "pong"}, PublishEventsWithMetadata(map[string]string{"key": "value"}))
+		assert.Len(t, failedEntries, 0)
+	})
+
+	t.Run("with custom content type", func(t *testing.T) {
+		failedEntries := testClient.PublishEvents(ctx, "messages", "test", []interface{}{"ping", "pong"}, PublishEventsWithContentType("text/plain"))
+		assert.Len(t, failedEntries, 0)
+	})
+}

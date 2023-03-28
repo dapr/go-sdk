@@ -341,6 +341,10 @@ func (s *testDaprServer) PublishEvent(ctx context.Context, req *pb.PublishEventR
 	return &empty.Empty{}, nil
 }
 
+func (s *testDaprServer) BulkPublishEventAlpha1(ctx context.Context, req *pb.BulkPublishRequest) (*pb.BulkPublishResponse, error) {
+	return &pb.BulkPublishResponse{}, nil
+}
+
 func (s *testDaprServer) InvokeBinding(ctx context.Context, req *pb.InvokeBindingRequest) (*pb.InvokeBindingResponse, error) {
 	if req.Data == nil {
 		return &pb.InvokeBindingResponse{
