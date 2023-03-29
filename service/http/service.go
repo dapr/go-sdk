@@ -63,8 +63,13 @@ type Server struct {
 	authToken      string
 }
 
+// Deprecated: Use RegisterActorImplFactoryContext instead.
 func (s *Server) RegisterActorImplFactory(f actor.Factory, opts ...config.Option) {
 	runtime.GetActorRuntimeInstance().RegisterActorFactory(f, opts...)
+}
+
+func (s *Server) RegisterActorImplFactoryContext(f actor.FactoryContext, opts ...config.Option) {
+	runtime.GetActorRuntimeInstanceContext().RegisterActorFactory(f, opts...)
 }
 
 // Start starts the HTTP handler. Blocks while serving.

@@ -90,7 +90,7 @@ func (s *Server) registerBaseHandler() {
 
 	// register actor config handler
 	fRegister := func(w http.ResponseWriter, r *http.Request) {
-		data, err := runtime.GetActorRuntimeInstance().GetJSONSerializedConfig()
+		data, err := runtime.GetActorRuntimeInstanceContext().GetJSONSerializedConfig()
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
@@ -108,7 +108,7 @@ func (s *Server) registerBaseHandler() {
 		actorID := chi.URLParam(r, "actorId")
 		methodName := chi.URLParam(r, "methodName")
 		reqData, _ := io.ReadAll(r.Body)
-		rspData, err := runtime.GetActorRuntimeInstance().InvokeActorMethod(actorType, actorID, methodName, reqData)
+		rspData, err := runtime.GetActorRuntimeInstanceContext().InvokeActorMethod(r.Context(), actorType, actorID, methodName, reqData)
 		if err == actorErr.ErrActorTypeNotFound {
 			w.WriteHeader(http.StatusNotFound)
 			return
@@ -126,7 +126,7 @@ func (s *Server) registerBaseHandler() {
 	fDelete := func(w http.ResponseWriter, r *http.Request) {
 		actorType := chi.URLParam(r, "actorType")
 		actorID := chi.URLParam(r, "actorId")
-		err := runtime.GetActorRuntimeInstance().Deactivate(actorType, actorID)
+		err := runtime.GetActorRuntimeInstanceContext().Deactivate(r.Context(), actorType, actorID)
 		if err == actorErr.ErrActorTypeNotFound || err == actorErr.ErrActorIDNotFound {
 			w.WriteHeader(http.StatusNotFound)
 		}
@@ -143,7 +143,7 @@ func (s *Server) registerBaseHandler() {
 		actorID := chi.URLParam(r, "actorId")
 		reminderName := chi.URLParam(r, "reminderName")
 		reqData, _ := io.ReadAll(r.Body)
-		err := runtime.GetActorRuntimeInstance().InvokeReminder(actorType, actorID, reminderName, reqData)
+		err := runtime.GetActorRuntimeInstanceContext().InvokeReminder(r.Context(), actorType, actorID, reminderName, reqData)
 		if err == actorErr.ErrActorTypeNotFound {
 			w.WriteHeader(http.StatusNotFound)
 		}
@@ -160,7 +160,7 @@ func (s *Server) registerBaseHandler() {
 		actorID := chi.URLParam(r, "actorId")
 		timerName := chi.URLParam(r, "timerName")
 		reqData, _ := io.ReadAll(r.Body)
-		err := runtime.GetActorRuntimeInstance().InvokeTimer(actorType, actorID, timerName, reqData)
+		err := runtime.GetActorRuntimeInstanceContext().InvokeTimer(r.Context(), actorType, actorID, timerName, reqData)
 		if err == actorErr.ErrActorTypeNotFound {
 			w.WriteHeader(http.StatusNotFound)
 		}

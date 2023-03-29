@@ -26,7 +26,7 @@ import (
 	daprd "github.com/dapr/go-sdk/service/http"
 )
 
-func testActorFactory() actor.Server {
+func testActorFactory() actor.ServerContext {
 	client, err := dapr.NewClient()
 	if err != nil {
 		panic(err)
@@ -37,7 +37,7 @@ func testActorFactory() actor.Server {
 }
 
 type TestActor struct {
-	actor.ServerImplBase
+	actor.ServerImplBaseCtx
 	daprClient dapr.Client
 }
 
@@ -106,17 +106,17 @@ func (t *TestActor) Post(ctx context.Context, req string) error {
 
 func (t *TestActor) IncrementAndGet(ctx context.Context, stateKey string) (*api.User, error) {
 	stateData := api.User{}
-	if exist, err := t.GetStateManager().Contains(stateKey); err != nil {
+	if exist, err := t.GetStateManager().Contains(ctx, stateKey); err != nil {
 		fmt.Println("state manager call contains with key " + stateKey + "err = " + err.Error())
 		return &stateData, err
 	} else if exist {
-		if err := t.GetStateManager().Get(stateKey, &stateData); err != nil {
+		if err := t.GetStateManager().Get(ctx, stateKey, &stateData); err != nil {
 			fmt.Println("state manager call get with key " + stateKey + "err = " + err.Error())
 			return &stateData, err
 		}
 	}
 	stateData.Age++
-	if err := t.GetStateManager().Set(stateKey, stateData); err != nil {
+	if err := t.GetStateManager().Set(ctx, stateKey, stateData); err != nil {
 		fmt.Printf("state manager set get with key %s and state data = %+v, error = %s", stateKey, stateData, err.Error())
 		return &stateData, err
 	}
@@ -129,7 +129,7 @@ func (t *TestActor) ReminderCall(reminderName string, state []byte, dueTime stri
 
 func main() {
 	s := daprd.NewService(":8080")
-	s.RegisterActorImplFactory(testActorFactory)
+	s.RegisterActorImplFactoryContext(testActorFactory)
 	if err := s.Start(); err != nil && err != http.ErrServerClosed {
 		log.Fatalf("error listenning: %v", err)
 	}

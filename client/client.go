@@ -225,7 +225,14 @@ func NewClientWithPort(port string) (client Client, err error) {
 }
 
 // NewClientWithAddress instantiates Dapr using specific address (including port).
+// Deprecated: use NewClientWithAddressContext instead.
 func NewClientWithAddress(address string) (client Client, err error) {
+	return NewClientWithAddressContext(context.Background(), address)
+}
+
+// NewClientWithAddress instantiates Dapr using specific address (including port).
+// Uses the provided context to create the connection.
+func NewClientWithAddressContext(ctx context.Context, address string) (client Client, err error) {
 	if address == "" {
 		return nil, errors.New("empty address")
 	}
@@ -235,7 +242,7 @@ func NewClientWithAddress(address string) (client Client, err error) {
 	if err != nil {
 		return nil, err
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeoutSeconds)*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, time.Duration(timeoutSeconds)*time.Second)
 	conn, err := grpc.DialContext(
 		ctx,
 		address,
