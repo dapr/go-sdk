@@ -85,7 +85,8 @@ type Client interface {
 	PublishEventfromCustomContent(ctx context.Context, pubsubName, topicName string, data interface{}) error
 
 	// PublishEvents publishes multiple events onto topic in specific pubsub component.
-	// If all events are successfully published, response Error will be nil and FailedEvents will be empty.
+	// If all events are successfully published, response Error will be nil.
+	// The FailedEvents field will contain all events that failed to publish.
 	PublishEvents(ctx context.Context, pubsubName, topicName string, events []interface{}, opts ...PublishEventsOption) PublishEventsResponse
 
 	// GetSecret retrieves preconfigured secret from specified store using key.

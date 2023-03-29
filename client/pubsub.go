@@ -130,7 +130,8 @@ type PublishEventsResponse struct {
 type PublishEventsOption func(*pb.BulkPublishRequest)
 
 // PublishEvents publishes multiple events onto topic in specific pubsub component.
-// If all events are successfully published, response Error will be nil and FailedEvents will be empty.
+// If all events are successfully published, response Error will be nil.
+// The FailedEvents field will contain all events that failed to publish.
 func (c *GRPCClient) PublishEvents(ctx context.Context, pubsubName, topicName string, events []interface{}, opts ...PublishEventsOption) PublishEventsResponse {
 	if pubsubName == "" {
 		return PublishEventsResponse{
