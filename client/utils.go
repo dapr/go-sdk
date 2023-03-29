@@ -30,12 +30,3 @@ func isCloudEvent(event []byte) bool {
 	}
 	return ce.ID != "" && ce.Source != "" && ce.SpecVersion != "" && ce.Type != ""
 }
-
-// valuesFromMap returns the values of a map as a slice.
-func valuesFromMap[M ~map[K]V, K comparable, V any](m M) []V {
-	r := make([]V, 0, len(m))
-	for _, v := range m {
-		r = append(r, v)
-	}
-	return r
-}

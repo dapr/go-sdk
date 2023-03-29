@@ -14,6 +14,7 @@ limitations under the License.
 package client
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -341,8 +342,24 @@ func (s *testDaprServer) PublishEvent(ctx context.Context, req *pb.PublishEventR
 	return &empty.Empty{}, nil
 }
 
+// BulkPublishEventAlpha1 mocks the BulkPublishEventAlpha1 API.
+// It will fail to publish events that start with "fail".
+// It will fail the entire request if an event starts with "failall".
 func (s *testDaprServer) BulkPublishEventAlpha1(ctx context.Context, req *pb.BulkPublishRequest) (*pb.BulkPublishResponse, error) {
-	return &pb.BulkPublishResponse{}, nil
+	failedEntries := make([]*pb.BulkPublishResponseFailedEntry, 0)
+	for _, entry := range req.Entries {
+		if bytes.HasPrefix(entry.Event, []byte("failall")) {
+			// fail the entire request
+			return nil, errors.New("failed to publish events")
+		} else if bytes.HasPrefix(entry.Event, []byte("fail")) {
+			// fail this entry
+			failedEntries = append(failedEntries, &pb.BulkPublishResponseFailedEntry{
+				EntryId: entry.EntryId,
+				Error:   "failed to publish events",
+			})
+		}
+	}
+	return &pb.BulkPublishResponse{FailedEntries: failedEntries}, nil
 }
 
 func (s *testDaprServer) InvokeBinding(ctx context.Context, req *pb.InvokeBindingRequest) (*pb.InvokeBindingResponse, error) {
