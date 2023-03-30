@@ -134,7 +134,7 @@ func (s *stateManagerCtx) Get(ctx context.Context, stateName string, reply any) 
 	return err
 }
 
-func (s *stateManagerCtx) Set(ctx context.Context, stateName string, value any) error {
+func (s *stateManagerCtx) Set(_ context.Context, stateName string, value any) error {
 	if stateName == "" {
 		return errors.New("state name can't be empty")
 	}
