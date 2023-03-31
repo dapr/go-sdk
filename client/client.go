@@ -84,6 +84,11 @@ type Client interface {
 	// Deprecated: This method is deprecated and will be removed in a future version of the SDK. Please use `PublishEvent` instead.
 	PublishEventfromCustomContent(ctx context.Context, pubsubName, topicName string, data interface{}) error
 
+	// PublishEvents publishes multiple events onto topic in specific pubsub component.
+	// If all events are successfully published, response Error will be nil.
+	// The FailedEvents field will contain all events that failed to publish.
+	PublishEvents(ctx context.Context, pubsubName, topicName string, events []interface{}, opts ...PublishEventsOption) PublishEventsResponse
+
 	// GetSecret retrieves preconfigured secret from specified store using key.
 	GetSecret(ctx context.Context, storeName, key string, meta map[string]string) (data map[string]string, err error)
 

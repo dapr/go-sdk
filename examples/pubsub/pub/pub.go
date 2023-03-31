@@ -29,7 +29,8 @@ var (
 
 func main() {
 	ctx := context.Background()
-	data := []byte("ping")
+	publishEventData := []byte("ping")
+	publishEventsData := []interface{}{"multi-ping", "multi-pong"}
 
 	client, err := dapr.NewClient()
 	if err != nil {
@@ -37,9 +38,16 @@ func main() {
 	}
 	defer client.Close()
 
-	if err := client.PublishEvent(ctx, pubsubName, topicName, data); err != nil {
+	// Publish a single event
+	if err := client.PublishEvent(ctx, pubsubName, topicName, publishEventData); err != nil {
 		panic(err)
 	}
+
+	// Publish multiple events
+	if res := client.PublishEvents(ctx, pubsubName, topicName, publishEventsData); res.Error != nil {
+		panic(err)
+	}
+
 	fmt.Println("data published")
 
 	fmt.Println("Done (CTRL+C to Exit)")
