@@ -204,7 +204,7 @@ func TestPublishEvents(t *testing.T) {
 }
 
 func TestCreateBulkPublishRequestEntry(t *testing.T) {
-	type _testJsonStruct struct {
+	type _testJSONStruct struct {
 		Key1 string `json:"key1"`
 		Key2 string `json:"key2"`
 	}
@@ -241,7 +241,7 @@ func TestCreateBulkPublishRequestEntry(t *testing.T) {
 			},
 			{
 				name: "valid json",
-				data: _testJsonStruct{
+				data: _testJSONStruct{
 					Key1: "value1",
 					Key2: "value2",
 				},

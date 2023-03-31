@@ -20,8 +20,9 @@ import (
 	"fmt"
 	"log"
 
-	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
 	"github.com/google/uuid"
+
+	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
 )
 
 const (
