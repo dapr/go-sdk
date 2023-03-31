@@ -170,7 +170,6 @@ func (c *GRPCClient) PublishEvents(ctx context.Context, pubsubName, topicName st
 	}
 
 	res, err := c.protoClient.BulkPublishEventAlpha1(c.withAuthToken(ctx), request)
-
 	// If there is an error, all events failed to publish.
 	if err != nil {
 		return PublishEventsResponse{
