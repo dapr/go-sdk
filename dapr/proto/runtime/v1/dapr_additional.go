@@ -79,8 +79,26 @@ func (x *DecryptAlpha1Request) HasOptions() bool {
 type CryptoResponses interface {
 	proto.Message
 
+	// SetPayload sets the payload.
+	SetPayload(payload *commonv1pb.StreamPayload)
 	// GetPayload returns the payload.
 	GetPayload() *commonv1pb.StreamPayload
 	// Reset the object.
 	Reset()
+}
+
+func (x *EncryptAlpha1Response) SetPayload(payload *commonv1pb.StreamPayload) {
+	if x == nil {
+		return
+	}
+
+	x.Payload = payload
+}
+
+func (x *DecryptAlpha1Response) SetPayload(payload *commonv1pb.StreamPayload) {
+	if x == nil {
+		return
+	}
+
+	x.Payload = payload
 }

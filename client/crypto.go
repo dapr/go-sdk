@@ -29,6 +29,19 @@ import (
 // Encrypt data read from a stream, returning a readable stream that receives the encrypted data.
 // This method returns an error if the initial call fails. Errors performed during the encryption are received by the out stream.
 func (c *GRPCClient) Encrypt(ctx context.Context, in io.Reader, opts EncryptOptions) (io.Reader, error) {
+	// Ensure required options are present
+	// This short-circuits and avoids a call to the runtime
+	if opts.ComponentName == "" {
+		return nil, errors.New("option 'ComponentName' is required")
+	}
+	if opts.Key == "" {
+		return nil, errors.New("option 'Key' is required")
+	}
+	if opts.Algorithm == "" {
+		return nil, errors.New("option 'Algorithm' is required")
+	}
+
+	// Create the stream
 	stream, err := c.protoClient.EncryptAlpha1(ctx)
 	if err != nil {
 		return nil, err
@@ -46,6 +59,13 @@ func (c *GRPCClient) Encrypt(ctx context.Context, in io.Reader, opts EncryptOpti
 // Decrypt data read from a stream, returning a readable stream that receives the decrypted data.
 // This method returns an error if the initial call fails. Errors performed during the encryption are received by the out stream.
 func (c *GRPCClient) Decrypt(ctx context.Context, in io.Reader, opts DecryptOptions) (io.Reader, error) {
+	// Ensure required options are present
+	// This short-circuits and avoids a call to the runtime
+	if opts.ComponentName == "" {
+		return nil, errors.New("option 'ComponentName' is required")
+	}
+
+	// Create the stream
 	stream, err := c.protoClient.DecryptAlpha1(ctx)
 	if err != nil {
 		return nil, err
