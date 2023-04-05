@@ -17,6 +17,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"log"
 	"net"
 	"os"
@@ -148,6 +149,12 @@ type Client interface {
 
 	// UnlockAlpha1 deletes unlocks a lock from a lock store.
 	UnlockAlpha1(ctx context.Context, storeName string, request *UnlockRequest) (*UnlockResponse, error)
+
+	// Encrypt data read from a stream, returning a readable stream that receives the decrypted data.
+	// The context applies to the initial call only, which involves performing operations on the crypto component. Cancelling the context does not stop the encryption process after it has started; to stop that, close the input stream with an error.
+	// This method returns an error if the initial call fails.
+	// Errors performed during the encryption are received by the out stream.
+	Encrypt(ctx context.Context, in io.Reader, opts EncryptOptions) (io.Reader, error)
 
 	// Shutdown the sidecar.
 	Shutdown(ctx context.Context) error
