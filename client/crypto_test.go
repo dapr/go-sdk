@@ -14,15 +14,179 @@ limitations under the License.
 package client
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io"
+	"strings"
+	"testing"
+	"time"
 
+	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc"
 
 	commonv1 "github.com/dapr/go-sdk/dapr/proto/common/v1"
 	runtimev1pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
 )
+
+func TestEncrypt(t *testing.T) {
+	ctx := context.Background()
+
+	t.Run("missing ComponentName", func(t *testing.T) {
+		out, err := testClient.Encrypt(ctx,
+			strings.NewReader("hello world"),
+			EncryptOptions{
+				// ComponentName: "mycomponent",
+				Key:       "key",
+				Algorithm: "algorithm",
+			},
+		)
+		require.Error(t, err)
+		require.ErrorContains(t, err, "ComponentName")
+		require.Nil(t, out)
+	})
+
+	t.Run("missing Key", func(t *testing.T) {
+		out, err := testClient.Encrypt(ctx,
+			strings.NewReader("hello world"),
+			EncryptOptions{
+				ComponentName: "mycomponent",
+				// Key:       "key",
+				Algorithm: "algorithm",
+			},
+		)
+		require.Error(t, err)
+		require.ErrorContains(t, err, "Key")
+		require.Nil(t, out)
+	})
+
+	t.Run("missing Algorithm", func(t *testing.T) {
+		out, err := testClient.Encrypt(ctx,
+			strings.NewReader("hello world"),
+			EncryptOptions{
+				ComponentName: "mycomponent",
+				Key:           "key",
+				// Algorithm: "algorithm",
+			},
+		)
+		require.Error(t, err)
+		require.ErrorContains(t, err, "Algorithm")
+		require.Nil(t, out)
+	})
+
+	t.Run("receiving back data sent", func(t *testing.T) {
+		// The test server doesn't actually encrypt data
+		out, err := testClient.Encrypt(ctx,
+			strings.NewReader("hello world"),
+			EncryptOptions{
+				ComponentName: "mycomponent",
+				Key:           "key",
+				Algorithm:     "algorithm",
+			},
+		)
+		require.NoError(t, err)
+		require.NotNil(t, out)
+
+		read, err := io.ReadAll(out)
+		require.NoError(t, err)
+		require.Equal(t, "hello world", string(read))
+	})
+
+	t.Run("error in input stream", func(t *testing.T) {
+		out, err := testClient.Encrypt(ctx,
+			&failingReader{
+				data: strings.NewReader("hello world"),
+			},
+			EncryptOptions{
+				ComponentName: "mycomponent",
+				Key:           "key",
+				Algorithm:     "algorithm",
+			},
+		)
+		require.NoError(t, err)
+		require.NotNil(t, out)
+
+		_, err = io.ReadAll(out)
+		require.Error(t, err)
+		require.ErrorContains(t, err, "simulated")
+	})
+
+	t.Run("context canceled", func(t *testing.T) {
+		failingCtx, failingCancel := context.WithTimeout(ctx, time.Second)
+		defer failingCancel()
+
+		out, err := testClient.Encrypt(failingCtx,
+			&slowReader{
+				// Should take a lot longer than 1s
+				//nolint:dupword
+				data:  strings.NewReader("soft kitty, warm kitty, little ball of fur, happy kitty, sleepy kitty, purr purr purr"),
+				delay: time.Second,
+			},
+			EncryptOptions{
+				ComponentName: "mycomponent",
+				Key:           "key",
+				Algorithm:     "algorithm",
+			},
+		)
+		require.NoError(t, err)
+		require.NotNil(t, out)
+
+		_, err = io.ReadAll(out)
+		require.Error(t, err)
+		require.ErrorContains(t, err, "context deadline exceeded")
+	})
+}
+
+func TestDecrypt(t *testing.T) {
+	ctx := context.Background()
+
+	t.Run("missing ComponentName", func(t *testing.T) {
+		out, err := testClient.Decrypt(ctx,
+			strings.NewReader("hello world"),
+			DecryptOptions{
+				// ComponentName: "mycomponent",
+			},
+		)
+		require.Error(t, err)
+		require.ErrorContains(t, err, "ComponentName")
+		require.Nil(t, out)
+	})
+
+	t.Run("receiving back data sent", func(t *testing.T) {
+		// The test server doesn't actually decrypt data
+		out, err := testClient.Decrypt(ctx,
+			strings.NewReader("hello world"),
+			DecryptOptions{
+				ComponentName: "mycomponent",
+			},
+		)
+		require.NoError(t, err)
+		require.NotNil(t, out)
+
+		read, err := io.ReadAll(out)
+		require.NoError(t, err)
+		require.Equal(t, "hello world", string(read))
+	})
+
+	t.Run("error in input stream", func(t *testing.T) {
+		out, err := testClient.Decrypt(ctx,
+			&failingReader{
+				data: strings.NewReader("hello world"),
+			},
+			DecryptOptions{
+				ComponentName: "mycomponent",
+			},
+		)
+		require.NoError(t, err)
+		require.NotNil(t, out)
+
+		_, err = io.ReadAll(out)
+		require.Error(t, err)
+		require.ErrorContains(t, err, "simulated")
+	})
+}
+
+/* --- Server methods --- */
 
 func (s *testDaprServer) EncryptAlpha1(stream runtimev1pb.Dapr_EncryptAlpha1Server) error {
 	return s.performCryptoOperation(
@@ -85,6 +249,8 @@ func (s *testDaprServer) performCryptoOperation(stream grpc.ServerStream, reqPro
 				}
 			}
 		}
+
+		pw.Close()
 	}()
 
 	var (
