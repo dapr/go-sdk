@@ -41,8 +41,8 @@ tag: ## Creates release tag
 .PHONY: clean
 clean: ## Cleans go and generated files in ./dapr/proto/
 	go clean
-	rm -fr ./dapr/proto/common/v1/*
-	rm -fr ./dapr/proto/runtime/v1/*
+	rm -fr ./dapr/proto/common/v1/*.pb.go
+	rm -fr ./dapr/proto/runtime/v1/*.pb.go
 
 .PHONY: help
 help: ## Display available commands
