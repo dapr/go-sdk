@@ -37,7 +37,7 @@ func TestEncrypt(t *testing.T) {
 			strings.NewReader("hello world"),
 			EncryptOptions{
 				// ComponentName: "mycomponent",
-				Key:       "key",
+				KeyName:   "key",
 				Algorithm: "algorithm",
 			},
 		)
@@ -51,7 +51,7 @@ func TestEncrypt(t *testing.T) {
 			strings.NewReader("hello world"),
 			EncryptOptions{
 				ComponentName: "mycomponent",
-				// Key:       "key",
+				// KeyName:       "key",
 				Algorithm: "algorithm",
 			},
 		)
@@ -65,7 +65,7 @@ func TestEncrypt(t *testing.T) {
 			strings.NewReader("hello world"),
 			EncryptOptions{
 				ComponentName: "mycomponent",
-				Key:           "key",
+				KeyName:       "key",
 				// Algorithm: "algorithm",
 			},
 		)
@@ -80,7 +80,7 @@ func TestEncrypt(t *testing.T) {
 			strings.NewReader("hello world"),
 			EncryptOptions{
 				ComponentName: "mycomponent",
-				Key:           "key",
+				KeyName:       "key",
 				Algorithm:     "algorithm",
 			},
 		)
@@ -99,7 +99,7 @@ func TestEncrypt(t *testing.T) {
 			},
 			EncryptOptions{
 				ComponentName: "mycomponent",
-				Key:           "key",
+				KeyName:       "key",
 				Algorithm:     "algorithm",
 			},
 		)
@@ -124,7 +124,7 @@ func TestEncrypt(t *testing.T) {
 			},
 			EncryptOptions{
 				ComponentName: "mycomponent",
-				Key:           "key",
+				KeyName:       "key",
 				Algorithm:     "algorithm",
 			},
 		)

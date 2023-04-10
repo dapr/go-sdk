@@ -34,8 +34,8 @@ func (c *GRPCClient) Encrypt(ctx context.Context, in io.Reader, opts EncryptOpti
 	if opts.ComponentName == "" {
 		return nil, errors.New("option 'ComponentName' is required")
 	}
-	if opts.Key == "" {
-		return nil, errors.New("option 'Key' is required")
+	if opts.KeyName == "" {
+		return nil, errors.New("option 'KeyName' is required")
 	}
 	if opts.Algorithm == "" {
 		return nil, errors.New("option 'Algorithm' is required")
@@ -226,7 +226,7 @@ type EncryptOptions struct {
 	// Name of the component. Required.
 	ComponentName string
 	// Name (or name/version) of the key. Required.
-	Key string
+	KeyName string
 	// Key wrapping algorithm to use. Required.
 	// Supported options include: A256KW, A128CBC, A192CBC, A256CBC, RSA-OAEP-256.
 	Algorithm string
@@ -246,7 +246,7 @@ type EncryptOptions struct {
 func (o EncryptOptions) getProto() proto.Message {
 	return &runtimev1pb.EncryptAlpha1RequestOptions{
 		ComponentName:         o.ComponentName,
-		Key:                   o.Key,
+		KeyName:               o.KeyName,
 		Algorithm:             o.Algorithm,
 		Cipher:                o.Cipher,
 		OmitDecryptionKeyName: o.OmitDecryptionKeyName,
@@ -261,12 +261,12 @@ type DecryptOptions struct {
 	// Name (or name/version) of the key to decrypt the message.
 	// Overrides any key reference included in the message if present.
 	// This is required if the message doesn't include a key reference (i.e. was created with omit_decryption_key_name set to true).
-	Key string
+	KeyName string
 }
 
 func (o DecryptOptions) getProto() proto.Message {
 	return &runtimev1pb.DecryptAlpha1RequestOptions{
 		ComponentName: o.ComponentName,
-		Key:           o.Key,
+		KeyName:       o.KeyName,
 	}
 }
