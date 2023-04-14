@@ -51,8 +51,8 @@ func (c *GRPCClient) Encrypt(ctx context.Context, in io.Reader, opts EncryptOpti
 	return c.performCryptoOperation(
 		stream.Context(), stream,
 		in, opts,
-		&runtimev1pb.EncryptAlpha1Request{},
-		&runtimev1pb.EncryptAlpha1Response{},
+		&runtimev1pb.EncryptRequest{},
+		&runtimev1pb.EncryptResponse{},
 	)
 }
 
@@ -75,8 +75,8 @@ func (c *GRPCClient) Decrypt(ctx context.Context, in io.Reader, opts DecryptOpti
 	return c.performCryptoOperation(
 		stream.Context(), stream,
 		in, opts,
-		&runtimev1pb.DecryptAlpha1Request{},
-		&runtimev1pb.DecryptAlpha1Response{},
+		&runtimev1pb.DecryptRequest{},
+		&runtimev1pb.DecryptResponse{},
 	)
 }
 
@@ -230,7 +230,7 @@ type EncryptOptions struct {
 	// Key wrapping algorithm to use. Required.
 	// Supported options include: A256KW, A128CBC, A192CBC, A256CBC, RSA-OAEP-256.
 	Algorithm string
-	// Force cipher to use to encrypt data: "aes-gcm" or "chacha20-poly1305" (optional)
+	// Cipher to use to encrypt data (optional): "aes-gcm" (default) or "chacha20-poly1305"
 	Cipher string
 	// If true, the encrypted document does not contain a key reference.
 	// In that case, calls to the Decrypt method must provide a key reference (name or name/version).
@@ -240,17 +240,17 @@ type EncryptOptions struct {
 	// This is helpful if the reference of the key used to decrypt the document is different from the one used to encrypt it.
 	// If unset, uses the reference of the key used to encrypt the document (this is the default behavior).
 	// This option is ignored if omit_decryption_key_name is true.
-	DecryptionKey string
+	DecryptionKeyName string
 }
 
 func (o EncryptOptions) getProto() proto.Message {
-	return &runtimev1pb.EncryptAlpha1RequestOptions{
+	return &runtimev1pb.EncryptRequestOptions{
 		ComponentName:         o.ComponentName,
 		KeyName:               o.KeyName,
 		Algorithm:             o.Algorithm,
 		Cipher:                o.Cipher,
 		OmitDecryptionKeyName: o.OmitDecryptionKeyName,
-		DecryptionKey:         o.DecryptionKey,
+		DecryptionKeyName:     o.DecryptionKeyName,
 	}
 }
 
@@ -265,7 +265,7 @@ type DecryptOptions struct {
 }
 
 func (o DecryptOptions) getProto() proto.Message {
-	return &runtimev1pb.DecryptAlpha1RequestOptions{
+	return &runtimev1pb.DecryptRequestOptions{
 		ComponentName: o.ComponentName,
 		KeyName:       o.KeyName,
 	}

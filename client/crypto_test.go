@@ -191,16 +191,16 @@ func TestDecrypt(t *testing.T) {
 func (s *testDaprServer) EncryptAlpha1(stream runtimev1pb.Dapr_EncryptAlpha1Server) error {
 	return s.performCryptoOperation(
 		stream,
-		&runtimev1pb.EncryptAlpha1Request{},
-		&runtimev1pb.EncryptAlpha1Response{},
+		&runtimev1pb.EncryptRequest{},
+		&runtimev1pb.EncryptResponse{},
 	)
 }
 
 func (s *testDaprServer) DecryptAlpha1(stream runtimev1pb.Dapr_DecryptAlpha1Server) error {
 	return s.performCryptoOperation(
 		stream,
-		&runtimev1pb.DecryptAlpha1Request{},
-		&runtimev1pb.DecryptAlpha1Response{},
+		&runtimev1pb.DecryptRequest{},
+		&runtimev1pb.DecryptResponse{},
 	)
 }
 
