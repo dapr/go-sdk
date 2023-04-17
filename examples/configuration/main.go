@@ -48,17 +48,14 @@ func main() {
 	md := metadata.Pairs("dapr-app-id", "configuration-api")
 	ctx = metadata.NewOutgoingContext(ctx, md)
 	defer f()
-	var subscribeID string
-	go func() {
-		if err := client.SubscribeConfigurationItems(ctx, "example-config", []string{"mySubscribeKey1", "mySubscribeKey2", "mySubscribeKey3"}, func(id string, items map[string]*dapr.ConfigurationItem) {
-			for k, v := range items {
-				fmt.Printf("get updated config key = %s, value = %s \n", k, v.Value)
-			}
-			subscribeID = id
-		}); err != nil {
-			panic(err)
+	subscribeID, err := client.SubscribeConfigurationItems(ctx, "example-config", []string{"mySubscribeKey1", "mySubscribeKey2", "mySubscribeKey3"}, func(id string, items map[string]*dapr.ConfigurationItem) {
+		for k, v := range items {
+			fmt.Printf("get updated config key = %s, value = %s \n", k, v.Value)
 		}
-	}()
+	})
+	if err != nil {
+		panic(err)
+	}
 	time.Sleep(time.Second*3 + time.Millisecond*500)
 
 	// dapr configuration unsubscribe called.
