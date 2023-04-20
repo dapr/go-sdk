@@ -40,7 +40,7 @@ func (c *GRPCClient) GetConfigurationItems(ctx context.Context, storeName string
 	for _, opt := range opts {
 		opt(metadata)
 	}
-	rsp, err := c.protoClient.GetConfigurationAlpha1(ctx, &pb.GetConfigurationRequest{
+	rsp, err := c.protoClient.GetConfiguration(ctx, &pb.GetConfigurationRequest{
 		StoreName: storeName,
 		Keys:      keys,
 		Metadata:  metadata,
@@ -68,7 +68,7 @@ func (c *GRPCClient) SubscribeConfigurationItems(ctx context.Context, storeName 
 		opt(metadata)
 	}
 
-	client, err := c.protoClient.SubscribeConfigurationAlpha1(ctx, &pb.SubscribeConfigurationRequest{
+	client, err := c.protoClient.SubscribeConfiguration(ctx, &pb.SubscribeConfigurationRequest{
 		StoreName: storeName,
 		Keys:      keys,
 		Metadata:  metadata,
@@ -109,7 +109,7 @@ func (c *GRPCClient) SubscribeConfigurationItems(ctx context.Context, storeName 
 }
 
 func (c *GRPCClient) UnsubscribeConfigurationItems(ctx context.Context, storeName string, id string, opts ...ConfigurationOpt) error {
-	alpha1, err := c.protoClient.UnsubscribeConfigurationAlpha1(ctx, &pb.UnsubscribeConfigurationRequest{
+	alpha1, err := c.protoClient.UnsubscribeConfiguration(ctx, &pb.UnsubscribeConfigurationRequest{
 		StoreName: storeName,
 		Id:        id,
 	})

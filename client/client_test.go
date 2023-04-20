@@ -425,7 +425,7 @@ func (s *testDaprServer) Shutdown(ctx context.Context, req *empty.Empty) (*empty
 	return &empty.Empty{}, nil
 }
 
-func (s *testDaprServer) GetConfigurationAlpha1(ctx context.Context, in *pb.GetConfigurationRequest) (*pb.GetConfigurationResponse, error) {
+func (s *testDaprServer) GetConfiguration(ctx context.Context, in *pb.GetConfigurationRequest) (*pb.GetConfigurationResponse, error) {
 	if in.GetStoreName() == "" {
 		return &pb.GetConfigurationResponse{}, errors.New("store name notfound")
 	}
@@ -440,7 +440,7 @@ func (s *testDaprServer) GetConfigurationAlpha1(ctx context.Context, in *pb.GetC
 	}, nil
 }
 
-func (s *testDaprServer) SubscribeConfigurationAlpha1(in *pb.SubscribeConfigurationRequest, server pb.Dapr_SubscribeConfigurationAlpha1Server) error {
+func (s *testDaprServer) SubscribeConfiguration(in *pb.SubscribeConfigurationRequest, server pb.Dapr_SubscribeConfigurationServer) error {
 	stopCh := make(chan struct{})
 	id, _ := uuid.NewUUID()
 	s.configurationSubscriptionIDMapLoc.Lock()
@@ -469,7 +469,7 @@ func (s *testDaprServer) SubscribeConfigurationAlpha1(in *pb.SubscribeConfigurat
 	return nil
 }
 
-func (s *testDaprServer) UnsubscribeConfigurationAlpha1(ctx context.Context, in *pb.UnsubscribeConfigurationRequest) (*pb.UnsubscribeConfigurationResponse, error) {
+func (s *testDaprServer) UnsubscribeConfiguration(ctx context.Context, in *pb.UnsubscribeConfigurationRequest) (*pb.UnsubscribeConfigurationResponse, error) {
 	s.configurationSubscriptionIDMapLoc.Lock()
 	defer s.configurationSubscriptionIDMapLoc.Unlock()
 	ch, ok := s.configurationSubscriptionID[in.Id]
