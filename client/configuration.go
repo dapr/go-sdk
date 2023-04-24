@@ -109,15 +109,15 @@ func (c *GRPCClient) SubscribeConfigurationItems(ctx context.Context, storeName 
 }
 
 func (c *GRPCClient) UnsubscribeConfigurationItems(ctx context.Context, storeName string, id string, opts ...ConfigurationOpt) error {
-	alpha1, err := c.protoClient.UnsubscribeConfiguration(ctx, &pb.UnsubscribeConfigurationRequest{
+	resp, err := c.protoClient.UnsubscribeConfiguration(ctx, &pb.UnsubscribeConfigurationRequest{
 		StoreName: storeName,
 		Id:        id,
 	})
 	if err != nil {
 		return fmt.Errorf("unsubscribe failed with error = %w", err)
 	}
-	if !alpha1.Ok {
-		return fmt.Errorf("unsubscribe error message = %s", alpha1.GetMessage())
+	if !resp.Ok {
+		return fmt.Errorf("unsubscribe error message = %s", resp.GetMessage())
 	}
 	return nil
 }
