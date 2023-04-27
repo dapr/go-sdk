@@ -446,6 +446,14 @@ func (s *testDaprServer) SubscribeConfigurationAlpha1(in *pb.SubscribeConfigurat
 	s.configurationSubscriptionIDMapLoc.Lock()
 	s.configurationSubscriptionID[id.String()] = stopCh
 	s.configurationSubscriptionIDMapLoc.Unlock()
+
+	// Send subscription ID in the first response.
+	if err := server.Send(&pb.SubscribeConfigurationResponse{
+		Id: id.String(),
+	}); err != nil {
+		return err
+	}
+
 	for i := 0; i < 5; i++ {
 		select {
 		case <-stopCh:
