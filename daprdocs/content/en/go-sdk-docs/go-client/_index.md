@@ -44,7 +44,7 @@ content := &dapr.DataContent{
 resp, err = client.InvokeMethodWithContent(ctx, "app-id", "method-name", "post", content)
 ```
 
-- For a full guide on service invocation visit [How-To: Invoke a service]({{< ref howto-invoke-discover-services.md >}}).
+For a full guide on service invocation, visit [How-To: Invoke a service]({{< ref howto-invoke-discover-services.md >}}).
 
 ### State Management
 
@@ -142,6 +142,13 @@ meta := map[string]string{}
 err := testClient.ExecuteStateTransaction(ctx, store, meta, ops)
 ```
 
+For a full guide on state management, visit [How-To: Save & get state]({{< ref howto-get-save-state.md >}}).
+
+
+### Query state
+
+
+
 ### Publish Messages
 To publish data onto a topic, the Dapr Go client provides a simple method:
 
@@ -152,27 +159,21 @@ if err := client.PublishEvent(ctx, "component-name", "topic-name", data); err !=
 }
 ```
 
-To publish multiple messages at once, the `PublishEvents` method can be used:
-
-```go
-events := []string{"event1", "event2", "event3"}
-res := client.PublishEvents(ctx, "component-name", "topic-name", events)
-if res.Error != nil {
-    panic(res.Error)
-}
-```
-
-- For a full list of state operations visit [How-To: Publish & subscribe]({{< ref howto-publish-subscribe.md >}}).
+For a full guide on pub/sub, visit [How-To: Publish & subscribe]({{< ref howto-publish-subscribe.md >}}).
 
 ### Output Bindings
+
 The Dapr Go client SDK provides two methods to invoke an operation on a Dapr-defined binding. Dapr supports input, output, and bidirectional bindings.
 
-For simple, output only biding:
+For simple, output-only binding:
+
 ```go
 in := &dapr.InvokeBindingRequest{ Name: "binding-name", Operation: "operation-name" }
 err = client.InvokeOutputBinding(ctx, in)
 ```
+
 To invoke method with content and metadata:
+
 ```go
 in := &dapr.InvokeBindingRequest{
     Name:      "binding-name",
@@ -184,8 +185,9 @@ in := &dapr.InvokeBindingRequest{
 out, err := client.InvokeBinding(ctx, in)
 ```
 
+For a full guide on output bindings, visit [How-To: Use bindings]({{< ref howto-bindings.md >}}).
 
-- For a full guide on output bindings visit [How-To: Use bindings]({{< ref howto-bindings.md >}}).
+### Actors
 
 ### Secret Management
 
@@ -199,7 +201,7 @@ opt := map[string]string{
 secret, err := client.GetSecret(ctx, "store-name", "secret-name", opt)
 ```
 
-### Authentication
+#### Authentication
 
 By default, Dapr relies on the network boundary to limit access to its API. If however the target Dapr API is configured with token-based authentication, users can configure the Go Dapr client with that token in two ways:
 
@@ -223,7 +225,74 @@ func main() {
 ```
 
 
-- For a full guide on secrets visit [How-To: Retrieve secrets]({{< ref howto-secrets.md >}}).
+For a full guide on secrets, visit [How-To: Retrieve secrets]({{< ref howto-secrets.md >}}).
+
+### Distributed Lock
+
+The Dapr client provides mutually exclusive access to a resource using a lock. With a lock, you can:
+
+- Provide access to a database row, table, or an entire database
+- Lock reading messages from a queue in a sequential manner
+
+```go
+package main
+
+import (
+    "fmt"
+
+    dapr "github.com/dapr/go-sdk/client"
+)
+
+func main() {
+    client, err := dapr.NewClient()
+    if err != nil {
+        panic(err)
+    }
+    defer client.Close()
+    
+    resp, err := client.TryLockAlpha1(ctx, "lockstore", &dapr.LockRequest{
+			LockOwner:         "random_id_abc123",
+			ResourceID:      "my_file_name",
+			ExpiryInSeconds: 60,
+		})
+
+    fmt.Println(resp.Success)
+}
+```
+
+For a full guide on distributed lock, visit [How-To: Use a lock]({{< ref howto-use-distributed-lock.md >}}).
+
+### Configuration
+
+With the Dapr client Go SDK, you can consume configuration items that are returned as read-only key/value pairs, and subscribe to configuration item changes.
+
+#### Config Get
+
+```go
+	items, err := client.GetConfigurationItem(ctx, "example-config", "mykey")
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("get config = %s\n", (*items).Value)
+```
+
+#### Config Subscribe
+
+```go
+go func() {
+	if err := client.SubscribeConfigurationItems(ctx, "example-config", []string{"mySubscribeKey1", "mySubscribeKey2", "mySubscribeKey3"}, func(id string, items map[string]*dapr.ConfigurationItem) {
+		for k, v := range items {
+			fmt.Printf("get updated config key = %s, value = %s \n", k, v.Value)
+		}
+		subscribeID = id
+	}); err != nil {
+		panic(err)
+	}
+}()
+```
+
+For a full guide on configuration, visit [How-To: Manage configuration from a store]({{< ref howto-manage-configuration.md >}}).
+
 
 ## Related links
-- [Go SDK Examples](https://github.com/dapr/go-sdk/tree/main/examples)
+[Go SDK Examples](https://github.com/dapr/go-sdk/tree/main/examples)
