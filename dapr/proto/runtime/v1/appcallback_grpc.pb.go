@@ -93,7 +93,7 @@ func (c *appCallbackClient) OnBindingEvent(ctx context.Context, in *BindingEvent
 }
 
 // AppCallbackServer is the server API for AppCallback service.
-// All implementations must embed UnimplementedAppCallbackServer
+// All implementations should embed UnimplementedAppCallbackServer
 // for forward compatibility
 type AppCallbackServer interface {
 	// Invokes service method with InvokeRequest.
@@ -109,10 +109,9 @@ type AppCallbackServer interface {
 	// User application can save the states or send the events to the output
 	// bindings optionally by returning BindingEventResponse.
 	OnBindingEvent(context.Context, *BindingEventRequest) (*BindingEventResponse, error)
-	mustEmbedUnimplementedAppCallbackServer()
 }
 
-// UnimplementedAppCallbackServer must be embedded to have forward compatible implementations.
+// UnimplementedAppCallbackServer should be embedded to have forward compatible implementations.
 type UnimplementedAppCallbackServer struct {
 }
 
@@ -131,7 +130,6 @@ func (UnimplementedAppCallbackServer) ListInputBindings(context.Context, *emptyp
 func (UnimplementedAppCallbackServer) OnBindingEvent(context.Context, *BindingEventRequest) (*BindingEventResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method OnBindingEvent not implemented")
 }
-func (UnimplementedAppCallbackServer) mustEmbedUnimplementedAppCallbackServer() {}
 
 // UnsafeAppCallbackServer may be embedded to opt out of forward compatibility for this service.
 // Use of this interface is not recommended, as added methods to AppCallbackServer will
@@ -292,22 +290,19 @@ func (c *appCallbackHealthCheckClient) HealthCheck(ctx context.Context, in *empt
 }
 
 // AppCallbackHealthCheckServer is the server API for AppCallbackHealthCheck service.
-// All implementations must embed UnimplementedAppCallbackHealthCheckServer
+// All implementations should embed UnimplementedAppCallbackHealthCheckServer
 // for forward compatibility
 type AppCallbackHealthCheckServer interface {
 	// Health check.
 	HealthCheck(context.Context, *emptypb.Empty) (*HealthCheckResponse, error)
-	mustEmbedUnimplementedAppCallbackHealthCheckServer()
 }
 
-// UnimplementedAppCallbackHealthCheckServer must be embedded to have forward compatible implementations.
+// UnimplementedAppCallbackHealthCheckServer should be embedded to have forward compatible implementations.
 type UnimplementedAppCallbackHealthCheckServer struct {
 }
 
 func (UnimplementedAppCallbackHealthCheckServer) HealthCheck(context.Context, *emptypb.Empty) (*HealthCheckResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method HealthCheck not implemented")
-}
-func (UnimplementedAppCallbackHealthCheckServer) mustEmbedUnimplementedAppCallbackHealthCheckServer() {
 }
 
 // UnsafeAppCallbackHealthCheckServer may be embedded to opt out of forward compatibility for this service.
@@ -381,22 +376,20 @@ func (c *appCallbackAlphaClient) OnBulkTopicEventAlpha1(ctx context.Context, in 
 }
 
 // AppCallbackAlphaServer is the server API for AppCallbackAlpha service.
-// All implementations must embed UnimplementedAppCallbackAlphaServer
+// All implementations should embed UnimplementedAppCallbackAlphaServer
 // for forward compatibility
 type AppCallbackAlphaServer interface {
 	// Subscribes bulk events from Pubsub
 	OnBulkTopicEventAlpha1(context.Context, *TopicEventBulkRequest) (*TopicEventBulkResponse, error)
-	mustEmbedUnimplementedAppCallbackAlphaServer()
 }
 
-// UnimplementedAppCallbackAlphaServer must be embedded to have forward compatible implementations.
+// UnimplementedAppCallbackAlphaServer should be embedded to have forward compatible implementations.
 type UnimplementedAppCallbackAlphaServer struct {
 }
 
 func (UnimplementedAppCallbackAlphaServer) OnBulkTopicEventAlpha1(context.Context, *TopicEventBulkRequest) (*TopicEventBulkResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method OnBulkTopicEventAlpha1 not implemented")
 }
-func (UnimplementedAppCallbackAlphaServer) mustEmbedUnimplementedAppCallbackAlphaServer() {}
 
 // UnsafeAppCallbackAlphaServer may be embedded to opt out of forward compatibility for this service.
 // Use of this interface is not recommended, as added methods to AppCallbackAlphaServer will
