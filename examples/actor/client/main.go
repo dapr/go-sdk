@@ -75,7 +75,7 @@ func main() {
 		CallBack:  "Invoke",
 		Period:    "5s",
 		Duration:  "5s",
-		Data:      `"hello"`,
+		Data:      "aGVsbG8=\"",
 	})
 	if err != nil {
 		panic(err)
@@ -98,7 +98,7 @@ func main() {
 		ReminderName: "testReminderName",
 		Period:       "5s",
 		Duration:     "5s",
-		Data:         `"hello"`,
+		Data:         "aGVsbG8=\"",
 	})
 	if err != nil {
 		panic(err)
