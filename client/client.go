@@ -42,6 +42,8 @@ import (
 const (
 	daprPortDefault                = "50001"
 	daprPortEnvVarName             = "DAPR_GRPC_PORT" /* #nosec */
+	daprRuntimeHostDefault         = "127.0.0.1"
+	daprRuntimeHostEnvVarName      = "DAPR_RUNTIME_HOST" /* #nosec */
 	traceparentKey                 = "traceparent"
 	apiTokenKey                    = "dapr-api-token" /* #nosec */
 	apiTokenEnvVarName             = "DAPR_API_TOKEN" /* #nosec */
@@ -195,7 +197,8 @@ type Client interface {
 	GrpcClient() pb.DaprClient
 }
 
-// NewClient instantiates Dapr client using DAPR_GRPC_PORT environment variable as port.
+// NewClient instantiates Dapr client using DAPR_RUNTIME_HOST and DAPR_GRPC_PORT environment variable as host:port address
+// of the Dapr runtime, or 127.0.0.1:50001 if the environment variables are not set.
 // Note, this default factory function creates Dapr client only once. All subsequent invocations
 // will return the already created instance. To create multiple instances of the Dapr client,
 // use one of the parameterized factory functions:
@@ -205,10 +208,6 @@ type Client interface {
 //	NewClientWithConnection(conn *grpc.ClientConn) Client
 //	NewClientWithSocket(socket string) (client Client, err error)
 func NewClient() (client Client, err error) {
-	port := os.Getenv(daprPortEnvVarName)
-	if port == "" {
-		port = daprPortDefault
-	}
 	if defaultClient != nil {
 		return defaultClient, nil
 	}
@@ -217,7 +216,7 @@ func NewClient() (client Client, err error) {
 	if defaultClient != nil {
 		return defaultClient, nil
 	}
-	c, err := NewClientWithPort(port)
+	c, err := NewClientWithAddressContext(context.Background(), getDefaultRuntimeHostAddress())
 	if err != nil {
 		return nil, fmt.Errorf("error creating default client: %w", err)
 	}
@@ -231,7 +230,7 @@ func NewClientWithPort(port string) (client Client, err error) {
 	if port == "" {
 		return nil, errors.New("nil port")
 	}
-	return NewClientWithAddress(net.JoinHostPort("127.0.0.1", port))
+	return NewClientWithAddress(net.JoinHostPort(daprRuntimeHostDefault, port))
 }
 
 // NewClientWithAddress instantiates Dapr using specific address (including port).
@@ -240,7 +239,26 @@ func NewClientWithAddress(address string) (client Client, err error) {
 	return NewClientWithAddressContext(context.Background(), address)
 }
 
-// NewClientWithAddress instantiates Dapr using specific address (including port).
+// NewClientWithContext instantiates Dapr using default values or values from environment variables.
+// Uses the provided context to create the connection.
+// This method does not cache the client as in NewClient, so subsequent calls will create new clients.
+func NewClientWithContext(ctx context.Context) (client Client, err error) {
+	return NewClientWithAddressContext(ctx, getDefaultRuntimeHostAddress())
+}
+
+func getDefaultRuntimeHostAddress() string {
+	port := os.Getenv(daprPortEnvVarName)
+	if port == "" {
+		port = daprPortDefault
+	}
+	host := os.Getenv(daprRuntimeHostEnvVarName)
+	if host == "" {
+		host = daprRuntimeHostDefault
+	}
+	return net.JoinHostPort(host, port)
+}
+
+// NewClientWithAddressContext instantiates Dapr using specific address (including port).
 // Uses the provided context to create the connection.
 func NewClientWithAddressContext(ctx context.Context, address string) (client Client, err error) {
 	if address == "" {

@@ -100,6 +100,20 @@ func TestNewClient(t *testing.T) {
 		_ = testClient.WithTraceID(context.Background(), "test")
 	})
 
+	t.Run("new client with context", func(t *testing.T) {
+		addr := startGrpcServerOnFreePort(t)
+		host, port, err := net.SplitHostPort(addr)
+		require.NoError(t, err)
+		t.Cleanup(func() {
+			os.Unsetenv(daprRuntimeHostEnvVarName)
+			os.Unsetenv(daprPortEnvVarName)
+		})
+		require.NoError(t, os.Setenv(daprRuntimeHostEnvVarName, host))
+		require.NoError(t, os.Setenv(daprPortEnvVarName, port))
+		_, err = NewClientWithContext(context.Background())
+		require.NoError(t, err)
+	})
+
 	t.Run("new socket client closed with token", func(t *testing.T) {
 		t.Setenv(apiTokenEnvVarName, "test")
 		c, err := NewClientWithSocket(testSocket)
@@ -195,6 +209,27 @@ func getTestClientWithSocket(ctx context.Context) (client Client, closer func())
 	}
 
 	return
+}
+
+func startGrpcServerOnFreePort(t *testing.T) (serverAddress string) {
+	s := grpc.NewServer()
+	pb.RegisterDaprServer(s, &testDaprServer{
+		state:                       make(map[string][]byte),
+		configurationSubscriptionID: map[string]chan struct{}{},
+	})
+
+	l, err := net.Listen("tcp", ":0")
+	require.NoErrorf(t, err, "could not open grpc server")
+	t.Cleanup(func() {
+		l.Close()
+	})
+	go func() {
+		require.NoError(t, s.Serve(l), "failed to serve: %v", err)
+	}()
+	t.Cleanup(func() {
+		s.Stop()
+	})
+	return l.Addr().String()
 }
 
 func Test_getClientTimeoutSeconds(t *testing.T) {
@@ -493,4 +528,43 @@ func TestGrpcClient(t *testing.T) {
 	protoClient := pb.NewDaprClient(nil)
 	client := &GRPCClient{protoClient: protoClient}
 	assert.Equal(t, protoClient, client.GrpcClient())
+}
+
+func Test_getDefaultRuntimeHostAddress(t *testing.T) {
+	tests := []struct {
+		name       string
+		want       string
+		setEnvFunc func()
+	}{
+		{
+			name: "default",
+			want: "127.0.0.1:50001",
+		},
+		{
+			name: "set grpc env port",
+			setEnvFunc: func() {
+				os.Setenv(daprPortEnvVarName, "50002")
+			},
+			want: "127.0.0.1:50002",
+		},
+		{
+			name: "set grpc host ",
+			setEnvFunc: func() {
+				os.Setenv(daprRuntimeHostEnvVarName, "1.2.3.4")
+			},
+			want: "1.2.3.4:50001",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Cleanup(func() {
+				os.Unsetenv(daprPortEnvVarName)
+				os.Unsetenv(daprRuntimeHostEnvVarName)
+			})
+			if tt.setEnvFunc != nil {
+				tt.setEnvFunc()
+			}
+			assert.Equalf(t, tt.want, getDefaultRuntimeHostAddress(), "getDefaultRuntimeHostAddress()")
+		})
+	}
 }
