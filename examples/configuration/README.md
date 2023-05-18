@@ -33,7 +33,7 @@ dapr run --app-id configuration-api\
          --app-port 5005 \
          --dapr-http-port 3006 \
          --log-level debug \
-         --components-path ./config/ \
+         --resources-path ./config/ \
          go run ./main.go
 ```
 
