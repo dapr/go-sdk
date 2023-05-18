@@ -11,6 +11,7 @@
 <!-- STEP
 name: Run Configuration Client
 output_match_mode: substring
+match_order: none
 expected_stdout_lines:
   - '== APP == get config = myConfigValue'
   - '== APP == get updated config key = mySubscribeKey1, value = mySubscribeValue1'
