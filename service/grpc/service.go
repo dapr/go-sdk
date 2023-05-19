@@ -62,17 +62,13 @@ func newService(lis net.Listener, grpcServer *grpc.Server, opts ...grpc.ServerOp
 		authToken:       os.Getenv(common.AppAPITokenEnvVar),
 	}
 
-	var gs *grpc.Server
-
-	if grpcServer != nil {
-		gs = grpcServer
-	} else {
-		gs = grpc.NewServer(opts...)
+	if grpcServer == nil {
+		grpcServer = grpc.NewServer(opts...)
 	}
 
-	pb.RegisterAppCallbackServer(gs, s)
-	pb.RegisterAppCallbackHealthCheckServer(gs, s)
-	s.grpcServer = gs
+	pb.RegisterAppCallbackServer(grpcServer, s)
+	pb.RegisterAppCallbackHealthCheckServer(grpcServer, s)
+	s.grpcServer = grpcServer
 
 	return s
 }
