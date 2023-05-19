@@ -14,36 +14,40 @@ limitations under the License.
 package state
 
 import (
-	"reflect"
 	"testing"
+	"time"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestNewActorStateChange(t *testing.T) {
-	type args struct {
+	secs5 := int64(5)
+
+	tests := map[string]struct {
 		stateName  string
-		value      interface{}
+		value      any
 		changeKind ChangeKind
-	}
-	tests := []struct {
-		name string
-		args args
-		want *ActorStateChange
+		ttl        time.Duration
+		want       *ActorStateChange
 	}{
-		{
-			name: "init",
-			args: args{
-				stateName:  "testStateName",
-				value:      "testValue",
-				changeKind: Add,
-			},
-			want: &ActorStateChange{stateName: "testStateName", value: "testValue", changeKind: Add},
+		"init": {
+			stateName:  "testStateName",
+			value:      "testValue",
+			changeKind: Add,
+			ttl:        time.Second*5 + time.Millisecond*400,
+			want:       &ActorStateChange{stateName: "testStateName", value: "testValue", changeKind: Add, ttlInSeconds: &secs5},
+		},
+		"no TTL": {
+			stateName:  "testStateName",
+			value:      "testValue",
+			changeKind: Add,
+			ttl:        0,
+			want:       &ActorStateChange{stateName: "testStateName", value: "testValue", changeKind: Add, ttlInSeconds: nil},
 		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := NewActorStateChange(tt.args.stateName, tt.args.value, tt.args.changeKind); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewActorStateChange() = %v, want %v", got, tt.want)
-			}
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			assert.Equal(t, test.want, NewActorStateChange(test.stateName, test.value, test.changeKind, &test.ttl))
 		})
 	}
 }

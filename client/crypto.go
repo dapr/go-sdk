@@ -37,7 +37,7 @@ func (c *GRPCClient) Encrypt(ctx context.Context, in io.Reader, opts EncryptOpti
 	if opts.KeyName == "" {
 		return nil, errors.New("option 'KeyName' is required")
 	}
-	if opts.Algorithm == "" {
+	if opts.KeyWrapAlgorithm == "" {
 		return nil, errors.New("option 'Algorithm' is required")
 	}
 
@@ -229,9 +229,9 @@ type EncryptOptions struct {
 	KeyName string
 	// Key wrapping algorithm to use. Required.
 	// Supported options include: A256KW, A128CBC, A192CBC, A256CBC, RSA-OAEP-256.
-	Algorithm string
-	// Cipher to use to encrypt data (optional): "aes-gcm" (default) or "chacha20-poly1305"
-	Cipher string
+	KeyWrapAlgorithm string
+	// DataEncryptionCipher to use to encrypt data (optional): "aes-gcm" (default) or "chacha20-poly1305"
+	DataEncryptionCipher string
 	// If true, the encrypted document does not contain a key reference.
 	// In that case, calls to the Decrypt method must provide a key reference (name or name/version).
 	// Defaults to false.
@@ -247,8 +247,8 @@ func (o EncryptOptions) getProto() proto.Message {
 	return &runtimev1pb.EncryptRequestOptions{
 		ComponentName:         o.ComponentName,
 		KeyName:               o.KeyName,
-		Algorithm:             o.Algorithm,
-		Cipher:                o.Cipher,
+		KeyWrapAlgorithm:      o.KeyWrapAlgorithm,
+		DataEncryptionCipher:  o.DataEncryptionCipher,
 		OmitDecryptionKeyName: o.OmitDecryptionKeyName,
 		DecryptionKeyName:     o.DecryptionKeyName,
 	}

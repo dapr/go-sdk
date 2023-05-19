@@ -52,9 +52,9 @@ const (
 
 var (
 	logger               = log.New(os.Stdout, "", 0)
+	lock                 = &sync.Mutex{}
 	_             Client = (*GRPCClient)(nil)
 	defaultClient Client
-	doOnce        sync.Once
 )
 
 // Client is the interface for Dapr client implementation.
@@ -133,7 +133,7 @@ type Client interface {
 	GetConfigurationItems(ctx context.Context, storeName string, keys []string, opts ...ConfigurationOpt) (map[string]*ConfigurationItem, error)
 
 	// SubscribeConfigurationItems can subscribe the change of configuration items by storeName and keys, and return subscription id
-	SubscribeConfigurationItems(ctx context.Context, storeName string, keys []string, handler ConfigurationHandleFunction, opts ...ConfigurationOpt) error
+	SubscribeConfigurationItems(ctx context.Context, storeName string, keys []string, handler ConfigurationHandleFunction, opts ...ConfigurationOpt) (string, error)
 
 	// UnsubscribeConfigurationItems can stop the subscription with target store's and id
 	UnsubscribeConfigurationItems(ctx context.Context, storeName string, id string, opts ...ConfigurationOpt) error
@@ -218,16 +218,21 @@ func NewClient() (client Client, err error) {
 	if port == "" {
 		port = daprPortDefault
 	}
-	var onceErr error
-	doOnce.Do(func() {
-		c, err := NewClientWithPort(port)
-		if err != nil {
-			onceErr = fmt.Errorf("error creating default client: %w", err)
-		}
-		defaultClient = c
-	})
+	if defaultClient != nil {
+		return defaultClient, nil
+	}
+	lock.Lock()
+	defer lock.Unlock()
+	if defaultClient != nil {
+		return defaultClient, nil
+	}
+	c, err := NewClientWithPort(port)
+	if err != nil {
+		return nil, fmt.Errorf("error creating default client: %w", err)
+	}
+	defaultClient = c
 
-	return defaultClient, onceErr
+	return defaultClient, nil
 }
 
 // NewClientWithPort instantiates Dapr using specific gRPC port.

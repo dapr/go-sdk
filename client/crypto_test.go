@@ -37,8 +37,8 @@ func TestEncrypt(t *testing.T) {
 			strings.NewReader("hello world"),
 			EncryptOptions{
 				// ComponentName: "mycomponent",
-				KeyName:   "key",
-				Algorithm: "algorithm",
+				KeyName:          "key",
+				KeyWrapAlgorithm: "algorithm",
 			},
 		)
 		require.Error(t, err)
@@ -52,7 +52,7 @@ func TestEncrypt(t *testing.T) {
 			EncryptOptions{
 				ComponentName: "mycomponent",
 				// KeyName:       "key",
-				Algorithm: "algorithm",
+				KeyWrapAlgorithm: "algorithm",
 			},
 		)
 		require.Error(t, err)
@@ -79,9 +79,9 @@ func TestEncrypt(t *testing.T) {
 		out, err := testClient.Encrypt(ctx,
 			strings.NewReader("hello world"),
 			EncryptOptions{
-				ComponentName: "mycomponent",
-				KeyName:       "key",
-				Algorithm:     "algorithm",
+				ComponentName:    "mycomponent",
+				KeyName:          "key",
+				KeyWrapAlgorithm: "algorithm",
 			},
 		)
 		require.NoError(t, err)
@@ -98,9 +98,9 @@ func TestEncrypt(t *testing.T) {
 				data: strings.NewReader("hello world"),
 			},
 			EncryptOptions{
-				ComponentName: "mycomponent",
-				KeyName:       "key",
-				Algorithm:     "algorithm",
+				ComponentName:    "mycomponent",
+				KeyName:          "key",
+				KeyWrapAlgorithm: "algorithm",
 			},
 		)
 		require.NoError(t, err)
@@ -123,9 +123,9 @@ func TestEncrypt(t *testing.T) {
 				delay: time.Second,
 			},
 			EncryptOptions{
-				ComponentName: "mycomponent",
-				KeyName:       "key",
-				Algorithm:     "algorithm",
+				ComponentName:    "mycomponent",
+				KeyName:          "key",
+				KeyWrapAlgorithm: "algorithm",
 			},
 		)
 		require.NoError(t, err)
