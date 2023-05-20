@@ -1,6 +1,6 @@
 module github.com/dapr/go-sdk
 
-go 1.18
+go 1.19
 
 require (
 	github.com/go-chi/chi/v5 v5.0.8
