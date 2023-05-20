@@ -39,16 +39,21 @@ func NewService(address string) (s common.Service, err error) {
 		err = fmt.Errorf("failed to TCP listen on %s: %w", address, err)
 		return
 	}
-	s = newService(lis)
+	s = newService(lis, nil)
 	return
 }
 
 // NewServiceWithListener creates new Service with specific listener.
 func NewServiceWithListener(lis net.Listener, opts ...grpc.ServerOption) common.Service {
-	return newService(lis, opts...)
+	return newService(lis, nil, opts...)
 }
 
-func newService(lis net.Listener, opts ...grpc.ServerOption) *Server {
+// NewServiceWithGrpcServer creates a new Service with specific listener and grpcServer
+func NewServiceWithGrpcServer(lis net.Listener, server *grpc.Server) common.Service {
+	return newService(lis, server)
+}
+
+func newService(lis net.Listener, grpcServer *grpc.Server, opts ...grpc.ServerOption) *Server {
 	s := &Server{
 		listener:        lis,
 		invokeHandlers:  make(map[string]common.ServiceInvocationHandler),
@@ -57,10 +62,13 @@ func newService(lis net.Listener, opts ...grpc.ServerOption) *Server {
 		authToken:       os.Getenv(common.AppAPITokenEnvVar),
 	}
 
-	gs := grpc.NewServer(opts...)
-	pb.RegisterAppCallbackServer(gs, s)
-	pb.RegisterAppCallbackHealthCheckServer(gs, s)
-	s.grpcServer = gs
+	if grpcServer == nil {
+		grpcServer = grpc.NewServer(opts...)
+	}
+
+	pb.RegisterAppCallbackServer(grpcServer, s)
+	pb.RegisterAppCallbackHealthCheckServer(grpcServer, s)
+	s.grpcServer = grpcServer
 
 	return s
 }
