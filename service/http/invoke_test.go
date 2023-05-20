@@ -15,6 +15,7 @@ package http
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"io"
 	"net/http"
@@ -26,6 +27,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/dapr/go-sdk/service/common"
+	"google.golang.org/grpc/metadata"
 )
 
 func TestInvocationHandlerWithoutHandler(t *testing.T) {
@@ -157,4 +159,60 @@ func TestInvocationHandlerWithError(t *testing.T) {
 	assert.NoErrorf(t, err, "adding error event handler success")
 
 	makeEventRequest(t, s, "/error", "", http.StatusInternalServerError)
+}
+
+func TestInvocationHandlerWithCustomizedHeader(t *testing.T) {
+	data := `{"name": "test", "data": "hello"}`
+	s := newServer("", nil)
+	err := s.AddServiceInvocationHandler("/hello", func(ctx context.Context, in *common.InvocationEvent) (out *common.Content, err error) {
+		if in == nil || in.Data == nil || in.ContentType == "" {
+			err = errors.New("nil input")
+			return
+		}
+
+		dd := map[string]interface{}{}
+		err = json.Unmarshal(in.Data, &dd)
+		if err != nil {
+			return
+		}
+
+		md, ok := metadata.FromIncomingContext(ctx)
+		if ok {
+			vs := md.Get("Customized-Header")
+			if len(vs) > 0 {
+				dd["Customized-Header"] = vs[0]
+			}
+		}
+		data, err := json.Marshal(dd)
+		if err != nil {
+			return
+		}
+		out = &common.Content{
+			Data:        data,
+			ContentType: in.ContentType,
+			DataTypeURL: in.DataTypeURL,
+		}
+		return
+	})
+
+	assert.NoErrorf(t, err, "adding event handler success")
+	customizedHeader := "Customized-Header"
+
+	req, err := http.NewRequest(http.MethodPost, "/hello", strings.NewReader(data))
+	assert.NoErrorf(t, err, "creating request success")
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set(customizedHeader, "Value")
+
+	resp := httptest.NewRecorder()
+	s.mux.ServeHTTP(resp, req)
+	assert.Equal(t, http.StatusOK, resp.Code)
+
+	b, err := io.ReadAll(resp.Body)
+	assert.NoErrorf(t, err, "reading response body success")
+
+	d2 := map[string]interface{}{}
+	err = json.Unmarshal(b, &d2)
+	assert.Nil(t, err)
+	assert.Contains(t, d2, customizedHeader)
+	assert.Equal(t, d2[customizedHeader], "Value")
 }
