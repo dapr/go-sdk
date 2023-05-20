@@ -32,11 +32,11 @@ func (t *ActorImpl) Type() string {
 	return "testActorType"
 }
 
-func (t *ActorImpl) Invoke(ctx context.Context, req string) (string, error) {
+func (t *ActorImpl) Invoke(_ context.Context, req string) (string, error) {
 	return req, nil
 }
 
-func (t *ActorImpl) ReminderCall(reminderName string, state []byte, dueTime string, period string) {
+func (t *ActorImpl) ReminderCall(_ string, state []byte, dueTime string, period string) {
 }
 
 func (t *ActorImpl) WithContext() actor.ServerContext {
@@ -55,7 +55,7 @@ func (t *ActorImplContext) Type() string {
 	return "testActorType"
 }
 
-func (t *ActorImplContext) Invoke(ctx context.Context, req string) (string, error) {
+func (t *ActorImplContext) Invoke(_ context.Context, req string) (string, error) {
 	return req, nil
 }
 
