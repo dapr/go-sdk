@@ -25,9 +25,9 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"google.golang.org/grpc/metadata"
 
 	"github.com/dapr/go-sdk/service/common"
-	"google.golang.org/grpc/metadata"
 )
 
 func TestInvocationHandlerWithoutHandler(t *testing.T) {
