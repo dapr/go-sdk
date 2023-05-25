@@ -18,7 +18,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"time"
 
 	"github.com/dapr/go-sdk/actor"
 	dapr "github.com/dapr/go-sdk/client"
@@ -117,10 +116,7 @@ func (t *TestActor) IncrementAndGet(ctx context.Context, stateKey string) (*api.
 		}
 	}
 	stateData.Age++
-	// You should always use `SetWithTTL` to set state with expiration time
-	// unless you also implement cleanup logic. This prevents the state store
-	// from growing indefinitely.
-	if err := t.GetStateManager().SetWithTTL(ctx, stateKey, stateData, time.Minute); err != nil {
+	if err := t.GetStateManager().Set(ctx, stateKey, stateData); err != nil {
 		fmt.Printf("state manager set get with key %s and state data = %+v, error = %s", stateKey, stateData, err.Error())
 		return &stateData, err
 	}
