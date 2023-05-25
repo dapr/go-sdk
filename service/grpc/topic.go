@@ -33,11 +33,8 @@ func (s *Server) AddTopicEventHandler(sub *common.Subscription, fn common.TopicE
 	if sub == nil {
 		return errors.New("subscription required")
 	}
-	if err := s.topicRegistrar.AddSubscription(sub, fn); err != nil {
-		return err
-	}
 
-	return nil
+	return s.topicRegistrar.AddSubscription(sub, fn)
 }
 
 // ListTopicSubscriptions is called by Dapr to get the list of topics in a pubsub component the app wants to subscribe to.

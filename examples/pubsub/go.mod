@@ -1,6 +1,6 @@
 module github.com/dapr/go-sdk/examples/pubsub
 
-go 1.17
+go 1.19
 
 // Needed to validate SDK changes in CI/CD
 replace github.com/dapr/go-sdk => ../../
