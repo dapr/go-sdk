@@ -1,5 +1,5 @@
 /*
-Copyright 2021 The Dapr Authors
+Copyright 2023 The Dapr Authors
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -17,6 +17,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"log"
 	"net"
 	"os"
@@ -148,6 +149,14 @@ type Client interface {
 
 	// UnlockAlpha1 deletes unlocks a lock from a lock store.
 	UnlockAlpha1(ctx context.Context, storeName string, request *UnlockRequest) (*UnlockResponse, error)
+
+	// Encrypt data read from a stream, returning a readable stream that receives the encrypted data.
+	// This method returns an error if the initial call fails. Errors performed during the encryption are received by the out stream.
+	Encrypt(ctx context.Context, in io.Reader, opts EncryptOptions) (io.Reader, error)
+
+	// Decrypt data read from a stream, returning a readable stream that receives the decrypted data.
+	// This method returns an error if the initial call fails. Errors performed during the encryption are received by the out stream.
+	Decrypt(ctx context.Context, in io.Reader, opts DecryptOptions) (io.Reader, error)
 
 	// Shutdown the sidecar.
 	Shutdown(ctx context.Context) error

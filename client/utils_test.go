@@ -13,7 +13,13 @@ limitations under the License.
 
 package client
 
-import "testing"
+import (
+	"errors"
+	"io"
+	"sync"
+	"testing"
+	"time"
+)
 
 func TestIsCloudEvent(t *testing.T) {
 	testcases := []struct {
@@ -61,4 +67,54 @@ func TestIsCloudEvent(t *testing.T) {
 			}
 		})
 	}
+}
+
+// Implements an io.Reader that simulates failures (after optionally reading from a stream in full)
+type failingReader struct {
+	// Data to return before returning an error
+	data io.Reader
+	l    sync.Mutex
+}
+
+func (f *failingReader) Read(p []byte) (n int, err error) {
+	f.l.Lock()
+	defer f.l.Unlock()
+
+	if f.data != nil {
+		n, err := f.data.Read(p)
+		if err == nil {
+			return n, nil
+		} else if errors.Is(err, io.EOF) {
+			// Do not return io.EOF as error
+			// Instead, just delete the stream
+			// On the next call, we will return an error
+			f.data = nil
+			return n, nil
+		} else {
+			// Should not happen
+			panic(err)
+		}
+	}
+
+	return 0, errors.New("simulated")
+}
+
+// Implements an io.Reader that returns data slowly
+type slowReader struct {
+	// Data to return
+	data io.Reader
+	// Interval between every byte sent
+	delay time.Duration
+	l     sync.Mutex
+}
+
+func (s *slowReader) Read(p []byte) (n int, err error) {
+	s.l.Lock()
+	defer s.l.Unlock()
+
+	// Sleep
+	time.Sleep(s.delay)
+
+	// Read one byte at a time
+	return s.data.Read(p[0:1])
 }
