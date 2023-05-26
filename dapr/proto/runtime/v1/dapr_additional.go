@@ -19,6 +19,56 @@ import (
 	commonv1pb "github.com/dapr/go-sdk/dapr/proto/common/v1"
 )
 
+// This file contains additional, hand-written methods added to the generated objects.
+
+// SubtleCryptoRequests is an interface for all Subtle*Request structs.
+type SubtleCryptoRequests interface {
+	// SetComponentName sets the value of the ComponentName property.
+	SetComponentName(name string)
+}
+
+func (x *SubtleGetKeyRequest) SetComponentName(name string) {
+	if x != nil {
+		x.ComponentName = name
+	}
+}
+
+func (x *SubtleEncryptRequest) SetComponentName(name string) {
+	if x != nil {
+		x.ComponentName = name
+	}
+}
+
+func (x *SubtleDecryptRequest) SetComponentName(name string) {
+	if x != nil {
+		x.ComponentName = name
+	}
+}
+
+func (x *SubtleWrapKeyRequest) SetComponentName(name string) {
+	if x != nil {
+		x.ComponentName = name
+	}
+}
+
+func (x *SubtleUnwrapKeyRequest) SetComponentName(name string) {
+	if x != nil {
+		x.ComponentName = name
+	}
+}
+
+func (x *SubtleSignRequest) SetComponentName(name string) {
+	if x != nil {
+		x.ComponentName = name
+	}
+}
+
+func (x *SubtleVerifyRequest) SetComponentName(name string) {
+	if x != nil {
+		x.ComponentName = name
+	}
+}
+
 // CryptoRequests is an interface for EncryptRequest and DecryptRequest.
 type CryptoRequests interface {
 	proto.Message
