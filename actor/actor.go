@@ -207,13 +207,12 @@ type StateManagerContext interface {
 	// Get is to get state store of @stateName with type @reply
 	Get(ctx context.Context, stateName string, reply any) error
 	// Set sets a state store with @stateName and @value.
-	// You should always use SetWithTTL unless you also intend to implement your
-	// own state expiration logic. This is to prevent the state store from
-	// growing indefinitely.
 	Set(ctx context.Context, stateName string, value any) error
 	// SetWithTTL sets a state store with @stateName and @value, for the given
 	// TTL. After the TTL has passed, the value will no longer be available with
 	// `Get`. Always preferred over `Set`.
+	// NOTE: SetWithTTL is in feature preview as of v1.11, and only available
+	// with the `ActorStateTTL` feature enabled in Dapr.
 	SetWithTTL(ctx context.Context, stateName string, value any, ttl time.Duration) error
 	// Remove is to remove state store with @stateName
 	Remove(ctx context.Context, stateName string) error
