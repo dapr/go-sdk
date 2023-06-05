@@ -64,3 +64,42 @@ func stopTestServer(t *testing.T, server *Server) {
 	err := server.Stop()
 	assert.Nilf(t, err, "error stopping server")
 }
+
+func TestStartServerTimes(t *testing.T) {
+	server := getTestServer()
+
+	startTestServer(server)
+	assert.PanicsWithError(t, "a gRPC server can only be started once", func() {
+		if err := server.Start(); err != nil && err.Error() != "closed" {
+			panic(err)
+		}
+	})
+
+	time.Sleep(time.Second)
+
+	stopTestServer(t, server)
+}
+
+func TestStopServerTimes(t *testing.T) {
+	server := getTestServer()
+	startTestServer(server)
+
+	err := server.Stop()
+	assert.Nilf(t, err, "error stopping server")
+
+	err = server.Stop()
+	assert.Nilf(t, err, "error stopping server")
+}
+
+func TestStopServerBeforeStart(t *testing.T) {
+	server := getTestServer()
+	stopTestServer(t, server)
+}
+
+func TestStartServerAfterStop(t *testing.T) {
+	server := getTestServer()
+	startTestServer(server)
+	stopTestServer(t, server)
+	err := server.Start()
+	assert.NotNil(t, err)
+}
