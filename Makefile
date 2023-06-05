@@ -19,7 +19,7 @@ test:
 			./...
 
 .PHONY: spell
-spell: ## Checks spelling across the entire project 
+spell: ## Checks spelling across the entire project
 	@command -v misspell > /dev/null 2>&1 || (cd tools && go get github.com/client9/misspell/cmd/misspell)
 	@misspell -locale US -error go=golang client/**/* examples/**/* service/**/* actor/**/* .
 
@@ -34,7 +34,7 @@ lint: ## Lints the entire project
 	golangci-lint run --timeout=3m
 
 .PHONY: tag
-tag: ## Creates release tag 
+tag: ## Creates release tag
 	git tag $(RELEASE_VERSION)
 	git push origin $(RELEASE_VERSION)
 

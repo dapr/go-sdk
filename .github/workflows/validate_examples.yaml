@@ -90,6 +90,7 @@ jobs:
       - name: Check Examples
         run: |
           cd examples
+          ./validate.sh grpc-service
           ./validate.sh configuration
           ./validate.sh hello-world
           ./validate.sh pubsub
