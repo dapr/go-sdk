@@ -103,3 +103,11 @@ func TestStartServerAfterStop(t *testing.T) {
 	err := server.Start()
 	assert.NotNil(t, err)
 }
+
+func TestGracefulStopServer(t *testing.T) {
+	server := getTestServer()
+	startTestServer(server)
+	assert.NotNil(t, server)
+	err := server.GracefulStop()
+	assert.Nilf(t, err, "error stopping server")
+}

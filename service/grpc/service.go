@@ -103,10 +103,6 @@ func (s *Server) Start() error {
 		return errors.New("a gRPC server can only be started once")
 	}
 
-	if atomic.LoadUint32(&s.stopped) == 1 {
-		return errors.New("the gRPC server has stopped")
-	}
-
 	return s.grpcServer.Serve(s.listener)
 }
 
@@ -121,10 +117,6 @@ func (s *Server) GracefulStop() error {
 }
 
 func (s *Server) gracefulStop(graceful bool) error {
-	if atomic.LoadUint32(&s.started) == 0 {
-		return nil
-	}
-
 	if atomic.CompareAndSwapUint32(&s.stopped, 0, 1) {
 		if graceful {
 			s.grpcServer.GracefulStop()
