@@ -15,6 +15,7 @@ package grpc
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc"
@@ -53,6 +54,7 @@ func startTestServer(server *Server) {
 			panic(err)
 		}
 	}()
+	time.Sleep(time.Second)
 }
 
 func stopTestServer(t *testing.T, server *Server) {
