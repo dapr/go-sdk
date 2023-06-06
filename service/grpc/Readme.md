@@ -27,7 +27,7 @@ if err != nil {
 s := daprd.NewServiceWithListener(list)
 ```
 
-If existed grpc service, to keep it accessed by grpc stub, create grpc.Server manually:
+Dapr gRPC service supports using existed gRPC server with the help of `NewServiceWithGrpcServer`. You can use `RegisterGreeterServer` to add existed gRPC service either:
 
 ```go
 lis, err := net.Listen("tcp", port)
