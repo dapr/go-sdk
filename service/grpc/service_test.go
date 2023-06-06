@@ -93,7 +93,9 @@ func TestStopServerTimes(t *testing.T) {
 
 func TestStopServerBeforeStart(t *testing.T) {
 	server := getTestServer()
-	stopTestServer(t, server)
+	assert.NotNil(t, server)
+	err := server.Stop()
+	assert.NotNilf(t, err, "should return error when stopping server before starting")
 }
 
 func TestStartServerAfterStop(t *testing.T) {
