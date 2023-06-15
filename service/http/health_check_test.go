@@ -25,14 +25,14 @@ import (
 )
 
 func TestHealthCheckHandlerWithoutHandler(t *testing.T) {
-	s := newServer("", nil)
+	s := NewService("").(*Server)
 	err := s.AddHealthCheckHandler("/", nil)
 	assert.Errorf(t, err, "expected error adding nil health check handler")
 }
 
 func TestHealthCheckHandler(t *testing.T) {
 	t.Run("health check with http status 200", func(t *testing.T) {
-		s := newServer("", nil)
+		s := NewService("").(*Server)
 		err := s.AddHealthCheckHandler("/", func(ctx context.Context) (err error) {
 			return nil
 		})
@@ -49,7 +49,7 @@ func TestHealthCheckHandler(t *testing.T) {
 	})
 
 	t.Run("health check with http status 500", func(t *testing.T) {
-		s := newServer("", nil)
+		s := NewService("").(*Server)
 		err := s.AddHealthCheckHandler("/", func(ctx context.Context) (err error) {
 			fmt.Println("hello,owrl")
 			return errors.New("app is unhealthy")

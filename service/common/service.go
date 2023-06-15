@@ -20,10 +20,27 @@ import (
 	"github.com/dapr/go-sdk/actor/config"
 )
 
+type (
+	ServiceInvocationHandler func(ctx context.Context, in *InvocationEvent) (out *Content, err error)
+	TopicEventHandler        func(ctx context.Context, e *TopicEvent) (retry bool, err error)
+	BindingInvocationHandler func(ctx context.Context, in *BindingEvent) (out []byte, err error)
+	HealthCheckHandler       func(context.Context) error
+
+	ServiceProtocol string
+)
+
 const (
 	// AppAPITokenEnvVar is the environment variable for app api token.
 	AppAPITokenEnvVar = "APP_API_TOKEN"  /* #nosec */
 	APITokenKey       = "dapr-api-token" /* #nosec */
+
+	AppProtocolEnvVar = "APP_PROTOCOL"
+
+	ServiceProtocolHTTP  ServiceProtocol = "http"
+	ServiceProtocolHTTPS ServiceProtocol = "https"
+	ServiceProtocolH2C   ServiceProtocol = "h2c"
+	ServiceProtocolGRPC  ServiceProtocol = "grpc"
+	ServiceProtocolGRPCS ServiceProtocol = "grpcs"
 )
 
 // Service represents Dapr callback service.
@@ -49,10 +66,3 @@ type Service interface {
 	// Gracefully stops the previous started service
 	GracefulStop() error
 }
-
-type (
-	ServiceInvocationHandler func(ctx context.Context, in *InvocationEvent) (out *Content, err error)
-	TopicEventHandler        func(ctx context.Context, e *TopicEvent) (retry bool, err error)
-	BindingInvocationHandler func(ctx context.Context, in *BindingEvent) (out []byte, err error)
-	HealthCheckHandler       func(context.Context) error
-)

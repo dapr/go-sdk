@@ -26,7 +26,7 @@ dapr run --app-id serving \
          --dapr-http-port 3500 \
          --log-level debug \
          --resources-path ./config \
-         go run ./serving/http/main.go
+         go run ./serving/http/
 ```
 
 <!-- END_STEP -->
@@ -66,7 +66,7 @@ sleep: 15
 dapr run --app-id caller \
          --resources-path ./config \
          --log-level debug \
-         go run ./client/main.go
+         go run ./client/
 ```
 
 <!-- END_STEP -->
@@ -91,7 +91,7 @@ dapr run --app-id custom-grpc-client \
 		 -d ./config \
 		 --dapr-http-max-request-size 41 \
 		 --log-level debug \
-		 go run ./custom-grpc-client/main.go
+		 go run ./custom-grpc-client/
 ```
 
 <!-- END_STEP -->

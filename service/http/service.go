@@ -15,11 +15,23 @@ package http
 
 import (
 	"context"
+	"crypto/ecdsa"
+	"crypto/elliptic"
+	"crypto/rand"
+	"crypto/tls"
+	"crypto/x509"
+	"crypto/x509/pkix"
+	"encoding/pem"
+	"fmt"
+	"math/big"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/go-chi/chi/v5"
+	"golang.org/x/net/http2"
+	"golang.org/x/net/http2/h2c"
 
 	"github.com/dapr/go-sdk/actor"
 	"github.com/dapr/go-sdk/actor/config"
@@ -28,30 +40,116 @@ import (
 	"github.com/dapr/go-sdk/service/internal"
 )
 
+// Options for the server.
+type ServiceOptions struct {
+	// Existing HTTP Mux
+	Mux *chi.Mux
+	// Protocol to use
+	// Defaults to "http"
+	Protocol common.ServiceProtocol
+	// TLS certificate, if using HTTPS
+	TLSCert string
+	// TLS key, if using HTTPS
+	TLSKey string
+	// TLS configuration, if using HTTPS
+	// This is an alternative to specifying "TLSCert" and "TLSKey"
+	TLSConfig *tls.Config
+}
+
+func (o ServiceOptions) GetTLSConfig() (*tls.Config, error) {
+	// If there's a TLSConfig in the options, return that
+	if o.TLSConfig != nil {
+		return o.TLSConfig, nil
+	}
+
+	// Create a new tls.Config
+	conf := &tls.Config{
+		MinVersion: tls.VersionTLS12,
+	}
+
+	// Load a TLS certificate and key from PEM on disk
+	if o.TLSCert != "" && o.TLSKey != "" {
+		cert, err := tls.LoadX509KeyPair(o.TLSCert, o.TLSKey)
+		if err != nil {
+			return nil, fmt.Errorf("failed to load TLS certificate and key: %w", err)
+		}
+		conf.Certificates = []tls.Certificate{cert}
+	} else {
+		// Generate a self-signed TLS certificate
+		cert, err := generateSelfSignedCert()
+		if err != nil {
+			return nil, fmt.Errorf("failed to generate self-signed TLS certificate: %w", err)
+		}
+		conf.Certificates = []tls.Certificate{cert}
+	}
+
+	return conf, nil
+}
+
 // NewService creates new Service.
 func NewService(address string) common.Service {
-	return newServer(address, nil)
+	// Cannot error with these options
+	svc, _ := NewServiceWithOptions(address, ServiceOptions{})
+	return svc
 }
 
 // NewServiceWithMux creates new Service with existing http mux.
 func NewServiceWithMux(address string, mux *chi.Mux) common.Service {
-	return newServer(address, mux)
+	// Cannot error with these options
+	svc, _ := NewServiceWithOptions(address, ServiceOptions{
+		Mux: mux,
+	})
+	return svc
 }
 
-func newServer(address string, router *chi.Mux) *Server {
-	if router == nil {
-		router = chi.NewRouter()
+// NewServiceWithOptions creates a new Service with the given options.
+func NewServiceWithOptions(address string, opts ServiceOptions) (common.Service, error) {
+	if opts.Mux == nil {
+		opts.Mux = chi.NewRouter()
 	}
-	return &Server{
-		address: address,
-		httpServer: &http.Server{ //nolint:gosec
-			Addr:    address,
-			Handler: router,
-		},
-		mux:            router,
+	if opts.Protocol == "" {
+		// If there's no user-defined protocol, try reading from the APP_PROTOCOL env var
+		opts.Protocol = common.ServiceProtocol(os.Getenv(common.AppProtocolEnvVar))
+	}
+
+	srv := &Server{
+		address:        address,
+		mux:            opts.Mux,
 		topicRegistrar: make(internal.TopicRegistrar),
 		authToken:      os.Getenv(common.AppAPITokenEnvVar),
 	}
+
+	switch strings.ToLower(string(opts.Protocol)) {
+	case "http", "":
+		srv.httpServer = &http.Server{
+			Addr:              address,
+			Handler:           opts.Mux,
+			ReadHeaderTimeout: 30 * time.Second,
+		}
+	case "https":
+		tlsConfig, err := opts.GetTLSConfig()
+		if err != nil {
+			return nil, fmt.Errorf("failed to load TLS configuration: %w", err)
+		}
+		srv.httpServer = &http.Server{
+			Addr:              address,
+			Handler:           opts.Mux,
+			ReadHeaderTimeout: 30 * time.Second,
+			TLSConfig:         tlsConfig,
+		}
+		srv.useTLS = true
+	case "h2c":
+		h2s := &http2.Server{}
+		srv.httpServer = &http.Server{
+			Addr:              address,
+			Handler:           h2c.NewHandler(opts.Mux, h2s),
+			ReadHeaderTimeout: 30 * time.Second,
+		}
+	default:
+		return nil, fmt.Errorf("invalid protocol: %v", opts.Protocol)
+	}
+
+	return srv, nil
 }
 
 // Server is the HTTP server wrapping mux many Dapr helpers.
@@ -61,6 +159,7 @@ type Server struct {
 	httpServer     *http.Server
 	topicRegistrar internal.TopicRegistrar
 	authToken      string
+	useTLS         bool
 }
 
 // Deprecated: Use RegisterActorImplFactoryContext instead.
@@ -75,6 +174,11 @@ func (s *Server) RegisterActorImplFactoryContext(f actor.FactoryContext, opts ..
 // Start starts the HTTP handler. Blocks while serving.
 func (s *Server) Start() error {
 	s.registerBaseHandler()
+
+	if s.useTLS {
+		// Certs and keys are already included in the server
+		return s.httpServer.ListenAndServeTLS("", "")
+	}
 	return s.httpServer.ListenAndServe()
 }
 
@@ -105,4 +209,51 @@ func optionsHandler(h http.Handler) http.HandlerFunc {
 			h.ServeHTTP(w, r)
 		}
 	}
+}
+
+// Generates a self-signed certificate valid for 1 year
+func generateSelfSignedCert() (tls.Certificate, error) {
+	priv, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	if err != nil {
+		return tls.Certificate{}, fmt.Errorf("failed to generate private key: %w", err)
+	}
+
+	notBefore := time.Now()
+	notAfter := notBefore.Add(365 * 24 * time.Hour)
+
+	template := x509.Certificate{
+		SerialNumber:          big.NewInt(1),
+		Subject:               pkix.Name{CommonName: "localhost"},
+		NotBefore:             notBefore,
+		NotAfter:              notAfter,
+		KeyUsage:              x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature,
+		ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
+		BasicConstraintsValid: true,
+	}
+
+	derBytes, err := x509.CreateCertificate(rand.Reader, &template, &template, &priv.PublicKey, priv)
+	if err != nil {
+		return tls.Certificate{}, fmt.Errorf("failed to create certificate: %w", err)
+	}
+
+	certPEM := pem.EncodeToMemory(&pem.Block{
+		Type:  "CERTIFICATE",
+		Bytes: derBytes,
+	})
+
+	keyPEMBytes, err := x509.MarshalPKCS8PrivateKey(priv)
+	if err != nil {
+		return tls.Certificate{}, fmt.Errorf("failed to encode private key: %w", err)
+	}
+	keyPEM := pem.EncodeToMemory(&pem.Block{
+		Type:  "PRIVATE KEY",
+		Bytes: keyPEMBytes,
+	})
+
+	cert, err := tls.X509KeyPair(certPEM, keyPEM)
+	if err != nil {
+		return tls.Certificate{}, fmt.Errorf("failed to create TLS certificate: %w", err)
+	}
+
+	return cert, nil
 }
