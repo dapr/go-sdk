@@ -15,15 +15,8 @@ package http
 
 import (
 	"context"
-	"crypto/ecdsa"
-	"crypto/elliptic"
-	"crypto/rand"
 	"crypto/tls"
-	"crypto/x509"
-	"crypto/x509/pkix"
-	"encoding/pem"
 	"fmt"
-	"math/big"
 	"net/http"
 	"os"
 	"strings"
@@ -76,7 +69,7 @@ func (o ServiceOptions) GetTLSConfig() (*tls.Config, error) {
 		conf.Certificates = []tls.Certificate{cert}
 	} else {
 		// Generate a self-signed TLS certificate
-		cert, err := generateSelfSignedCert()
+		cert, err := common.GenerateSelfSignedCert()
 		if err != nil {
 			return nil, fmt.Errorf("failed to generate self-signed TLS certificate: %w", err)
 		}
@@ -209,51 +202,4 @@ func optionsHandler(h http.Handler) http.HandlerFunc {
 			h.ServeHTTP(w, r)
 		}
 	}
-}
-
-// Generates a self-signed certificate valid for 1 year
-func generateSelfSignedCert() (tls.Certificate, error) {
-	priv, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
-	if err != nil {
-		return tls.Certificate{}, fmt.Errorf("failed to generate private key: %w", err)
-	}
-
-	notBefore := time.Now()
-	notAfter := notBefore.Add(365 * 24 * time.Hour)
-
-	template := x509.Certificate{
-		SerialNumber:          big.NewInt(1),
-		Subject:               pkix.Name{CommonName: "localhost"},
-		NotBefore:             notBefore,
-		NotAfter:              notAfter,
-		KeyUsage:              x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature,
-		ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
-		BasicConstraintsValid: true,
-	}
-
-	derBytes, err := x509.CreateCertificate(rand.Reader, &template, &template, &priv.PublicKey, priv)
-	if err != nil {
-		return tls.Certificate{}, fmt.Errorf("failed to create certificate: %w", err)
-	}
-
-	certPEM := pem.EncodeToMemory(&pem.Block{
-		Type:  "CERTIFICATE",
-		Bytes: derBytes,
-	})
-
-	keyPEMBytes, err := x509.MarshalPKCS8PrivateKey(priv)
-	if err != nil {
-		return tls.Certificate{}, fmt.Errorf("failed to encode private key: %w", err)
-	}
-	keyPEM := pem.EncodeToMemory(&pem.Block{
-		Type:  "PRIVATE KEY",
-		Bytes: keyPEMBytes,
-	})
-
-	cert, err := tls.X509KeyPair(certPEM, keyPEM)
-	if err != nil {
-		return tls.Certificate{}, fmt.Errorf("failed to create TLS certificate: %w", err)
-	}
-
-	return cert, nil
 }
