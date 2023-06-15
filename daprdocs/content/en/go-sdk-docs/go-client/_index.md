@@ -155,6 +155,16 @@ if err := client.PublishEvent(ctx, "component-name", "topic-name", data); err !=
 }
 ```
 
+To publish multiple messages at once, the `PublishEvents` method can be used:
+
+```go
+events := []string{"event1", "event2", "event3"}
+res := client.PublishEvents(ctx, "component-name", "topic-name", events)
+if res.Error != nil {
+    panic(res.Error)
+}
+```
+
 For a full guide on pub/sub, visit [How-To: Publish & subscribe]({{< ref howto-publish-subscribe.md >}}).
 
 ### Output Bindings
