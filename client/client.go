@@ -22,6 +22,7 @@ import (
 	"net"
 	"os"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -305,7 +306,7 @@ func NewClientWithSocket(socket string) (client Client, err error) {
 	conn, err := grpc.Dial(
 		addr,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
-		grpc.WithUserAgent("dapr-sdk-go/"+version.SDKVersion),
+		grpc.WithUserAgent("dapr-sdk-go/"+strings.TrimSpace(version.SDKVersion)),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("error creating connection to '%s': %w", addr, err)
