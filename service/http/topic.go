@@ -67,7 +67,7 @@ type topicEventJSON struct {
 	PubsubName string `json:"pubsubname"`
 }
 
-func (in topicEventJSON) GetData() (data any, rawData []byte) {
+func (in topicEventJSON) getData() (data any, rawData []byte) {
 	var (
 		err error
 		v   any
@@ -265,7 +265,7 @@ func (s *Server) AddTopicEventHandler(sub *common.Subscription, fn common.TopicE
 				in.Topic = sub.Topic
 			}
 
-			data, rawData := in.GetData()
+			data, rawData := in.getData()
 			te := common.TopicEvent{
 				ID:              in.ID,
 				SpecVersion:     in.SpecVersion,
