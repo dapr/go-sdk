@@ -386,6 +386,36 @@ go func() {
 
 For a full guide on configuration, visit [How-To: Manage configuration from a store]({{< ref howto-manage-configuration.md >}}).
 
+### Cryptography
+
+With the Dapr client Go SDK, you can use the high-level `Encrypt` and `Decrypt` cryptography APIs to encrypt and decrypt files while working on a stream of data.
+
+To encrypt:
+
+```go
+// Encrypt the data using Dapr
+out, err := sdkClient.Encrypt(context.Background(), rf, dapr.EncryptOptions{
+	// These are the 3 required parameters
+	ComponentName: "mycryptocomponent",
+	KeyName:        "mykey",
+	Algorithm:     "RSA",
+})
+if err != nil {
+	panic(err)
+}
+```
+
+To decrypt:
+
+```go
+// Decrypt the data using Dapr
+out, err := sdkClient.Decrypt(context.Background(), rf, dapr.EncryptOptions{
+	// Only required option is the component name
+	ComponentName: "mycryptocomponent",
+})
+```
+
+For a full guide on cryptography, visit [How-To: Use the cryptography APIs]({{< ref howto-cryptography.md >}}).
 
 ## Related links
 [Go SDK Examples](https://github.com/dapr/go-sdk/tree/main/examples)
