@@ -142,7 +142,7 @@ meta := map[string]string{}
 err := testClient.ExecuteStateTransaction(ctx, store, meta, ops)
 ```
 
-Retrieve, fileter, and sort key/value data stored in your statestore using `QueryState`. 
+Retrieve, filter, and sort key/value data stored in your statestore using `QueryState`. 
 
 ```go
 // Define the query string
