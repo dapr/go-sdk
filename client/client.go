@@ -250,7 +250,7 @@ func NewClientWithAddress(address string) (client Client, err error) {
 	return NewClientWithAddressContext(context.Background(), address)
 }
 
-// NewClientWithAddress instantiates Dapr using specific address (including port).
+// NewClientWithAddressContext instantiates Dapr using specific address (including port).
 // Uses the provided context to create the connection.
 func NewClientWithAddressContext(ctx context.Context, address string) (client Client, err error) {
 	if address == "" {
