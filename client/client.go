@@ -22,6 +22,7 @@ import (
 	"net"
 	"os"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -266,7 +267,7 @@ func NewClientWithAddressContext(ctx context.Context, address string) (client Cl
 		ctx,
 		address,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
-		grpc.WithUserAgent("dapr-sdk-go/"+version.SDKVersion),
+		grpc.WithUserAgent(userAgent()),
 		grpc.WithBlock(),
 	)
 	cancel()
@@ -305,7 +306,7 @@ func NewClientWithSocket(socket string) (client Client, err error) {
 	conn, err := grpc.Dial(
 		addr,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
-		grpc.WithUserAgent("dapr-sdk-go/"+version.SDKVersion),
+		grpc.WithUserAgent(userAgent()),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("error creating connection to '%s': %w", addr, err)
@@ -380,4 +381,8 @@ func (c *GRPCClient) GrpcClient() pb.DaprClient {
 // GrpcClientConn returns the grpc.ClientConn object used by this client.
 func (c *GRPCClient) GrpcClientConn() *grpc.ClientConn {
 	return c.connection
+}
+
+func userAgent() string {
+	return "dapr-sdk-go/" + strings.TrimSpace(version.SDKVersion)
 }
