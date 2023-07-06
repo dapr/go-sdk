@@ -1,5 +1,5 @@
 /*
-Copyright 2021 The Dapr Authors
+Copyright 2023 The Dapr Authors
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -17,10 +17,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"log"
 	"net"
 	"os"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -51,9 +53,9 @@ const (
 
 var (
 	logger               = log.New(os.Stdout, "", 0)
+	lock                 = &sync.Mutex{}
 	_             Client = (*GRPCClient)(nil)
 	defaultClient Client
-	doOnce        sync.Once
 )
 
 // Client is the interface for Dapr client implementation.
@@ -132,7 +134,7 @@ type Client interface {
 	GetConfigurationItems(ctx context.Context, storeName string, keys []string, opts ...ConfigurationOpt) (map[string]*ConfigurationItem, error)
 
 	// SubscribeConfigurationItems can subscribe the change of configuration items by storeName and keys, and return subscription id
-	SubscribeConfigurationItems(ctx context.Context, storeName string, keys []string, handler ConfigurationHandleFunction, opts ...ConfigurationOpt) error
+	SubscribeConfigurationItems(ctx context.Context, storeName string, keys []string, handler ConfigurationHandleFunction, opts ...ConfigurationOpt) (string, error)
 
 	// UnsubscribeConfigurationItems can stop the subscription with target store's and id
 	UnsubscribeConfigurationItems(ctx context.Context, storeName string, id string, opts ...ConfigurationOpt) error
@@ -148,6 +150,14 @@ type Client interface {
 
 	// UnlockAlpha1 deletes unlocks a lock from a lock store.
 	UnlockAlpha1(ctx context.Context, storeName string, request *UnlockRequest) (*UnlockResponse, error)
+
+	// Encrypt data read from a stream, returning a readable stream that receives the encrypted data.
+	// This method returns an error if the initial call fails. Errors performed during the encryption are received by the out stream.
+	Encrypt(ctx context.Context, in io.Reader, opts EncryptOptions) (io.Reader, error)
+
+	// Decrypt data read from a stream, returning a readable stream that receives the decrypted data.
+	// This method returns an error if the initial call fails. Errors performed during the encryption are received by the out stream.
+	Decrypt(ctx context.Context, in io.Reader, opts DecryptOptions) (io.Reader, error)
 
 	// Shutdown the sidecar.
 	Shutdown(ctx context.Context) error
@@ -209,16 +219,21 @@ func NewClient() (client Client, err error) {
 	if port == "" {
 		port = daprPortDefault
 	}
-	var onceErr error
-	doOnce.Do(func() {
-		c, err := NewClientWithPort(port)
-		if err != nil {
-			onceErr = fmt.Errorf("error creating default client: %w", err)
-		}
-		defaultClient = c
-	})
+	if defaultClient != nil {
+		return defaultClient, nil
+	}
+	lock.Lock()
+	defer lock.Unlock()
+	if defaultClient != nil {
+		return defaultClient, nil
+	}
+	c, err := NewClientWithPort(port)
+	if err != nil {
+		return nil, fmt.Errorf("error creating default client: %w", err)
+	}
+	defaultClient = c
 
-	return defaultClient, onceErr
+	return defaultClient, nil
 }
 
 // NewClientWithPort instantiates Dapr using specific gRPC port.
@@ -235,7 +250,7 @@ func NewClientWithAddress(address string) (client Client, err error) {
 	return NewClientWithAddressContext(context.Background(), address)
 }
 
-// NewClientWithAddress instantiates Dapr using specific address (including port).
+// NewClientWithAddressContext instantiates Dapr using specific address (including port).
 // Uses the provided context to create the connection.
 func NewClientWithAddressContext(ctx context.Context, address string) (client Client, err error) {
 	if address == "" {
@@ -252,7 +267,7 @@ func NewClientWithAddressContext(ctx context.Context, address string) (client Cl
 		ctx,
 		address,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
-		grpc.WithUserAgent("dapr-sdk-go/"+version.SDKVersion),
+		grpc.WithUserAgent(userAgent()),
 		grpc.WithBlock(),
 	)
 	cancel()
@@ -291,7 +306,7 @@ func NewClientWithSocket(socket string) (client Client, err error) {
 	conn, err := grpc.Dial(
 		addr,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
-		grpc.WithUserAgent("dapr-sdk-go/"+version.SDKVersion),
+		grpc.WithUserAgent(userAgent()),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("error creating connection to '%s': %w", addr, err)
@@ -366,4 +381,8 @@ func (c *GRPCClient) GrpcClient() pb.DaprClient {
 // GrpcClientConn returns the grpc.ClientConn object used by this client.
 func (c *GRPCClient) GrpcClientConn() *grpc.ClientConn {
 	return c.connection
+}
+
+func userAgent() string {
+	return "dapr-sdk-go/" + strings.TrimSpace(version.SDKVersion)
 }

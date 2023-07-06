@@ -29,7 +29,7 @@ dapr run --app-id sub \
          --app-port 8080 \
          --dapr-http-port 3500 \
          --log-level debug \
-         --components-path ./config \
+         --resources-path ./config \
          go run sub/sub.go
 ```
 
@@ -50,7 +50,7 @@ export DAPR_PUBSUB_NAME=messages
 
 dapr run --app-id pub \
          --log-level debug \
-         --components-path ./config \
+         --resources-path ./config \
          go run pub/pub.go
 ```
 

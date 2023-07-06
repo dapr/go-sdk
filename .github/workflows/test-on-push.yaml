@@ -15,11 +15,11 @@ jobs:
       fail-fast: false
       matrix:
         gover:
-          - "1.18"
           - "1.19"
+          - "1.20"
     env:
       GOVER: ${{ matrix.gover }}
-      GOLANGCILINT_VER: v1.50.1
+      GOLANGCILINT_VER: v1.52.2
 
     steps:
 
@@ -53,3 +53,4 @@ jobs:
       with:
         version: ${{ env.GOLANGCILINT_VER }}
         skip-cache: true
+        args: --timeout=10m0s

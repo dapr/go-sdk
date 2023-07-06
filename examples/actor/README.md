@@ -29,7 +29,7 @@ dapr run --app-id actor-serving \
          --app-port 8080 \
          --dapr-http-port 3500 \
          --log-level debug \
-         --components-path ./config \
+         --resources-path ./config \
          go run ./serving/main.go
 ```
 
@@ -59,7 +59,7 @@ sleep: 40
 ```bash
 dapr run --app-id actor-client \
          --log-level debug \
-         --components-path ./config \
+         --resources-path ./config \
          go run ./client/main.go
 ```
 

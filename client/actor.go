@@ -19,6 +19,7 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"strconv"
 
 	anypb "github.com/golang/protobuf/ptypes/any"
 
@@ -26,6 +27,10 @@ import (
 	"github.com/dapr/go-sdk/actor/codec"
 	"github.com/dapr/go-sdk/actor/config"
 	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
+)
+
+const (
+	metadataKeyTTLInSeconds = "ttlInSeconds"
 )
 
 type InvokeActorRequest struct {
@@ -463,6 +468,7 @@ type ActorStateOperation struct {
 	OperationType string
 	Key           string
 	Value         []byte
+	TTLInSeconds  *int64
 }
 
 func (c *GRPCClient) SaveStateTransactionally(ctx context.Context, actorType, actorID string, operations []*ActorStateOperation) error {
@@ -477,12 +483,18 @@ func (c *GRPCClient) SaveStateTransactionally(ctx context.Context, actorType, ac
 	}
 	grpcOperations := make([]*pb.TransactionalActorStateOperation, 0)
 	for _, op := range operations {
+		var metadata map[string]string
+		if op.TTLInSeconds != nil {
+			metadata = make(map[string]string)
+			metadata[metadataKeyTTLInSeconds] = strconv.FormatInt(*op.TTLInSeconds, 10)
+		}
 		grpcOperations = append(grpcOperations, &pb.TransactionalActorStateOperation{
 			OperationType: op.OperationType,
 			Key:           op.Key,
 			Value: &anypb.Any{
 				Value: op.Value,
 			},
+			Metadata: metadata,
 		})
 	}
 	_, err := c.protoClient.ExecuteActorStateTransaction(c.withAuthToken(ctx), &pb.ExecuteActorStateTransactionRequest{

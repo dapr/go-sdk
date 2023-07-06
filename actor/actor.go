@@ -16,6 +16,7 @@ package actor
 import (
 	"context"
 	"sync"
+	"time"
 )
 
 // Client is the interface that should be impl by user's actor client.
@@ -205,8 +206,14 @@ type StateManagerContext interface {
 	Add(ctx context.Context, stateName string, value any) error
 	// Get is to get state store of @stateName with type @reply
 	Get(ctx context.Context, stateName string, reply any) error
-	// Set is to set new state store with @stateName and @value
+	// Set sets a state store with @stateName and @value.
 	Set(ctx context.Context, stateName string, value any) error
+	// SetWithTTL sets a state store with @stateName and @value, for the given
+	// TTL. After the TTL has passed, the value will no longer be available with
+	// `Get`. Always preferred over `Set`.
+	// NOTE: SetWithTTL is in feature preview as of v1.11, and only available
+	// with the `ActorStateTTL` feature enabled in Dapr.
+	SetWithTTL(ctx context.Context, stateName string, value any, ttl time.Duration) error
 	// Remove is to remove state store with @stateName
 	Remove(ctx context.Context, stateName string) error
 	// Contains is to check if state store contains @stateName

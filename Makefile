@@ -1,7 +1,7 @@
 RELEASE_VERSION  =v1.0.0-rc-3
 GDOC_PORT        =8888
 PROTO_ROOT       =https://raw.githubusercontent.com/dapr/dapr/master/dapr/proto/
-GO_COMPAT_VERSION=1.18
+GO_COMPAT_VERSION=1.19
 
 .PHONY: all
 all: help
@@ -19,7 +19,7 @@ test:
 			./...
 
 .PHONY: spell
-spell: ## Checks spelling across the entire project 
+spell: ## Checks spelling across the entire project
 	@command -v misspell > /dev/null 2>&1 || (cd tools && go get github.com/client9/misspell/cmd/misspell)
 	@misspell -locale US -error go=golang client/**/* examples/**/* service/**/* actor/**/* .
 
@@ -34,15 +34,15 @@ lint: ## Lints the entire project
 	golangci-lint run --timeout=3m
 
 .PHONY: tag
-tag: ## Creates release tag 
+tag: ## Creates release tag
 	git tag $(RELEASE_VERSION)
 	git push origin $(RELEASE_VERSION)
 
 .PHONY: clean
 clean: ## Cleans go and generated files in ./dapr/proto/
 	go clean
-	rm -fr ./dapr/proto/common/v1/*
-	rm -fr ./dapr/proto/runtime/v1/*
+	rm -fr ./dapr/proto/common/v1/*.pb.go
+	rm -fr ./dapr/proto/runtime/v1/*.pb.go
 
 .PHONY: help
 help: ## Display available commands

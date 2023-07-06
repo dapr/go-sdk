@@ -195,6 +195,7 @@ For a full guide on pub/sub, visit [How-To: Publish & subscribe]({{< ref howto-p
 
 ### Output Bindings
 
+
 The Dapr Go client SDK provides two methods to invoke an operation on a Dapr-defined binding. Dapr supports input, output, and bidirectional bindings.
 
 For simple, output-only binding:

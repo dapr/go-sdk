@@ -11,6 +11,7 @@
 <!-- STEP
 name: Run Configuration Client
 output_match_mode: substring
+match_order: none
 expected_stdout_lines:
   - '== APP == get config = myConfigValue'
   - '== APP == get updated config key = mySubscribeKey1, value = mySubscribeValue1'
@@ -33,7 +34,7 @@ dapr run --app-id configuration-api\
          --app-port 5005 \
          --dapr-http-port 3006 \
          --log-level debug \
-         --components-path ./config/ \
+         --resources-path ./config/ \
          go run ./main.go
 ```
 

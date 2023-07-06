@@ -25,7 +25,7 @@ dapr run --app-id serving \
          --app-port 8080 \
          --dapr-http-port 3500 \
          --log-level debug \
-         --components-path ./config \
+         --resources-path ./config \
          go run ./serving/http/main.go
 ```
 
@@ -39,7 +39,7 @@ dapr run --app-id serving \
          --app-port 50001 \
          --dapr-grpc-port 3500 \
          --log-level debug \
-         --components-path ./config \
+         --resources-path ./config \
          go run ./serving/grpc/main.go
 ```
 
@@ -64,7 +64,7 @@ sleep: 15
 
 ```bash
 dapr run --app-id caller \
-         --components-path ./config \
+         --resources-path ./config \
          --log-level debug \
          go run ./client/main.go
 ```

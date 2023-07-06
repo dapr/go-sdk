@@ -90,9 +90,24 @@ linters-settings:
     disable:
       - shadow
     disable-all: false
-  golint:
-    # minimal confidence for issues, default is 0.8
-    min-confidence: 0.8
+  revive:
+    max-open-files: 2048
+    # enable-all-rules: true
+    rules:
+      - name: cyclomatic
+        severity: warning
+        disabled: false
+        arguments: [20]
+      - name: argument-limit
+        severity: warning
+        disabled: false
+        arguments: [8]
+      - name: if-return
+        severity: warning
+        disabled: false
+      - name: unused-parameter
+        severity: warning
+        disabled: true
   gofmt:
     # simplify code: gofmt with `-s` option, true by default
     simplify: true
@@ -286,6 +301,7 @@ linters:
     - structcheck
     - varcheck
     - deadcode
+    - golint
 issues:
   exclude-rules:
     - path: .*_test.go
