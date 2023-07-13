@@ -3,7 +3,7 @@ module github.com/dapr/go-sdk
 go 1.19
 
 require (
-	github.com/go-chi/chi/v5 v5.0.8
+	github.com/go-chi/chi/v5 v5.0.10
 	github.com/golang/mock v1.6.0
 	github.com/golang/protobuf v1.5.3
 	github.com/google/uuid v1.3.0
