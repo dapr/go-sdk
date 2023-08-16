@@ -253,16 +253,24 @@ func NewClientWithAddress(address string) (client Client, err error) {
 // NewClientWithAddressContext instantiates Dapr using specific address (including port).
 // Uses the provided context to create the connection.
 func NewClientWithAddressContext(ctx context.Context, address string) (client Client, err error) {
-	if address == "" {
-		return nil, errors.New("empty address")
-	}
-	logger.Printf("dapr client initializing for: %s", address)
-
 	timeoutSeconds, err := getClientTimeoutSeconds()
 	if err != nil {
 		return nil, err
 	}
 	ctx, cancel := context.WithTimeout(ctx, time.Duration(timeoutSeconds)*time.Second)
+	defer cancel()
+	return NewClientWithAddressContextNoEnvTimeout(ctx, address)
+}
+
+// NewClientWithAddressContextNoEnvTimeout instantiates Dapr using specific address (including port).
+// Ignores the DAPR_GRPC_TIMEOUT_SECONDS environment variable and has no
+// default timeout.
+func NewClientWithAddressContextNoEnvTimeout(ctx context.Context, address string) (client Client, err error) {
+	if address == "" {
+		return nil, errors.New("empty address")
+	}
+	logger.Printf("dapr client initializing for: %s", address)
+
 	conn, err := grpc.DialContext(
 		ctx,
 		address,
@@ -270,7 +278,6 @@ func NewClientWithAddressContext(ctx context.Context, address string) (client Cl
 		grpc.WithUserAgent(userAgent()),
 		grpc.WithBlock(),
 	)
-	cancel()
 	if err != nil {
 		return nil, fmt.Errorf("error creating connection to '%s': %w", address, err)
 	}
