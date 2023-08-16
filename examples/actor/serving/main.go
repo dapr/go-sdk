@@ -45,6 +45,14 @@ func (t *TestActor) Type() string {
 	return "testActorType"
 }
 
+func (t *TestActor) Initialize(_ context.Context) {
+	fmt.Println("initialize")
+}
+
+func (t *TestActor) Shutdown(_ context.Context) {
+	fmt.Println("shutdown")
+}
+
 // user defined functions
 func (t *TestActor) StopTimer(ctx context.Context, req *api.TimerRequest) error {
 	return t.daprClient.UnregisterActorTimer(ctx, &dapr.UnregisterActorTimerRequest{

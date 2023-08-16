@@ -32,6 +32,12 @@ func (t *ActorImpl) Type() string {
 	return "testActorType"
 }
 
+func (t *ActorImpl) Initialize(_ context.Context) {
+}
+
+func (t *ActorImpl) Shutdown(_ context.Context) {
+}
+
 func (t *ActorImpl) Invoke(_ context.Context, req string) (string, error) {
 	return req, nil
 }
@@ -55,6 +61,12 @@ func (t *ActorImplContext) Type() string {
 	return "testActorType"
 }
 
+func (t *ActorImplContext) Initialize(_ context.Context) {
+}
+
+func (t *ActorImplContext) Shutdown(_ context.Context) {
+}
+
 func (t *ActorImplContext) Invoke(_ context.Context, req string) (string, error) {
 	return req, nil
 }
@@ -72,4 +84,10 @@ type NotReminderCalleeActor struct {
 
 func (t *NotReminderCalleeActor) Type() string {
 	return "testActorNotReminderCalleeType"
+}
+
+func (t *NotReminderCalleeActor) Initialize(_ context.Context) {
+}
+
+func (t *NotReminderCalleeActor) Shutdown(_ context.Context) {
 }
