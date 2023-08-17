@@ -22,8 +22,8 @@ import (
 
 	anypb "github.com/golang/protobuf/ptypes/any"
 
-	v1 "github.com/dapr/go-sdk/dapr/proto/common/v1"
-	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
+	v1 "github.com/dapr/dapr/pkg/proto/common/v1"
+	pb "github.com/dapr/dapr/pkg/proto/runtime/v1"
 )
 
 // DataContent the service invocation content.

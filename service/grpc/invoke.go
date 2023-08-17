@@ -21,7 +21,7 @@ import (
 	"github.com/golang/protobuf/ptypes/any"
 	"google.golang.org/grpc/metadata"
 
-	cpb "github.com/dapr/go-sdk/dapr/proto/common/v1"
+	cpb "github.com/dapr/dapr/pkg/proto/common/v1"
 	cc "github.com/dapr/go-sdk/service/common"
 )
 

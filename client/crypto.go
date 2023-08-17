@@ -22,8 +22,8 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/proto"
 
-	commonv1pb "github.com/dapr/go-sdk/dapr/proto/common/v1"
-	runtimev1pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
+	commonv1pb "github.com/dapr/dapr/pkg/proto/common/v1"
+	runtimev1pb "github.com/dapr/dapr/pkg/proto/runtime/v1"
 )
 
 // Encrypt data read from a stream, returning a readable stream that receives the encrypted data.
