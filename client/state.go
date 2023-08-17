@@ -21,8 +21,8 @@ import (
 
 	"github.com/golang/protobuf/ptypes/duration"
 
-	v1 "github.com/dapr/go-sdk/dapr/proto/common/v1"
-	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
+	v1 "github.com/dapr/dapr/pkg/proto/common/v1"
+	pb "github.com/dapr/dapr/pkg/proto/runtime/v1"
 )
 
 const (
