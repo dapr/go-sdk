@@ -166,11 +166,12 @@ func (m *DefaultActorManagerContext) InvokeMethod(ctx context.Context, actorID, 
 }
 
 // DeactivateActor removes actor from actor manager.
-func (m *DefaultActorManagerContext) DeactivateActor(_ context.Context, actorID string) actorErr.ActorErr {
-	_, ok := m.activeActors.Load(actorID)
+func (m *DefaultActorManagerContext) DeactivateActor(ctx context.Context, actorID string) actorErr.ActorErr {
+	actorContainer, ok := m.activeActors.Load(actorID)
 	if !ok {
 		return actorErr.ErrActorIDNotFound
 	}
+	actorContainer.(ActorContainerContext).GetActor().Shutdown(ctx)
 	m.activeActors.Delete(actorID)
 	return actorErr.Success
 }
