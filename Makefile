@@ -1,6 +1,5 @@
 RELEASE_VERSION  =v1.0.0-rc-3
 GDOC_PORT        =8888
-PROTO_ROOT       =https://raw.githubusercontent.com/dapr/dapr/master/dapr/proto/
 GO_COMPAT_VERSION=1.19
 
 .PHONY: all
@@ -37,12 +36,6 @@ lint: ## Lints the entire project
 tag: ## Creates release tag
 	git tag $(RELEASE_VERSION)
 	git push origin $(RELEASE_VERSION)
-
-.PHONY: clean
-clean: ## Cleans go and generated files in ./dapr/proto/
-	go clean
-	rm -fr ./dapr/proto/common/v1/*.pb.go
-	rm -fr ./dapr/proto/runtime/v1/*.pb.go
 
 .PHONY: help
 help: ## Display available commands
