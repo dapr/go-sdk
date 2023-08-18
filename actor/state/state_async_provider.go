@@ -114,6 +114,10 @@ func (d *DaprStateAsyncProvider) ApplyContext(ctx context.Context, actorType, ac
 // TODO(@laurence) the daprClient may be nil.
 func NewDaprStateAsyncProvider(daprClient client.Client) *DaprStateAsyncProvider {
 	stateSerializer, _ := codec.GetActorCodec(constant.DefaultSerializerType)
+	return NewDaprStateAsyncProviderWithSerializer(daprClient, stateSerializer)
+}
+
+func NewDaprStateAsyncProviderWithSerializer(daprClient client.Client, stateSerializer codec.Codec) *DaprStateAsyncProvider {
 	return &DaprStateAsyncProvider{
 		stateSerializer: stateSerializer,
 		daprClient:      daprClient,
