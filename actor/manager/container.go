@@ -80,6 +80,7 @@ func NewDefaultActorContainerContext(ctx context.Context, actorID string, impl a
 	daprClient, _ := dapr.NewClient()
 	// create state manager for this new actor
 	impl.SetStateManager(state.NewActorStateManagerContext(impl.Type(), actorID, state.NewDaprStateAsyncProviderWithSerializer(daprClient, serializer)))
+	impl.Initialize(ctx)
 	// save state of this actor
 	err := impl.SaveState(ctx)
 	if err != nil {
