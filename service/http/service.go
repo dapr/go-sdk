@@ -103,6 +103,8 @@ func (s *Server) Stop() error {
 }
 
 func (s *Server) GracefulStop() error {
+	s.GracefullShutdownActors()
+
 	return s.Stop()
 }
 
