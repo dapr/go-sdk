@@ -44,6 +44,7 @@ type ActorManagerContext interface {
 	DeactivateActor(ctx context.Context, actorID string) actorErr.ActorErr
 	InvokeReminder(ctx context.Context, actorID, reminderName string, params []byte) actorErr.ActorErr
 	InvokeTimer(ctx context.Context, actorID, timerName string, params []byte) actorErr.ActorErr
+	Shutdown(ctx context.Context)
 }
 
 // DefaultActorManagerContext is to manage one type of actor.
@@ -215,6 +216,13 @@ func (m *DefaultActorManagerContext) InvokeTimer(ctx context.Context, actorID, t
 	}
 	_, aerr = actorContainer.Invoke(ctx, timerParams.CallBack, timerParams.Data)
 	return aerr
+}
+
+func (m *DefaultActorManagerContext) Shutdown(ctx context.Context) {
+	m.activeActors.Range(func(key, value interface{}) bool {
+		value.(ActorContainerContext).GetActor().Shutdown(ctx)
+		return true
+	})
 }
 
 func getAbsctractMethodMap(rcvr interface{}) (map[string]*MethodType, error) {

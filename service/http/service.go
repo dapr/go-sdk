@@ -90,6 +90,14 @@ func (s *Server) GracefulStop() error {
 	return s.Stop()
 }
 
+func (s *Server) GracefullShutdownActors() error {
+	ctxShutDown, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	runtime.GetActorRuntimeInstanceContext().Shutdown(ctxShutDown)
+	return nil
+}
+
 func setOptions(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Methods", "POST,OPTIONS")

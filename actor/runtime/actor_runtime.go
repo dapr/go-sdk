@@ -125,6 +125,13 @@ func (r *ActorRunTimeContext) InvokeTimer(ctx context.Context, actorTypeName, ac
 	return mng.InvokeTimer(ctx, actorID, timerName, params)
 }
 
+func (r *ActorRunTimeContext) Shutdown(ctx context.Context) {
+	r.actorManagers.Range(func(key, value interface{}) bool {
+		value.(manager.ActorManagerContext).Shutdown(ctx)
+		return true
+	})
+}
+
 // Deprecated: use ActorRunTimeContext instead.
 func (r *ActorRunTime) RegisterActorFactory(f actor.Factory, opt ...config.Option) {
 	r.ctx.RegisterActorFactory(func() actor.ServerContext { return f().WithContext() }, opt...)
