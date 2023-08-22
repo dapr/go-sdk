@@ -103,17 +103,16 @@ func (s *Server) Stop() error {
 }
 
 func (s *Server) GracefulStop() error {
-	s.GracefullShutdownActors()
+	s.gracefulShutdownActors()
 
 	return s.Stop()
 }
 
-func (s *Server) GracefullShutdownActors() error {
+func (s *Server) gracefulShutdownActors() {
 	ctxShutDown, cancel := context.WithTimeout(context.Background(), s.actorShutdownTimeout)
 	defer cancel()
 
 	runtime.GetActorRuntimeInstanceContext().Shutdown(ctxShutDown)
-	return nil
 }
 
 func setOptions(w http.ResponseWriter, r *http.Request) {
