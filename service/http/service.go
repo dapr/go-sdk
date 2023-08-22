@@ -28,39 +28,55 @@ import (
 	"github.com/dapr/go-sdk/service/internal"
 )
 
+type ServiceOption func(srv *Server)
+
+func WithActorShutdownTimeout(timeout time.Duration) ServiceOption {
+	return func(srv *Server) {
+		srv.actorShutdownTimeout = timeout
+	}
+}
+
 // NewService creates new Service.
-func NewService(address string) common.Service {
-	return newServer(address, nil)
+func NewService(address string, opts ...ServiceOption) common.Service {
+	return newServer(address, nil, opts...)
 }
 
 // NewServiceWithMux creates new Service with existing http mux.
-func NewServiceWithMux(address string, mux *chi.Mux) common.Service {
-	return newServer(address, mux)
+func NewServiceWithMux(address string, mux *chi.Mux, opts ...ServiceOption) common.Service {
+	return newServer(address, mux, opts...)
 }
 
-func newServer(address string, router *chi.Mux) *Server {
+func newServer(address string, router *chi.Mux, opts ...ServiceOption) *Server {
 	if router == nil {
 		router = chi.NewRouter()
 	}
-	return &Server{
+	srv := &Server{
 		address: address,
 		httpServer: &http.Server{ //nolint:gosec
 			Addr:    address,
 			Handler: router,
 		},
-		mux:            router,
-		topicRegistrar: make(internal.TopicRegistrar),
-		authToken:      os.Getenv(common.AppAPITokenEnvVar),
+		mux:                  router,
+		topicRegistrar:       make(internal.TopicRegistrar),
+		authToken:            os.Getenv(common.AppAPITokenEnvVar),
+		actorShutdownTimeout: 5 * time.Second,
 	}
+
+	for _, opt := range opts {
+		opt(srv)
+	}
+
+	return srv
 }
 
 // Server is the HTTP server wrapping mux many Dapr helpers.
 type Server struct {
-	address        string
-	mux            *chi.Mux
-	httpServer     *http.Server
-	topicRegistrar internal.TopicRegistrar
-	authToken      string
+	address              string
+	mux                  *chi.Mux
+	httpServer           *http.Server
+	topicRegistrar       internal.TopicRegistrar
+	authToken            string
+	actorShutdownTimeout time.Duration
 }
 
 // Deprecated: Use RegisterActorImplFactoryContext instead.
@@ -91,7 +107,7 @@ func (s *Server) GracefulStop() error {
 }
 
 func (s *Server) GracefullShutdownActors() error {
-	ctxShutDown, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctxShutDown, cancel := context.WithTimeout(context.Background(), s.actorShutdownTimeout)
 	defer cancel()
 
 	runtime.GetActorRuntimeInstanceContext().Shutdown(ctxShutDown)
