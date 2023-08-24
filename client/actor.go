@@ -15,7 +15,6 @@ package client
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"reflect"
@@ -400,7 +399,7 @@ func (c *GRPCClient) makeCallProxyFunction(actor actor.Client, methodName string
 
 		var data []byte
 		if len(inIArr) > 0 {
-			data, err = json.Marshal(inIArr[0])
+			data, err = serializer.Marshal(inIArr[0])
 		}
 		if err != nil {
 			panic(err)
