@@ -338,6 +338,22 @@ func (s *testDaprServer) ExecuteStateTransaction(ctx context.Context, in *pb.Exe
 	return &empty.Empty{}, nil
 }
 
+func (s *testDaprServer) GetMetadata(ctx context.Context, req *empty.Empty) (metadata *pb.GetMetadataResponse, err error) {
+
+	resp := &pb.GetMetadataResponse{
+		Id:                uuid.NewString(),
+		ActiveActorsCount: []*pb.ActiveActorsCount{},
+		ExtendedMetadata:  map[string]string{"test_key": "test_value"},
+		Subscriptions:     []*pb.PubsubSubscription{},
+		HttpEndpoints:     []*pb.MetadataHTTPEndpoint{},
+	}
+	return resp, nil
+}
+
+func (s *testDaprServer) SetMetadata(ctx context.Context, req *pb.SetMetadataRequest) (*empty.Empty, error) {
+	return &empty.Empty{}, nil
+}
+
 func (s *testDaprServer) PublishEvent(ctx context.Context, req *pb.PublishEventRequest) (*empty.Empty, error) {
 	return &empty.Empty{}, nil
 }
