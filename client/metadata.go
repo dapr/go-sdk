@@ -2,6 +2,7 @@ package client
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
@@ -113,7 +114,7 @@ func (c *GRPCClient) GetMetadata(ctx context.Context) (metadata *GetMetadataResp
 // SetMetadata sets a value in the extended metadata of the sidecar
 func (c *GRPCClient) SetMetadata(ctx context.Context, key, value string) error {
 	if len(key) == 0 {
-		return fmt.Errorf("key is required")
+		return errors.New("a key is required")
 	}
 	req := &pb.SetMetadataRequest{
 		Key:   key,
