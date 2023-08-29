@@ -93,9 +93,9 @@ func (c *GRPCClient) GetMetadata(ctx context.Context) (metadata *GetMetadataResp
 			}
 		}
 		httpEndpoints := make([]*MetadataHTTPEndpoint, len(resp.HttpEndpoints))
-		for i, e := range resp.HttpEndpoints {
-			httpEndpoints[i] = &MetadataHTTPEndpoint{
-				Name: e.Name,
+		for e := range resp.HttpEndpoints {
+			httpEndpoints[e] = &MetadataHTTPEndpoint{
+				Name: resp.HttpEndpoints[e].Name,
 			}
 		}
 		metadata = &GetMetadataResponse{
@@ -108,7 +108,7 @@ func (c *GRPCClient) GetMetadata(ctx context.Context) (metadata *GetMetadataResp
 		}
 	}
 
-	return
+	return metadata, nil
 }
 
 // SetMetadata sets a value in the extended metadata of the sidecar
