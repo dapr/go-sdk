@@ -23,6 +23,7 @@ import (
 	anypb "github.com/golang/protobuf/ptypes/any"
 
 	"github.com/dapr/go-sdk/actor"
+	"github.com/dapr/go-sdk/actor/api"
 	"github.com/dapr/go-sdk/actor/codec"
 	"github.com/dapr/go-sdk/actor/config"
 	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
@@ -59,11 +60,19 @@ func (c *GRPCClient) InvokeActor(ctx context.Context, in *InvokeActorRequest) (o
 		return nil, errors.New("actor invocation actorID required")
 	}
 
+	var metadata map[string]string
+	id := api.ReentrancyIDFromContext(ctx)
+	if id != "" {
+		metadata = make(map[string]string)
+		metadata[api.ReentrancyIDKey] = id
+	}
+
 	req := &pb.InvokeActorRequest{
 		ActorType: in.ActorType,
 		ActorId:   in.ActorID,
 		Method:    in.Method,
 		Data:      in.Data,
+		Metadata:  metadata,
 	}
 
 	resp, err := c.protoClient.InvokeActor(c.withAuthToken(ctx), req)

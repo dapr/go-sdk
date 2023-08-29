@@ -22,6 +22,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
+	"github.com/dapr/go-sdk/actor/api"
 	actorErr "github.com/dapr/go-sdk/actor/error"
 	"github.com/dapr/go-sdk/actor/runtime"
 	"github.com/dapr/go-sdk/service/common"
@@ -154,7 +155,15 @@ func (s *Server) registerBaseHandler() {
 		actorID := chi.URLParam(r, "actorId")
 		methodName := chi.URLParam(r, "methodName")
 		reqData, _ := io.ReadAll(r.Body)
-		rspData, err := runtime.GetActorRuntimeInstanceContext().InvokeActorMethod(r.Context(), actorType, actorID, methodName, reqData)
+
+		ctx := r.Context()
+		for k, v := range r.Header {
+			if k == api.ReentrancyIDKey && len(v) > 0 {
+				ctx = api.ContextWithReentrancyID(ctx, v[0])
+			}
+		}
+
+		rspData, err := runtime.GetActorRuntimeInstanceContext().InvokeActorMethod(ctx, actorType, actorID, methodName, reqData)
 		if err == actorErr.ErrActorTypeNotFound {
 			w.WriteHeader(http.StatusNotFound)
 			return
