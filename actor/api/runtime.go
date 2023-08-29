@@ -13,10 +13,13 @@ limitations under the License.
 
 package api
 
+import "github.com/dapr/go-sdk/actor/config"
+
 type ActorRuntimeConfig struct {
-	RegisteredActorTypes   []string `json:"entities"`
-	ActorIdleTimeout       string   `json:"actorIdleTimeout"`
-	ActorScanInterval      string   `json:"actorScanInterval"`
-	DrainOngingCallTimeout string   `json:"drainOngoingCallTimeout"`
-	DrainBalancedActors    bool     `json:"drainRebalancedActors"`
+	RegisteredActorTypes   []string                 `json:"entities"`
+	ActorIdleTimeout       string                   `json:"actorIdleTimeout"`
+	ActorScanInterval      string                   `json:"actorScanInterval"`
+	DrainOngingCallTimeout string                   `json:"drainOngoingCallTimeout"`
+	DrainBalancedActors    bool                     `json:"drainRebalancedActors"`
+	Reentrancy             *config.ReentrancyConfig `json:"reentrancy"`
 }

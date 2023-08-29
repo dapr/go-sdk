@@ -18,6 +18,12 @@ import "github.com/dapr/go-sdk/actor/codec/constant"
 // ActorConfig is Actor's configuration struct.
 type ActorConfig struct {
 	SerializerType string
+	Reentrancy     *ReentrancyConfig
+}
+
+type ReentrancyConfig struct {
+	Enabled       bool `json:"enabled"`
+	MaxStackDepth int  `json:"maxStackDepth"`
 }
 
 // Option is option function of ActorConfig.
@@ -27,6 +33,13 @@ type Option func(config *ActorConfig)
 func WithSerializerName(serializerType string) Option {
 	return func(config *ActorConfig) {
 		config.SerializerType = serializerType
+	}
+}
+
+// WithReentrancy set reentrancy config of the actor as @reentrancyConfig.
+func WithReentrancy(reentrancyConfig *ReentrancyConfig) Option {
+	return func(config *ActorConfig) {
+		config.Reentrancy = reentrancyConfig
 	}
 }
 
