@@ -61,8 +61,8 @@ func (c *GRPCClient) InvokeActor(ctx context.Context, in *InvokeActorRequest) (o
 	}
 
 	var metadata map[string]string
-	id := api.ReentrancyIDFromContext(ctx)
-	if id != "" {
+	id, ok := api.ReentrancyIDFromContext(ctx)
+	if ok {
 		metadata = make(map[string]string)
 		metadata[api.ReentrancyIDKey] = id
 	}

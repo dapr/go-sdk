@@ -157,11 +157,8 @@ func (s *Server) registerBaseHandler() {
 		reqData, _ := io.ReadAll(r.Body)
 
 		ctx := r.Context()
-		for k, v := range r.Header {
-			if k == api.ReentrancyIDKey && len(v) > 0 {
-				ctx = api.ContextWithReentrancyID(ctx, v[0])
-			}
-		}
+		id := r.Header.Get(api.ReentrancyIDKey)
+		ctx = api.ContextWithReentrancyID(ctx, id)
 
 		rspData, err := runtime.GetActorRuntimeInstanceContext().InvokeActorMethod(ctx, actorType, actorID, methodName, reqData)
 		if err == actorErr.ErrActorTypeNotFound {
