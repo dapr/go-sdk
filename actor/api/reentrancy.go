@@ -13,13 +13,19 @@ limitations under the License.
 
 package api
 
-import "github.com/dapr/go-sdk/actor/config"
+import "context"
 
-type ActorRuntimeConfig struct {
-	RegisteredActorTypes   []string                 `json:"entities"`
-	ActorIdleTimeout       string                   `json:"actorIdleTimeout"`
-	ActorScanInterval      string                   `json:"actorScanInterval"`
-	DrainOngingCallTimeout string                   `json:"drainOngoingCallTimeout"`
-	DrainBalancedActors    bool                     `json:"drainRebalancedActors"`
-	Reentrancy             *config.ReentrancyConfig `json:"reentrancy"`
+const (
+	ReentrancyIDKey = "Dapr-Reentrancy-Id"
+)
+
+type reentrancyIDKey struct{}
+
+func ContextWithReentrancyID(ctx context.Context, id string) context.Context {
+	return context.WithValue(ctx, reentrancyIDKey{}, id)
+}
+
+func ReentrancyIDFromContext(ctx context.Context) (string, bool) {
+	id, ok := ctx.Value(reentrancyIDKey{}).(string)
+	return id, ok
 }

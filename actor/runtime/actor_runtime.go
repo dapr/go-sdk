@@ -73,6 +73,9 @@ func (r *ActorRunTimeContext) RegisterActorFactory(f actor.FactoryContext, opt .
 	conf := config.GetConfigFromOptions(opt...)
 	actType := f().Type()
 	r.config.RegisteredActorTypes = append(r.config.RegisteredActorTypes, actType)
+	if conf.Reentrancy != nil {
+		r.config.Reentrancy = conf.Reentrancy
+	}
 	mng, ok := r.actorManagers.Load(actType)
 	if !ok {
 		newMng, err := manager.NewDefaultActorManagerContext(conf.SerializerType)
