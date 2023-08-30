@@ -25,10 +25,7 @@ func ContextWithReentrancyID(ctx context.Context, id string) context.Context {
 	return context.WithValue(ctx, reentrancyIDKey{}, id)
 }
 
-func ReentrancyIDFromContext(ctx context.Context) string {
+func ReentrancyIDFromContext(ctx context.Context) (string, bool) {
 	id, ok := ctx.Value(reentrancyIDKey{}).(string)
-	if !ok {
-		return ""
-	}
-	return id
+	return id, ok
 }
