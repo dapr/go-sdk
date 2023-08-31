@@ -152,9 +152,10 @@ linters-settings:
             desc: "you must use github.com/cenkalti/backoff/v4"
   misspell:
     # Correct spellings using locale preferences for US or UK.
-    # Default is to use a neutral variety of English.
+    # Default is to use a neutral variety of English. (Do not specify a locale value)
     # Setting locale to US will correct the British spelling of 'colour' to 'color'.
-    locale: default
+    # locale:
+
     ignore-words:
       - someword
   lll:
