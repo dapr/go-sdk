@@ -61,10 +61,11 @@ func TestTopicRegistrarValidation(t *testing.T) {
 		},
 	}
 	for name, tt := range tests {
+		tt := tt // dereference loop var
 		t.Run(name, func(t *testing.T) {
 			m := internal.TopicRegistrar{}
 			if tt.err != "" {
-				assert.EqualError(t, m.AddSubscription(&tt.sub, tt.fn), tt.err)
+				assert.EqualError(t, m.AddSubscription(&tt.sub, tests[name].fn), tt.err)
 			} else {
 				assert.NoError(t, m.AddSubscription(&tt.sub, tt.fn))
 			}
