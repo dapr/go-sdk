@@ -7,7 +7,6 @@ on:
       - main
 
 jobs:
-
   build:
     name: Test on ${{ matrix.gover }}
     runs-on: ubuntu-latest
@@ -19,38 +18,37 @@ jobs:
           - "1.20"
     env:
       GOVER: ${{ matrix.gover }}
-      GOLANGCILINT_VER: v1.52.2
+      GOLANGCILINT_VER: v1.54.2
 
     steps:
+      - name: Setup
+        uses: actions/setup-go@v3
+        with:
+          go-version: ${{ env.GOVER }}
 
-    - name: Setup
-      uses: actions/setup-go@v3
-      with:
-        go-version: ${{ env.GOVER }}
+      - name: Checkout
+        uses: actions/checkout@v3
 
-    - name: Checkout
-      uses: actions/checkout@v3
+      - name: Cache
+        uses: actions/cache@v3
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
 
-    - name: Cache
-      uses: actions/cache@v3
-      with:
-        path: ~/go/pkg/mod
-        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-        restore-keys: |
-          ${{ runner.os }}-go-
+      - name: Tidy
+        run: make tidy
 
-    - name: Tidy
-      run: make tidy
+      - name: Test
+        run: make test
 
-    - name: Test
-      run: make test
+      - name: Cover
+        uses: codecov/codecov-action@v3
 
-    - name: Cover
-      uses: codecov/codecov-action@v3
-
-    - name: Lint
-      uses: golangci/golangci-lint-action@v3.3.1
-      with:
-        version: ${{ env.GOLANGCILINT_VER }}
-        skip-cache: true
-        args: --timeout=10m0s
+      - name: Lint
+        uses: golangci/golangci-lint-action@v3.3.1
+        with:
+          version: ${{ env.GOLANGCILINT_VER }}
+          skip-cache: true
+          args: --timeout=10m0s
