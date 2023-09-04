@@ -18,3 +18,6 @@ const DefaultSerializerType = "json"
 
 // YamlSerializerType is yaml actor invocation serialization type.
 const YamlSerializerType = "yaml"
+
+// ProtobufSerializerType is protobuf actor invocation serialization type.
+const ProtobufSerializerType = "protobuf"
