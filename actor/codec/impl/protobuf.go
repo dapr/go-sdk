@@ -3,6 +3,7 @@ package impl
 import (
 	"errors"
 	"fmt"
+	"reflect"
 
 	"github.com/dapr/go-sdk/actor/codec"
 	"github.com/dapr/go-sdk/actor/codec/constant"
@@ -31,10 +32,29 @@ func (c *ProtobufCodec) Marshal(v interface{}) ([]byte, error) {
 }
 
 func (c *ProtobufCodec) Unmarshal(data []byte, v interface{}) error {
+	vValue := reflect.ValueOf(v)
+
+	if vValue.Kind() != reflect.Pointer {
+		return fmt.Errorf("%w, got %T", ErrNotProtoMessage, v)
+	}
+
+	targetType := vValue.Elem().Type()
+
+	newObjValue := reflect.New(targetType.Elem())
+
+	v = newObjValue.Interface()
+
 	m, ok := v.(proto.Message)
 	if !ok {
 		return fmt.Errorf("%w, got %T", ErrNotProtoMessage, v)
 	}
 
-	return proto.Unmarshal(data, m)
+	err := proto.Unmarshal(data, m)
+	if err != nil {
+		return err
+	}
+
+	vValue.Elem().Set(newObjValue)
+
+	return nil
 }

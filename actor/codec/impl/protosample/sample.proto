@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package sample;
+
+option go_package = "github.com/dapr/go-sdk/actor/codec/impl/protosample;sample";
+
+message Sample {
+    int64 int_value = 1;
+    string str_value = 2;
+}
