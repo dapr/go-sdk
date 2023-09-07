@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	sample "github.com/dapr/go-sdk/actor/codec/impl/protosample"
+	"google.golang.org/protobuf/proto"
 )
 
 func TestProtobufMarshal(t *testing.T) {
@@ -24,5 +25,9 @@ func TestProtobufMarshal(t *testing.T) {
 	err = c.Unmarshal(bytes, &outObj)
 	if err != nil {
 		t.Errorf("unexpected error: %s", err.Error())
+	}
+
+	if !proto.Equal(inObj, outObj) {
+		t.Error("input and output does not match")
 	}
 }
