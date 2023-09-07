@@ -40,9 +40,14 @@ func (c *ProtobufCodec) Unmarshal(data []byte, v interface{}) error {
 
 	targetType := vValue.Elem().Type()
 
-	newObjValue := reflect.New(targetType.Elem())
+	newObj := false
+	var newObjValue reflect.Value
 
-	v = newObjValue.Interface()
+	if targetType.Kind() == reflect.Pointer {
+		newObjValue = reflect.New(targetType.Elem())
+		v = newObjValue.Interface()
+		newObj = true
+	}
 
 	m, ok := v.(proto.Message)
 	if !ok {
@@ -54,7 +59,9 @@ func (c *ProtobufCodec) Unmarshal(data []byte, v interface{}) error {
 		return err
 	}
 
-	vValue.Elem().Set(newObjValue)
+	if newObj {
+		vValue.Elem().Set(newObjValue)
+	}
 
 	return nil
 }

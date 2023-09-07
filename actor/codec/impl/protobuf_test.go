@@ -20,14 +20,29 @@ func TestProtobufMarshal(t *testing.T) {
 		t.Errorf("unexpected error: %s", err.Error())
 	}
 
-	var outObj *sample.Sample
+	t.Run("pass pointer to nil value pointer", func(t *testing.T) {
+		var outObj *sample.Sample
 
-	err = c.Unmarshal(bytes, &outObj)
-	if err != nil {
-		t.Errorf("unexpected error: %s", err.Error())
-	}
+		err = c.Unmarshal(bytes, &outObj)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+		}
 
-	if !proto.Equal(inObj, outObj) {
-		t.Error("input and output does not match")
-	}
+		if !proto.Equal(inObj, outObj) {
+			t.Error("input and output does not match")
+		}
+	})
+
+	t.Run("pass pointer to proto.Message struct", func(t *testing.T) {
+		outObj := &sample.Sample{}
+
+		err = c.Unmarshal(bytes, outObj)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err.Error())
+		}
+
+		if !proto.Equal(inObj, outObj) {
+			t.Error("input and output does not match")
+		}
+	})
 }
