@@ -196,7 +196,6 @@ func (s *Server) registerBaseHandler() {
 		if err != actorErr.Success {
 			w.WriteHeader(http.StatusInternalServerError)
 		}
-		w.WriteHeader(http.StatusOK)
 	}
 	s.mux.Put("/actors/{actorType}/{actorId}/method/remind/{reminderName}", fReminder)
 
