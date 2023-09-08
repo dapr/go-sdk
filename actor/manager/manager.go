@@ -15,7 +15,6 @@ package manager
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
@@ -181,7 +180,7 @@ func (m *DefaultActorManagerContext) InvokeReminder(ctx context.Context, actorID
 		return actorErr.ErrActorFactoryNotSet
 	}
 	reminderParams := &api.ActorReminderParams{}
-	if err := json.Unmarshal(params, reminderParams); err != nil {
+	if err := m.serializer.Unmarshal(params, reminderParams); err != nil {
 		log.Printf("failed to unmarshal reminder param, err: %v ", err)
 		return actorErr.ErrRemindersParamsInvalid
 	}
@@ -204,7 +203,7 @@ func (m *DefaultActorManagerContext) InvokeTimer(ctx context.Context, actorID, t
 		return actorErr.ErrActorFactoryNotSet
 	}
 	timerParams := &api.ActorTimerParam{}
-	if err := json.Unmarshal(params, timerParams); err != nil {
+	if err := m.serializer.Unmarshal(params, timerParams); err != nil {
 		log.Printf("failed to unmarshal reminder param, err: %v ", err)
 		return actorErr.ErrTimerParamsInvalid
 	}
