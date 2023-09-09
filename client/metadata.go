@@ -5,17 +5,18 @@ import (
 	"errors"
 	"fmt"
 
-	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
 	"google.golang.org/protobuf/types/known/emptypb"
+
+	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
 )
 
 type GetMetadataResponse struct {
-	Id                   string
+	ID                   string
 	ActiveActorsCount    []*MetadataActiveActorsCount
 	RegisteredComponents []*MetadataRegisteredComponents
 	ExtendedMetadata     map[string]string
 	Subscriptions        []*MetadataSubscription
-	HttpEndpoints        []*MetadataHTTPEndpoint
+	HTTPEndpoints        []*MetadataHTTPEndpoint
 }
 
 type MetadataActiveActorsCount struct {
@@ -99,12 +100,12 @@ func (c *GRPCClient) GetMetadata(ctx context.Context) (metadata *GetMetadataResp
 			}
 		}
 		metadata = &GetMetadataResponse{
-			Id:                   resp.Id,
+			ID:                   resp.Id,
 			ActiveActorsCount:    activeActorsCount,
 			RegisteredComponents: registeredComponents,
 			ExtendedMetadata:     resp.GetExtendedMetadata(),
 			Subscriptions:        subscriptions,
-			HttpEndpoints:        httpEndpoints,
+			HTTPEndpoints:        httpEndpoints,
 		}
 	}
 

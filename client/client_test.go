@@ -339,7 +339,6 @@ func (s *testDaprServer) ExecuteStateTransaction(ctx context.Context, in *pb.Exe
 }
 
 func (s *testDaprServer) GetMetadata(ctx context.Context, req *empty.Empty) (metadata *pb.GetMetadataResponse, err error) {
-
 	resp := &pb.GetMetadataResponse{
 		Id:                uuid.NewString(),
 		ActiveActorsCount: []*pb.ActiveActorsCount{},
