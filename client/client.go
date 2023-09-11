@@ -79,6 +79,12 @@ type Client interface {
 	// InvokeMethodWithCustomContent invokes app with custom content (struct + content type).
 	InvokeMethodWithCustomContent(ctx context.Context, appID, methodName, verb string, contentType string, content interface{}) (out []byte, err error)
 
+	// GetMetadata returns metadata from the sidecar.
+	GetMetadata(ctx context.Context) (metadata *GetMetadataResponse, err error)
+
+	// SetMetadata sets a key-value pair in the sidecar.
+	SetMetadata(ctx context.Context, key, value string) error
+
 	// PublishEvent publishes data onto topic in specific pubsub component.
 	PublishEvent(ctx context.Context, pubsubName, topicName string, data interface{}, opts ...PublishEventOption) error
 
