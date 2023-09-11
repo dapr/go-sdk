@@ -18,7 +18,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"net"
 	"os"
 	"strconv"
@@ -52,7 +51,6 @@ const (
 )
 
 var (
-	logger               = log.New(os.Stdout, "", 0)
 	lock                 = &sync.Mutex{}
 	_             Client = (*GRPCClient)(nil)
 	defaultClient Client
@@ -262,6 +260,9 @@ func NewClientWithAddressContext(ctx context.Context, address string) (client Cl
 	if address == "" {
 		return nil, errors.New("empty address")
 	}
+	if logger == nil {
+		createDefaultLogger()
+	}
 	logger.Printf("dapr client initializing for: %s", address)
 
 	timeoutSeconds, err := getClientTimeoutSeconds()
@@ -306,6 +307,9 @@ func getClientTimeoutSeconds() (int, error) {
 func NewClientWithSocket(socket string) (client Client, err error) {
 	if socket == "" {
 		return nil, errors.New("nil socket")
+	}
+	if logger == nil {
+		createDefaultLogger()
 	}
 	logger.Printf("dapr client initializing for: %s", socket)
 	addr := "unix://" + socket
