@@ -142,8 +142,44 @@ meta := map[string]string{}
 err := testClient.ExecuteStateTransaction(ctx, store, meta, ops)
 ```
 
-For a full guide on state management, visit [How-To: Save & get state]({{< ref howto-get-save-state.md >}}).
+Retrieve, filter, and sort key/value data stored in your statestore using `QueryState`. 
 
+```go
+// Define the query string
+query := `{
+	"filter": {
+		"EQ": { "value.Id": "1" }
+	},
+	"sort": [
+		{
+			"key": "value.Balance",
+			"order": "DESC"
+		}
+	]
+}`
+
+// Use the client to query the state
+queryResponse, err := c.QueryState(ctx, "querystore", query)
+if err != nil {
+	log.Fatal(err)
+}
+
+fmt.Printf("Got %d\n", len(queryResponse))
+
+for _, account := range queryResponse {
+	var data Account
+	err := account.Unmarshal(&data)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Printf("Account: %s has %f\n", data.ID, data.Balance)
+}
+```
+
+> **Note:** Query state API is currently in alpha
+
+For a full guide on state management, visit [How-To: Save & get state]({{< ref howto-get-save-state.md >}}).
 
 ### Publish Messages
 To publish data onto a topic, the Dapr Go client provides a simple method:
@@ -155,9 +191,20 @@ if err := client.PublishEvent(ctx, "component-name", "topic-name", data); err !=
 }
 ```
 
+To publish multiple messages at once, the `PublishEvents` method can be used:
+
+```go
+events := []string{"event1", "event2", "event3"}
+res := client.PublishEvents(ctx, "component-name", "topic-name", events)
+if res.Error != nil {
+    panic(res.Error)
+}
+```
+
 For a full guide on pub/sub, visit [How-To: Publish & subscribe]({{< ref howto-publish-subscribe.md >}}).
 
 ### Output Bindings
+
 
 The Dapr Go client SDK provides two methods to invoke an operation on a Dapr-defined binding. Dapr supports input, output, and bidirectional bindings.
 
@@ -183,6 +230,67 @@ out, err := client.InvokeBinding(ctx, in)
 
 For a full guide on output bindings, visit [How-To: Use bindings]({{< ref howto-bindings.md >}}).
 
+### Actors
+
+Use the Dapr Go client SDK to write actors.
+
+```go
+// MyActor represents an example actor type.
+type MyActor struct {
+	actors.Actor
+}
+
+// MyActorMethod is a method that can be invoked on MyActor.
+func (a *MyActor) MyActorMethod(ctx context.Context, req *actors.Message) (string, error) {
+	log.Printf("Received message: %s", req.Data)
+	return "Hello from MyActor!", nil
+}
+
+func main() {
+	// Create a Dapr client
+	daprClient, err := client.NewClient()
+	if err != nil {
+		log.Fatal("Error creating Dapr client: ", err)
+	}
+
+	// Register the actor type with Dapr
+	actors.RegisterActor(&MyActor{})
+
+	// Create an actor client
+	actorClient := actors.NewClient(daprClient)
+
+	// Create an actor ID
+	actorID := actors.NewActorID("myactor")
+
+	// Get or create the actor
+	err = actorClient.SaveActorState(context.Background(), "myactorstore", actorID, map[string]interface{}{"data": "initial state"})
+	if err != nil {
+		log.Fatal("Error saving actor state: ", err)
+	}
+
+	// Invoke a method on the actor
+	resp, err := actorClient.InvokeActorMethod(context.Background(), "myactorstore", actorID, "MyActorMethod", &actors.Message{Data: []byte("Hello from client!")})
+	if err != nil {
+		log.Fatal("Error invoking actor method: ", err)
+	}
+
+	log.Printf("Response from actor: %s", resp.Data)
+
+	// Wait for a few seconds before terminating
+	time.Sleep(5 * time.Second)
+
+	// Delete the actor
+	err = actorClient.DeleteActor(context.Background(), "myactorstore", actorID)
+	if err != nil {
+		log.Fatal("Error deleting actor: ", err)
+	}
+
+	// Close the Dapr client
+	daprClient.Close()
+}
+```
+
+For a full guide on actors, visit [the Actors building block documentation]({{< ref actors >}}).
 
 ### Secret Management
 

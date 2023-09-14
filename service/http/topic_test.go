@@ -25,12 +25,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/dapr/go-sdk/actor/api"
-	"github.com/dapr/go-sdk/actor/mock"
-
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/dapr/go-sdk/actor/api"
+	"github.com/dapr/go-sdk/actor/mock"
 	"github.com/dapr/go-sdk/service/common"
 	"github.com/dapr/go-sdk/service/internal"
 )

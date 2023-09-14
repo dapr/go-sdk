@@ -22,6 +22,7 @@ import (
 	"net"
 	"os"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -77,6 +78,12 @@ type Client interface {
 
 	// InvokeMethodWithCustomContent invokes app with custom content (struct + content type).
 	InvokeMethodWithCustomContent(ctx context.Context, appID, methodName, verb string, contentType string, content interface{}) (out []byte, err error)
+
+	// GetMetadata returns metadata from the sidecar.
+	GetMetadata(ctx context.Context) (metadata *GetMetadataResponse, err error)
+
+	// SetMetadata sets a key-value pair in the sidecar.
+	SetMetadata(ctx context.Context, key, value string) error
 
 	// PublishEvent publishes data onto topic in specific pubsub component.
 	PublishEvent(ctx context.Context, pubsubName, topicName string, data interface{}, opts ...PublishEventOption) error
@@ -249,7 +256,7 @@ func NewClientWithAddress(address string) (client Client, err error) {
 	return NewClientWithAddressContext(context.Background(), address)
 }
 
-// NewClientWithAddress instantiates Dapr using specific address (including port).
+// NewClientWithAddressContext instantiates Dapr using specific address (including port).
 // Uses the provided context to create the connection.
 func NewClientWithAddressContext(ctx context.Context, address string) (client Client, err error) {
 	if address == "" {
@@ -266,7 +273,7 @@ func NewClientWithAddressContext(ctx context.Context, address string) (client Cl
 		ctx,
 		address,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
-		grpc.WithUserAgent("dapr-sdk-go/"+version.SDKVersion),
+		grpc.WithUserAgent(userAgent()),
 		grpc.WithBlock(),
 	)
 	cancel()
@@ -305,7 +312,7 @@ func NewClientWithSocket(socket string) (client Client, err error) {
 	conn, err := grpc.Dial(
 		addr,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
-		grpc.WithUserAgent("dapr-sdk-go/"+version.SDKVersion),
+		grpc.WithUserAgent(userAgent()),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("error creating connection to '%s': %w", addr, err)
@@ -380,4 +387,8 @@ func (c *GRPCClient) GrpcClient() pb.DaprClient {
 // GrpcClientConn returns the grpc.ClientConn object used by this client.
 func (c *GRPCClient) GrpcClientConn() *grpc.ClientConn {
 	return c.connection
+}
+
+func userAgent() string {
+	return "dapr-sdk-go/" + strings.TrimSpace(version.SDKVersion)
 }

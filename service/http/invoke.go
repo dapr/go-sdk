@@ -54,14 +54,13 @@ func (s *Server) AddServiceInvocationHandler(route string, fn common.ServiceInvo
 				ContentType: r.Header.Get("Content-type"),
 			}
 
-			// check for post with no data
-			if r.ContentLength > 0 {
-				content, err := io.ReadAll(r.Body)
+			var err error
+			if r.Body != nil {
+				e.Data, err = io.ReadAll(r.Body)
 				if err != nil {
 					http.Error(w, err.Error(), http.StatusBadRequest)
 					return
 				}
-				e.Data = content
 			}
 
 			ctx := r.Context()
