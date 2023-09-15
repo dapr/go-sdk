@@ -175,9 +175,11 @@ func (s *Server) registerBaseHandler() {
 		err := runtime.GetActorRuntimeInstanceContext().Deactivate(r.Context(), actorType, actorID)
 		if err == actorErr.ErrActorTypeNotFound || err == actorErr.ErrActorIDNotFound {
 			w.WriteHeader(http.StatusNotFound)
+			return
 		}
 		if err != actorErr.Success {
 			w.WriteHeader(http.StatusInternalServerError)
+			return
 		}
 		w.WriteHeader(http.StatusOK)
 	}
@@ -192,11 +194,15 @@ func (s *Server) registerBaseHandler() {
 		err := runtime.GetActorRuntimeInstanceContext().InvokeReminder(r.Context(), actorType, actorID, reminderName, reqData)
 		if err == actorErr.ErrActorTypeNotFound {
 			w.WriteHeader(http.StatusNotFound)
+			return
 		}
 		if err != actorErr.Success {
 			w.WriteHeader(http.StatusInternalServerError)
+			return
 		}
+		w.WriteHeader(http.StatusOK)
 	}
+
 	s.mux.Put("/actors/{actorType}/{actorId}/method/remind/{reminderName}", fReminder)
 
 	// register actor timer invoke handler
@@ -208,9 +214,11 @@ func (s *Server) registerBaseHandler() {
 		err := runtime.GetActorRuntimeInstanceContext().InvokeTimer(r.Context(), actorType, actorID, timerName, reqData)
 		if err == actorErr.ErrActorTypeNotFound {
 			w.WriteHeader(http.StatusNotFound)
+			return
 		}
 		if err != actorErr.Success {
 			w.WriteHeader(http.StatusInternalServerError)
+			return
 		}
 		w.WriteHeader(http.StatusOK)
 	}
