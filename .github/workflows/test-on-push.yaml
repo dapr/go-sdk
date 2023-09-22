@@ -52,3 +52,6 @@ jobs:
           version: ${{ env.GOLANGCILINT_VER }}
           skip-cache: true
           args: --timeout=10m0s
+
+      - name: Run go mod tidy check diff
+        run: make modtidy check-diff
