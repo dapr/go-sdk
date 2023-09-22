@@ -49,7 +49,7 @@ func testErrorTopicFunc(ctx context.Context, e *common.TopicEvent) (retry bool, 
 }
 
 func TestEventNilHandler(t *testing.T) {
-	s := newServer("", nil)
+	s := NewService("").(*Server)
 	sub := &common.Subscription{
 		PubsubName: "messages",
 		Topic:      "test",
@@ -74,7 +74,7 @@ func TestEventHandler(t *testing.T) {
 		"data" : "eyJtZXNzYWdlIjoiaGVsbG8ifQ=="
 	}`
 
-	s := newServer("", nil)
+	s := NewService("").(*Server)
 
 	sub := &common.Subscription{
 		PubsubName: "messages",
@@ -238,7 +238,7 @@ func TestEventDataHandling(t *testing.T) {
 		},
 	}
 
-	s := newServer("", nil)
+	s := NewService("").(*Server)
 
 	sub := &common.Subscription{
 		PubsubName: "messages",
@@ -270,13 +270,13 @@ func TestEventDataHandling(t *testing.T) {
 }
 
 func TestHealthCheck(t *testing.T) {
-	s := newServer("", nil)
+	s := NewService("").(*Server)
 	s.registerBaseHandler()
 	makeRequest(t, s, "/healthz", "", http.MethodGet, http.StatusOK)
 }
 
 func TestActorConfig(t *testing.T) {
-	s := newServer("", nil)
+	s := NewService("").(*Server)
 	s.registerBaseHandler()
 	makeRequest(t, s, "/dapr/config", "", http.MethodGet, http.StatusOK)
 }
@@ -301,7 +301,7 @@ func TestActorHandler(t *testing.T) {
 		Period:   "5s",
 		Data:     []byte(`"hello"`),
 	})
-	s := newServer("", nil)
+	s := NewService("").(*Server)
 	s.registerBaseHandler()
 	// invoke actor API without target actor defined
 	makeRequest(t, s, "/actors/testActorType/testActorID/method/Invoke", "", http.MethodPut, http.StatusNotFound)
@@ -358,7 +358,7 @@ func makeEventRequest(t *testing.T, s *Server, route, data string, expectedStatu
 }
 
 func TestAddingInvalidEventHandlers(t *testing.T) {
-	s := newServer("", nil)
+	s := NewService("").(*Server)
 	err := s.AddTopicEventHandler(nil, testTopicFunc)
 	assert.Errorf(t, err, "expected error adding no sub event handler")
 
@@ -394,7 +394,7 @@ func TestRawPayloadDecode(t *testing.T) {
 		"data_base64" : "eyJtZXNzYWdlIjoiaGVsbG8ifQ=="
 	}`
 
-	s := newServer("", nil)
+	s := NewService("").(*Server)
 
 	sub3 := &common.Subscription{
 		PubsubName: "messages",

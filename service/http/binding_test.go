@@ -27,13 +27,13 @@ import (
 )
 
 func TestBindingHandlerWithoutHandler(t *testing.T) {
-	s := newServer("", nil)
+	s := NewService("").(*Server)
 	err := s.AddBindingInvocationHandler("/", nil)
 	assert.Errorf(t, err, "expected error adding nil binding event handler")
 }
 
 func TestBindingHandlerWithoutData(t *testing.T) {
-	s := newServer("", nil)
+	s := NewService("").(*Server)
 	err := s.AddBindingInvocationHandler("/", func(ctx context.Context, in *common.BindingEvent) (out []byte, err error) {
 		if in == nil {
 			return nil, errors.New("nil input")
@@ -57,7 +57,7 @@ func TestBindingHandlerWithoutData(t *testing.T) {
 
 func TestBindingHandlerWithData(t *testing.T) {
 	data := `{"name": "test"}`
-	s := newServer("", nil)
+	s := NewService("").(*Server)
 	err := s.AddBindingInvocationHandler("/", func(ctx context.Context, in *common.BindingEvent) (out []byte, err error) {
 		if in == nil {
 			return nil, errors.New("nil input")
@@ -89,7 +89,7 @@ func bindingHandlerFnWithError(ctx context.Context, in *common.BindingEvent) (ou
 
 func TestBindingHandlerErrors(t *testing.T) {
 	data := `{"name": "test"}`
-	s := newServer("", nil)
+	s := NewService("").(*Server)
 	err := s.AddBindingInvocationHandler("", bindingHandlerFn)
 	assert.Errorf(t, err, "expected error adding binding event handler sans route")
 

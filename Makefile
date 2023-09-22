@@ -10,6 +10,25 @@ all: help
 tidy: ## Updates the go modules
 	go mod tidy -compat=$(GO_COMPAT_VERSION)
 
+MODFILES := $(shell find . -name go.mod)
+
+define modtidy-target
+.PHONY: modtidy-$(1)
+modtidy-$(1):
+	cd $(shell dirname $(1)); CGO_ENABLED=$(CGO) go mod tidy -compat=1.20; cd -
+endef
+
+# Generate modtidy target action for each go.mod file
+$(foreach MODFILE,$(MODFILES),$(eval $(call modtidy-target,$(MODFILE))))
+
+# Enumerate all generated modtidy targets
+TIDY_MODFILES:=$(foreach ITEM,$(MODFILES),modtidy-$(ITEM))
+
+# Define modtidy-all action trigger to run make on all generated modtidy targets
+.PHONY: modtidy-all
+modtidy-all: $(TIDY_MODFILES)
+
+
 .PHONY: test
 test:
 	go test -count=1 \

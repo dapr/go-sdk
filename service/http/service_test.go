@@ -25,14 +25,14 @@ import (
 )
 
 func TestStoppingUnstartedService(t *testing.T) {
-	s := newServer("", nil)
+	s := NewService("").(*Server)
 	assert.NotNil(t, s)
 	err := s.Stop()
 	assert.NoError(t, err)
 }
 
 func TestStoppingStartedService(t *testing.T) {
-	s := newServer(":3333", nil)
+	s := NewService(":3333").(*Server)
 	assert.NotNil(t, s)
 
 	go func() {
@@ -46,7 +46,7 @@ func TestStoppingStartedService(t *testing.T) {
 }
 
 func TestStartingStoppedService(t *testing.T) {
-	s := newServer(":3333", nil)
+	s := NewService(":3333").(*Server)
 	assert.NotNil(t, s)
 	stopErr := s.Stop()
 	assert.NoError(t, stopErr)

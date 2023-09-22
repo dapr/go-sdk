@@ -31,7 +31,7 @@ import (
 )
 
 func TestInvocationHandlerWithoutHandler(t *testing.T) {
-	s := newServer("", nil)
+	s := NewService("").(*Server)
 	err := s.AddServiceInvocationHandler("/hello", nil)
 	assert.Errorf(t, err, "expected error adding event handler")
 
@@ -42,7 +42,7 @@ func TestInvocationHandlerWithoutHandler(t *testing.T) {
 func TestInvocationHandlerWithToken(t *testing.T) {
 	data := `{"name": "test", "data": hello}`
 	t.Setenv(common.AppAPITokenEnvVar, "app-dapr-token")
-	s := newServer("", nil)
+	s := NewService("").(*Server)
 	err := s.AddServiceInvocationHandler("/hello", func(ctx context.Context, in *common.InvocationEvent) (out *common.Content, err error) {
 		if in == nil || in.Data == nil || in.ContentType == "" {
 			err = errors.New("nil input")
@@ -76,7 +76,7 @@ func TestInvocationHandlerWithToken(t *testing.T) {
 
 func TestInvocationHandlerWithData(t *testing.T) {
 	data := `{"name": "test", "data": hello}`
-	s := newServer("", nil)
+	s := NewService("").(*Server)
 	err := s.AddServiceInvocationHandler("/hello", func(ctx context.Context, in *common.InvocationEvent) (out *common.Content, err error) {
 		if in == nil || in.Data == nil || in.ContentType == "" {
 			err = errors.New("nil input")
@@ -105,7 +105,7 @@ func TestInvocationHandlerWithData(t *testing.T) {
 }
 
 func TestInvocationHandlerWithoutInputData(t *testing.T) {
-	s := newServer("", nil)
+	s := NewService("").(*Server)
 	err := s.AddServiceInvocationHandler("/hello", func(ctx context.Context, in *common.InvocationEvent) (out *common.Content, err error) {
 		if in == nil || in.Data != nil {
 			err = errors.New("nil input")
@@ -134,7 +134,7 @@ func emptyInvocationFn(ctx context.Context, in *common.InvocationEvent) (out *co
 }
 
 func TestInvocationHandlerWithInvalidRoute(t *testing.T) {
-	s := newServer("", nil)
+	s := NewService("").(*Server)
 
 	err := s.AddServiceInvocationHandler("no-slash", emptyInvocationFn)
 	assert.NoErrorf(t, err, "adding no slash route event handler success")
@@ -153,7 +153,7 @@ func errorInvocationFn(ctx context.Context, in *common.InvocationEvent) (out *co
 }
 
 func TestInvocationHandlerWithError(t *testing.T) {
-	s := newServer("", nil)
+	s := NewService("").(*Server)
 
 	err := s.AddServiceInvocationHandler("/error", errorInvocationFn)
 	assert.NoErrorf(t, err, "adding error event handler success")
@@ -163,7 +163,7 @@ func TestInvocationHandlerWithError(t *testing.T) {
 
 func TestInvocationHandlerWithCustomizedHeader(t *testing.T) {
 	data := `{"name": "test", "data": "hello"}`
-	s := newServer("", nil)
+	s := NewService("").(*Server)
 	err := s.AddServiceInvocationHandler("/hello", func(ctx context.Context, in *common.InvocationEvent) (out *common.Content, err error) {
 		if in == nil || in.Data == nil || in.ContentType == "" {
 			err = errors.New("nil input")
