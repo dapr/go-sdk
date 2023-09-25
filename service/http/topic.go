@@ -140,7 +140,6 @@ func (s *Server) registerBaseHandler() {
 		data, err := runtime.GetActorRuntimeInstanceContext().GetJSONSerializedConfig()
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte(err.Error()))
 			return
 		}
 		w.WriteHeader(http.StatusOK)
