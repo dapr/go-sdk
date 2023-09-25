@@ -79,7 +79,7 @@ func (r *ActorRunTimeContext) RegisterActorFactory(f actor.FactoryContext, opt .
 	mng, ok := r.actorManagers.Load(actType)
 	if !ok {
 		newMng, err := manager.NewDefaultActorManagerContext(conf.SerializerType)
-		if err != actorErr.Success {
+		if err.Status != actorErr.Success {
 			return
 		}
 		newMng.RegisterActorImplFactory(f)
@@ -94,35 +94,35 @@ func (r *ActorRunTimeContext) GetJSONSerializedConfig() ([]byte, error) {
 	return data, err
 }
 
-func (r *ActorRunTimeContext) InvokeActorMethod(ctx context.Context, actorTypeName, actorID, actorMethod string, payload []byte) ([]byte, actorErr.ActorErr) {
+func (r *ActorRunTimeContext) InvokeActorMethod(ctx context.Context, actorTypeName, actorID, actorMethod string, payload []byte) ([]byte, actorErr.ActorError) {
 	mng, ok := r.actorManagers.Load(actorTypeName)
 	if !ok {
-		return nil, actorErr.ErrActorTypeNotFound
+		return nil, actorErr.ActorError{Status: actorErr.ErrActorTypeNotFound}
 	}
 	return mng.(manager.ActorManagerContext).InvokeMethod(ctx, actorID, actorMethod, payload)
 }
 
-func (r *ActorRunTimeContext) Deactivate(ctx context.Context, actorTypeName, actorID string) actorErr.ActorErr {
+func (r *ActorRunTimeContext) Deactivate(ctx context.Context, actorTypeName, actorID string) actorErr.ActorError {
 	targetManager, ok := r.actorManagers.Load(actorTypeName)
 	if !ok {
-		return actorErr.ErrActorTypeNotFound
+		return actorErr.ActorError{Status: actorErr.ErrActorTypeNotFound}
 	}
 	return targetManager.(manager.ActorManagerContext).DeactivateActor(ctx, actorID)
 }
 
-func (r *ActorRunTimeContext) InvokeReminder(ctx context.Context, actorTypeName, actorID, reminderName string, params []byte) actorErr.ActorErr {
+func (r *ActorRunTimeContext) InvokeReminder(ctx context.Context, actorTypeName, actorID, reminderName string, params []byte) actorErr.ActorError {
 	targetManager, ok := r.actorManagers.Load(actorTypeName)
 	if !ok {
-		return actorErr.ErrActorTypeNotFound
+		return actorErr.ActorError{Status: actorErr.ErrActorTypeNotFound}
 	}
 	mng := targetManager.(manager.ActorManagerContext)
 	return mng.InvokeReminder(ctx, actorID, reminderName, params)
 }
 
-func (r *ActorRunTimeContext) InvokeTimer(ctx context.Context, actorTypeName, actorID, timerName string, params []byte) actorErr.ActorErr {
+func (r *ActorRunTimeContext) InvokeTimer(ctx context.Context, actorTypeName, actorID, timerName string, params []byte) actorErr.ActorError {
 	targetManager, ok := r.actorManagers.Load(actorTypeName)
 	if !ok {
-		return actorErr.ErrActorTypeNotFound
+		return actorErr.ActorError{Status: actorErr.ErrActorTypeNotFound}
 	}
 	mng := targetManager.(manager.ActorManagerContext)
 	return mng.InvokeTimer(ctx, actorID, timerName, params)
@@ -146,21 +146,21 @@ func (r *ActorRunTime) GetJSONSerializedConfig() ([]byte, error) {
 }
 
 // Deprecated: use ActorRunTimeContext instead.
-func (r *ActorRunTime) InvokeActorMethod(actorTypeName, actorID, actorMethod string, payload []byte) ([]byte, actorErr.ActorErr) {
+func (r *ActorRunTime) InvokeActorMethod(actorTypeName, actorID, actorMethod string, payload []byte) ([]byte, actorErr.ActorError) {
 	return r.ctx.InvokeActorMethod(context.Background(), actorTypeName, actorID, actorMethod, payload)
 }
 
 // Deprecated: use ActorRunTimeContext instead.
-func (r *ActorRunTime) Deactivate(actorTypeName, actorID string) actorErr.ActorErr {
+func (r *ActorRunTime) Deactivate(actorTypeName, actorID string) actorErr.ActorError {
 	return r.ctx.Deactivate(context.Background(), actorTypeName, actorID)
 }
 
 // Deprecated: use ActorRunTimeContext instead.
-func (r *ActorRunTime) InvokeReminder(actorTypeName, actorID, reminderName string, params []byte) actorErr.ActorErr {
+func (r *ActorRunTime) InvokeReminder(actorTypeName, actorID, reminderName string, params []byte) actorErr.ActorError {
 	return r.ctx.InvokeReminder(context.Background(), actorTypeName, actorID, reminderName, params)
 }
 
 // Deprecated: use ActorRunTimeContext instead.
-func (r *ActorRunTime) InvokeTimer(actorTypeName, actorID, timerName string, params []byte) actorErr.ActorErr {
+func (r *ActorRunTime) InvokeTimer(actorTypeName, actorID, timerName string, params []byte) actorErr.ActorError {
 	return r.ctx.InvokeTimer(context.Background(), actorTypeName, actorID, timerName, params)
 }

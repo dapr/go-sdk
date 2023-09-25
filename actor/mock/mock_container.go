@@ -51,11 +51,11 @@ func (mr *MockActorContainerMockRecorder) GetActor() *gomock.Call {
 }
 
 // Invoke mocks base method.
-func (m *MockActorContainer) Invoke(methodName string, param []byte) ([]reflect.Value, error.ActorErr) {
+func (m *MockActorContainer) Invoke(methodName string, param []byte) ([]reflect.Value, error.ActorError) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Invoke", methodName, param)
 	ret0, _ := ret[0].([]reflect.Value)
-	ret1, _ := ret[1].(error.ActorErr)
+	ret1, _ := ret[1].(error.ActorError)
 	return ret0, ret1
 }
 
@@ -103,11 +103,11 @@ func (mr *MockActorContainerContextMockRecorder) GetActor() *gomock.Call {
 }
 
 // Invoke mocks base method.
-func (m *MockActorContainerContext) Invoke(ctx context.Context, methodName string, param []byte) ([]reflect.Value, error.ActorErr) {
+func (m *MockActorContainerContext) Invoke(ctx context.Context, methodName string, param []byte) ([]reflect.Value, error.ActorError) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Invoke", ctx, methodName, param)
 	ret0, _ := ret[0].([]reflect.Value)
-	ret1, _ := ret[1].(error.ActorErr)
+	ret1, _ := ret[1].(error.ActorError)
 	return ret0, ret1
 }
 

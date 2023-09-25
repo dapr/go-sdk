@@ -161,12 +161,13 @@ func (s *Server) registerBaseHandler() {
 		ctx = api.ContextWithReentrancyID(ctx, id)
 
 		rspData, err := runtime.GetActorRuntimeInstanceContext().InvokeActorMethod(ctx, actorType, actorID, methodName, reqData)
-		if err == actorErr.ErrActorTypeNotFound {
+		if err.Status == actorErr.ErrActorTypeNotFound {
 			w.WriteHeader(http.StatusNotFound)
 			return
 		}
-		if err != actorErr.Success {
+		if err.Status != actorErr.Success {
 			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte(err.Error()))
 			return
 		}
 		w.WriteHeader(http.StatusOK)
@@ -179,10 +180,10 @@ func (s *Server) registerBaseHandler() {
 		actorType := chi.URLParam(r, "actorType")
 		actorID := chi.URLParam(r, "actorId")
 		err := runtime.GetActorRuntimeInstanceContext().Deactivate(r.Context(), actorType, actorID)
-		if err == actorErr.ErrActorTypeNotFound || err == actorErr.ErrActorIDNotFound {
+		if err.Status == actorErr.ErrActorTypeNotFound || err.Status == actorErr.ErrActorIDNotFound {
 			w.WriteHeader(http.StatusNotFound)
 		}
-		if err != actorErr.Success {
+		if err.Status != actorErr.Success {
 			w.WriteHeader(http.StatusInternalServerError)
 		}
 		w.WriteHeader(http.StatusOK)
@@ -199,10 +200,10 @@ func (s *Server) registerBaseHandler() {
 		id := r.Header.Get(api.ReentrancyIDKey)
 		ctx = api.ContextWithReentrancyID(ctx, id)
 		err := runtime.GetActorRuntimeInstanceContext().InvokeReminder(ctx, actorType, actorID, reminderName, reqData)
-		if err == actorErr.ErrActorTypeNotFound {
+		if err.Status == actorErr.ErrActorTypeNotFound {
 			w.WriteHeader(http.StatusNotFound)
 		}
-		if err != actorErr.Success {
+		if err.Status != actorErr.Success {
 			w.WriteHeader(http.StatusInternalServerError)
 		}
 		w.WriteHeader(http.StatusOK)
@@ -219,10 +220,10 @@ func (s *Server) registerBaseHandler() {
 		id := r.Header.Get(api.ReentrancyIDKey)
 		ctx = api.ContextWithReentrancyID(ctx, id)
 		err := runtime.GetActorRuntimeInstanceContext().InvokeTimer(ctx, actorType, actorID, timerName, reqData)
-		if err == actorErr.ErrActorTypeNotFound {
+		if err.Status == actorErr.ErrActorTypeNotFound {
 			w.WriteHeader(http.StatusNotFound)
 		}
-		if err != actorErr.Success {
+		if err.Status != actorErr.Success {
 			w.WriteHeader(http.StatusInternalServerError)
 		}
 		w.WriteHeader(http.StatusOK)
