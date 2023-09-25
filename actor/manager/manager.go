@@ -154,7 +154,7 @@ func (m *DefaultActorManagerContext) InvokeMethod(ctx context.Context, actorID, 
 	}
 
 	if retErr != nil {
-		return nil, actorErr.ActorError{Status: actorErr.ErrActorInvokeFailed}
+		return nil, actorErr.ActorError{Status: actorErr.ErrActorInvokeFailed, Err: retErr.(error)}
 	}
 	rspData, err := m.serializer.Marshal(replyv.Interface())
 	if err != nil {
