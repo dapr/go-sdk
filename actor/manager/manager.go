@@ -32,18 +32,18 @@ import (
 
 type ActorManager interface {
 	RegisterActorImplFactory(f actor.Factory)
-	InvokeMethod(actorID, methodName string, request []byte) ([]byte, actorErr.ActorErr)
-	DeactivateActor(actorID string) actorErr.ActorErr
-	InvokeReminder(actorID, reminderName string, params []byte) actorErr.ActorErr
-	InvokeTimer(actorID, timerName string, params []byte) actorErr.ActorErr
+	InvokeMethod(actorID, methodName string, request []byte) ([]byte, actorErr.ActorError)
+	DeactivateActor(actorID string) actorErr.ActorError
+	InvokeReminder(actorID, reminderName string, params []byte) actorErr.ActorError
+	InvokeTimer(actorID, timerName string, params []byte) actorErr.ActorError
 }
 
 type ActorManagerContext interface {
 	RegisterActorImplFactory(f actor.FactoryContext)
-	InvokeMethod(ctx context.Context, actorID, methodName string, request []byte) ([]byte, actorErr.ActorErr)
-	DeactivateActor(ctx context.Context, actorID string) actorErr.ActorErr
-	InvokeReminder(ctx context.Context, actorID, reminderName string, params []byte) actorErr.ActorErr
-	InvokeTimer(ctx context.Context, actorID, timerName string, params []byte) actorErr.ActorErr
+	InvokeMethod(ctx context.Context, actorID, methodName string, request []byte) ([]byte, actorErr.ActorError)
+	DeactivateActor(ctx context.Context, actorID string) actorErr.ActorError
+	InvokeReminder(ctx context.Context, actorID, reminderName string, params []byte) actorErr.ActorError
+	InvokeTimer(ctx context.Context, actorID, timerName string, params []byte) actorErr.ActorError
 	Shutdown(ctx context.Context)
 }
 
@@ -66,7 +66,7 @@ type DefaultActorManager struct {
 }
 
 // Deprecated: use DefaultActorManagerContext instead.
-func NewDefaultActorManager(serializerType string) (ActorManager, actorErr.ActorErr) {
+func NewDefaultActorManager(serializerType string) (ActorManager, actorErr.ActorError) {
 	ctx, err := NewDefaultActorManagerContext(serializerType)
 	return &DefaultActorManager{ctx: ctx}, err
 }
@@ -77,33 +77,33 @@ func (m *DefaultActorManager) RegisterActorImplFactory(f actor.Factory) {
 }
 
 // Deprecated: use DefaultActorManagerContext instead.
-func (m *DefaultActorManager) InvokeMethod(actorID, methodName string, request []byte) ([]byte, actorErr.ActorErr) {
+func (m *DefaultActorManager) InvokeMethod(actorID, methodName string, request []byte) ([]byte, actorErr.ActorError) {
 	return m.ctx.InvokeMethod(context.Background(), actorID, methodName, request)
 }
 
 // Deprecated: use DefaultActorManagerContext instead.
-func (m *DefaultActorManager) DeactivateActor(actorID string) actorErr.ActorErr {
+func (m *DefaultActorManager) DeactivateActor(actorID string) actorErr.ActorError {
 	return m.ctx.DeactivateActor(context.Background(), actorID)
 }
 
 // Deprecated: use DefaultActorManagerContext instead.
-func (m *DefaultActorManager) InvokeReminder(actorID, reminderName string, params []byte) actorErr.ActorErr {
+func (m *DefaultActorManager) InvokeReminder(actorID, reminderName string, params []byte) actorErr.ActorError {
 	return m.ctx.InvokeReminder(context.Background(), actorID, reminderName, params)
 }
 
 // Deprecated: use DefaultActorManagerContext instead.
-func (m *DefaultActorManager) InvokeTimer(actorID, timerName string, params []byte) actorErr.ActorErr {
+func (m *DefaultActorManager) InvokeTimer(actorID, timerName string, params []byte) actorErr.ActorError {
 	return m.ctx.InvokeTimer(context.Background(), actorID, timerName, params)
 }
 
-func NewDefaultActorManagerContext(serializerType string) (ActorManagerContext, actorErr.ActorErr) {
+func NewDefaultActorManagerContext(serializerType string) (ActorManagerContext, actorErr.ActorError) {
 	serializer, err := codec.GetActorCodec(serializerType)
 	if err != nil {
-		return nil, actorErr.ErrActorSerializeNoFound
+		return nil, actorErr.ActorError{Status: actorErr.ErrActorSerializeNoFound, Err: err}
 	}
 	return &DefaultActorManagerContext{
 		serializer: serializer,
-	}, actorErr.Success
+	}, actorErr.ActorError{Status: actorErr.Success}
 }
 
 // RegisterActorImplFactory registers the action factory f.
@@ -112,35 +112,35 @@ func (m *DefaultActorManagerContext) RegisterActorImplFactory(f actor.FactoryCon
 }
 
 // getAndCreateActorContainerIfNotExist will.
-func (m *DefaultActorManagerContext) getAndCreateActorContainerIfNotExist(ctx context.Context, actorID string) (ActorContainerContext, actorErr.ActorErr) {
+func (m *DefaultActorManagerContext) getAndCreateActorContainerIfNotExist(ctx context.Context, actorID string) (ActorContainerContext, actorErr.ActorError) {
 	val, ok := m.activeActors.Load(actorID)
 	if !ok {
 		newContainer, aerr := NewDefaultActorContainerContext(ctx, actorID, m.factory(), m.serializer)
-		if aerr != actorErr.Success {
+		if aerr.Status != actorErr.Success {
 			return nil, aerr
 		}
 		m.activeActors.Store(actorID, newContainer)
 		val, _ = m.activeActors.Load(actorID)
 	}
-	return val.(ActorContainerContext), actorErr.Success
+	return val.(ActorContainerContext), actorErr.ActorError{Status: actorErr.Success}
 }
 
 // InvokeMethod to invoke local function by @actorID, @methodName and @request request param.
-func (m *DefaultActorManagerContext) InvokeMethod(ctx context.Context, actorID, methodName string, request []byte) ([]byte, actorErr.ActorErr) {
+func (m *DefaultActorManagerContext) InvokeMethod(ctx context.Context, actorID, methodName string, request []byte) ([]byte, actorErr.ActorError) {
 	if m.factory == nil {
-		return nil, actorErr.ErrActorFactoryNotSet
+		return nil, actorErr.ActorError{Status: actorErr.ErrActorFactoryNotSet}
 	}
 
 	actorContainer, aerr := m.getAndCreateActorContainerIfNotExist(ctx, actorID)
-	if aerr != actorErr.Success {
+	if aerr.Status != actorErr.Success {
 		return nil, aerr
 	}
 	returnValue, aerr := actorContainer.Invoke(ctx, methodName, request)
-	if aerr != actorErr.Success {
+	if aerr.Status != actorErr.Success {
 		return nil, aerr
 	}
 	if len(returnValue) == 1 {
-		return nil, actorErr.Success
+		return nil, actorErr.ActorError{Status: actorErr.Success}
 	}
 
 	var (
@@ -154,64 +154,64 @@ func (m *DefaultActorManagerContext) InvokeMethod(ctx context.Context, actorID, 
 	}
 
 	if retErr != nil {
-		return nil, actorErr.ErrActorInvokeFailed
+		return nil, actorErr.ActorError{Status: actorErr.ErrActorInvokeFailed, Err: retErr.(error)}
 	}
 	rspData, err := m.serializer.Marshal(replyv.Interface())
 	if err != nil {
-		return nil, actorErr.ErrActorMethodSerializeFailed
+		return nil, actorErr.ActorError{Status: actorErr.ErrActorMethodSerializeFailed, Err: err}
 	}
 	if err := actorContainer.GetActor().SaveState(ctx); err != nil {
-		return nil, actorErr.ErrSaveStateFailed
+		return nil, actorErr.ActorError{Status: actorErr.ErrSaveStateFailed, Err: err}
 	}
-	return rspData, actorErr.Success
+	return rspData, actorErr.ActorError{Status: actorErr.Success}
 }
 
 // DeactivateActor removes actor from actor manager.
-func (m *DefaultActorManagerContext) DeactivateActor(ctx context.Context, actorID string) actorErr.ActorErr {
+func (m *DefaultActorManagerContext) DeactivateActor(ctx context.Context, actorID string) actorErr.ActorError {
 	actorContainer, ok := m.activeActors.Load(actorID)
 	if !ok {
-		return actorErr.ErrActorIDNotFound
+		return actorErr.ActorError{Status: actorErr.ErrActorIDNotFound}
 	}
 	actorContainer.(ActorContainerContext).GetActor().Shutdown(ctx)
 	m.activeActors.Delete(actorID)
-	return actorErr.Success
+	return actorErr.ActorError{Status: actorErr.Success}
 }
 
 // InvokeReminder invoke reminder function with given params.
-func (m *DefaultActorManagerContext) InvokeReminder(ctx context.Context, actorID, reminderName string, params []byte) actorErr.ActorErr {
+func (m *DefaultActorManagerContext) InvokeReminder(ctx context.Context, actorID, reminderName string, params []byte) actorErr.ActorError {
 	if m.factory == nil {
-		return actorErr.ErrActorFactoryNotSet
+		return actorErr.ActorError{Status: actorErr.ErrActorFactoryNotSet}
 	}
 	reminderParams := &api.ActorReminderParams{}
 	if err := json.Unmarshal(params, reminderParams); err != nil {
 		log.Printf("failed to unmarshal reminder param, err: %v ", err)
-		return actorErr.ErrRemindersParamsInvalid
+		return actorErr.ActorError{Status: actorErr.ErrRemindersParamsInvalid, Err: err}
 	}
 	actorContainer, aerr := m.getAndCreateActorContainerIfNotExist(ctx, actorID)
-	if aerr != actorErr.Success {
+	if aerr.Status != actorErr.Success {
 		return aerr
 	}
 
 	targetActor, ok := actorContainer.GetActor().(actor.ReminderCallee)
 	if !ok {
-		return actorErr.ErrReminderFuncUndefined
+		return actorErr.ActorError{Status: actorErr.ErrReminderFuncUndefined}
 	}
 	targetActor.ReminderCall(reminderName, reminderParams.Data, reminderParams.DueTime, reminderParams.Period)
-	return actorErr.Success
+	return actorErr.ActorError{Status: actorErr.Success}
 }
 
 // InvokeTimer invoke timer callback function with given params.
-func (m *DefaultActorManagerContext) InvokeTimer(ctx context.Context, actorID, timerName string, params []byte) actorErr.ActorErr {
+func (m *DefaultActorManagerContext) InvokeTimer(ctx context.Context, actorID, timerName string, params []byte) actorErr.ActorError {
 	if m.factory == nil {
-		return actorErr.ErrActorFactoryNotSet
+		return actorErr.ActorError{Status: actorErr.ErrActorFactoryNotSet}
 	}
 	timerParams := &api.ActorTimerParam{}
 	if err := json.Unmarshal(params, timerParams); err != nil {
 		log.Printf("failed to unmarshal reminder param, err: %v ", err)
-		return actorErr.ErrTimerParamsInvalid
+		return actorErr.ActorError{Status: actorErr.ErrTimerParamsInvalid, Err: err}
 	}
 	actorContainer, aerr := m.getAndCreateActorContainerIfNotExist(ctx, actorID)
-	if aerr != actorErr.Success {
+	if aerr.Status != actorErr.Success {
 		return aerr
 	}
 	_, aerr = actorContainer.Invoke(ctx, timerParams.CallBack, timerParams.Data)
