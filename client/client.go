@@ -142,8 +142,8 @@ type Client interface {
 	// SubscribeConfigurationItems can subscribe the change of configuration items by storeName and keys, and return subscription id
 	SubscribeConfigurationItems(ctx context.Context, storeName string, keys []string, handler ConfigurationHandleFunction, opts ...ConfigurationOpt) (string, error)
 
-	// This function calls UnsubscribeConfiguration which is deprecated and exists for backwards-compatibility only
-	// The unsubscribe occurs when closing the subscription stream
+	// UnsubscribeConfigurationItems stops the subscription with target store's and ID.
+	// Deprecated: Closing the `SubscribeConfigurationItems` stream (closing the given context) will unsubscribe the client and should be used in favor of `UnsubscribeConfigurationItems`.
 	// UnsubscribeConfigurationItems can stop the subscription with target store's and id
 	UnsubscribeConfigurationItems(ctx context.Context, storeName string, id string, opts ...ConfigurationOpt) error
 
