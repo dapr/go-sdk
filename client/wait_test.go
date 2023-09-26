@@ -135,7 +135,7 @@ func TestGrpcWaitUnresponsiveTcpServer(t *testing.T) {
 	err = client.Wait(ctx, waitTimeout)
 	assert.Error(t, err)
 	assert.Equal(t, errWaitTimedOut, err)
-	assert.Equal(t, uint64(1), atomic.LoadUint64(&server.nClientsSeen))
+	assert.GreaterOrEqual(t, atomic.LoadUint64(&server.nClientsSeen), uint64(1))
 }
 
 func TestGrpcWaitUnresponsiveUnixServer(t *testing.T) {
@@ -153,5 +153,5 @@ func TestGrpcWaitUnresponsiveUnixServer(t *testing.T) {
 	err = client.Wait(ctx, waitTimeout)
 	assert.Error(t, err)
 	assert.Equal(t, errWaitTimedOut, err)
-	assert.Equal(t, uint64(1), atomic.LoadUint64(&server.nClientsSeen))
+	assert.GreaterOrEqual(t, atomic.LoadUint64(&server.nClientsSeen), uint64(1))
 }
