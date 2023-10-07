@@ -11,10 +11,10 @@ import (
 )
 
 var (
-	errCommentBodyEmpty    = errors.New("comment body is empty")
-	errIssueClosed         = errors.New("issue is closed")
-	errUserAlreadyAssigned = errors.New("user already assigned")
-	errUnauthorizedClient  = errors.New("possibly unauthorized client issue")
+	errCommentBodyEmpty     = errors.New("comment body is empty")
+	errIssueClosed          = errors.New("issue is closed")
+	errIssueAlreadyAssigned = errors.New("issue is already assigned")
+	errUnauthorizedClient   = errors.New("possibly unauthorized client issue")
 )
 
 type issueInterface interface {
@@ -77,11 +77,11 @@ func (b *Bot) AssignIssueToCommenter(event Event) (string, error) {
 	if event.GetIssueState() == "closed" {
 		return "", errIssueClosed
 	}
-	for _, user := range event.GetIssueAssignees() {
-		if user == event.GetIssueUser() {
-			return "", errUserAlreadyAssigned
-		}
+
+	if len(event.GetIssueAssignees()) > 0 {
+		return "", errIssueAlreadyAssigned
 	}
+
 	ctx := context.Background()
 	_, response, err := b.issueClient.AddAssignees(ctx, event.GetIssueOrg(), event.GetIssueRepo(), event.GetIssueNumber(), []string{event.GetIssueUser()})
 	if response.StatusCode == http.StatusNotFound {

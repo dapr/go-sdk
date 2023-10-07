@@ -132,7 +132,13 @@ func TestAssignIssueToCommenter(t *testing.T) {
 			resp: &github.Response{Response: &http.Response{StatusCode: http.StatusOK}},
 		}
 		testBot.issueClient = &tc
-		assignee, err := testBot.AssignIssueToCommenter(testEvent)
+		var testEventCopy Event
+		errC := copier.CopyWithOption(&testEventCopy, &testEvent, copier.Option{DeepCopy: true})
+		if errC != nil {
+			t.Error(errC)
+		}
+		testEventCopy.IssueCommentEvent.Issue.Assignees = []*github.User{}
+		assignee, err := testBot.AssignIssueToCommenter(testEventCopy)
 		assert.NoError(t, err)
 		assert.Equal(t, "testCommentLogin", assignee)
 	})
@@ -160,6 +166,22 @@ func TestAssignIssueToCommenter(t *testing.T) {
 			t.Error(errC)
 		}
 		testEventCopy.IssueCommentEvent.Issue.Assignees = []*github.User{{Login: github.String("testCommentLogin")}}
+		assignee, err := testBot.AssignIssueToCommenter(testEventCopy)
+		assert.Error(t, err)
+		assert.Empty(t, assignee)
+	})
+
+	t.Run("issue already assigned to another user", func(t *testing.T) {
+		tc := testClient{
+			resp: &github.Response{Response: &http.Response{StatusCode: http.StatusOK}},
+		}
+		testBot.issueClient = &tc
+		var testEventCopy Event
+		errC := copier.CopyWithOption(&testEventCopy, &testEvent, copier.Option{DeepCopy: true})
+		if errC != nil {
+			t.Error(errC)
+		}
+		testEventCopy.IssueCommentEvent.Issue.Assignees = []*github.User{{Login: github.String("testCommentLogin2")}}
 		assignee, err := testBot.AssignIssueToCommenter(testEventCopy)
 		assert.Error(t, err)
 		assert.Empty(t, assignee)
