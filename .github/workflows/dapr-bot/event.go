@@ -8,9 +8,9 @@ import (
 )
 
 type Event struct {
-	Type              string
-	Path              string
-	IssueCommentEvent *github.IssueCommentEvent
+	Type              string                    `json:"type"`
+	Path              string                    `json:"path"`
+	IssueCommentEvent *github.IssueCommentEvent `json:"issue_comment_event"`
 }
 
 func ProcessEvent(eventType string, eventPath string, data []byte) (e Event, err error) {
