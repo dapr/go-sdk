@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"errors"
-	"log"
 
 	"github.com/google/go-github/v55/github"
 )
@@ -36,7 +35,6 @@ func ProcessEvent(eventType string, eventPath string, data []byte) (e Event, err
 
 func (e *Event) GetIssueAssignees() []string {
 	assignees := make([]string, 0)
-	log.Println(len(e.IssueCommentEvent.Issue.Assignees))
 	for _, assignee := range e.IssueCommentEvent.Issue.Assignees {
 		assignees = append(assignees, assignee.GetLogin())
 	}
