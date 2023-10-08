@@ -54,6 +54,23 @@ func TestHandleEvent(t *testing.T) {
 		assert.NotEmpty(t, res)
 	})
 
+	t.Run("handle valid (longer body) event", func(t *testing.T) {
+		tc := testClient{
+			resp: &github.Response{Response: &http.Response{StatusCode: http.StatusOK}},
+		}
+		testBot.issueClient = &tc
+		ctx := context.Background()
+		var testEventCopy Event
+		errC := copier.CopyWithOption(&testEventCopy, &testEvent, copier.Option{DeepCopy: true})
+		if errC != nil {
+			t.Error(errC)
+		}
+		testEventCopy.IssueCommentEvent.Comment.Body = github.String("/assign \r \ntest body")
+		res, err := testBot.HandleEvent(ctx, testEventCopy)
+		assert.NoError(t, err)
+		assert.NotEmpty(t, res)
+	})
+
 	t.Run("handle unable to assign", func(t *testing.T) {
 		tc := testClient{
 			resp: &github.Response{Response: &http.Response{StatusCode: http.StatusNotFound}},

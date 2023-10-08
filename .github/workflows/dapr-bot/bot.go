@@ -37,7 +37,11 @@ func NewBot(ghClient *github.Client) *Bot {
 func (b *Bot) HandleEvent(ctx context.Context, event Event) (res string, err error) {
 	commentBody := event.IssueCommentEvent.Comment.GetBody()
 
-	command := strings.Split(commentBody, " ")[0]
+	// split the comment after any potential new lines
+	newline := strings.Split(strings.ReplaceAll(commentBody, "\r\n", "\n"), "\n")[0]
+
+	command := strings.Split(newline, " ")[0]
+
 	if command[0] != '/' {
 		return "no command found", err
 	}
