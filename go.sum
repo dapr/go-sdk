@@ -1,6 +1,6 @@
 github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=
-github.com/dapr/dapr v1.12.0-rc.4 h1:LOPbekXZ+21HTqlk6Kg4Bf/lFiqq9cRq/IrgZgvK4mM=
-github.com/dapr/dapr v1.12.0-rc.4/go.mod h1:JZGZh8T0rz75DZBX3zGESi1p9IWWM0ZAGAzaGMHp+5o=
+github.com/dapr/dapr v1.12.1-0.20231013174004-b6540a1c464d h1:7cEumjY6oXcXX/wapRB69WMxS+weWMK2Po5+/il5XjY=
+github.com/dapr/dapr v1.12.1-0.20231013174004-b6540a1c464d/go.mod h1:zHcMel+UwYnMWfvJwpaDr43p95JteXyvBsSjXNnPU+c=
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc h1:U9qPSI2PIWSS1VwoXQT9A3Wy9MM3WgvqSxFWenqJduM=
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/go-chi/chi/v5 v5.0.10 h1:rLz5avzKpjqxrYwXNfmjkrYYXOyLJd37pz53UFHC6vk=

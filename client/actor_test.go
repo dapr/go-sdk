@@ -257,65 +257,6 @@ func TestUnregisterActorReminder(t *testing.T) {
 	})
 }
 
-func TestRenameActorReminder(t *testing.T) {
-	ctx := context.Background()
-
-	registerReminderReq := &RegisterActorReminderRequest{
-		ActorID:   "fn",
-		Data:      []byte(`{hello}`),
-		ActorType: testActorType,
-		Name:      "oldName",
-		Period:    "2s",
-		DueTime:   "4s",
-		TTL:       "20s",
-	}
-
-	testClient.RegisterActorReminder(ctx, registerReminderReq)
-
-	renameReminderReq := &RenameActorReminderRequest{
-		ActorID:   "fn",
-		ActorType: testActorType,
-		OldName:   "oldName",
-		NewName:   "newName",
-	}
-
-	t.Run("invoke rename actor reminder without actorType", func(t *testing.T) {
-		renameReminderReq.ActorType = ""
-		err := testClient.RenameActorReminder(ctx, renameReminderReq)
-		renameReminderReq.ActorType = testActorType
-		assert.Error(t, err)
-	})
-
-	t.Run("invoke rename actor reminder without id ", func(t *testing.T) {
-		renameReminderReq.ActorID = ""
-		err := testClient.RenameActorReminder(ctx, renameReminderReq)
-		renameReminderReq.ActorID = "fn"
-		assert.Error(t, err)
-	})
-
-	t.Run("invoke rename actor reminder without oldName ", func(t *testing.T) {
-		renameReminderReq.OldName = ""
-		err := testClient.RenameActorReminder(ctx, renameReminderReq)
-		renameReminderReq.OldName = "oldName"
-		assert.Error(t, err)
-	})
-
-	t.Run("invoke rename actor reminder without newName ", func(t *testing.T) {
-		renameReminderReq.NewName = ""
-		err := testClient.RenameActorReminder(ctx, renameReminderReq)
-		renameReminderReq.NewName = "newName"
-		assert.Error(t, err)
-	})
-
-	t.Run("invoke rename actor reminder ", func(t *testing.T) {
-		assert.NoError(t, testClient.RenameActorReminder(ctx, renameReminderReq))
-	})
-
-	t.Run("invoke rename actor reminder with empty param", func(t *testing.T) {
-		assert.Error(t, testClient.RenameActorReminder(ctx, nil))
-	})
-}
-
 func TestUnregisterActorTimer(t *testing.T) {
 	ctx := context.Background()
 	in := &UnregisterActorTimerRequest{

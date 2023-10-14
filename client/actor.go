@@ -194,45 +194,6 @@ func (c *GRPCClient) UnregisterActorReminder(ctx context.Context, in *Unregister
 	return nil
 }
 
-type RenameActorReminderRequest struct {
-	OldName   string
-	ActorType string
-	ActorID   string
-	NewName   string
-}
-
-// RenameActorReminder would rename the actor reminder.
-func (c *GRPCClient) RenameActorReminder(ctx context.Context, in *RenameActorReminderRequest) error {
-	if in == nil {
-		return errors.New("actor rename reminder invocation request param required")
-	}
-	if in.ActorType == "" {
-		return errors.New("actor rename reminder invocation actorType required")
-	}
-	if in.ActorID == "" {
-		return errors.New("actor rename reminder invocation actorID required")
-	}
-	if in.OldName == "" {
-		return errors.New("actor rename reminder invocation oldName required")
-	}
-	if in.NewName == "" {
-		return errors.New("actor rename reminder invocation newName required")
-	}
-
-	req := &pb.RenameActorReminderRequest{
-		ActorType: in.ActorType,
-		ActorId:   in.ActorID,
-		OldName:   in.OldName,
-		NewName:   in.NewName,
-	}
-
-	_, err := c.protoClient.RenameActorReminder(c.withAuthToken(ctx), req)
-	if err != nil {
-		return fmt.Errorf("error invoking rename actor reminder %s/%s: %w", in.ActorType, in.ActorID, err)
-	}
-	return nil
-}
-
 type RegisterActorTimerRequest struct {
 	ActorType string
 	ActorID   string
