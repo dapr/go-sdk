@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -50,7 +49,7 @@ func getCurrentVersion() (string, error) {
 	matches := regex.FindStringSubmatch(string(out))
 
 	if matches == nil {
-		return "", errors.New("no version found - golangci-lint may not be installed")
+		return "", fmt.Errorf("no version found: %v", string(out))
 	}
 	return matches[0], err
 }
