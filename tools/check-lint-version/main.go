@@ -41,7 +41,7 @@ func getCurrentVersion() (string, error) {
 		return "", err
 	}
 
-	regex, err := regexp.Compile(`(?:v[\d+.]+[\d])`)
+	regex, err := regexp.Compile(`golangci-lint\shas\sversion\sv?([\d+.]+[\d])`)
 	if err != nil {
 		return "", err
 	}
@@ -51,7 +51,7 @@ func getCurrentVersion() (string, error) {
 	if matches == nil {
 		return "", fmt.Errorf("no version found: %v", string(out))
 	}
-	return matches[0], err
+	return fmt.Sprintf("v%s", matches[1]), err
 }
 
 func isVersionValid(workflowVersion, currentVersion string) bool {
