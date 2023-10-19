@@ -52,7 +52,7 @@ jobs:
           args: --timeout=10m0s --config ../../.golangci.yml
 
       - name: Install Linter
-        run: curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin ${{ env.GOLANGCILINT_VER }} 
+        run: curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b "$(go env GOPATH)/bin" ${{ env.GOLANGCILINT_VER }} 
 
       - name: Test
         working-directory: ./tools/check-lint-version
