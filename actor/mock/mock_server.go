@@ -256,16 +256,16 @@ func (mr *MockServerContextMockRecorder) Type() *gomock.Call {
 }
 
 func (mr *MockServerContextMockRecorder) Invoke(arg0, arg1 interface{}) *gomock.Call {
-  mr.mock.ctrl.T.Helper()
-  return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Invoke", reflect.TypeOf((*MockServerContext)(nil).Invoke), arg0, arg1)
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Invoke", reflect.TypeOf((*MockServerContext)(nil).Invoke), arg0, arg1)
 }
 
 func (m *MockServerContext) Invoke(ctx context.Context, input string) (string, error) {
-  m.ctrl.T.Helper()
-  ret := m.ctrl.Call(m, "Invoke", ctx, input)
-  ret0, _ := ret[0].(string)
-  ret1, _ := ret[1].(error)
-  return ret0, ret1
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Invoke", ctx, input)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // MockReminderCallee is a mock of ReminderCallee interface.

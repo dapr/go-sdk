@@ -29,8 +29,14 @@ cover: ## Displays test coverage in the client and service packages
 	go test -coverprofile=cover-http.out ./service/http && go tool cover -html=cover-http.out
 
 .PHONY: lint
-lint: ## Lints the entire project
+lint: check-lint ## Lints the entire project
 	golangci-lint run --timeout=3m
+
+.PHONY: check-lint
+check-lint: ## Compares the locally installed linter with the workflow version
+	cd ./tools/check-lint-version && \
+	go mod tidy && \
+	go run main.go
 
 .PHONY: tag
 tag: ## Creates release tag
