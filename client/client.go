@@ -294,6 +294,7 @@ func NewClientWithAddressContext(ctx context.Context, address string, opts ...Cl
 		address,
 		option,
 		grpc.WithUserAgent(userAgent()),
+		grpc.WithBlock(),
 	)
 	cancel()
 	if err != nil {
