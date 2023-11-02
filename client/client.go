@@ -33,7 +33,6 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
-	"google.golang.org/protobuf/types/known/emptypb"
 
 	pb "github.com/dapr/dapr/pkg/proto/runtime/v1"
 
@@ -369,7 +368,7 @@ func (c *GRPCClient) withAuthToken(ctx context.Context) context.Context {
 
 // Shutdown the sidecar.
 func (c *GRPCClient) Shutdown(ctx context.Context) error {
-	_, err := c.protoClient.Shutdown(c.withAuthToken(ctx), &emptypb.Empty{})
+	_, err := c.protoClient.Shutdown(c.withAuthToken(ctx), &pb.ShutdownRequest{})
 	if err != nil {
 		return fmt.Errorf("error shutting down the sidecar: %w", err)
 	}

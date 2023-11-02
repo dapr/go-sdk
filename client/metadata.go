@@ -5,8 +5,6 @@ import (
 	"errors"
 	"fmt"
 
-	"google.golang.org/protobuf/types/known/emptypb"
-
 	pb "github.com/dapr/dapr/pkg/proto/runtime/v1"
 )
 
@@ -54,7 +52,7 @@ type MetadataHTTPEndpoint struct {
 
 // GetMetadata returns the metadata of the sidecar
 func (c *GRPCClient) GetMetadata(ctx context.Context) (metadata *GetMetadataResponse, err error) {
-	resp, err := c.protoClient.GetMetadata(ctx, &emptypb.Empty{})
+	resp, err := c.protoClient.GetMetadata(ctx, &pb.GetMetadataRequest{})
 	if err != nil {
 		return nil, fmt.Errorf("error invoking service: %w", err)
 	}

@@ -338,7 +338,7 @@ func (s *testDaprServer) ExecuteStateTransaction(ctx context.Context, in *pb.Exe
 	return &empty.Empty{}, nil
 }
 
-func (s *testDaprServer) GetMetadata(ctx context.Context, req *empty.Empty) (metadata *pb.GetMetadataResponse, err error) {
+func (s *testDaprServer) GetMetadata(ctx context.Context, req *pb.GetMetadataRequest) (metadata *pb.GetMetadataResponse, err error) {
 	resp := &pb.GetMetadataResponse{
 		Id:                uuid.NewString(),
 		ActiveActorsCount: []*pb.ActiveActorsCount{},
@@ -432,7 +432,7 @@ func (s *testDaprServer) UnregisterActorTimer(context.Context, *pb.UnregisterAct
 	return &empty.Empty{}, nil
 }
 
-func (s *testDaprServer) Shutdown(ctx context.Context, req *empty.Empty) (*empty.Empty, error) {
+func (s *testDaprServer) Shutdown(ctx context.Context, req *pb.ShutdownRequest) (*empty.Empty, error) {
 	return &empty.Empty{}, nil
 }
 
