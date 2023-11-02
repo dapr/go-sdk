@@ -133,6 +133,12 @@ func TestShutdown(t *testing.T) {
 	})
 }
 
+func TestWithTLS(t *testing.T) {
+	c, err := NewClientWithAddressContext(context.Background(), "127.0.0.1", WithTLS())
+	require.NoError(t, err)
+	defer c.Close()
+}
+
 func getTestClient(ctx context.Context) (client Client, closer func()) {
 	s := grpc.NewServer()
 	pb.RegisterDaprServer(s, &testDaprServer{
