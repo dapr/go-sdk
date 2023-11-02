@@ -15,6 +15,7 @@ package client
 
 import (
 	"context"
+	"crypto/tls"
 	"errors"
 	"fmt"
 	"io"
@@ -31,6 +32,7 @@ import (
 	"github.com/dapr/go-sdk/version"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -44,6 +46,7 @@ import (
 const (
 	daprPortDefault                = "50001"
 	daprPortEnvVarName             = "DAPR_GRPC_PORT" /* #nosec */
+	daprGRPCEndpointEnvVarName     = "DAPR_GRPC_ENDPOINT"
 	traceparentKey                 = "traceparent"
 	apiTokenKey                    = "dapr-api-token" /* #nosec */
 	apiTokenEnvVarName             = "DAPR_API_TOKEN" /* #nosec */
@@ -192,9 +195,6 @@ type Client interface {
 	// UnregisterActorReminder unregisters an actor reminder.
 	UnregisterActorReminder(ctx context.Context, req *UnregisterActorReminderRequest) error
 
-	// RenameActorReminder rename an actor reminder.
-	RenameActorReminder(ctx context.Context, req *RenameActorReminderRequest) error
-
 	// InvokeActor calls a method on an actor.
 	InvokeActor(ctx context.Context, req *InvokeActorRequest) (*InvokeActorResponse, error)
 
@@ -247,7 +247,13 @@ func NewClientWithPort(port string) (client Client, err error) {
 	if port == "" {
 		return nil, errors.New("nil port")
 	}
-	return NewClientWithAddress(net.JoinHostPort("127.0.0.1", port))
+
+	address := os.Getenv(daprGRPCEndpointEnvVarName)
+	if address == "" {
+		address = "127.0.0.1"
+	}
+
+	return NewClientWithAddress(net.JoinHostPort(address, port))
 }
 
 // NewClientWithAddress instantiates Dapr using specific address (including port).
@@ -258,7 +264,7 @@ func NewClientWithAddress(address string) (client Client, err error) {
 
 // NewClientWithAddressContext instantiates Dapr using specific address (including port).
 // Uses the provided context to create the connection.
-func NewClientWithAddressContext(ctx context.Context, address string) (client Client, err error) {
+func NewClientWithAddressContext(ctx context.Context, address string, opts ...ClientOption) (client Client, err error) {
 	if address == "" {
 		return nil, errors.New("empty address")
 	}
@@ -268,13 +274,26 @@ func NewClientWithAddressContext(ctx context.Context, address string) (client Cl
 	if err != nil {
 		return nil, err
 	}
+
+	var option grpc.DialOption
+
+	cOpts := clientOptions{}
+	for _, opt := range opts {
+		opt(&cOpts)
+	}
+
+	if cOpts.useTLS || strings.Contains(address, "https://") {
+		option = grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{}))
+	} else {
+		option = grpc.WithTransportCredentials(insecure.NewCredentials())
+	}
+
 	ctx, cancel := context.WithTimeout(ctx, time.Duration(timeoutSeconds)*time.Second)
 	conn, err := grpc.DialContext(
 		ctx,
 		address,
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		option,
 		grpc.WithUserAgent(userAgent()),
-		grpc.WithBlock(),
 	)
 	cancel()
 	if err != nil {
@@ -351,6 +370,19 @@ func (c *GRPCClient) Close() {
 // Allows empty string to reset token on existing client.
 func (c *GRPCClient) WithAuthToken(token string) {
 	c.authToken = token
+}
+
+type clientOptions struct {
+	useTLS bool
+}
+
+type ClientOption func(*clientOptions)
+
+// WithTLS sets gRPC TLS transport credentials on the connection.
+func WithTLS() ClientOption {
+	return func(co *clientOptions) {
+		co.useTLS = true
+	}
 }
 
 // WithTraceID adds existing trace ID to the outgoing context.
