@@ -11,7 +11,7 @@ tidy: ## Updates the go modules
 
 .PHONY: test
 test:
-	go test -count=1 \
+	CGO_ENABLED=1 go test -count=1 \
 			-race \
 			-coverprofile=coverage.txt \
 			-covermode=atomic \
