@@ -283,7 +283,7 @@ func NewClientWithAddressContext(ctx context.Context, address string, opts ...Cl
 	}
 
 	if cOpts.useTLS || strings.Contains(address, "https://") {
-		option = grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{}))
+		option = grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{MinVersion: tls.VersionTLS12}))
 	} else {
 		option = grpc.WithTransportCredentials(insecure.NewCredentials())
 	}
