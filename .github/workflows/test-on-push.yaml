@@ -16,6 +16,7 @@ jobs:
         gover:
           - "1.19"
           - "1.20"
+          - "1.21"
     env:
       GOVER: ${{ matrix.gover }}
       GOLANGCILINT_VER: v1.54.2
