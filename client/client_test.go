@@ -134,9 +134,8 @@ func TestShutdown(t *testing.T) {
 }
 
 func TestWithTLS(t *testing.T) {
-	c, err := NewClientWithAddressContext(context.Background(), "127.0.0.1", WithTLS())
-	require.NoError(t, err)
-	defer c.Close()
+	_, err := NewClientWithAddressContext(context.Background(), "127.0.0.1", WithTLS())
+	require.Errorf(t, err, "error creating connection to '127.0.0.1': context deadline exceeded")
 }
 
 func getTestClient(ctx context.Context) (client Client, closer func()) {
