@@ -33,14 +33,16 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/test/bufconn"
 	"google.golang.org/protobuf/types/known/anypb"
+	"google.golang.org/protobuf/types/known/timestamppb"
 
 	commonv1pb "github.com/dapr/dapr/pkg/proto/common/v1"
 	pb "github.com/dapr/dapr/pkg/proto/runtime/v1"
 )
 
 const (
-	testBufSize = 1024 * 1024
-	testSocket  = "/tmp/dapr.socket"
+	testBufSize           = 1024 * 1024
+	testSocket            = "/tmp/dapr.socket"
+	testWorkflowFailureID = "test_failure_id"
 )
 
 var testClient Client
@@ -498,6 +500,122 @@ func (s *testDaprServer) UnsubscribeConfiguration(ctx context.Context, in *pb.Un
 	close(ch)
 	delete(s.configurationSubscriptionID, in.Id)
 	return &pb.UnsubscribeConfigurationResponse{Ok: true}, nil
+}
+
+func (s *testDaprServer) StartWorkflowAlpha1(ctx context.Context, in *pb.StartWorkflowRequest) (*pb.StartWorkflowResponse, error) {
+	if in.InstanceId == testWorkflowFailureID {
+		return nil, errors.New("test failure")
+	}
+	return &pb.StartWorkflowResponse{
+		InstanceId: in.InstanceId,
+	}, nil
+}
+
+func (s *testDaprServer) GetWorkflowAlpha1(ctx context.Context, in *pb.GetWorkflowRequest) (*pb.GetWorkflowResponse, error) {
+	if in.InstanceId == testWorkflowFailureID {
+		return nil, errors.New("test failure")
+	}
+	return &pb.GetWorkflowResponse{
+		InstanceId:    in.InstanceId,
+		WorkflowName:  "TestWorkflowName",
+		CreatedAt:     timestamppb.Now(),
+		LastUpdatedAt: timestamppb.Now(),
+		RuntimeStatus: "Running",
+		Properties:    make(map[string]string),
+	}, nil
+}
+
+func (s *testDaprServer) PurgeWorkflowAlpha1(ctx context.Context, in *pb.PurgeWorkflowRequest) (*empty.Empty, error) {
+	if in.InstanceId == testWorkflowFailureID {
+		return nil, errors.New("test failure")
+	}
+	return &empty.Empty{}, nil
+}
+
+func (s *testDaprServer) TerminateWorkflowAlpha1(ctx context.Context, in *pb.TerminateWorkflowRequest) (*empty.Empty, error) {
+	if in.InstanceId == testWorkflowFailureID {
+		return nil, errors.New("test failure")
+	}
+	return &empty.Empty{}, nil
+}
+
+func (s *testDaprServer) PauseWorkflowAlpha1(ctx context.Context, in *pb.PauseWorkflowRequest) (*empty.Empty, error) {
+	if in.InstanceId == testWorkflowFailureID {
+		return nil, errors.New("test failure")
+	}
+	return &empty.Empty{}, nil
+}
+
+func (s *testDaprServer) ResumeWorkflowAlpha1(ctx context.Context, in *pb.ResumeWorkflowRequest) (*empty.Empty, error) {
+	if in.InstanceId == testWorkflowFailureID {
+		return nil, errors.New("test failure")
+	}
+	return &empty.Empty{}, nil
+}
+
+func (s *testDaprServer) RaiseEventWorkflowAlpha1(ctx context.Context, in *pb.RaiseEventWorkflowRequest) (*empty.Empty, error) {
+	if in.InstanceId == testWorkflowFailureID {
+		return nil, errors.New("test failure")
+	}
+	return &empty.Empty{}, nil
+}
+
+func (s *testDaprServer) StartWorkflowBeta1(ctx context.Context, in *pb.StartWorkflowRequest) (*pb.StartWorkflowResponse, error) {
+	if in.InstanceId == testWorkflowFailureID {
+		return nil, errors.New("test failure")
+	}
+	return &pb.StartWorkflowResponse{
+		InstanceId: in.InstanceId,
+	}, nil
+}
+
+func (s *testDaprServer) GetWorkflowBeta1(ctx context.Context, in *pb.GetWorkflowRequest) (*pb.GetWorkflowResponse, error) {
+	if in.InstanceId == testWorkflowFailureID {
+		return nil, errors.New("test failure")
+	}
+	return &pb.GetWorkflowResponse{
+		InstanceId:    in.InstanceId,
+		WorkflowName:  "TestWorkflowName",
+		CreatedAt:     timestamppb.Now(),
+		LastUpdatedAt: timestamppb.Now(),
+		RuntimeStatus: "Running",
+		Properties:    make(map[string]string),
+	}, nil
+}
+
+func (s *testDaprServer) PurgeWorkflowBeta1(ctx context.Context, in *pb.PurgeWorkflowRequest) (*empty.Empty, error) {
+	if in.InstanceId == testWorkflowFailureID {
+		return nil, errors.New("test failure")
+	}
+	return &empty.Empty{}, nil
+}
+
+func (s *testDaprServer) TerminateWorkflowBeta1(ctx context.Context, in *pb.TerminateWorkflowRequest) (*empty.Empty, error) {
+	if in.InstanceId == testWorkflowFailureID {
+		return nil, errors.New("test failure")
+	}
+	return &empty.Empty{}, nil
+}
+
+func (s *testDaprServer) PauseWorkflowBeta1(ctx context.Context, in *pb.PauseWorkflowRequest) (*empty.Empty, error) {
+	if in.InstanceId == testWorkflowFailureID {
+		return nil, errors.New("test failure")
+	}
+	return &empty.Empty{}, nil
+}
+
+func (s *testDaprServer) ResumeWorkflowBeta1(ctx context.Context, in *pb.ResumeWorkflowRequest) (*empty.Empty, error) {
+	if in.InstanceId == testWorkflowFailureID {
+		return nil, errors.New("test failure")
+	}
+	return &empty.Empty{}, nil
+}
+
+func (s *testDaprServer) RaiseEventWorkflowBeta1(ctx context.Context, in *pb.RaiseEventWorkflowRequest) (*empty.Empty, error) {
+	if in.InstanceId == testWorkflowFailureID {
+		return nil, errors.New("test failure")
+	}
+	return &empty.Empty{}, nil
 }
 
 func TestGrpcClient(t *testing.T) {
