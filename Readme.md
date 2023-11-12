@@ -292,6 +292,44 @@ func main() {
 }
 ```
 
+##### Error handling
+
+Dapr errors are based on [gRPC's richer error model](https://cloud.google.com/apis/design/errors#error_model). 
+The following code shows how to parse and handle the error details:
+
+```go
+err := client.SaveState(ctx, "statestore", "my||key", []byte("value1"), nil)
+
+if err != nil {
+    st := status.Convert(err)
+	
+    fmt.Printf("error code: %s\n", st.Code().String())
+    fmt.Printf("error message: %s\n", st.Message())
+    
+	for _, detail := range st.Details() {
+        switch t := detail.(type) {
+        case *errdetails.ErrorInfo:
+            // Handle ErrorInfo details
+            fmt.Printf("ErrorInfo: domain: %s, reason: %s, metadata: %v\n", t.GetDomain(), t.GetReason(), t.GetMetadata())
+        case *errdetails.BadRequest:
+            // Handle BadRequest details
+            fmt.Println("BadRequest: Your request was rejected by the server.")
+            for _, violation := range t.GetFieldViolations() {
+                fmt.Printf("The %q field was wrong: ", violation.GetField())
+                fmt.Printf("\t%s\n", violation.GetDescription())
+            }
+        case *errdetails.ResourceInfo:
+            // Handle ResourceInfo details
+            fmt.Printf("ResourceInfo: resource type: %s, resource name: %s, owner: %s, description: %s\n",
+                t.GetResourceType(), t.GetResourceName(), t.GetOwner(), t.GetDescription())
+        // Add cases for other types of details you expect
+        default:
+            fmt.Printf("Unhandled error detail type: %v\n", t)
+        }
+    }
+}
+```
+
 ### Service (callback)
 
 In addition to the client capabilities that allow you to call into the Dapr API, the Go SDK also provides `service` package to help you bootstrap Dapr callback services in either gRPC or HTTP. Instructions on how to use it are located [here](./service/Readme.md).
