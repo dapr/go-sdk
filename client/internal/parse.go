@@ -69,14 +69,14 @@ func ParseGRPCEndpoint(endpoint string) (Parsed, error) {
 		return Parsed{}, err
 	}
 
-	var errs []error
+	var errs []string
 	for k := range ptarget.Query() {
 		if k != "tls" {
-			errs = append(errs, fmt.Errorf("unrecognized query parameter: %q", k))
+			errs = append(errs, fmt.Sprintf("unrecognized query parameter: %q", k))
 		}
 	}
 	if len(errs) > 0 {
-		return Parsed{}, fmt.Errorf("failed to parse target %q: %w", target, errors.Join(errs...))
+		return Parsed{}, fmt.Errorf("failed to parse target %q: %s", target, strings.Join(errs, "; "))
 	}
 
 	if ptarget.Query().Has("tls") {
