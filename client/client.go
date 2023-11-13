@@ -259,13 +259,13 @@ func NewClientWithAddressContext(ctx context.Context, address string) (client Cl
 	}
 	ctx, cancel := context.WithTimeout(ctx, time.Duration(timeoutSeconds)*time.Second)
 	defer cancel()
-	return NewClientWithAddressContextNoEnvTimeout(ctx, address)
+	return NewClientWithAddressContextNoTimeout(ctx, address)
 }
 
-// NewClientWithAddressContextNoEnvTimeout instantiates Dapr using specific address (including port).
+// NewClientWithAddressContextNoTimeout instantiates Dapr using specific address (including port).
 // Ignores the DAPR_GRPC_TIMEOUT_SECONDS environment variable and has no
 // default timeout.
-func NewClientWithAddressContextNoEnvTimeout(ctx context.Context, address string) (client Client, err error) {
+func NewClientWithAddressContextNoTimeout(ctx context.Context, address string) (client Client, err error) {
 	if address == "" {
 		return nil, errors.New("empty address")
 	}
