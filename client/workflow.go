@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"google.golang.org/protobuf/types/known/timestamppb"
 
 	pb "github.com/dapr/dapr/pkg/proto/runtime/v1"
 )
@@ -106,6 +107,13 @@ func (c *GRPCClient) GetWorkflowAlpha1(ctx context.Context, req *GetWorkflowRequ
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get workflow status: %v", err)
+	}
+
+	if resp.CreatedAt == nil {
+		resp.CreatedAt = timestamppb.Now()
+	}
+	if resp.LastUpdatedAt == nil {
+		resp.LastUpdatedAt = timestamppb.Now()
 	}
 	return &GetWorkflowResponse{
 		InstanceID:    resp.InstanceId,
@@ -252,6 +260,12 @@ func (c *GRPCClient) GetWorkflowBeta1(ctx context.Context, req *GetWorkflowReque
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get workflow status: %v", err)
+	}
+	if resp.CreatedAt == nil {
+		resp.CreatedAt = timestamppb.Now()
+	}
+	if resp.LastUpdatedAt == nil {
+		resp.LastUpdatedAt = timestamppb.Now()
 	}
 	return &GetWorkflowResponse{
 		InstanceID:    resp.InstanceId,
