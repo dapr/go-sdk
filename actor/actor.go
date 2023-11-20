@@ -74,6 +74,10 @@ type ReminderCallee interface {
 	ReminderCall(string, []byte, string, string)
 }
 
+type ReminderCalleeWithContext interface {
+	ReminderCall(context.Context, string, []byte, string, string) error
+}
+
 type (
 	Factory        func() Server
 	FactoryContext func() ServerContext

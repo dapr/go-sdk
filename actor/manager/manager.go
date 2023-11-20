@@ -193,11 +193,21 @@ func (m *DefaultActorManagerContext) InvokeReminder(ctx context.Context, actorID
 	}
 
 	targetActor, ok := actorContainer.GetActor().(actor.ReminderCallee)
-	if !ok {
-		return actorErr.ActorError{Status: actorErr.ErrReminderFuncUndefined}
+	if ok {
+		targetActor.ReminderCall(reminderName, reminderParams.Data, reminderParams.DueTime, reminderParams.Period)
+		return actorErr.ActorError{Status: actorErr.Success}
 	}
-	targetActor.ReminderCall(reminderName, reminderParams.Data, reminderParams.DueTime, reminderParams.Period)
-	return actorErr.ActorError{Status: actorErr.Success}
+
+	targetActorCtx, ok := actorContainer.GetActor().(actor.ReminderCalleeWithContext)
+	if ok {
+		err := targetActorCtx.ReminderCall(ctx, reminderName, reminderParams.Data, reminderParams.DueTime, reminderParams.Period)
+		if err != nil {
+			return actorErr.ActorError{Status: actorErr.ErrReminderFuncUndefined, Err: err}
+		}
+		return actorErr.ActorError{Status: actorErr.Success}
+	}
+
+	return actorErr.ActorError{Status: actorErr.ErrReminderFuncUndefined}
 }
 
 // InvokeTimer invoke timer callback function with given params.
