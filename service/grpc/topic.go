@@ -37,6 +37,14 @@ func (s *Server) AddTopicEventHandler(sub *common.Subscription, fn common.TopicE
 	return s.topicRegistrar.AddSubscription(sub, fn)
 }
 
+func (s *Server) AddBulkTopicEventHandler(sub *common.Subscription, fn common.BulkTopicEventHandler,maxMessagesCount,maxAwaitDurationMs int32) error {
+	if sub == nil {
+		return errors.New("subscription required")
+	}
+
+	return s.topicRegistrar.AddBulkSubscription(sub, fn,maxMessagesCount,maxAwaitDurationMs)
+}
+
 // ListTopicSubscriptions is called by Dapr to get the list of topics in a pubsub component the app wants to subscribe to.
 func (s *Server) ListTopicSubscriptions(ctx context.Context, in *empty.Empty) (*runtimev1pb.ListTopicSubscriptionsResponse, error) {
 	subs := make([]*runtimev1pb.TopicSubscription, 0)

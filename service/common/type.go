@@ -47,6 +47,24 @@ type TopicEvent struct {
 	PubsubName string `json:"pubsubname"`
 }
 
+type BulkTopic struct {
+	ContentType     string            `json:"contentType"`
+	EntryID         string            `json:"entryId"`
+	Event           map[string]string `json:"event"`
+	Data            json.RawMessage   `json:"data"`
+	DataContentType string            `json:"datacontenttype"`
+	ID              string            `json:"id"`
+	PubsubName      string            `json:"pubsubname"`
+	Source          string            `json:"source"`
+	SpecVersion     string            `json:"specversion"`
+	Time            string            `json:"time"`
+	Topic           string            `json:"topic"`
+	TraceID         string            `json:"traceid"`
+	TraceParent     string            `json:"traceparent"`
+	TraceState      string            `json:"tracestate"`
+	Metadata        interface{}       `json:"metadata"`
+}
+
 func (e *TopicEvent) Struct(target interface{}) error {
 	// TODO: Enhance to inspect DataContentType for the best
 	// deserialization method.

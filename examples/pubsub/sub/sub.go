@@ -46,11 +46,13 @@ var importantSubscription = &common.Subscription{
 func main() {
 	s := daprd.NewService(":8080")
 
-	if err := s.AddTopicEventHandler(defaultSubscription, eventHandler); err != nil {
-		log.Fatalf("error adding topic subscription: %v", err)
-	}
+	// if err := s.AddTopicEventHandler(defaultSubscription, eventHandler); err != nil {
+	// 	log.Fatalf("error adding topic subscription: %v", err)
+	// }
 
-	if err := s.AddTopicEventHandler(importantSubscription, importantEventHandler); err != nil {
+	
+
+	if err := s.AddBulkTopicEventHandler(defaultSubscription, bulkeventHandler,10,1000); err != nil {
 		log.Fatalf("error adding topic subscription: %v", err)
 	}
 
@@ -61,6 +63,13 @@ func main() {
 
 func eventHandler(ctx context.Context, e *common.TopicEvent) (retry bool, err error) {
 	log.Printf("event - PubsubName: %s, Topic: %s, ID: %s, Data: %s", e.PubsubName, e.Topic, e.ID, e.Data)
+	return false, nil
+}
+
+func bulkeventHandler(ctx context.Context, e []common.BulkTopic) (retry bool, err error) {
+	for _, event := range e {
+		log.Printf("event - PubsubName: %s, Topic: %s, ID: %s, Data: %s", event.PubsubName, event.Topic, event.ID, event.Data)
+	}
 	return false, nil
 }
 

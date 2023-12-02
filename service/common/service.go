@@ -35,6 +35,8 @@ type Service interface {
 	// AddTopicEventHandler appends provided event handler with its topic and optional metadata to the service.
 	// Note, retries are only considered when there is an error. Lack of error is considered as a success
 	AddTopicEventHandler(sub *Subscription, fn TopicEventHandler) error
+
+	AddBulkTopicEventHandler(sub *Subscription, fn BulkTopicEventHandler, maxMessagesCount, maxAwaitDurationMs int32) error
 	// AddBindingInvocationHandler appends provided binding invocation handler with its name to the service.
 	AddBindingInvocationHandler(name string, fn BindingInvocationHandler) error
 	// RegisterActorImplFactory Register a new actor to actor runtime of go sdk
@@ -53,6 +55,7 @@ type Service interface {
 type (
 	ServiceInvocationHandler func(ctx context.Context, in *InvocationEvent) (out *Content, err error)
 	TopicEventHandler        func(ctx context.Context, e *TopicEvent) (retry bool, err error)
+	BulkTopicEventHandler    func(ctx context.Context, e []BulkTopic) (retry bool, err error)
 	BindingInvocationHandler func(ctx context.Context, in *BindingEvent) (out []byte, err error)
 	HealthCheckHandler       func(context.Context) error
 )

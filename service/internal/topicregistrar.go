@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"context"
 	"errors"
 	"fmt"
 
@@ -14,9 +15,11 @@ type TopicRegistrar map[string]*TopicRegistration
 
 // TopicRegistration encapsulates the subscription and handlers.
 type TopicRegistration struct {
-	Subscription   *TopicSubscription
-	DefaultHandler common.TopicEventHandler
-	RouteHandlers  map[string]common.TopicEventHandler
+	Subscription       *TopicSubscription
+	DefaultHandler     common.TopicEventHandler
+	DefaultBulkHandler common.BulkTopicEventHandler
+	RouteHandlers      map[string]common.TopicEventHandler
+	BulkRouteHandlers  map[string]common.BulkTopicEventHandler
 }
 
 func (m TopicRegistrar) AddSubscription(sub *common.Subscription, fn common.TopicEventHandler) error {
@@ -59,6 +62,58 @@ func (m TopicRegistrar) AddSubscription(sub *common.Subscription, fn common.Topi
 		ts.DefaultHandler = fn
 	}
 	ts.RouteHandlers[sub.Route] = fn
+
+	return nil
+}
+
+func (m TopicRegistrar) AddBulkSubscription(sub *common.Subscription, fn common.BulkTopicEventHandler, maxMessagesCount, maxAwaitDurationMs int32) error {
+	if sub.Topic == "" {
+		return errors.New("topic name required")
+	}
+	if sub.PubsubName == "" {
+		return errors.New("pub/sub name required")
+	}
+	if fn == nil {
+		return fmt.Errorf("topic handler required")
+	}
+
+	var key string
+	if !sub.DisableTopicValidation {
+		key = sub.PubsubName + "-" + sub.Topic
+	} else {
+		key = sub.PubsubName
+	}
+
+	ts, ok := m[key]
+	if !ok {
+		ts = &TopicRegistration{
+			Subscription:   NewTopicSubscription(sub.PubsubName, sub.Topic),
+			RouteHandlers:  make(map[string]common.TopicEventHandler),
+			DefaultHandler: nil,
+		}
+		ts.Subscription.SetMetadata(sub.Metadata)
+		m[key] = ts
+	}
+
+	ts.Subscription.SetBulkSubscribe(maxMessagesCount, maxAwaitDurationMs)
+
+	if sub.Match != "" {
+		if err := ts.Subscription.AddRoutingRule(sub.Route, sub.Match, sub.Priority); err != nil {
+			return err
+		}
+	} else {
+		if err := ts.Subscription.SetDefaultRoute(sub.Route); err != nil {
+			return err
+		}
+		// ts.DefaultBulkHandler = fn
+		ts.DefaultHandler = func(ctx context.Context, e *common.TopicEvent) (retry bool, err error) {
+			return false,nil
+		}
+	}
+	// ts.BulkRouteHandlers[sub.Route] = fn
+	ts.RouteHandlers[sub.Route] = func(ctx context.Context, e *common.TopicEvent) (retry bool, err error) {
+		return false,nil	
+	}
 
 	return nil
 }
