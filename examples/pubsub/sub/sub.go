@@ -66,7 +66,7 @@ func eventHandler(ctx context.Context, e *common.TopicEvent) (retry bool, err er
 	return false, nil
 }
 
-func bulkeventHandler(ctx context.Context, e []common.BulkTopic) (retry bool, err error) {
+func bulkeventHandler(ctx context.Context, e []common.TopicEvent) (retry bool, err error) {
 	for _, event := range e {
 		log.Printf("event - PubsubName: %s, Topic: %s, ID: %s, Data: %s", event.PubsubName, event.Topic, event.ID, event.Data)
 	}

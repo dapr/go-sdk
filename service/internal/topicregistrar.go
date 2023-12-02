@@ -107,14 +107,14 @@ func (m TopicRegistrar) AddBulkSubscription(sub *common.Subscription, fn common.
 		if err := ts.Subscription.SetDefaultRoute(sub.Route); err != nil {
 			return err
 		}
-		ts.DefaultBulkHandler = func(ctx context.Context, e []common.BulkTopic) (retry bool, err error) {
+		ts.DefaultBulkHandler = func(ctx context.Context, e []common.TopicEvent) (retry bool, err error) {
 			return false,nil
 		}
 		ts.DefaultHandler = func(ctx context.Context, e *common.TopicEvent) (retry bool, err error) {
 			return false,nil
 		}
 	}
-	ts.BulkRouteHandlers[sub.Route] = func(ctx context.Context, e []common.BulkTopic) (retry bool, err error) {
+	ts.BulkRouteHandlers[sub.Route] = func(ctx context.Context, e []common.TopicEvent) (retry bool, err error) {
 		return false,nil	
 	}
 	ts.RouteHandlers[sub.Route] = func(ctx context.Context, e *common.TopicEvent) (retry bool, err error) {

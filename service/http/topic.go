@@ -321,58 +321,20 @@ func (in topicEventJSON) getData() (data any, rawData []byte) {
 	return data, rawData
 }
 
-func (in BulkTopicJson) getData() (data any, rawData []byte) {
-	var (
-		err error
-		v   any
-	)
-	if len(in.Data) > 0 {
-		rawData = []byte(in.Data)
-		data = rawData
-		// We can assume that rawData is valid JSON
-		// without checking in.DataContentType == "application/json".
-		if err = json.Unmarshal(rawData, &v); err == nil {
-			data = v
-			// Handling of JSON base64 encoded or escaped in a string.
-			if str, ok := v.(string); ok {
-				// This is the path that will most likely succeed.
-				var (
-					vString any
-					decoded []byte
-				)
-				if err = json.Unmarshal([]byte(str), &vString); err == nil {
-					data = vString
-				} else if decoded, err = base64.StdEncoding.DecodeString(str); err == nil {
-					// Decoded Base64 encoded JSON does not seem to be in the spec
-					// but it is in existing unit tests so this handles that case.
-					var vBase64 any
-					if err = json.Unmarshal(decoded, &vBase64); err == nil {
-						data = vBase64
-					}
-				}
-			}
-		}
-	}
-
-	return data, rawData
+type BulkSubscribeMessageItem struct {
+	EntryId     string            `json:"entryId"` //nolint:stylecheck
+	Event       interface{}       `json:"event"`
+	Metadata    map[string]string `json:"metadata"`
+	ContentType string            `json:"contentType,omitempty"`
 }
 
-type BulkTopicJson struct {
-	ContentType     string            `json:"contentType"`
-	EntryID         string            `json:"entryId"`
-	Event           map[string]string `json:"event"`
-	Data            json.RawMessage   `json:"data"`
-	DataContentType string            `json:"datacontenttype"`
-	ID              string            `json:"id"`
-	PubsubName      string            `json:"pubsubname"`
-	Source          string            `json:"source"`
-	SpecVersion     string            `json:"specversion"`
-	Time            string            `json:"time"`
-	Topic           string            `json:"topic"`
-	TraceID         string            `json:"traceid"`
-	TraceParent     string            `json:"traceparent"`
-	TraceState      string            `json:"tracestate"`
-	Metadata        interface{}       `json:"metadata"`
+type BulkSubscribeEnvelope struct {
+	ID        string
+	Entries   []BulkSubscribeMessageItem
+	Metadata  map[string]string
+	Topic     string
+	Pubsub    string
+	EventType string
 }
 
 // == APP == the item is  {application/cloudevents+json  5e582fd2-f1c4-47bd-81b1-803fb7e86552 map[data:multi-pong datacontenttype:text/plain id:92fc5348-097d-4b9f-b093-7e6fcda77add pubsubname:messages source:pub specversion:1.0 time:2023-12-02T11:42:31+05:30 topic:neworder traceid:00-a0373ef078e14e8db358c06e0ec18b27-d8dae6b5080eb9da-01 traceparent:00-a0373ef078e14e8db358c06e0ec18b27-d8dae6b5080eb9da-01 tracestate: type:com.dapr.event.sent] []           <nil>}
@@ -410,88 +372,70 @@ func (s *Server) AddBulkTopicEventHandler(sub *common.Subscription, fn common.Bu
 			}
 
 			// deserialize the event
-			var ins map[string]interface{}
+			var ins BulkSubscribeEnvelope
 			if err = json.Unmarshal(body, &ins); err != nil {
 				http.Error(w, err.Error(), PubSubHandlerDropStatusCode)
 				return
 			}
 
-			entriesInterface, ok := ins["entries"].([]interface{})
-			if !ok {
-				// Handle the error or return an error response
-				http.Error(w, "Entries format error", PubSubHandlerDropStatusCode)
-				return
-			}
+			statuses := make([]BulkSubscribeResponseEntry, 0, len(ins.Entries))
 
-			statuses := make([]BulkSubscribeResponseEntry, 0, len(entriesInterface))
-
-			var messages []common.BulkTopic
-			for _, entry := range entriesInterface {
-				itemMap, ok := entry.(map[string]interface{})
-				if !ok {
-					http.Error(w, "Entry format error", PubSubHandlerDropStatusCode)
-					return
-				}
-
-				itemJSON, err := json.Marshal(itemMap["event"])
+			var messages []common.TopicEvent
+			for _, entry := range ins.Entries {
+				itemJSON, err := json.Marshal(entry.Event)
 				if err != nil {
 					http.Error(w, err.Error(), PubSubHandlerDropStatusCode)
 					return
 				}
-				var item BulkTopicJson
+				var in topicEventJSON
 
-				if err := json.Unmarshal(itemJSON, &item); err != nil {
+				if err := json.Unmarshal(itemJSON, &in); err != nil {
 					http.Error(w, err.Error(), PubSubHandlerDropStatusCode)
 					return
 				}
-				data, rawData := item.getData()
-
-
-				if item.PubsubName == "" {
-					item.PubsubName = sub.PubsubName
+				if in.PubsubName == "" {
+					in.Topic = sub.PubsubName
 				}
-
-				if item.Topic == "" {
-					item.Topic = sub.Topic
+				if in.Topic == "" {
+					in.Topic = sub.Topic
 				}
+				data, rawData := in.getData()
 
 				statuses = append(statuses, BulkSubscribeResponseEntry{
-					entryId: item.EntryID,
+					entryId: in.ID,
 					status:  SubscriptionResponseStatusSuccess,
 				},
 				)
 
-				newItem := common.BulkTopic{
-					ContentType:     item.ContentType,
-					EntryID:         item.EntryID,
-					Event:           item.Event,
+				te := common.TopicEvent{
+					ID:              in.ID,
+					SpecVersion:     in.SpecVersion,
+					Type:            in.Type,
+					Source:          in.Source,
+					DataContentType: in.DataContentType,
 					Data:            data,
 					RawData:         rawData,
-					DataContentType: item.DataContentType,
-					ID:              item.EntryID,
-					PubsubName:      item.PubsubName,
-					Source:          item.Source,
-					SpecVersion:     item.SpecVersion,
-					Metadata:        item.Metadata,
-					Time:            item.Time,
-					Topic:           item.Topic,
-					TraceID:         item.TraceID,
-					TraceParent:     item.TraceParent,
-					TraceState:      item.TraceState,
+					DataBase64:      in.DataBase64,
+					Subject:         in.Subject,
+					PubsubName:      in.PubsubName,
+					Topic:           in.Topic,
 				}
 
-				messages = append(messages, newItem)
+				messages = append(messages, te)
 			}
 			resp := BulkSubscribeResponse{
 				statuses: statuses,
 			}
-			responseJSON, err := json.Marshal(resp)
 			if err != nil {
 				http.Error(w, err.Error(), PubSubHandlerDropStatusCode)
 				return
 			}
 			w.Header().Add("Content-Type", "application/json")
-			w.Write(responseJSON)
+			if err := json.NewEncoder(w).Encode(resp); err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			w.WriteHeader(http.StatusOK)
 
 			retry, err := fn(r.Context(), messages)
 			if err == nil {

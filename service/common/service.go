@@ -55,7 +55,7 @@ type Service interface {
 type (
 	ServiceInvocationHandler func(ctx context.Context, in *InvocationEvent) (out *Content, err error)
 	TopicEventHandler        func(ctx context.Context, e *TopicEvent) (retry bool, err error)
-	BulkTopicEventHandler    func(ctx context.Context, e []BulkTopic) (retry bool, err error)
+	BulkTopicEventHandler    func(ctx context.Context, e []TopicEvent) (retry bool, err error)
 	BindingInvocationHandler func(ctx context.Context, in *BindingEvent) (out []byte, err error)
 	HealthCheckHandler       func(context.Context) error
 )
