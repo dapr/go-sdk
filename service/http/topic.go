@@ -416,12 +416,14 @@ func (s *Server) AddBulkTopicEventHandler(sub *common.Subscription, fn common.Bu
 				return
 			}
 
-			entriesInterface ,ok := ins["entries"].([]interface{})
+			entriesInterface, ok := ins["entries"].([]interface{})
 			if !ok {
 				// Handle the error or return an error response
 				http.Error(w, "Entries format error", PubSubHandlerDropStatusCode)
 				return
 			}
+
+			statuses := make([]BulkSubscribeResponseEntry, 0, len(entriesInterface))
 
 			var messages []common.BulkTopic
 			for _, entry := range entriesInterface {
@@ -430,6 +432,7 @@ func (s *Server) AddBulkTopicEventHandler(sub *common.Subscription, fn common.Bu
 					http.Error(w, "Entry format error", PubSubHandlerDropStatusCode)
 					return
 				}
+
 				itemJSON, err := json.Marshal(itemMap["event"])
 				if err != nil {
 					http.Error(w, err.Error(), PubSubHandlerDropStatusCode)
@@ -443,6 +446,7 @@ func (s *Server) AddBulkTopicEventHandler(sub *common.Subscription, fn common.Bu
 				}
 				data, rawData := item.getData()
 
+
 				if item.PubsubName == "" {
 					item.PubsubName = sub.PubsubName
 				}
@@ -451,6 +455,11 @@ func (s *Server) AddBulkTopicEventHandler(sub *common.Subscription, fn common.Bu
 					item.Topic = sub.Topic
 				}
 
+				statuses = append(statuses, BulkSubscribeResponseEntry{
+					entryId: item.EntryID,
+					status:  SubscriptionResponseStatusSuccess,
+				},
+				)
 
 				newItem := common.BulkTopic{
 					ContentType:     item.ContentType,
@@ -473,11 +482,17 @@ func (s *Server) AddBulkTopicEventHandler(sub *common.Subscription, fn common.Bu
 
 				messages = append(messages, newItem)
 			}
-
+			resp := BulkSubscribeResponse{
+				statuses: statuses,
+			}
+			responseJSON, err := json.Marshal(resp)
+			if err != nil {
+				http.Error(w, err.Error(), PubSubHandlerDropStatusCode)
+				return
+			}
 			w.Header().Add("Content-Type", "application/json")
-			w.WriteHeader(http.StatusOK)
+			w.Write(responseJSON)
 
-			// execute user handler
 			retry, err := fn(r.Context(), messages)
 			if err == nil {
 				writeStatus(w, common.SubscriptionResponseStatusSuccess)
@@ -488,7 +503,6 @@ func (s *Server) AddBulkTopicEventHandler(sub *common.Subscription, fn common.Bu
 				writeStatus(w, common.SubscriptionResponseStatusRetry)
 				return
 			}
-
 			writeStatus(w, common.SubscriptionResponseStatusDrop)
 		})))
 
