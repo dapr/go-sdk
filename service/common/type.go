@@ -51,7 +51,8 @@ type BulkTopic struct {
 	ContentType     string            `json:"contentType"`
 	EntryID         string            `json:"entryId"`
 	Event           map[string]string `json:"event"`
-	Data            json.RawMessage   `json:"data"`
+	RawData         []byte            `json:"-"`
+	Data            interface{}       `json:"data"`
 	DataContentType string            `json:"datacontenttype"`
 	ID              string            `json:"id"`
 	PubsubName      string            `json:"pubsubname"`

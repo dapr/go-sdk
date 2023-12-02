@@ -66,20 +66,6 @@ type topicEventJSON struct {
 	Topic string `json:"topic"`
 	// PubsubName is name of the pub/sub this message came from
 	PubsubName string `json:"pubsubname"`
-	// EntryID is the unique identifier of the entry
-	EntryID string `json:"entryId"`
-	// Event is a map of strings that contains additional information about the event
-	Event map[string]string `json:"event"`
-	// Time is the timestamp of the event
-	Time string `json:"time"`
-	// TraceID is the identifier of the trace
-	TraceID string `json:"traceid"`
-	// TraceParent is the identifier of the parent span
-	TraceParent string `json:"traceparent"`
-	// TraceState is the state of the trace
-	TraceState string `json:"tracestate"`
-	// Metadata is an interface that contains any other metadata associated with the event
-	Metadata interface{} `json:"metadata"`
 }
 
 func (s *Server) registerBaseHandler() {
@@ -270,8 +256,6 @@ func (s *Server) AddTopicEventHandler(sub *common.Subscription, fn common.TopicE
 	return nil
 }
 
-
-
 func (in topicEventJSON) getData() (data any, rawData []byte) {
 	var (
 		err error
@@ -310,6 +294,42 @@ func (in topicEventJSON) getData() (data any, rawData []byte) {
 			if in.DataContentType == "application/json" {
 				if err = json.Unmarshal(rawData, &v); err == nil {
 					data = v
+				}
+			}
+		}
+	}
+
+	return data, rawData
+}
+
+func (in BulkTopicJson) getData() (data any, rawData []byte) {
+	var (
+		err error
+		v   any
+	)
+	if len(in.Data) > 0 {
+		rawData = []byte(in.Data)
+		data = rawData
+		// We can assume that rawData is valid JSON
+		// without checking in.DataContentType == "application/json".
+		if err = json.Unmarshal(rawData, &v); err == nil {
+			data = v
+			// Handling of JSON base64 encoded or escaped in a string.
+			if str, ok := v.(string); ok {
+				// This is the path that will most likely succeed.
+				var (
+					vString any
+					decoded []byte
+				)
+				if err = json.Unmarshal([]byte(str), &vString); err == nil {
+					data = vString
+				} else if decoded, err = base64.StdEncoding.DecodeString(str); err == nil {
+					// Decoded Base64 encoded JSON does not seem to be in the spec
+					// but it is in existing unit tests so this handles that case.
+					var vBase64 any
+					if err = json.Unmarshal(decoded, &vBase64); err == nil {
+						data = vBase64
+					}
 				}
 			}
 		}
@@ -404,14 +424,25 @@ func (s *Server) AddBulkTopicEventHandler(sub *common.Subscription, fn common.Bu
 					return
 				}
 
+				data, rawData := item.getData()
+
+				if item.PubsubName == "" {
+					item.PubsubName = sub.PubsubName
+				}
+
+				if item.Topic == "" {
+					item.Topic = sub.Topic
+				}
+
 
 				newItem := common.BulkTopic{
 					ContentType:     item.ContentType,
 					EntryID:         item.EntryID,
 					Event:           item.Event,
-					Data:            item.Data,
+					Data:            data,
+					RawData:         rawData,
 					DataContentType: item.DataContentType,
-					ID:              item.ID,
+					ID:              item.EntryID,
 					PubsubName:      item.PubsubName,
 					Source:          item.Source,
 					SpecVersion:     item.SpecVersion,
@@ -446,7 +477,6 @@ func (s *Server) AddBulkTopicEventHandler(sub *common.Subscription, fn common.Bu
 
 	return nil
 }
-
 
 func writeStatus(w http.ResponseWriter, s string) {
 	status := &common.SubscriptionResponse{Status: s}
