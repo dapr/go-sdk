@@ -165,8 +165,6 @@ func schemeKnown(scheme string) bool {
 		"vsock",
 		"http",
 		"https",
-		"grpc",
-		"grpcs",
 	} {
 		if scheme == s {
 			return true
