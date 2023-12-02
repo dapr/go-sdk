@@ -68,23 +68,73 @@ type topicEventJSON struct {
 	PubsubName string `json:"pubsubname"`
 }
 
-type status string
+func (in topicEventJSON) getData() (data any, rawData []byte) {
+	var (
+		err error
+		v   any
+	)
+	if len(in.Data) > 0 {
+		rawData = []byte(in.Data)
+		data = rawData
+		// We can assume that rawData is valid JSON
+		// without checking in.DataContentType == "application/json".
+		if err = json.Unmarshal(rawData, &v); err == nil {
+			data = v
+			// Handling of JSON base64 encoded or escaped in a string.
+			if str, ok := v.(string); ok {
+				// This is the path that will most likely succeed.
+				var (
+					vString any
+					decoded []byte
+				)
+				if err = json.Unmarshal([]byte(str), &vString); err == nil {
+					data = vString
+				} else if decoded, err = base64.StdEncoding.DecodeString(str); err == nil {
+					// Decoded Base64 encoded JSON does not seem to be in the spec
+					// but it is in existing unit tests so this handles that case.
+					var vBase64 any
+					if err = json.Unmarshal(decoded, &vBase64); err == nil {
+						data = vBase64
+					}
+				}
+			}
+		}
+	} else if in.DataBase64 != "" {
+		rawData, err = base64.StdEncoding.DecodeString(in.DataBase64)
+		if err == nil {
+			data = rawData
+			if in.DataContentType == "application/json" {
+				if err = json.Unmarshal(rawData, &v); err == nil {
+					data = v
+				}
+			}
+		}
+	}
+
+	return data, rawData
+}
+
+type AppResponseStatus string
 
 const (
-	// SubscriptionResponseStatusSuccess indicates that the subscription event was processed successfully.
-	SubscriptionResponseStatusSuccess status = "SUCCESS"
+	// Success means the message is received and processed correctly.
+	Success AppResponseStatus = "SUCCESS"
+	// Retry means the message is received but could not be processed and must be retried.
+	Retry AppResponseStatus = "RETRY"
+	// Drop means the message is received but should not be processed.
+	Drop AppResponseStatus = "DROP"
 )
 
 type BulkSubscribeResponseEntry struct {
 	// The id of the bulk subscribe entry
-	entryId string
+	EntryId string `json:"entryId"`
 
 	// The response status of the bulk subscribe entry
-	status status
+	Status AppResponseStatus `json:"status"`
 }
 
 type BulkSubscribeResponse struct {
-	statuses []BulkSubscribeResponseEntry
+	Statuses []BulkSubscribeResponseEntry `json:"statuses"`
 }
 
 func (s *Server) registerBaseHandler() {
@@ -275,52 +325,6 @@ func (s *Server) AddTopicEventHandler(sub *common.Subscription, fn common.TopicE
 	return nil
 }
 
-func (in topicEventJSON) getData() (data any, rawData []byte) {
-	var (
-		err error
-		v   any
-	)
-	if len(in.Data) > 0 {
-		rawData = []byte(in.Data)
-		data = rawData
-		// We can assume that rawData is valid JSON
-		// without checking in.DataContentType == "application/json".
-		if err = json.Unmarshal(rawData, &v); err == nil {
-			data = v
-			// Handling of JSON base64 encoded or escaped in a string.
-			if str, ok := v.(string); ok {
-				// This is the path that will most likely succeed.
-				var (
-					vString any
-					decoded []byte
-				)
-				if err = json.Unmarshal([]byte(str), &vString); err == nil {
-					data = vString
-				} else if decoded, err = base64.StdEncoding.DecodeString(str); err == nil {
-					// Decoded Base64 encoded JSON does not seem to be in the spec
-					// but it is in existing unit tests so this handles that case.
-					var vBase64 any
-					if err = json.Unmarshal(decoded, &vBase64); err == nil {
-						data = vBase64
-					}
-				}
-			}
-		}
-	} else if in.DataBase64 != "" {
-		rawData, err = base64.StdEncoding.DecodeString(in.DataBase64)
-		if err == nil {
-			data = rawData
-			if in.DataContentType == "application/json" {
-				if err = json.Unmarshal(rawData, &v); err == nil {
-					data = v
-				}
-			}
-		}
-	}
-
-	return data, rawData
-}
-
 type BulkSubscribeMessageItem struct {
 	EntryId     string            `json:"entryId"` //nolint:stylecheck
 	Event       interface{}       `json:"event"`
@@ -402,8 +406,8 @@ func (s *Server) AddBulkTopicEventHandler(sub *common.Subscription, fn common.Bu
 				data, rawData := in.getData()
 
 				statuses = append(statuses, BulkSubscribeResponseEntry{
-					entryId: in.ID,
-					status:  SubscriptionResponseStatusSuccess,
+					EntryId: entry.EntryId,
+					Status: Success,
 				},
 				)
 
@@ -424,30 +428,26 @@ func (s *Server) AddBulkTopicEventHandler(sub *common.Subscription, fn common.Bu
 				messages = append(messages, te)
 			}
 			resp := BulkSubscribeResponse{
-				statuses: statuses,
+				Statuses: statuses,
 			}
 			if err != nil {
 				http.Error(w, err.Error(), PubSubHandlerDropStatusCode)
 				return
 			}
 			w.Header().Add("Content-Type", "application/json")
-			if err := json.NewEncoder(w).Encode(resp); err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
 			w.WriteHeader(http.StatusOK)
 
 			retry, err := fn(r.Context(), messages)
 			if err == nil {
-				writeStatus(w, common.SubscriptionResponseStatusSuccess)
+				writeBulkStatus(w, resp)
 				return
 			}
 
 			if retry {
-				writeStatus(w, common.SubscriptionResponseStatusRetry)
+				writeBulkStatus(w, resp)
 				return
 			}
-			writeStatus(w, common.SubscriptionResponseStatusDrop)
+			writeBulkStatus(w, resp)
 		})))
 
 	return nil
@@ -456,6 +456,12 @@ func (s *Server) AddBulkTopicEventHandler(sub *common.Subscription, fn common.Bu
 func writeStatus(w http.ResponseWriter, s string) {
 	status := &common.SubscriptionResponse{Status: s}
 	if err := json.NewEncoder(w).Encode(status); err != nil {
+		http.Error(w, err.Error(), PubSubHandlerRetryStatusCode)
+	}
+}
+
+func writeBulkStatus(w http.ResponseWriter, s BulkSubscribeResponse) {
+	if err := json.NewEncoder(w).Encode(s); err != nil {
 		http.Error(w, err.Error(), PubSubHandlerRetryStatusCode)
 	}
 }

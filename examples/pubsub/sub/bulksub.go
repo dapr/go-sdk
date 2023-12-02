@@ -22,13 +22,7 @@ import (
 	daprd "github.com/dapr/go-sdk/service/http"
 )
 
-// Subscription to tell the dapr what topic to subscribe.
-//   - PubsubName: is the name of the component configured in the metadata of pubsub.yaml.
-//   - Topic: is the name of the topic to subscribe.
-//   - Route: tell dapr where to request the API to publish the message to the subscriber when get a message from topic.
-//   - Match: (Optional) The CEL expression to match on the CloudEvent to select this route.
-//   - Priority: (Optional) The priority order of the route when Match is specificed.
-//     If not specified, the matches are evaluated in the order in which they are added.
+
 var defaultSubscription = &common.Subscription{
 	PubsubName: "messages",
 	Topic:      "neworder",
@@ -46,18 +40,13 @@ var importantSubscription = &common.Subscription{
 func main() {
 	s := daprd.NewService(":8080")
 
-	if err := s.AddTopicEventHandler(defaultSubscription, eventHandler); err != nil {
+	if err := s.AddBulkTopicEventHandler(defaultSubscription, bulkeventHandler,10,1000); err != nil {
 		log.Fatalf("error adding topic subscription: %v", err)
 	}
 
 	if err := s.Start(); err != nil && err != http.ErrServerClosed {
 		log.Fatalf("error listenning: %v", err)
 	}
-}
-
-func eventHandler(ctx context.Context, e *common.TopicEvent) (retry bool, err error) {
-	log.Printf("event - PubsubName: %s, Topic: %s, ID: %s, Data: %s", e.PubsubName, e.Topic, e.ID, e.Data)
-	return false, nil
 }
 
 func bulkeventHandler(ctx context.Context, e []common.TopicEvent) (retry bool, err error) {
