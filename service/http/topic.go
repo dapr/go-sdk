@@ -68,6 +68,25 @@ type topicEventJSON struct {
 	PubsubName string `json:"pubsubname"`
 }
 
+type status string
+
+const (
+	// SubscriptionResponseStatusSuccess indicates that the subscription event was processed successfully.
+	SubscriptionResponseStatusSuccess status = "SUCCESS"
+)
+
+type BulkSubscribeResponseEntry struct {
+	// The id of the bulk subscribe entry
+	entryId string
+
+	// The response status of the bulk subscribe entry
+	status status
+}
+
+type BulkSubscribeResponse struct {
+	statuses []BulkSubscribeResponseEntry
+}
+
 func (s *Server) registerBaseHandler() {
 	// register subscribe handler
 	f := func(w http.ResponseWriter, r *http.Request) {
@@ -397,7 +416,7 @@ func (s *Server) AddBulkTopicEventHandler(sub *common.Subscription, fn common.Bu
 				return
 			}
 
-			entriesInterface, ok := ins["entries"].([]interface{})
+			entriesInterface ,ok := ins["entries"].([]interface{})
 			if !ok {
 				// Handle the error or return an error response
 				http.Error(w, "Entries format error", PubSubHandlerDropStatusCode)
@@ -411,8 +430,7 @@ func (s *Server) AddBulkTopicEventHandler(sub *common.Subscription, fn common.Bu
 					http.Error(w, "Entry format error", PubSubHandlerDropStatusCode)
 					return
 				}
-
-				itemJSON, err := json.Marshal(itemMap)
+				itemJSON, err := json.Marshal(itemMap["event"])
 				if err != nil {
 					http.Error(w, err.Error(), PubSubHandlerDropStatusCode)
 					return
@@ -423,7 +441,6 @@ func (s *Server) AddBulkTopicEventHandler(sub *common.Subscription, fn common.Bu
 					http.Error(w, err.Error(), PubSubHandlerDropStatusCode)
 					return
 				}
-
 				data, rawData := item.getData()
 
 				if item.PubsubName == "" {

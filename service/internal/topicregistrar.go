@@ -90,6 +90,8 @@ func (m TopicRegistrar) AddBulkSubscription(sub *common.Subscription, fn common.
 			Subscription:   NewTopicSubscription(sub.PubsubName, sub.Topic),
 			RouteHandlers:  make(map[string]common.TopicEventHandler),
 			DefaultHandler: nil,
+			BulkRouteHandlers: make(map[string]common.BulkTopicEventHandler),
+			DefaultBulkHandler: nil,
 		}
 		ts.Subscription.SetMetadata(sub.Metadata)
 		m[key] = ts
@@ -105,12 +107,16 @@ func (m TopicRegistrar) AddBulkSubscription(sub *common.Subscription, fn common.
 		if err := ts.Subscription.SetDefaultRoute(sub.Route); err != nil {
 			return err
 		}
-		// ts.DefaultBulkHandler = fn
+		ts.DefaultBulkHandler = func(ctx context.Context, e []common.BulkTopic) (retry bool, err error) {
+			return false,nil
+		}
 		ts.DefaultHandler = func(ctx context.Context, e *common.TopicEvent) (retry bool, err error) {
 			return false,nil
 		}
 	}
-	// ts.BulkRouteHandlers[sub.Route] = fn
+	ts.BulkRouteHandlers[sub.Route] = func(ctx context.Context, e []common.BulkTopic) (retry bool, err error) {
+		return false,nil	
+	}
 	ts.RouteHandlers[sub.Route] = func(ctx context.Context, e *common.TopicEvent) (retry bool, err error) {
 		return false,nil	
 	}
