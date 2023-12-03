@@ -46,9 +46,14 @@ var importantSubscription = &common.Subscription{
 func main() {
 	s := daprd.NewService(":8080")
 
+	// for single event subscribing
 	if err := s.AddTopicEventHandler(defaultSubscription, eventHandler); err != nil {
 		log.Fatalf("error adding topic subscription: %v", err)
 	}
+
+	// if err := s.AddBulkTopicEventHandler(defaultSubscription, eventHandler,10,100); err != nil {
+	// 	log.Fatalf("error adding topic subscription: %v", err)
+	// }
 
 	if err := s.Start(); err != nil && err != http.ErrServerClosed {
 		log.Fatalf("error listenning: %v", err)

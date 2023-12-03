@@ -325,25 +325,7 @@ func (s *Server) AddTopicEventHandler(sub *common.Subscription, fn common.TopicE
 	return nil
 }
 
-type BulkSubscribeMessageItem struct {
-	EntryId     string            `json:"entryId"` //nolint:stylecheck
-	Event       interface{}       `json:"event"`
-	Metadata    map[string]string `json:"metadata"`
-	ContentType string            `json:"contentType,omitempty"`
-}
-
-type BulkSubscribeEnvelope struct {
-	ID        string
-	Entries   []BulkSubscribeMessageItem
-	Metadata  map[string]string
-	Topic     string
-	Pubsub    string
-	EventType string
-}
-
-// == APP == the item is  {application/cloudevents+json  5e582fd2-f1c4-47bd-81b1-803fb7e86552 map[data:multi-pong datacontenttype:text/plain id:92fc5348-097d-4b9f-b093-7e6fcda77add pubsubname:messages source:pub specversion:1.0 time:2023-12-02T11:42:31+05:30 topic:neworder traceid:00-a0373ef078e14e8db358c06e0ec18b27-d8dae6b5080eb9da-01 traceparent:00-a0373ef078e14e8db358c06e0ec18b27-d8dae6b5080eb9da-01 tracestate: type:com.dapr.event.sent] []           <nil>}
-
-func (s *Server) AddBulkTopicEventHandler(sub *common.Subscription, fn common.BulkTopicEventHandler, maxMessagesCount, maxAwaitDurationMs int32) error {
+func (s *Server) AddBulkTopicEventHandler(sub *common.Subscription, fn common.TopicEventHandler, maxMessagesCount, maxAwaitDurationMs int32) error {
 	if sub == nil {
 		return errors.New("subscription required")
 	}
@@ -376,7 +358,7 @@ func (s *Server) AddBulkTopicEventHandler(sub *common.Subscription, fn common.Bu
 			}
 
 			// deserialize the event
-			var ins BulkSubscribeEnvelope
+			var ins internal.BulkSubscribeEnvelope
 			if err = json.Unmarshal(body, &ins); err != nil {
 				http.Error(w, err.Error(), PubSubHandlerDropStatusCode)
 				return
@@ -384,7 +366,6 @@ func (s *Server) AddBulkTopicEventHandler(sub *common.Subscription, fn common.Bu
 
 			statuses := make([]BulkSubscribeResponseEntry, 0, len(ins.Entries))
 
-			var messages []common.TopicEvent
 			for _, entry := range ins.Entries {
 				itemJSON, err := json.Marshal(entry.Event)
 				if err != nil {
@@ -405,12 +386,6 @@ func (s *Server) AddBulkTopicEventHandler(sub *common.Subscription, fn common.Bu
 				}
 				data, rawData := in.getData()
 
-				statuses = append(statuses, BulkSubscribeResponseEntry{
-					EntryId: entry.EntryId,
-					Status: Success,
-				},
-				)
-
 				te := common.TopicEvent{
 					ID:              in.ID,
 					SpecVersion:     in.SpecVersion,
@@ -425,8 +400,28 @@ func (s *Server) AddBulkTopicEventHandler(sub *common.Subscription, fn common.Bu
 					Topic:           in.Topic,
 				}
 
-				messages = append(messages, te)
+				retry, err := fn(r.Context(), &te)
+				if err == nil {
+					statuses = append(statuses, BulkSubscribeResponseEntry{
+						EntryId: entry.EntryId,
+						Status:  Success,
+					},
+					)
+				} else if retry {
+					statuses = append(statuses, BulkSubscribeResponseEntry{
+						EntryId: entry.EntryId,
+						Status:  Retry,
+					},
+					)
+				} else {
+					statuses = append(statuses, BulkSubscribeResponseEntry{
+						EntryId: entry.EntryId,
+						Status:  Drop,
+					},
+					)
+				}
 			}
+
 			resp := BulkSubscribeResponse{
 				Statuses: statuses,
 			}
@@ -437,16 +432,6 @@ func (s *Server) AddBulkTopicEventHandler(sub *common.Subscription, fn common.Bu
 			w.Header().Add("Content-Type", "application/json")
 			w.WriteHeader(http.StatusOK)
 
-			retry, err := fn(r.Context(), messages)
-			if err == nil {
-				writeBulkStatus(w, resp)
-				return
-			}
-
-			if retry {
-				writeBulkStatus(w, resp)
-				return
-			}
 			writeBulkStatus(w, resp)
 		})))
 

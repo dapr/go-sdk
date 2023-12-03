@@ -37,12 +37,12 @@ func (s *Server) AddTopicEventHandler(sub *common.Subscription, fn common.TopicE
 	return s.topicRegistrar.AddSubscription(sub, fn)
 }
 
-func (s *Server) AddBulkTopicEventHandler(sub *common.Subscription, fn common.BulkTopicEventHandler,maxMessagesCount,maxAwaitDurationMs int32) error {
+func (s *Server) AddBulkTopicEventHandler(sub *common.Subscription, fn common.TopicEventHandler, maxMessagesCount, maxAwaitDurationMs int32) error {
 	if sub == nil {
 		return errors.New("subscription required")
 	}
 
-	return s.topicRegistrar.AddBulkSubscription(sub, fn,maxMessagesCount,maxAwaitDurationMs)
+	return s.topicRegistrar.AddBulkSubscription(sub, fn, maxMessagesCount, maxAwaitDurationMs)
 }
 
 // ListTopicSubscriptions is called by Dapr to get the list of topics in a pubsub component the app wants to subscribe to.
@@ -51,10 +51,11 @@ func (s *Server) ListTopicSubscriptions(ctx context.Context, in *empty.Empty) (*
 	for _, v := range s.topicRegistrar {
 		s := v.Subscription
 		sub := &runtimev1pb.TopicSubscription{
-			PubsubName: s.PubsubName,
-			Topic:      s.Topic,
-			Metadata:   s.Metadata,
-			Routes:     convertRoutes(s.Routes),
+			PubsubName:    s.PubsubName,
+			Topic:         s.Topic,
+			Metadata:      s.Metadata,
+			Routes:        convertRoutes(s.Routes),
+			BulkSubscribe: convertBulkSubscribe(s.BulkSubscribe),
 		}
 		subs = append(subs, sub)
 	}
@@ -78,6 +79,17 @@ func convertRoutes(routes *internal.TopicRoutes) *runtimev1pb.TopicRoutes {
 	return &runtimev1pb.TopicRoutes{
 		Rules:   rules,
 		Default: routes.Default,
+	}
+}
+
+func convertBulkSubscribe(bulkSubscribe *internal.BulkSubscribe) *runtimev1pb.BulkSubscribeConfig {
+	if bulkSubscribe == nil {
+		return nil
+	}
+	return &runtimev1pb.BulkSubscribeConfig{
+		Enabled:            bulkSubscribe.Enabled,
+		MaxMessagesCount:   bulkSubscribe.MaxMessagesCount,
+		MaxAwaitDurationMs: bulkSubscribe.MaxAwaitDurationMs,
 	}
 }
 

@@ -22,6 +22,23 @@ type TopicSubscription struct {
 	BulkSubscribe *BulkSubscribe `json:"bulkSubscribe,omitempty"`
 }
 
+type BulkSubscribeMessageItem struct {
+	EntryId     string            `json:"entryId"` //nolint:stylecheck
+	Event       interface{}       `json:"event"`
+	Metadata    map[string]string `json:"metadata"`
+	ContentType string            `json:"contentType,omitempty"`
+}
+
+type BulkSubscribeEnvelope struct {
+	ID        string
+	Entries   []BulkSubscribeMessageItem
+	Metadata  map[string]string
+	Topic     string
+	Pubsub    string
+	EventType string
+}
+
+
 type BulkSubscribe struct {
 	Enabled            bool  `json:"enabled"`
 	MaxMessagesCount   int32 `json:"maxMessagesCount,omitempty"`
