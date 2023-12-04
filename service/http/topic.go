@@ -127,7 +127,7 @@ const (
 
 type BulkSubscribeResponseEntry struct {
 	// The id of the bulk subscribe entry
-	EntryId string `json:"entryId"`
+	EntryId string `json:"entryId"` //nolint:stylecheck
 
 	// The response status of the bulk subscribe entry
 	Status AppResponseStatus `json:"status"`
@@ -367,14 +367,14 @@ func (s *Server) AddBulkTopicEventHandler(sub *common.Subscription, fn common.To
 			statuses := make([]BulkSubscribeResponseEntry, 0, len(ins.Entries))
 
 			for _, entry := range ins.Entries {
-				itemJSON, err := json.Marshal(entry.Event)
-				if err != nil {
-					http.Error(w, err.Error(), PubSubHandlerDropStatusCode)
+				itemJSON, entryErr := json.Marshal(entry.Event)
+				if entryErr != nil {
+					http.Error(w, entryErr.Error(), PubSubHandlerDropStatusCode)
 					return
 				}
 				var in topicEventJSON
 
-				if err := json.Unmarshal(itemJSON, &in); err != nil {
+				if err = json.Unmarshal(itemJSON, &in); err != nil {
 					http.Error(w, err.Error(), PubSubHandlerDropStatusCode)
 					return
 				}
@@ -400,8 +400,8 @@ func (s *Server) AddBulkTopicEventHandler(sub *common.Subscription, fn common.To
 					Topic:           in.Topic,
 				}
 
-				retry, err := fn(r.Context(), &te)
-				if err == nil {
+				retry, funcErr := fn(r.Context(), &te)
+				if funcErr == nil {
 					statuses = append(statuses, BulkSubscribeResponseEntry{
 						EntryId: entry.EntryId,
 						Status:  Success,
