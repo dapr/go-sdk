@@ -45,7 +45,7 @@ const (
 // Merge itemMap into topicEventJSON
 type topicEventJSON struct {
 	// ID identifies the event.
-	ID string `json:"id"` // y
+	ID string `json:"id"`
 	// The version of the CloudEvents specification.
 	SpecVersion string `json:"specversion"`
 	// The type of event related to the originating occurrence.

@@ -30,14 +30,13 @@ type BulkSubscribeMessageItem struct {
 }
 
 type BulkSubscribeEnvelope struct {
-	ID        string
-	Entries   []BulkSubscribeMessageItem
-	Metadata  map[string]string
-	Topic     string
-	Pubsub    string
-	EventType string
+	ID        string                     `json:"id"`
+	Entries   []BulkSubscribeMessageItem `json:"entries"`
+	Metadata  map[string]string          `json:"metadata"`
+	Topic     string                     `json:"topic"`
+	Pubsub    string                     `json:"pubsub"`
+	EventType string                     `json:"eventType"`
 }
-
 
 type BulkSubscribe struct {
 	Enabled            bool  `json:"enabled"`
@@ -85,7 +84,7 @@ func (s *TopicSubscription) SetMetadata(metadata map[string]string) error {
 	return nil
 }
 
-func (s *TopicSubscription) SetBulkSubscribe(maxMessagesCount,maxAwaitDurationMs int32) error {
+func (s *TopicSubscription) SetBulkSubscribe(maxMessagesCount, maxAwaitDurationMs int32) error {
 	if s.BulkSubscribe != nil {
 		return fmt.Errorf("subscription for topic %s on pubsub %s already has bulkSubscribe set", s.Topic, s.PubsubName)
 	}

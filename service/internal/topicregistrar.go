@@ -14,9 +14,9 @@ type TopicRegistrar map[string]*TopicRegistration
 
 // TopicRegistration encapsulates the subscription and handlers.
 type TopicRegistration struct {
-	Subscription       *TopicSubscription
-	DefaultHandler     common.TopicEventHandler
-	RouteHandlers      map[string]common.TopicEventHandler
+	Subscription   *TopicSubscription
+	DefaultHandler common.TopicEventHandler
+	RouteHandlers  map[string]common.TopicEventHandler
 }
 
 func (m TopicRegistrar) AddSubscription(sub *common.Subscription, fn common.TopicEventHandler) error {
@@ -102,7 +102,7 @@ func (m TopicRegistrar) AddBulkSubscription(sub *common.Subscription, fn common.
 		if err := ts.Subscription.SetDefaultRoute(sub.Route); err != nil {
 			return err
 		}
-		
+
 		ts.DefaultHandler = fn
 	}
 
