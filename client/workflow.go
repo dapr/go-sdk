@@ -18,7 +18,7 @@ type StartWorkflowRequest struct {
 	WorkflowComponent string
 	WorkflowName      string
 	Options           map[string]string // Optional metadata
-	Input             []byte            // Optional input
+	Input             any               // Optional input
 	SendRawInput      bool              // Set to True in order to disable serialization on the input
 }
 
@@ -64,8 +64,8 @@ type RaiseEventWorkflowRequest struct {
 	InstanceID        string
 	WorkflowComponent string
 	EventName         string
-	EventData         []byte // Optional data
-	SendRawData       bool   // Set to True in order to disable serialization on the data§1
+	EventData         any
+	SendRawData       bool // Set to True in order to disable serialization on the data
 }
 
 // StartWorkflowAlpha1 starts a workflow instance using the alpha1 spec.
@@ -81,13 +81,15 @@ func (c *GRPCClient) StartWorkflowAlpha1(ctx context.Context, req *StartWorkflow
 		return nil, errors.New("failed to start workflow: WorkflowName must be supplied")
 	}
 
-	input := req.Input
+	var input []byte
 	var err error
-	if (!req.SendRawInput) && (input != nil) {
-		input, err = json.Marshal(input)
+	if (!req.SendRawInput) && (req.Input != nil) {
+		input, err = json.Marshal(req.Input)
 		if err != nil {
 			return nil, fmt.Errorf("failed to marshal input: %v", err)
 		}
+	} else {
+		input = []byte(fmt.Sprintf("%v", req.Input))
 	}
 
 	resp, err := c.protoClient.StartWorkflowAlpha1(ctx, &pb.StartWorkflowRequest{
@@ -221,14 +223,17 @@ func (c *GRPCClient) RaiseEventWorkflowAlpha1(ctx context.Context, req *RaiseEve
 		return errors.New("failed to raise event on workflow: EventName must be supplied")
 	}
 
-	eventData := req.EventData
+	var eventData []byte
 	var err error
-	if (!req.SendRawData) && (eventData != nil) {
-		eventData, err = json.Marshal(eventData)
+	if (!req.SendRawData) && (req.EventData != nil) {
+		eventData, err = json.Marshal(req.EventData)
 		if err != nil {
 			return fmt.Errorf("failed to marshal input: %v", err)
 		}
+	} else {
+		eventData = []byte(fmt.Sprintf("%v", req.EventData))
 	}
+
 	_, err = c.protoClient.RaiseEventWorkflowAlpha1(ctx, &pb.RaiseEventWorkflowRequest{
 		InstanceId:        req.InstanceID,
 		WorkflowComponent: req.WorkflowComponent,
@@ -253,13 +258,15 @@ func (c *GRPCClient) StartWorkflowBeta1(ctx context.Context, req *StartWorkflowR
 		return nil, errors.New("failed to start workflow: WorkflowName must be supplied")
 	}
 
-	input := req.Input
+	var input []byte
 	var err error
-	if (!req.SendRawInput) && (input != nil) {
-		input, err = json.Marshal(input)
+	if (!req.SendRawInput) || (req.Input != nil) {
+		input, err = json.Marshal(req.Input)
 		if err != nil {
 			return nil, fmt.Errorf("failed to marshal input: %v", err)
 		}
+	} else {
+		input = []byte(fmt.Sprintf("%v", req.Input))
 	}
 
 	resp, err := c.protoClient.StartWorkflowBeta1(ctx, &pb.StartWorkflowRequest{
@@ -392,14 +399,17 @@ func (c *GRPCClient) RaiseEventWorkflowBeta1(ctx context.Context, req *RaiseEven
 		return errors.New("failed to raise event on workflow: EventName must be supplied")
 	}
 
-	eventData := req.EventData
+	var eventData []byte
 	var err error
-	if (!req.SendRawData) && (eventData != nil) {
-		eventData, err = json.Marshal(eventData)
+	if (!req.SendRawData) && (req.EventData != nil) {
+		eventData, err = json.Marshal(req.EventData)
 		if err != nil {
 			return fmt.Errorf("failed to marshal input: %v", err)
 		}
+	} else {
+		eventData = []byte(fmt.Sprintf("%v", req.EventData))
 	}
+
 	_, err = c.protoClient.RaiseEventWorkflowBeta1(ctx, &pb.RaiseEventWorkflowRequest{
 		InstanceId:        req.InstanceID,
 		WorkflowComponent: req.WorkflowComponent,
