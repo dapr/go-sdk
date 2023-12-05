@@ -260,7 +260,7 @@ func (c *GRPCClient) StartWorkflowBeta1(ctx context.Context, req *StartWorkflowR
 
 	var input []byte
 	var err error
-	if (!req.SendRawInput) || (req.Input != nil) {
+	if (!req.SendRawInput) && (req.Input != nil) {
 		input, err = json.Marshal(req.Input)
 		if err != nil {
 			return nil, fmt.Errorf("failed to marshal input: %v", err)
