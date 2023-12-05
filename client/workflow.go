@@ -2,6 +2,7 @@ package client
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
@@ -18,7 +19,7 @@ type StartWorkflowRequest struct {
 	WorkflowName      string
 	Options           map[string]string // Optional metadata
 	Input             []byte            // Optional input
-	// TODO: support data serialization
+	SendRawInput      bool              // Set to True in order to disable serialization on the input
 }
 
 type StartWorkflowResponse struct {
@@ -64,6 +65,7 @@ type RaiseEventWorkflowRequest struct {
 	WorkflowComponent string
 	EventName         string
 	EventData         []byte // Optional data
+	SendRawData       bool   // Set to True in order to disable serialization on the data§1
 }
 
 // StartWorkflowAlpha1 starts a workflow instance using the alpha1 spec.
@@ -78,12 +80,22 @@ func (c *GRPCClient) StartWorkflowAlpha1(ctx context.Context, req *StartWorkflow
 	if req.WorkflowName == "" {
 		return nil, errors.New("failed to start workflow: WorkflowName must be supplied")
 	}
+
+	input := req.Input
+	var err error
+	if (!req.SendRawInput) && (input != nil) {
+		input, err = json.Marshal(input)
+		if err != nil {
+			return nil, fmt.Errorf("failed to marshal input: %v", err)
+		}
+	}
+
 	resp, err := c.protoClient.StartWorkflowAlpha1(ctx, &pb.StartWorkflowRequest{
 		InstanceId:        req.InstanceID,
 		WorkflowComponent: req.WorkflowComponent,
 		WorkflowName:      req.WorkflowName,
 		Options:           req.Options,
-		Input:             req.Input,
+		Input:             input,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to start workflow instance: %v", err)
@@ -208,11 +220,20 @@ func (c *GRPCClient) RaiseEventWorkflowAlpha1(ctx context.Context, req *RaiseEve
 	if req.EventName == "" {
 		return errors.New("failed to raise event on workflow: EventName must be supplied")
 	}
-	_, err := c.protoClient.RaiseEventWorkflowAlpha1(ctx, &pb.RaiseEventWorkflowRequest{
+
+	eventData := req.EventData
+	var err error
+	if (!req.SendRawData) && (eventData != nil) {
+		eventData, err = json.Marshal(eventData)
+		if err != nil {
+			return fmt.Errorf("failed to marshal input: %v", err)
+		}
+	}
+	_, err = c.protoClient.RaiseEventWorkflowAlpha1(ctx, &pb.RaiseEventWorkflowRequest{
 		InstanceId:        req.InstanceID,
 		WorkflowComponent: req.WorkflowComponent,
 		EventName:         req.EventName,
-		EventData:         req.EventData,
+		EventData:         eventData,
 	})
 	if err != nil {
 		return fmt.Errorf("failed to raise event on workflow: %v", err)
@@ -231,12 +252,22 @@ func (c *GRPCClient) StartWorkflowBeta1(ctx context.Context, req *StartWorkflowR
 	if req.WorkflowName == "" {
 		return nil, errors.New("failed to start workflow: WorkflowName must be supplied")
 	}
+
+	input := req.Input
+	var err error
+	if (!req.SendRawInput) && (input != nil) {
+		input, err = json.Marshal(input)
+		if err != nil {
+			return nil, fmt.Errorf("failed to marshal input: %v", err)
+		}
+	}
+
 	resp, err := c.protoClient.StartWorkflowBeta1(ctx, &pb.StartWorkflowRequest{
 		InstanceId:        req.InstanceID,
 		WorkflowComponent: req.WorkflowComponent,
 		WorkflowName:      req.WorkflowName,
 		Options:           req.Options,
-		Input:             req.Input,
+		Input:             input,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to start workflow instance: %v", err)
@@ -360,11 +391,20 @@ func (c *GRPCClient) RaiseEventWorkflowBeta1(ctx context.Context, req *RaiseEven
 	if req.EventName == "" {
 		return errors.New("failed to raise event on workflow: EventName must be supplied")
 	}
-	_, err := c.protoClient.RaiseEventWorkflowBeta1(ctx, &pb.RaiseEventWorkflowRequest{
+
+	eventData := req.EventData
+	var err error
+	if (!req.SendRawData) && (eventData != nil) {
+		eventData, err = json.Marshal(eventData)
+		if err != nil {
+			return fmt.Errorf("failed to marshal input: %v", err)
+		}
+	}
+	_, err = c.protoClient.RaiseEventWorkflowBeta1(ctx, &pb.RaiseEventWorkflowRequest{
 		InstanceId:        req.InstanceID,
 		WorkflowComponent: req.WorkflowComponent,
 		EventName:         req.EventName,
-		EventData:         req.EventData,
+		EventData:         eventData,
 	})
 	if err != nil {
 		return fmt.Errorf("failed to raise event on workflow: %v", err)
