@@ -304,6 +304,7 @@ linters:
     - varcheck
     - deadcode
     - golint
+    - inamedparam
 issues:
   exclude-rules:
     - path: .*_test.go
