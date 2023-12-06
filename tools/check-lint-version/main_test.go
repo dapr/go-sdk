@@ -27,7 +27,7 @@ func TestParseWorkflow(t *testing.T) {
 
 	t.Run("parse testing workflow file", func(t *testing.T) {
 		parsedVersion, err := parseWorkflowVersionFromFile("../../.github/workflows/test-tooling.yml")
-		assert.Equal(t, "v1.54.2", parsedVersion)
+		assert.Equal(t, "v1.55.2", parsedVersion)
 		assert.NoError(t, err)
 	})
 }
@@ -35,7 +35,7 @@ func TestParseWorkflow(t *testing.T) {
 func TestGetCurrentVersion(t *testing.T) {
 	t.Run("get current version from system", func(t *testing.T) {
 		currentVersion, err := getCurrentVersion()
-		assert.Equal(t, "v1.54.2", currentVersion)
+		assert.Equal(t, "v1.55.2", currentVersion)
 		assert.NoError(t, err)
 	})
 

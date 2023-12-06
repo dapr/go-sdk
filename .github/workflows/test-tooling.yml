@@ -28,7 +28,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     env:
       GOVER: ${{ matrix.gover }}
-      GOLANGCILINT_VER: v1.54.2 # Make sure to bump /tools/check-lint-version/main_test.go
+      GOLANGCILINT_VER: v1.55.2 # Make sure to bump /tools/check-lint-version/main_test.go
 
     steps:
       - name: Setup
