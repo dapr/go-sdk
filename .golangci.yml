@@ -164,12 +164,6 @@ linters-settings:
     line-length: 120
     # tab width in spaces. Default to 1.
     tab-width: 1
-  unused:
-    # treat code as a program (not a library) and report unused exported identifiers; default is false.
-    # XXX: if you enable this setting, unused will report a lot of false-positives in text editors:
-    # if it's called for subdir of a project it can't find funcs usages. All text editor integrations
-    # with golangci-lint call it on a directory with the changed file.
-    check-exported: false
   unparam:
     # Inspect exported functions, default is false. Set to true if no external program/library imports your code.
     # XXX: if you enable this setting, unparam will report a lot of false-positives in text editors:
@@ -242,7 +236,7 @@ linters-settings:
     # Allow multiline assignments to be cuddled. Default is true.
     allow-multiline-assign: true
     # Allow case blocks to end with a whitespace.
-    allow-case-traling-whitespace: true
+    force-case-trailing-whitespace: 0
     # Allow declarations (var) to be cuddled.
     allow-cuddle-declarations: false
 
