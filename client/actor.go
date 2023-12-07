@@ -74,7 +74,7 @@ func (c *GRPCClient) InvokeActor(ctx context.Context, in *InvokeActorRequest) (o
 	out = &InvokeActorResponse{}
 
 	if resp != nil {
-		out.Data = resp.Data
+		out.Data = resp.GetData()
 	}
 
 	return out, nil
@@ -421,7 +421,7 @@ func (c *GRPCClient) GetActorState(ctx context.Context, in *GetActorStateRequest
 	if err != nil {
 		return nil, fmt.Errorf("error invoking actor get state %s/%s: %w", in.ActorType, in.ActorID, err)
 	}
-	return &GetActorStateResponse{Data: rsp.Data}, nil
+	return &GetActorStateResponse{Data: rsp.GetData()}, nil
 }
 
 type ActorStateOperation struct {

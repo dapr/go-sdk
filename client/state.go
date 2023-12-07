@@ -317,7 +317,7 @@ func (c *GRPCClient) SaveBulkState(ctx context.Context, storeName string, items 
 
 	for _, si := range items {
 		item := toProtoSaveStateItem(si)
-		req.States = append(req.States, item)
+		req.States = append(req.GetStates(), item)
 	}
 
 	_, err := c.protoClient.SaveState(c.withAuthToken(ctx), req)
@@ -349,17 +349,17 @@ func (c *GRPCClient) GetBulkState(ctx context.Context, storeName string, keys []
 		return nil, fmt.Errorf("error getting state: %w", err)
 	}
 
-	if results == nil || results.Items == nil {
+	if results == nil || results.GetItems() == nil {
 		return items, nil
 	}
 
-	for _, r := range results.Items {
+	for _, r := range results.GetItems() {
 		item := &BulkStateItem{
-			Key:      r.Key,
-			Etag:     r.Etag,
-			Value:    r.Data,
-			Metadata: r.Metadata,
-			Error:    r.Error,
+			Key:      r.GetKey(),
+			Etag:     r.GetEtag(),
+			Value:    r.GetData(),
+			Metadata: r.GetMetadata(),
+			Error:    r.GetError(),
 		}
 		items = append(items, item)
 	}
@@ -391,10 +391,10 @@ func (c *GRPCClient) GetStateWithConsistency(ctx context.Context, storeName, key
 	}
 
 	return &StateItem{
-		Etag:     result.Etag,
+		Etag:     result.GetEtag(),
 		Key:      key,
-		Value:    result.Data,
-		Metadata: result.Metadata,
+		Value:    result.GetData(),
+		Metadata: result.GetMetadata(),
 	}, nil
 }
 
@@ -417,15 +417,15 @@ func (c *GRPCClient) QueryStateAlpha1(ctx context.Context, storeName, query stri
 	}
 
 	ret := &QueryResponse{
-		Results:  make([]QueryItem, len(resp.Results)),
-		Token:    resp.Token,
-		Metadata: resp.Metadata,
+		Results:  make([]QueryItem, len(resp.GetResults())),
+		Token:    resp.GetToken(),
+		Metadata: resp.GetMetadata(),
 	}
-	for i, item := range resp.Results {
-		ret.Results[i].Key = item.Key
-		ret.Results[i].Value = item.Data
-		ret.Results[i].Etag = item.Etag
-		ret.Results[i].Error = item.Error
+	for i, item := range resp.GetResults() {
+		ret.Results[i].Key = item.GetKey()
+		ret.Results[i].Value = item.GetData()
+		ret.Results[i].Etag = item.GetEtag()
+		ret.Results[i].Error = item.GetError()
 	}
 
 	return ret, nil

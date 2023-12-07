@@ -43,7 +43,7 @@ func TestDurationConverter(t *testing.T) {
 	d := 10 * time.Second
 	pd := toProtoDuration(d)
 	assert.NotNil(t, pd)
-	assert.Equal(t, pd.Seconds, int64(10))
+	assert.Equal(t, int64(10), pd.GetSeconds())
 }
 
 func TestStateOptionsConverter(t *testing.T) {
@@ -53,8 +53,8 @@ func TestStateOptionsConverter(t *testing.T) {
 	}
 	p := toProtoStateOptions(s)
 	assert.NotNil(t, p)
-	assert.Equal(t, p.Concurrency, v1.StateOptions_CONCURRENCY_LAST_WRITE)
-	assert.Equal(t, p.Consistency, v1.StateOptions_CONSISTENCY_STRONG)
+	assert.Equal(t, v1.StateOptions_CONCURRENCY_LAST_WRITE, p.GetConcurrency())
+	assert.Equal(t, v1.StateOptions_CONSISTENCY_STRONG, p.GetConsistency())
 }
 
 // go test -timeout 30s ./client -count 1 -run ^TestSaveState$

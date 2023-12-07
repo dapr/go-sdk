@@ -130,8 +130,8 @@ func TestInvoke(t *testing.T) {
 		out, err := server.OnInvoke(ctx, in)
 		require.NoError(t, err)
 		assert.NotNil(t, out)
-		assert.Equal(t, dataContentType, out.ContentType)
-		assert.Equal(t, data, string(out.Data.Value))
+		assert.Equal(t, dataContentType, out.GetContentType())
+		assert.Equal(t, data, string(out.GetData().GetValue()))
 	})
 
 	t.Run("invoke request with error", func(t *testing.T) {

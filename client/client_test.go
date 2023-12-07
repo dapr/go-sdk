@@ -251,7 +251,7 @@ func (s *testDaprServer) UnlockAlpha1(ctx context.Context, req *pb.UnlockRequest
 }
 
 func (s *testDaprServer) InvokeService(ctx context.Context, req *pb.InvokeServiceRequest) (*commonv1pb.InvokeResponse, error) {
-	if req.Message == nil {
+	if req.GetMessage() == nil {
 		return &commonv1pb.InvokeResponse{
 			ContentType: "text/plain",
 			Data: &anypb.Any{
@@ -260,14 +260,14 @@ func (s *testDaprServer) InvokeService(ctx context.Context, req *pb.InvokeServic
 		}, nil
 	}
 	return &commonv1pb.InvokeResponse{
-		ContentType: req.Message.ContentType,
-		Data:        req.Message.Data,
+		ContentType: req.GetMessage().GetContentType(),
+		Data:        req.GetMessage().GetData(),
 	}, nil
 }
 
 func (s *testDaprServer) GetState(ctx context.Context, req *pb.GetStateRequest) (*pb.GetStateResponse, error) {
 	return &pb.GetStateResponse{
-		Data: s.state[req.Key],
+		Data: s.state[req.GetKey()],
 		Etag: "1",
 	}, nil
 }
@@ -290,15 +290,15 @@ func (s *testDaprServer) GetBulkState(ctx context.Context, in *pb.GetBulkStateRe
 }
 
 func (s *testDaprServer) SaveState(ctx context.Context, req *pb.SaveStateRequest) (*empty.Empty, error) {
-	for _, item := range req.States {
-		s.state[item.Key] = item.Value
+	for _, item := range req.GetStates() {
+		s.state[item.GetKey()] = item.GetValue()
 	}
 	return &empty.Empty{}, nil
 }
 
 func (s *testDaprServer) QueryStateAlpha1(ctx context.Context, req *pb.QueryStateRequest) (*pb.QueryStateResponse, error) {
 	var v map[string]interface{}
-	if err := json.Unmarshal([]byte(req.Query), &v); err != nil {
+	if err := json.Unmarshal([]byte(req.GetQuery()), &v); err != nil {
 		return nil, err
 	}
 
@@ -306,19 +306,19 @@ func (s *testDaprServer) QueryStateAlpha1(ctx context.Context, req *pb.QueryStat
 		Results: make([]*pb.QueryStateItem, 0, len(s.state)),
 	}
 	for key, value := range s.state {
-		ret.Results = append(ret.Results, &pb.QueryStateItem{Key: key, Data: value})
+		ret.Results = append(ret.GetResults(), &pb.QueryStateItem{Key: key, Data: value})
 	}
 	return ret, nil
 }
 
 func (s *testDaprServer) DeleteState(ctx context.Context, req *pb.DeleteStateRequest) (*empty.Empty, error) {
-	delete(s.state, req.Key)
+	delete(s.state, req.GetKey())
 	return &empty.Empty{}, nil
 }
 
 func (s *testDaprServer) DeleteBulkState(ctx context.Context, req *pb.DeleteBulkStateRequest) (*empty.Empty, error) {
-	for _, item := range req.States {
-		delete(s.state, item.Key)
+	for _, item := range req.GetStates() {
+		delete(s.state, item.GetKey())
 	}
 	return &empty.Empty{}, nil
 }
@@ -328,9 +328,9 @@ func (s *testDaprServer) ExecuteStateTransaction(ctx context.Context, in *pb.Exe
 		item := op.GetRequest()
 		switch opType := op.GetOperationType(); opType {
 		case "upsert":
-			s.state[item.Key] = item.Value
+			s.state[item.GetKey()] = item.GetValue()
 		case "delete":
-			delete(s.state, item.Key)
+			delete(s.state, item.GetKey())
 		default:
 			return &empty.Empty{}, fmt.Errorf("invalid operation type: %s", opType)
 		}
@@ -362,14 +362,14 @@ func (s *testDaprServer) PublishEvent(ctx context.Context, req *pb.PublishEventR
 // It will fail the entire request if an event starts with "failall".
 func (s *testDaprServer) BulkPublishEventAlpha1(ctx context.Context, req *pb.BulkPublishRequest) (*pb.BulkPublishResponse, error) {
 	failedEntries := make([]*pb.BulkPublishResponseFailedEntry, 0)
-	for _, entry := range req.Entries {
-		if bytes.HasPrefix(entry.Event, []byte("failall")) {
+	for _, entry := range req.GetEntries() {
+		if bytes.HasPrefix(entry.GetEvent(), []byte("failall")) {
 			// fail the entire request
 			return nil, errors.New("failed to publish events")
-		} else if bytes.HasPrefix(entry.Event, []byte("fail")) {
+		} else if bytes.HasPrefix(entry.GetEvent(), []byte("fail")) {
 			// fail this entry
 			failedEntries = append(failedEntries, &pb.BulkPublishResponseFailedEntry{
-				EntryId: entry.EntryId,
+				EntryId: entry.GetEntryId(),
 				Error:   "failed to publish events",
 			})
 		}
@@ -378,15 +378,15 @@ func (s *testDaprServer) BulkPublishEventAlpha1(ctx context.Context, req *pb.Bul
 }
 
 func (s *testDaprServer) InvokeBinding(ctx context.Context, req *pb.InvokeBindingRequest) (*pb.InvokeBindingResponse, error) {
-	if req.Data == nil {
+	if req.GetData() == nil {
 		return &pb.InvokeBindingResponse{
 			Data:     []byte("test"),
 			Metadata: map[string]string{"k1": "v1", "k2": "v2"},
 		}, nil
 	}
 	return &pb.InvokeBindingResponse{
-		Data:     req.Data,
-		Metadata: req.Metadata,
+		Data:     req.GetData(),
+		Metadata: req.GetMetadata(),
 	}, nil
 }
 
@@ -491,12 +491,12 @@ func (s *testDaprServer) SubscribeConfiguration(in *pb.SubscribeConfigurationReq
 func (s *testDaprServer) UnsubscribeConfiguration(ctx context.Context, in *pb.UnsubscribeConfigurationRequest) (*pb.UnsubscribeConfigurationResponse, error) {
 	s.configurationSubscriptionIDMapLoc.Lock()
 	defer s.configurationSubscriptionIDMapLoc.Unlock()
-	ch, ok := s.configurationSubscriptionID[in.Id]
+	ch, ok := s.configurationSubscriptionID[in.GetId()]
 	if !ok {
 		return &pb.UnsubscribeConfigurationResponse{Ok: true}, nil
 	}
 	close(ch)
-	delete(s.configurationSubscriptionID, in.Id)
+	delete(s.configurationSubscriptionID, in.GetId())
 	return &pb.UnsubscribeConfigurationResponse{Ok: true}, nil
 }
 

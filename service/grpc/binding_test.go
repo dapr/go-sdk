@@ -43,7 +43,7 @@ func TestListInputBindings(t *testing.T) {
 	resp, err := server.ListInputBindings(context.Background(), &empty.Empty{})
 	require.NoError(t, err)
 	assert.NotNil(t, resp)
-	assert.Lenf(t, resp.Bindings, 2, "expected 2 handlers")
+	assert.Lenf(t, resp.GetBindings(), 2, "expected 2 handlers")
 }
 
 func TestBindingForErrors(t *testing.T) {
@@ -92,7 +92,7 @@ func TestBinding(t *testing.T) {
 		out, err := server.OnBindingEvent(ctx, in)
 		require.NoError(t, err)
 		assert.NotNil(t, out)
-		assert.Equal(t, data, string(out.Data))
+		assert.Equal(t, data, string(out.GetData()))
 	})
 
 	t.Run("binding event with metadata", func(t *testing.T) {

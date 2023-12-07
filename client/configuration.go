@@ -50,11 +50,11 @@ func (c *GRPCClient) GetConfigurationItems(ctx context.Context, storeName string
 	}
 
 	configItems := make(map[string]*ConfigurationItem)
-	for k, v := range rsp.Items {
+	for k, v := range rsp.GetItems() {
 		configItems[k] = &ConfigurationItem{
-			Value:    v.Value,
-			Version:  v.Version,
-			Metadata: v.Metadata,
+			Value:    v.GetValue(),
+			Version:  v.GetVersion(),
+			Metadata: v.GetMetadata(),
 		}
 	}
 	return configItems, nil
@@ -88,21 +88,21 @@ func (c *GRPCClient) SubscribeConfigurationItems(ctx context.Context, storeName 
 			}
 			configurationItems := make(map[string]*ConfigurationItem)
 
-			for k, v := range rsp.Items {
+			for k, v := range rsp.GetItems() {
 				configurationItems[k] = &ConfigurationItem{
-					Value:    v.Value,
-					Version:  v.Version,
-					Metadata: v.Metadata,
+					Value:    v.GetValue(),
+					Version:  v.GetVersion(),
+					Metadata: v.GetMetadata(),
 				}
 			}
 			// Get the subscription ID from the first response.
 			if isFirst {
-				subscribeIDChan <- rsp.Id
+				subscribeIDChan <- rsp.GetId()
 				isFirst = false
 			}
 			// Do not invoke handler in case there are no items.
 			if len(configurationItems) > 0 {
-				handler(rsp.Id, configurationItems)
+				handler(rsp.GetId(), configurationItems)
 			}
 		}
 	}()
@@ -119,7 +119,7 @@ func (c *GRPCClient) UnsubscribeConfigurationItems(ctx context.Context, storeNam
 	if err != nil {
 		return fmt.Errorf("unsubscribe failed with error = %w", err)
 	}
-	if !resp.Ok {
+	if !resp.GetOk() {
 		return fmt.Errorf("unsubscribe error message = %s", resp.GetMessage())
 	}
 	return nil

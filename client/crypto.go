@@ -186,13 +186,13 @@ func (c *GRPCClient) performCryptoOperation(ctx context.Context, stream grpc.Cli
 			// Write the data, if any, into the pipe
 			payload = resProto.GetPayload()
 			if payload != nil {
-				if payload.Seq != expectSeq {
-					pw.CloseWithError(fmt.Errorf("invalid sequence number in chunk: %d (expected: %d)", payload.Seq, expectSeq))
+				if payload.GetSeq() != expectSeq {
+					pw.CloseWithError(fmt.Errorf("invalid sequence number in chunk: %d (expected: %d)", payload.GetSeq(), expectSeq))
 					return
 				}
 				expectSeq++
 
-				_, readErr = pw.Write(payload.Data)
+				_, readErr = pw.Write(payload.GetData())
 				if readErr != nil {
 					pw.CloseWithError(fmt.Errorf("error writing data: %w", readErr))
 					return

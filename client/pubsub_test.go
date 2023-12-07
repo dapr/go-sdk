@@ -280,8 +280,8 @@ func TestCreateBulkPublishRequestEntry(t *testing.T) {
 					require.Error(t, err)
 				} else {
 					require.NoError(t, err)
-					assert.Equal(t, tc.expectedEvent, entry.Event)
-					assert.Equal(t, tc.expectedContentType, entry.ContentType)
+					assert.Equal(t, tc.expectedEvent, entry.GetEvent())
+					assert.Equal(t, tc.expectedContentType, entry.GetContentType())
 				}
 			})
 		}
@@ -295,8 +295,8 @@ func TestCreateBulkPublishRequestEntry(t *testing.T) {
 			Metadata:    map[string]string{"key": "value"},
 		})
 		require.NoError(t, err)
-		assert.Equal(t, "123", entry.EntryId)
-		assert.Equal(t, map[string]string{"key": "value"}, entry.Metadata)
+		assert.Equal(t, "123", entry.GetEntryId())
+		assert.Equal(t, map[string]string{"key": "value"}, entry.GetMetadata())
 	})
 
 	t.Run("should set random uuid as entryID when not provided", func(t *testing.T) {
@@ -321,10 +321,10 @@ func TestCreateBulkPublishRequestEntry(t *testing.T) {
 			t.Run(tc.name, func(t *testing.T) {
 				entry, err := createBulkPublishRequestEntry(tc.data)
 				require.NoError(t, err)
-				assert.NotEmpty(t, entry.EntryId)
-				assert.Nil(t, entry.Metadata)
+				assert.NotEmpty(t, entry.GetEntryId())
+				assert.Nil(t, entry.GetMetadata())
 
-				_, err = uuid.Parse(entry.EntryId)
+				_, err = uuid.Parse(entry.GetEntryId())
 				require.NoError(t, err)
 			})
 		}

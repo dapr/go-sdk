@@ -114,27 +114,27 @@ func TestVerbParsing(t *testing.T) {
 	t.Run("valid lower case", func(t *testing.T) {
 		v := queryAndVerbToHTTPExtension("", "post")
 		assert.NotNil(t, v)
-		assert.Equal(t, v1.HTTPExtension_POST, v.Verb)
-		assert.Len(t, v.Querystring, 0)
+		assert.Equal(t, v1.HTTPExtension_POST, v.GetVerb())
+		assert.Empty(t, v.GetQuerystring())
 	})
 
 	t.Run("valid upper case", func(t *testing.T) {
 		v := queryAndVerbToHTTPExtension("", "GET")
 		assert.NotNil(t, v)
-		assert.Equal(t, v1.HTTPExtension_GET, v.Verb)
+		assert.Equal(t, v1.HTTPExtension_GET, v.GetVerb())
 	})
 
 	t.Run("invalid verb", func(t *testing.T) {
 		v := queryAndVerbToHTTPExtension("", "BAD")
 		assert.NotNil(t, v)
-		assert.Equal(t, v1.HTTPExtension_NONE, v.Verb)
+		assert.Equal(t, v1.HTTPExtension_NONE, v.GetVerb())
 	})
 
 	t.Run("valid query", func(t *testing.T) {
 		v := queryAndVerbToHTTPExtension("foo=bar&url=http://dapr.io", "post")
 		assert.NotNil(t, v)
-		assert.Equal(t, v1.HTTPExtension_POST, v.Verb)
-		assert.Equal(t, "foo=bar&url=http://dapr.io", v.Querystring)
+		assert.Equal(t, v1.HTTPExtension_POST, v.GetVerb())
+		assert.Equal(t, "foo=bar&url=http://dapr.io", v.GetQuerystring())
 	})
 }
 

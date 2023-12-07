@@ -91,7 +91,7 @@ func PublishEventWithMetadata(metadata map[string]string) PublishEventOption {
 // PublishEventWithRawPayload can be passed as option to PublishEvent to set rawPayload metadata.
 func PublishEventWithRawPayload() PublishEventOption {
 	return func(e *pb.PublishEventRequest) {
-		if e.Metadata == nil {
+		if e.GetMetadata() == nil {
 			e.Metadata = map[string]string{rawPayload: trueValue}
 		} else {
 			e.Metadata[rawPayload] = trueValue
@@ -156,7 +156,7 @@ func (c *GRPCClient) PublishEvents(ctx context.Context, pubsubName, topicName st
 			failedEvents = append(failedEvents, event)
 			continue
 		}
-		eventMap[entry.EntryId] = event
+		eventMap[entry.GetEntryId()] = event
 		entries = append(entries, entry)
 	}
 
@@ -178,11 +178,11 @@ func (c *GRPCClient) PublishEvents(ctx context.Context, pubsubName, topicName st
 		}
 	}
 
-	for _, failedEntry := range res.FailedEntries {
-		event, ok := eventMap[failedEntry.EntryId]
+	for _, failedEntry := range res.GetFailedEntries() {
+		event, ok := eventMap[failedEntry.GetEntryId()]
 		if !ok {
 			// This should never happen.
-			failedEvents = append(failedEvents, failedEntry.EntryId)
+			failedEvents = append(failedEvents, failedEntry.GetEntryId())
 		}
 		failedEvents = append(failedEvents, event)
 	}
@@ -224,12 +224,12 @@ func createBulkPublishRequestEntry(data interface{}) (*pb.BulkPublishRequestEntr
 			return &pb.BulkPublishRequestEntry{}, fmt.Errorf("error serializing input struct: %w", err)
 		}
 
-		if isCloudEvent(entry.Event) {
+		if isCloudEvent(entry.GetEvent()) {
 			entry.ContentType = "application/cloudevents+json"
 		}
 	}
 
-	if entry.EntryId == "" {
+	if entry.GetEntryId() == "" {
 		entry.EntryId = uuid.New().String()
 	}
 
@@ -239,7 +239,7 @@ func createBulkPublishRequestEntry(data interface{}) (*pb.BulkPublishRequestEntr
 // PublishEventsWithContentType can be passed as option to PublishEvents to explicitly set the same Content-Type for all events.
 func PublishEventsWithContentType(contentType string) PublishEventsOption {
 	return func(r *pb.BulkPublishRequest) {
-		for _, entry := range r.Entries {
+		for _, entry := range r.GetEntries() {
 			entry.ContentType = contentType
 		}
 	}
@@ -255,7 +255,7 @@ func PublishEventsWithMetadata(metadata map[string]string) PublishEventsOption {
 // PublishEventsWithRawPayload can be passed as option to PublishEvents to set rawPayload request metadata.
 func PublishEventsWithRawPayload() PublishEventsOption {
 	return func(r *pb.BulkPublishRequest) {
-		if r.Metadata == nil {
+		if r.GetMetadata() == nil {
 			r.Metadata = map[string]string{rawPayload: trueValue}
 		} else {
 			r.Metadata[rawPayload] = trueValue

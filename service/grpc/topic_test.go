@@ -59,11 +59,11 @@ func TestTopicSubscriptionList(t *testing.T) {
 	resp, err := server.ListTopicSubscriptions(context.Background(), &empty.Empty{})
 	require.NoError(t, err)
 	assert.NotNil(t, resp)
-	if assert.Lenf(t, resp.Subscriptions, 1, "expected 1 handlers") {
-		sub := resp.Subscriptions[0]
-		assert.Equal(t, "messages", sub.PubsubName)
-		assert.Equal(t, "test", sub.Topic)
-		assert.Nil(t, sub.Routes)
+	if assert.Lenf(t, resp.GetSubscriptions(), 1, "expected 1 handlers") {
+		sub := resp.GetSubscriptions()[0]
+		assert.Equal(t, "messages", sub.GetPubsubName())
+		assert.Equal(t, "test", sub.GetTopic())
+		assert.Nil(t, sub.GetRoutes())
 	}
 
 	// Add routing rule.
@@ -78,16 +78,16 @@ func TestTopicSubscriptionList(t *testing.T) {
 	resp, err = server.ListTopicSubscriptions(context.Background(), &empty.Empty{})
 	require.NoError(t, err)
 	assert.NotNil(t, resp)
-	if assert.Lenf(t, resp.Subscriptions, 1, "expected 1 handlers") {
-		sub := resp.Subscriptions[0]
-		assert.Equal(t, "messages", sub.PubsubName)
-		assert.Equal(t, "test", sub.Topic)
-		if assert.NotNil(t, sub.Routes) {
-			assert.Equal(t, "/test", sub.Routes.Default)
-			if assert.Len(t, sub.Routes.Rules, 1) {
-				rule := sub.Routes.Rules[0]
-				assert.Equal(t, "/other", rule.Path)
-				assert.Equal(t, `event.type == "other"`, rule.Match)
+	if assert.Lenf(t, resp.GetSubscriptions(), 1, "expected 1 handlers") {
+		sub := resp.GetSubscriptions()[0]
+		assert.Equal(t, "messages", sub.GetPubsubName())
+		assert.Equal(t, "test", sub.GetTopic())
+		if assert.NotNil(t, sub.GetRoutes()) {
+			assert.Equal(t, "/test", sub.GetRoutes().GetDefault())
+			if assert.Len(t, sub.GetRoutes().GetRules(), 1) {
+				rule := sub.GetRoutes().GetRules()[0]
+				assert.Equal(t, "/other", rule.GetPath())
+				assert.Equal(t, `event.type == "other"`, rule.GetMatch())
 			}
 		}
 	}
