@@ -116,14 +116,14 @@ func TestPublishEvents(t *testing.T) {
 
 	t.Run("with data", func(t *testing.T) {
 		res := testClient.PublishEvents(ctx, "messages", "test", []interface{}{"ping", "pong"})
-		assert.Nil(t, res.Error)
-		assert.Len(t, res.FailedEvents, 0)
+		require.NoError(t, res.Error)
+		assert.Empty(t, res.FailedEvents)
 	})
 
 	t.Run("without data", func(t *testing.T) {
 		res := testClient.PublishEvents(ctx, "messages", "test", nil)
-		assert.Nil(t, res.Error)
-		assert.Len(t, res.FailedEvents, 0)
+		require.NoError(t, res.Error)
+		assert.Empty(t, res.FailedEvents)
 	})
 
 	t.Run("with struct data", func(t *testing.T) {
@@ -157,8 +157,8 @@ func TestPublishEvents(t *testing.T) {
 		for _, tc := range testcases {
 			t.Run(tc.name, func(t *testing.T) {
 				res := testClient.PublishEvents(ctx, "messages", "test", []interface{}{tc.data})
-				assert.Nil(t, res.Error)
-				assert.Len(t, res.FailedEvents, 0)
+				require.NoError(t, res.Error)
+				assert.Empty(t, res.FailedEvents)
 			})
 		}
 	})
@@ -172,20 +172,20 @@ func TestPublishEvents(t *testing.T) {
 
 	t.Run("with raw payload", func(t *testing.T) {
 		res := testClient.PublishEvents(ctx, "messages", "test", []interface{}{"ping", "pong"}, PublishEventsWithRawPayload())
-		assert.Nil(t, res.Error)
-		assert.Len(t, res.FailedEvents, 0)
+		require.NoError(t, res.Error)
+		assert.Empty(t, res.FailedEvents)
 	})
 
 	t.Run("with metadata", func(t *testing.T) {
 		res := testClient.PublishEvents(ctx, "messages", "test", []interface{}{"ping", "pong"}, PublishEventsWithMetadata(map[string]string{"key": "value"}))
-		assert.Nil(t, res.Error)
-		assert.Len(t, res.FailedEvents, 0)
+		require.NoError(t, res.Error)
+		assert.Empty(t, res.FailedEvents)
 	})
 
 	t.Run("with custom content type", func(t *testing.T) {
 		res := testClient.PublishEvents(ctx, "messages", "test", []interface{}{"ping", "pong"}, PublishEventsWithContentType("text/plain"))
-		assert.Nil(t, res.Error)
-		assert.Len(t, res.FailedEvents, 0)
+		require.NoError(t, res.Error)
+		assert.Empty(t, res.FailedEvents)
 	})
 
 	t.Run("with events that will fail some events", func(t *testing.T) {

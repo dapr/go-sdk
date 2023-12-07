@@ -227,7 +227,7 @@ func TestDeleteBulkState(t *testing.T) {
 		// confirm data deleted
 		getItems, err = testClient.GetBulkState(ctx, store, keys, nil, 1)
 		require.NoError(t, err)
-		assert.Equal(t, 0, len(getItems))
+		assert.Empty(t, getItems)
 	})
 
 	t.Run("delete exist data with stateItem", func(t *testing.T) {
@@ -272,7 +272,7 @@ func TestDeleteBulkState(t *testing.T) {
 		// confirm data deleted
 		getItems, err = testClient.GetBulkState(ctx, store, keys, nil, 1)
 		require.NoError(t, err)
-		assert.Equal(t, 0, len(getItems))
+		assert.Empty(t, getItems)
 	})
 }
 
@@ -346,7 +346,7 @@ func TestStateTransactions(t *testing.T) {
 		items, err := testClient.GetBulkState(ctx, store, keys, nil, 3)
 		require.NoError(t, err)
 		assert.NotNil(t, items)
-		assert.Len(t, items, 0)
+		assert.Empty(t, items)
 	})
 }
 
@@ -377,7 +377,7 @@ func TestQueryState(t *testing.T) {
 		query := `{}`
 		resp, err := testClient.QueryStateAlpha1(ctx, store, query, nil)
 		require.NoError(t, err)
-		assert.Equal(t, 2, len(resp.Results))
+		assert.Len(t, resp.Results, 2)
 		for _, item := range resp.Results {
 			assert.True(t, item.Key == key1 || item.Key == key2)
 			assert.Equal(t, []byte(data), item.Value)
