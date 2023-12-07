@@ -49,27 +49,28 @@ func testErrorTopicFunc(ctx context.Context, e *common.TopicEvent) (retry bool, 
 }
 
 func TestEventNilHandler(t *testing.T) {
-	s := newServer("", nil)
-	sub := &common.Subscription{
-		PubsubName: "messages",
-		Topic:      "test",
-		Route:      "/",
-		Metadata:   map[string]string{},
-	}
-	err := s.AddTopicEventHandler(sub, nil)
-	assert.Error(t, err, "expected error adding event handler")
-}
-
-func TestBulkEventNilHandler(t *testing.T) {
-	s := newServer("", nil)
-	sub := &common.Subscription{
-		PubsubName: "messages",
-		Topic:      "test",
-		Route:      "/",
-		Metadata:   map[string]string{},
-	}
-	err := s.AddBulkTopicEventHandler(sub, nil, 10, 1000)
-	assert.Error(t, err, "expected error adding event handler")
+	t.Run("With single event handling", func(t *testing.T) {
+		s := newServer("", nil)
+		sub := &common.Subscription{
+			PubsubName: "messages",
+			Topic:      "test",
+			Route:      "/",
+			Metadata:   map[string]string{},
+		}
+		err := s.AddTopicEventHandler(sub, nil)
+		assert.Error(t, err, "expected error adding event handler")
+	})
+	t.Run("With bulk event handling", func(t *testing.T) {
+		s := newServer("", nil)
+		sub := &common.Subscription{
+			PubsubName: "messages",
+			Topic:      "test",
+			Route:      "/",
+			Metadata:   map[string]string{},
+		}
+		err := s.AddBulkTopicEventHandler(sub, nil, 10, 1000)
+		assert.Error(t, err, "expected error adding event handler")
+	})
 }
 
 func TestEventHandler(t *testing.T) {
@@ -680,55 +681,38 @@ func TestRawPayloadDecode(t *testing.T) {
 		"data_base64" : "eyJtZXNzYWdlIjoiaGVsbG8ifQ=="
 	}`
 
-	s := newServer("", nil)
+	t.Run("With single event handling", func(t *testing.T) {
+		s := newServer("", nil)
 
-	sub3 := &common.Subscription{
-		PubsubName: "messages",
-		Topic:      "testRaw",
-		Route:      "/raw",
-		Metadata: map[string]string{
-			"rawPayload": "true",
-		},
-	}
-	err := s.AddTopicEventHandler(sub3, testRawTopicFunc)
-	assert.NoError(t, err, "error adding raw event handler")
-
-	s.registerBaseHandler()
-	makeEventRequest(t, s, "/raw", rawData, http.StatusOK)
-}
-
-func TestBulkRawPayloadDecode(t *testing.T) {
-	testRawTopicFunc := func(ctx context.Context, e *common.TopicEvent) (retry bool, err error) {
-		if e.DataContentType != "application/octet-stream" {
-			err = fmt.Errorf("invalid content type: %s", e.DataContentType)
+		sub3 := &common.Subscription{
+			PubsubName: "messages",
+			Topic:      "testRaw",
+			Route:      "/raw",
+			Metadata: map[string]string{
+				"rawPayload": "true",
+			},
 		}
-		if e.DataBase64 != "eyJtZXNzYWdlIjoiaGVsbG8ifQ==" {
-			err = errors.New("error decode data_base64")
+		err := s.AddTopicEventHandler(sub3, testRawTopicFunc)
+		assert.NoError(t, err, "error adding raw event handler")
+
+		s.registerBaseHandler()
+		makeEventRequest(t, s, "/raw", rawData, http.StatusOK)
+	})
+	t.Run("With bulk event handling", func(t *testing.T) {
+		s := newServer("", nil)
+
+		sub3 := &common.Subscription{
+			PubsubName: "messages",
+			Topic:      "testRaw",
+			Route:      "/raw",
+			Metadata: map[string]string{
+				"rawPayload": "true",
+			},
 		}
-		if err != nil {
-			assert.NoError(t, err, "error rawPayload decode")
-		}
-		return
-	}
+		err := s.AddBulkTopicEventHandler(sub3, testRawTopicFunc, 10, 1000)
+		assert.NoError(t, err, "error adding raw event handler")
 
-	const rawData = `{
-		"datacontenttype" : "application/octet-stream",
-		"data_base64" : "eyJtZXNzYWdlIjoiaGVsbG8ifQ=="
-	}`
-
-	s := newServer("", nil)
-
-	sub3 := &common.Subscription{
-		PubsubName: "messages",
-		Topic:      "testRaw",
-		Route:      "/raw",
-		Metadata: map[string]string{
-			"rawPayload": "true",
-		},
-	}
-	err := s.AddBulkTopicEventHandler(sub3, testRawTopicFunc, 10, 1000)
-	assert.NoError(t, err, "error adding raw event handler")
-
-	s.registerBaseHandler()
-	makeEventRequest(t, s, "/raw", rawData, http.StatusOK)
+		s.registerBaseHandler()
+		makeEventRequest(t, s, "/raw", rawData, http.StatusOK)
+	})
 }
