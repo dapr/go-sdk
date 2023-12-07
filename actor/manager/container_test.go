@@ -72,7 +72,7 @@ func TestContainerInvoke(t *testing.T) {
 	mockCodec.EXPECT().Unmarshal([]byte(param), gomock.Any()).SetArg(1, "param").Return(nil)
 
 	rsp, err := container.Invoke("Invoke", []byte(param))
-	require.Equal(t, 2, len(rsp))
+	require.Len(t, rsp, 2)
 	require.Equal(t, actorErr.Success, err)
 	assert.Equal(t, param, rsp[0].Interface().(string))
 }

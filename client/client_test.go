@@ -66,22 +66,22 @@ func TestMain(m *testing.M) {
 func TestNewClient(t *testing.T) {
 	t.Run("return error when unable to reach server", func(t *testing.T) {
 		_, err := NewClientWithPort("1")
-		assert.Error(t, err)
+		require.Error(t, err)
 	})
 
 	t.Run("no arg for with port", func(t *testing.T) {
 		_, err := NewClientWithPort("")
-		assert.Error(t, err)
+		require.Error(t, err)
 	})
 
 	t.Run("no arg for with address", func(t *testing.T) {
 		_, err := NewClientWithAddress("")
-		assert.Error(t, err)
+		require.Error(t, err)
 	})
 
 	t.Run("no arg with socket", func(t *testing.T) {
 		_, err := NewClientWithSocket("")
-		assert.Error(t, err)
+		require.Error(t, err)
 	})
 
 	t.Run("new client closed with token", func(t *testing.T) {
@@ -129,7 +129,7 @@ func TestShutdown(t *testing.T) {
 
 	t.Run("shutdown", func(t *testing.T) {
 		err := testClient.Shutdown(ctx)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 	})
 }
 
@@ -201,33 +201,33 @@ func Test_getClientTimeoutSeconds(t *testing.T) {
 	t.Run("empty env var", func(t *testing.T) {
 		t.Setenv(clientTimeoutSecondsEnvVarName, "")
 		got, err := getClientTimeoutSeconds()
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, clientDefaultTimeoutSeconds, got)
 	})
 
 	t.Run("invalid env var", func(t *testing.T) {
 		t.Setenv(clientTimeoutSecondsEnvVarName, "invalid")
 		_, err := getClientTimeoutSeconds()
-		assert.Error(t, err)
+		require.Error(t, err)
 	})
 
 	t.Run("normal env var", func(t *testing.T) {
 		t.Setenv(clientTimeoutSecondsEnvVarName, "7")
 		got, err := getClientTimeoutSeconds()
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, 7, got)
 	})
 
 	t.Run("zero env var", func(t *testing.T) {
 		t.Setenv(clientTimeoutSecondsEnvVarName, "0")
 		_, err := getClientTimeoutSeconds()
-		assert.Error(t, err)
+		require.Error(t, err)
 	})
 
 	t.Run("negative env var", func(t *testing.T) {
 		t.Setenv(clientTimeoutSecondsEnvVarName, "-3")
 		_, err := getClientTimeoutSeconds()
-		assert.Error(t, err)
+		require.Error(t, err)
 	})
 }
 

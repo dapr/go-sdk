@@ -10,25 +10,25 @@ func TestParseWorkflow(t *testing.T) {
 	t.Run("parse invalid workflow file", func(t *testing.T) {
 		parsedVersion, err := parseWorkflowVersionFromFile("../../.github/workflows/invalid.yaml")
 		assert.Equal(t, "", parsedVersion)
-		assert.Error(t, err)
+		require.Error(t, err)
 	})
 
 	t.Run("parse workflow file with a missing key", func(t *testing.T) {
 		parsedVersion, err := parseWorkflowVersionFromFile("./testing/invalid-test.yml")
 		assert.Equal(t, "", parsedVersion)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 	})
 
 	t.Run("parse an invalid workflow file", func(t *testing.T) {
 		parsedVersion, err := parseWorkflowVersionFromFile("./testing/invalid-yaml.yml")
 		assert.Equal(t, "", parsedVersion)
-		assert.Error(t, err)
+		require.Error(t, err)
 	})
 
 	t.Run("parse testing workflow file", func(t *testing.T) {
 		parsedVersion, err := parseWorkflowVersionFromFile("../../.github/workflows/test-tooling.yml")
 		assert.Equal(t, "v1.55.2", parsedVersion)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 	})
 }
 
@@ -36,7 +36,7 @@ func TestGetCurrentVersion(t *testing.T) {
 	t.Run("get current version from system", func(t *testing.T) {
 		currentVersion, err := getCurrentVersion()
 		assert.Equal(t, "v1.55.2", currentVersion)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 	})
 
 	// TODO: test failure to detect current version

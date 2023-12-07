@@ -18,29 +18,31 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/stretchr/testify/assert"
 
-	runtime "github.com/dapr/dapr/pkg/proto/runtime/v1"
+	"github.com/dapr/dapr/pkg/proto/runtime/v1"
 	"github.com/dapr/go-sdk/service/common"
 )
 
 func TestTopicErrors(t *testing.T) {
 	server := getTestServer()
 	err := server.AddTopicEventHandler(nil, nil)
-	assert.Errorf(t, err, "expected error on nil sub")
+	require.Errorf(t, err, "expected error on nil sub")
 
 	sub := &common.Subscription{}
 	err = server.AddTopicEventHandler(sub, nil)
-	assert.Errorf(t, err, "expected error on invalid sub")
+	require.Errorf(t, err, "expected error on invalid sub")
 
 	sub.PubsubName = "messages"
 	err = server.AddTopicEventHandler(sub, nil)
-	assert.Errorf(t, err, "expected error on sub without topic")
+	require.Errorf(t, err, "expected error on sub without topic")
 
 	sub.Topic = "test"
 	err = server.AddTopicEventHandler(sub, nil)
-	assert.Errorf(t, err, "expected error on sub without handler")
+	require.Errorf(t, err, "expected error on sub without handler")
 }
 
 func TestTopicSubscriptionList(t *testing.T) {
@@ -53,9 +55,9 @@ func TestTopicSubscriptionList(t *testing.T) {
 		Route:      "/test",
 	}
 	err := server.AddTopicEventHandler(sub1, eventHandler)
-	assert.Nil(t, err)
+	require.NoError(t, err)
 	resp, err := server.ListTopicSubscriptions(context.Background(), &empty.Empty{})
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.NotNil(t, resp)
 	if assert.Lenf(t, resp.Subscriptions, 1, "expected 1 handlers") {
 		sub := resp.Subscriptions[0]
@@ -72,9 +74,9 @@ func TestTopicSubscriptionList(t *testing.T) {
 		Match:      `event.type == "other"`,
 	}
 	err = server.AddTopicEventHandler(sub2, eventHandler)
-	assert.Nil(t, err)
+	require.NoError(t, err)
 	resp, err = server.ListTopicSubscriptions(context.Background(), &empty.Empty{})
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	assert.NotNil(t, resp)
 	if assert.Lenf(t, resp.Subscriptions, 1, "expected 1 handlers") {
 		sub := resp.Subscriptions[0]
@@ -102,13 +104,13 @@ func TestTopic(t *testing.T) {
 	server := getTestServer()
 
 	err := server.AddTopicEventHandler(sub, eventHandler)
-	assert.Nil(t, err)
+	require.NoError(t, err)
 
 	startTestServer(server)
 
 	t.Run("topic event without request", func(t *testing.T) {
 		_, err := server.OnTopicEvent(ctx, nil)
-		assert.Error(t, err)
+		require.Error(t, err)
 	})
 
 	t.Run("topic event for wrong topic", func(t *testing.T) {
@@ -116,7 +118,7 @@ func TestTopic(t *testing.T) {
 			Topic: "invalid",
 		}
 		_, err := server.OnTopicEvent(ctx, in)
-		assert.Error(t, err)
+		require.Error(t, err)
 	})
 
 	t.Run("topic event for valid topic", func(t *testing.T) {
@@ -131,7 +133,7 @@ func TestTopic(t *testing.T) {
 			PubsubName:      sub.PubsubName,
 		}
 		_, err := server.OnTopicEvent(ctx, in)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 	})
 
 	stopTestServer(t, server)
@@ -148,7 +150,7 @@ func TestTopicWithValidationDisabled(t *testing.T) {
 	server := getTestServer()
 
 	err := server.AddTopicEventHandler(sub, eventHandler)
-	assert.Nil(t, err)
+	require.NoError(t, err)
 
 	startTestServer(server)
 
@@ -164,7 +166,7 @@ func TestTopicWithValidationDisabled(t *testing.T) {
 	}
 
 	_, err = server.OnTopicEvent(ctx, in)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 }
 
 func TestTopicWithErrors(t *testing.T) {
@@ -182,10 +184,10 @@ func TestTopicWithErrors(t *testing.T) {
 	server := getTestServer()
 
 	err := server.AddTopicEventHandler(sub1, eventHandlerWithRetryError)
-	assert.Nil(t, err)
+	require.NoError(t, err)
 
 	err = server.AddTopicEventHandler(sub2, eventHandlerWithError)
-	assert.Nil(t, err)
+	require.NoError(t, err)
 
 	startTestServer(server)
 
@@ -201,7 +203,7 @@ func TestTopicWithErrors(t *testing.T) {
 			PubsubName:      sub1.PubsubName,
 		}
 		resp, err := server.OnTopicEvent(ctx, in)
-		assert.Error(t, err)
+		require.Error(t, err)
 		assert.Equal(t, resp.GetStatus(), runtime.TopicEventResponse_RETRY)
 	})
 
@@ -217,7 +219,7 @@ func TestTopicWithErrors(t *testing.T) {
 			PubsubName:      sub2.PubsubName,
 		}
 		resp, err := server.OnTopicEvent(ctx, in)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, resp.GetStatus(), runtime.TopicEventResponse_DROP)
 	})
 
@@ -291,7 +293,7 @@ func TestEventDataHandling(t *testing.T) {
 		return false, nil
 	}
 	err := s.AddTopicEventHandler(sub, handler)
-	assert.NoErrorf(t, err, "error adding event handler")
+	require.NoErrorf(t, err, "error adding event handler")
 
 	startTestServer(s)
 
