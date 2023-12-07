@@ -1,8 +1,6 @@
 module github.com/dapr/go-sdk/tools/check-lint-version
 
-go 1.21
-
-toolchain go1.21.5
+go 1.20
 
 require (
 	github.com/stretchr/testify v1.8.4
