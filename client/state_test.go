@@ -209,6 +209,47 @@ func TestDeleteBulkState(t *testing.T) {
 		require.NoError(t, err)
 	})
 
+	t.Run("delete bulk state item (empty) store", func(t *testing.T) { // save data
+		// save data
+		items := make([]*SetStateItem, 0, len(keys))
+		for _, key := range keys {
+			items = append(items, &SetStateItem{
+				Key:      key,
+				Value:    []byte(data),
+				Metadata: map[string]string{},
+				Etag:     &ETag{Value: "1"},
+				Options: &StateOptions{
+					Concurrency: StateConcurrencyFirstWrite,
+					Consistency: StateConsistencyEventual,
+				},
+			})
+		}
+		err := testClient.SaveBulkState(ctx, store, items...)
+		require.NoError(t, err)
+
+		// confirm data saved
+		getItems, err := testClient.GetBulkState(ctx, store, keys, nil, 1)
+		require.NoError(t, err)
+		assert.Equal(t, len(keys), len(getItems))
+
+		// delete
+		deleteItems := make([]*DeleteStateItem, 0, len(keys))
+		for _, key := range keys {
+			deleteItems = append(deleteItems, &DeleteStateItem{
+				Key:      key,
+				Metadata: map[string]string{},
+				Etag:     &ETag{Value: "1"},
+				Options: &StateOptions{
+					Concurrency: StateConcurrencyFirstWrite,
+					Consistency: StateConsistencyEventual,
+				},
+			})
+		}
+
+		err = testClient.DeleteBulkStateItems(ctx, "", deleteItems)
+		require.Error(t, err)
+	})
+
 	t.Run("delete exist data", func(t *testing.T) {
 		// save data
 		items := make([]*SetStateItem, 0, len(keys))
@@ -394,5 +435,16 @@ func TestQueryState(t *testing.T) {
 			assert.True(t, item.Key == key1 || item.Key == key2)
 			assert.Equal(t, []byte(data), item.Value)
 		}
+	})
+}
+
+func TestHasRequiredStateArgs(t *testing.T) {
+	t.Run("empty store should error", func(t *testing.T) {
+		err := hasRequiredStateArgs("", "key")
+		require.Error(t, err)
+	})
+	t.Run("empty key should error", func(t *testing.T) {
+		err := hasRequiredStateArgs("storeName", "")
+		require.Error(t, err)
 	})
 }
