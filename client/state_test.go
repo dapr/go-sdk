@@ -307,7 +307,7 @@ func TestStateTransactions(t *testing.T) {
 		assert.NotNil(t, items)
 		assert.Len(t, items, len(keys))
 
-		upsers := make([]*StateOperation, 0)
+		upserts := make([]*StateOperation, 0)
 		for _, item := range items {
 			op := &StateOperation{
 				Type: StateOperationTypeUpsert,
@@ -319,9 +319,9 @@ func TestStateTransactions(t *testing.T) {
 					Value: item.Value,
 				},
 			}
-			upsers = append(upsers, op)
+			upserts = append(upserts, op)
 		}
-		err = testClient.ExecuteStateTransaction(ctx, store, meta, upsers)
+		err = testClient.ExecuteStateTransaction(ctx, store, meta, upserts)
 		require.NoError(t, err)
 	})
 
