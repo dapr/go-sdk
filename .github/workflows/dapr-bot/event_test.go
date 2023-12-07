@@ -69,7 +69,7 @@ func TestProcessEvent(t *testing.T) {
 func TestGetIssueAssignees(t *testing.T) {
 	t.Run("get assignees", func(t *testing.T) {
 		assignees := testEvent.GetIssueAssignees()
-		assert.Len(t, len(assignees), 1)
+		assert.Len(t, assignees, 1)
 		assert.Equal(t, "testAssignee", assignees[0])
 	})
 }
