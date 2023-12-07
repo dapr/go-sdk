@@ -216,5 +216,5 @@ func TestInvocationHandlerWithCustomizedHeader(t *testing.T) {
 	err = json.Unmarshal(b, &d2)
 	require.NoError(t, err)
 	assert.Contains(t, d2, customizedHeader)
-	assert.Equal(t, d2[customizedHeader], "Value")
+	assert.Equal(t, "Value", d2[customizedHeader])
 }

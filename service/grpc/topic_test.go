@@ -204,7 +204,7 @@ func TestTopicWithErrors(t *testing.T) {
 		}
 		resp, err := server.OnTopicEvent(ctx, in)
 		require.Error(t, err)
-		assert.Equal(t, resp.GetStatus(), runtime.TopicEventResponse_RETRY)
+		assert.Equal(t, runtime.TopicEventResponse_RETRY, resp.GetStatus())
 	})
 
 	t.Run("topic event for error", func(t *testing.T) {
@@ -220,7 +220,7 @@ func TestTopicWithErrors(t *testing.T) {
 		}
 		resp, err := server.OnTopicEvent(ctx, in)
 		require.NoError(t, err)
-		assert.Equal(t, resp.GetStatus(), runtime.TopicEventResponse_DROP)
+		assert.Equal(t, runtime.TopicEventResponse_DROP, resp.GetStatus())
 	})
 
 	stopTestServer(t, server)
