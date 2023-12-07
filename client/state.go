@@ -87,10 +87,10 @@ func (o OperationType) String() string {
 func (s StateConsistency) String() string {
 	names := [...]string{
 		UndefinedType,
-		"strong",
 		"eventual",
+		"strong",
 	}
-	if s < StateConsistencyStrong || s > StateConsistencyEventual {
+	if s < StateConsistencyEventual || s > StateConsistencyStrong {
 		return UndefinedType
 	}
 

@@ -31,12 +31,24 @@ const (
 )
 
 func TestTypes(t *testing.T) {
-	var op OperationType = -1
-	assert.Equal(t, UndefinedType, op.String())
-	var c StateConcurrency = -1
-	assert.Equal(t, UndefinedType, c.String())
-	var d StateConsistency = -1
-	assert.Equal(t, UndefinedType, d.String())
+	t.Run("test operation types", func(t *testing.T) {
+		var a OperationType = -1
+		assert.Equal(t, UndefinedType, a.String())
+		a = 2
+		assert.Equal(t, "delete", a.String())
+	})
+	t.Run("test state concurrency type", func(t *testing.T) {
+		var b StateConcurrency = -1
+		assert.Equal(t, UndefinedType, b.String())
+		b = 2
+		assert.Equal(t, "last-write", b.String())
+	})
+	t.Run("test state consistency type", func(t *testing.T) {
+		var c StateConsistency = -1
+		assert.Equal(t, UndefinedType, c.String())
+		c = 2
+		assert.Equal(t, "strong", c.String())
+	})
 }
 
 func TestDurationConverter(t *testing.T) {
