@@ -49,23 +49,23 @@ func TestGetCurrentVersion(t *testing.T) {
 
 func TestIsVersionValid(t *testing.T) {
 	t.Run("compare versions - exactly equal to", func(t *testing.T) {
-		assert.Equal(t, true, isVersionValid("v1.54.2", "v1.54.2"))
+		assert.True(t, true, isVersionValid("v1.54.2", "v1.54.2"))
 	})
 
 	t.Run("compare versions - patch version greater (workflow)", func(t *testing.T) {
-		assert.Equal(t, true, isVersionValid("v1.54.3", "v1.54.2"))
+		assert.True(t, true, isVersionValid("v1.54.3", "v1.54.2"))
 	})
 
 	t.Run("compare versions - patch version greater (installed)", func(t *testing.T) {
-		assert.Equal(t, true, isVersionValid("v1.54.2", "v1.54.3"))
+		assert.True(t, true, isVersionValid("v1.54.2", "v1.54.3"))
 	})
 
 	t.Run("compare versions - invalid (installed)", func(t *testing.T) {
-		assert.Equal(t, false, isVersionValid("v1.54.2", "v1.52.2"))
+		assert.False(t, false, isVersionValid("v1.54.2", "v1.52.2"))
 	})
 
 	t.Run("compare versions - invalid (workflow)", func(t *testing.T) {
-		assert.Equal(t, false, isVersionValid("v1.52.2", "v1.54.2"))
+		assert.False(t, false, isVersionValid("v1.52.2", "v1.54.2"))
 	})
 }
 
