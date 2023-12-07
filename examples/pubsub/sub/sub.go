@@ -46,14 +46,17 @@ var importantSubscription = &common.Subscription{
 func main() {
 	s := daprd.NewService(":8080")
 
-	// for single event subscribing
-	if err := s.AddTopicEventHandler(defaultSubscription, eventHandler); err != nil {
-		log.Fatalf("error adding topic subscription: %v", err)
-	}
+	bulkSubscribe := true
 
-	// if err := s.AddBulkTopicEventHandler(defaultSubscription, eventHandler,10,100); err != nil {
-	// 	log.Fatalf("error adding topic subscription: %v", err)
-	// }
+	if bulkSubscribe {
+		if err := s.AddBulkTopicEventHandler(defaultSubscription, eventHandler, 10, 100); err != nil {
+			log.Fatalf("error adding topic subscription: %v", err)
+		}
+	} else {
+		if err := s.AddTopicEventHandler(defaultSubscription, eventHandler); err != nil {
+			log.Fatalf("error adding topic subscription: %v", err)
+		}
+	}
 
 	if err := s.Start(); err != nil && err != http.ErrServerClosed {
 		log.Fatalf("error listenning: %v", err)
@@ -62,13 +65,6 @@ func main() {
 
 func eventHandler(ctx context.Context, e *common.TopicEvent) (retry bool, err error) {
 	log.Printf("event - PubsubName: %s, Topic: %s, ID: %s, Data: %s", e.PubsubName, e.Topic, e.ID, e.Data)
-	return false, nil
-}
-
-func bulkeventHandler(ctx context.Context, e []common.TopicEvent) (retry bool, err error) {
-	for _, event := range e {
-		log.Printf("event - PubsubName: %s, Topic: %s, ID: %s, Data: %s", event.PubsubName, event.Topic, event.ID, event.Data)
-	}
 	return false, nil
 }
 

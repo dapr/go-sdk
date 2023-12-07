@@ -18,8 +18,8 @@ type TopicSubscription struct {
 	Routes *TopicRoutes `json:"routes,omitempty"`
 	// Metadata is the subscription metadata.
 	Metadata map[string]string `json:"metadata,omitempty"`
-	// bulksubsribe
-	BulkSubscribe *BulkSubscribe `json:"bulkSubscribe,omitempty"`
+	// options for customizing the bulksubscribe behaviour
+	BulkSubscribe *BulkSubscribeOptions `json:"bulkSubscribe,omitempty"`
 }
 
 type BulkSubscribeMessageItem struct {
@@ -38,7 +38,7 @@ type BulkSubscribeEnvelope struct {
 	EventType string                     `json:"eventType"`
 }
 
-type BulkSubscribe struct {
+type BulkSubscribeOptions struct {
 	Enabled            bool  `json:"enabled"`
 	MaxMessagesCount   int32 `json:"maxMessagesCount,omitempty"`
 	MaxAwaitDurationMs int32 `json:"maxAwaitDurationMs,omitempty"`
@@ -88,7 +88,7 @@ func (s *TopicSubscription) SetBulkSubscribe(maxMessagesCount, maxAwaitDurationM
 	if s.BulkSubscribe != nil {
 		return fmt.Errorf("subscription for topic %s on pubsub %s already has bulkSubscribe set", s.Topic, s.PubsubName)
 	}
-	s.BulkSubscribe = &BulkSubscribe{
+	s.BulkSubscribe = &BulkSubscribeOptions{
 		Enabled:            true,
 		MaxMessagesCount:   maxMessagesCount,
 		MaxAwaitDurationMs: maxAwaitDurationMs,

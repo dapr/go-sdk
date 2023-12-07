@@ -82,7 +82,7 @@ func convertRoutes(routes *internal.TopicRoutes) *runtimev1pb.TopicRoutes {
 	}
 }
 
-func convertBulkSubscribe(bulkSubscribe *internal.BulkSubscribe) *runtimev1pb.BulkSubscribeConfig {
+func convertBulkSubscribe(bulkSubscribe *internal.BulkSubscribeOptions) *runtimev1pb.BulkSubscribeConfig {
 	if bulkSubscribe == nil {
 		return nil
 	}

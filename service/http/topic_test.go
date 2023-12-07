@@ -57,7 +57,7 @@ func TestEventNilHandler(t *testing.T) {
 		Metadata:   map[string]string{},
 	}
 	err := s.AddTopicEventHandler(sub, nil)
-	assert.Errorf(t, err, "expected error adding event handler")
+	assert.Error(t, err, "expected error adding event handler")
 }
 
 func TestBulkEventNilHandler(t *testing.T) {
@@ -69,7 +69,7 @@ func TestBulkEventNilHandler(t *testing.T) {
 		Metadata:   map[string]string{},
 	}
 	err := s.AddBulkTopicEventHandler(sub, nil, 10, 1000)
-	assert.Errorf(t, err, "expected error adding event handler")
+	assert.Error(t, err, "expected error adding event handler")
 }
 
 func TestEventHandler(t *testing.T) {
@@ -95,7 +95,7 @@ func TestEventHandler(t *testing.T) {
 		Metadata:   map[string]string{},
 	}
 	err := s.AddTopicEventHandler(sub, testTopicFunc)
-	assert.NoErrorf(t, err, "error adding event handler")
+	assert.NoError(t, err, "error adding event handler")
 
 	sub2 := &common.Subscription{
 		PubsubName: "messages",
@@ -104,7 +104,7 @@ func TestEventHandler(t *testing.T) {
 		Metadata:   map[string]string{},
 	}
 	err = s.AddTopicEventHandler(sub2, testErrorTopicFunc)
-	assert.NoErrorf(t, err, "error adding error event handler")
+	assert.NoError(t, err, "error adding error event handler")
 
 	sub3 := &common.Subscription{
 		PubsubName: "messages",
@@ -114,7 +114,7 @@ func TestEventHandler(t *testing.T) {
 		Priority:   1,
 	}
 	err = s.AddTopicEventHandler(sub3, testTopicFunc)
-	assert.NoErrorf(t, err, "error adding error event handler")
+	assert.NoError(t, err, "error adding error event handler")
 
 	s.registerBaseHandler()
 
@@ -126,9 +126,9 @@ func TestEventHandler(t *testing.T) {
 	resp := rr.Result()
 	defer resp.Body.Close()
 	payload, err := io.ReadAll(resp.Body)
-	require.NoErrorf(t, err, "error reading response")
+	require.NoError(t, err, "error reading response")
 	var subs []internal.TopicSubscription
-	require.NoErrorf(t, json.Unmarshal(payload, &subs), "could not decode subscribe response")
+	require.NoError(t, json.Unmarshal(payload, &subs), "could not decode subscribe response")
 
 	sort.Slice(subs, func(i, j int) bool {
 		less := strings.Compare(subs[i].PubsubName, subs[j].PubsubName)
@@ -138,7 +138,7 @@ func TestEventHandler(t *testing.T) {
 		return strings.Compare(subs[i].Topic, subs[j].Topic) <= 0
 	})
 
-	if assert.Lenf(t, subs, 2, "unexpected subscription count") {
+	if assert.Len(t, subs, 2, "unexpected subscription count") {
 		assert.Equal(t, "messages", subs[0].PubsubName)
 		assert.Equal(t, "errors", subs[0].Topic)
 
@@ -146,7 +146,7 @@ func TestEventHandler(t *testing.T) {
 		assert.Equal(t, "test", subs[1].Topic)
 		assert.Equal(t, "", subs[1].Route)
 		assert.Equal(t, "/", subs[1].Routes.Default)
-		if assert.Lenf(t, subs[1].Routes.Rules, 1, "unexpected rules count") {
+		if assert.Len(t, subs[1].Routes.Rules, 1, "unexpected rules count") {
 			assert.Equal(t, `event.type == "other"`, subs[1].Routes.Rules[0].Match)
 			assert.Equal(t, "/other", subs[1].Routes.Rules[0].Path)
 		}
@@ -181,7 +181,7 @@ func TestBulkEventHandler(t *testing.T) {
 		Metadata:   map[string]string{},
 	}
 	err := s.AddBulkTopicEventHandler(sub, testTopicFunc, 10, 1000)
-	assert.NoErrorf(t, err, "error adding event handler")
+	assert.NoError(t, err, "error adding event handler")
 
 	sub2 := &common.Subscription{
 		PubsubName: "messages",
@@ -190,7 +190,7 @@ func TestBulkEventHandler(t *testing.T) {
 		Metadata:   map[string]string{},
 	}
 	err = s.AddBulkTopicEventHandler(sub2, testErrorTopicFunc, 10, 1000)
-	assert.NoErrorf(t, err, "error adding error event handler")
+	assert.NoError(t, err, "error adding error event handler")
 
 	sub3 := &common.Subscription{
 		PubsubName: "messages",
@@ -200,7 +200,7 @@ func TestBulkEventHandler(t *testing.T) {
 		Priority:   1,
 	}
 	err = s.AddBulkTopicEventHandler(sub3, testTopicFunc, 10, 1000)
-	assert.NoErrorf(t, err, "error adding error event handler")
+	assert.NoError(t, err, "error adding error event handler")
 
 	s.registerBaseHandler()
 
@@ -212,9 +212,9 @@ func TestBulkEventHandler(t *testing.T) {
 	resp := rr.Result()
 	defer resp.Body.Close()
 	payload, err := io.ReadAll(resp.Body)
-	require.NoErrorf(t, err, "error reading response")
+	require.NoError(t, err, "error reading response")
 	var subs []internal.TopicSubscription
-	require.NoErrorf(t, json.Unmarshal(payload, &subs), "could not decode subscribe response")
+	require.NoError(t, json.Unmarshal(payload, &subs), "could not decode subscribe response")
 
 	sort.Slice(subs, func(i, j int) bool {
 		less := strings.Compare(subs[i].PubsubName, subs[j].PubsubName)
@@ -224,7 +224,7 @@ func TestBulkEventHandler(t *testing.T) {
 		return strings.Compare(subs[i].Topic, subs[j].Topic) <= 0
 	})
 
-	if assert.Lenf(t, subs, 2, "unexpected subscription count") {
+	if assert.Len(t, subs, 2, "unexpected subscription count") {
 		assert.Equal(t, "messages", subs[0].PubsubName)
 		assert.Equal(t, "errors", subs[0].Topic)
 
@@ -232,7 +232,7 @@ func TestBulkEventHandler(t *testing.T) {
 		assert.Equal(t, "test", subs[1].Topic)
 		assert.Equal(t, "", subs[1].Route)
 		assert.Equal(t, "/", subs[1].Routes.Default)
-		if assert.Lenf(t, subs[1].Routes.Rules, 1, "unexpected rules count") {
+		if assert.Len(t, subs[1].Routes.Rules, 1, "unexpected rules count") {
 			assert.Equal(t, `event.type == "other"`, subs[1].Routes.Rules[0].Match)
 			assert.Equal(t, "/other", subs[1].Routes.Rules[0].Path)
 		}
@@ -354,7 +354,7 @@ func TestEventDataHandling(t *testing.T) {
 		return false, nil
 	}
 	err := s.AddTopicEventHandler(sub, handler)
-	assert.NoErrorf(t, err, "error adding event handler")
+	assert.NoError(t, err, "error adding event handler")
 
 	s.registerBaseHandler()
 
@@ -522,7 +522,7 @@ func TestBulkEventDataHandling(t *testing.T) {
 		return false, nil
 	}
 	err := s.AddBulkTopicEventHandler(sub, handler, 5, 1000)
-	assert.NoErrorf(t, err, "error adding event handler")
+	assert.NoError(t, err, "error adding event handler")
 
 	s.registerBaseHandler()
 
@@ -628,37 +628,37 @@ func makeEventRequest(t *testing.T, s *Server, route, data string, expectedStatu
 func TestAddingInvalidEventHandlers(t *testing.T) {
 	s := newServer("", nil)
 	err := s.AddTopicEventHandler(nil, testTopicFunc)
-	assert.Errorf(t, err, "expected error adding no sub event handler")
+	assert.Error(t, err, "expected error adding no sub event handler")
 
 	sub := &common.Subscription{Metadata: map[string]string{}}
 	err = s.AddTopicEventHandler(sub, testTopicFunc)
-	assert.Errorf(t, err, "expected error adding empty sub event handler")
+	assert.Error(t, err, "expected error adding empty sub event handler")
 
 	sub.Topic = "test"
 	err = s.AddTopicEventHandler(sub, testTopicFunc)
-	assert.Errorf(t, err, "expected error adding sub without component event handler")
+	assert.Error(t, err, "expected error adding sub without component event handler")
 
 	sub.PubsubName = "messages"
 	err = s.AddTopicEventHandler(sub, testTopicFunc)
-	assert.Errorf(t, err, "expected error adding sub without route event handler")
+	assert.Error(t, err, "expected error adding sub without route event handler")
 }
 
 func TestAddingInvalidBulkEventHandlers(t *testing.T) {
 	s := newServer("", nil)
 	err := s.AddBulkTopicEventHandler(nil, testTopicFunc, 10, 1000)
-	assert.Errorf(t, err, "expected error adding no sub event handler")
+	assert.Error(t, err, "expected error adding no sub event handler")
 
 	sub := &common.Subscription{Metadata: map[string]string{}}
 	err = s.AddBulkTopicEventHandler(sub, testTopicFunc, 10, 1000)
-	assert.Errorf(t, err, "expected error adding empty sub event handler")
+	assert.Error(t, err, "expected error adding empty sub event handler")
 
 	sub.Topic = "test"
 	err = s.AddBulkTopicEventHandler(sub, testTopicFunc, 10, 1000)
-	assert.Errorf(t, err, "expected error adding sub without component event handler")
+	assert.Error(t, err, "expected error adding sub without component event handler")
 
 	sub.PubsubName = "messages"
 	err = s.AddBulkTopicEventHandler(sub, testTopicFunc, 10, 1000)
-	assert.Errorf(t, err, "expected error adding sub without route event handler")
+	assert.Error(t, err, "expected error adding sub without route event handler")
 }
 
 func TestRawPayloadDecode(t *testing.T) {
@@ -670,7 +670,7 @@ func TestRawPayloadDecode(t *testing.T) {
 			err = errors.New("error decode data_base64")
 		}
 		if err != nil {
-			assert.NoErrorf(t, err, "error rawPayload decode")
+			assert.NoError(t, err, "error rawPayload decode")
 		}
 		return
 	}
@@ -691,7 +691,7 @@ func TestRawPayloadDecode(t *testing.T) {
 		},
 	}
 	err := s.AddTopicEventHandler(sub3, testRawTopicFunc)
-	assert.NoErrorf(t, err, "error adding raw event handler")
+	assert.NoError(t, err, "error adding raw event handler")
 
 	s.registerBaseHandler()
 	makeEventRequest(t, s, "/raw", rawData, http.StatusOK)
@@ -706,7 +706,7 @@ func TestBulkRawPayloadDecode(t *testing.T) {
 			err = errors.New("error decode data_base64")
 		}
 		if err != nil {
-			assert.NoErrorf(t, err, "error rawPayload decode")
+			assert.NoError(t, err, "error rawPayload decode")
 		}
 		return
 	}
@@ -727,7 +727,7 @@ func TestBulkRawPayloadDecode(t *testing.T) {
 		},
 	}
 	err := s.AddBulkTopicEventHandler(sub3, testRawTopicFunc, 10, 1000)
-	assert.NoErrorf(t, err, "error adding raw event handler")
+	assert.NoError(t, err, "error adding raw event handler")
 
 	s.registerBaseHandler()
 	makeEventRequest(t, s, "/raw", rawData, http.StatusOK)

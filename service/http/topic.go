@@ -42,7 +42,6 @@ const (
 // topicEventJSON is identical to `common.TopicEvent`
 // except for it treats `data` as a json.RawMessage so it can
 // be used as bytes or interface{}.
-// Merge itemMap into topicEventJSON
 type topicEventJSON struct {
 	// ID identifies the event.
 	ID string `json:"id"`
@@ -250,7 +249,7 @@ func (s *Server) AddTopicEventHandler(sub *common.Subscription, fn common.TopicE
 	// Route is only required for HTTP but should be specified for the
 	// app protocol to be interchangeable.
 	if sub.Route == "" {
-		return errors.New("handler route name")
+		return errors.New("missing route for this subscription")
 	}
 	if err := s.topicRegistrar.AddSubscription(sub, fn); err != nil {
 		return err
