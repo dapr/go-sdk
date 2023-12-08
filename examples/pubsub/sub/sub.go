@@ -35,6 +35,12 @@ var defaultSubscription = &common.Subscription{
 	Route:      "/orders",
 }
 
+var bulkSubscription = &common.Subscription{
+	PubsubName: "bulkmessages",
+	Topic:      "newbulkorder",
+	Route:      "/bulkorders",
+}
+
 var importantSubscription = &common.Subscription{
 	PubsubName: "messages",
 	Topic:      "neworder",
@@ -46,16 +52,12 @@ var importantSubscription = &common.Subscription{
 func main() {
 	s := daprd.NewService(":8080")
 
-	bulkSubscribe := true
+	if err := s.AddBulkTopicEventHandler(defaultSubscription, eventHandler, 10, 100); err != nil {
+		log.Fatalf("error adding topic subscription: %v", err)
+	}
 
-	if bulkSubscribe {
-		if err := s.AddBulkTopicEventHandler(defaultSubscription, eventHandler, 10, 100); err != nil {
-			log.Fatalf("error adding topic subscription: %v", err)
-		}
-	} else {
-		if err := s.AddTopicEventHandler(defaultSubscription, eventHandler); err != nil {
-			log.Fatalf("error adding topic subscription: %v", err)
-		}
+	if err := s.AddTopicEventHandler(defaultSubscription, eventHandler); err != nil {
+		log.Fatalf("error adding topic subscription: %v", err)
 	}
 
 	if err := s.Start(); err != nil && err != http.ErrServerClosed {

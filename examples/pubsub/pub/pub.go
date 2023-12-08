@@ -23,8 +23,9 @@ import (
 
 var (
 	// set the environment as instructions.
-	pubsubName = os.Getenv("DAPR_PUBSUB_NAME")
-	topicName  = "neworder"
+	pubsubName    = os.Getenv("DAPR_PUBSUB_NAME")
+	topicName     = "neworder"
+	bulkTopicName = "newbulkorder"
 )
 
 func main() {
@@ -44,7 +45,7 @@ func main() {
 	}
 
 	// Publish multiple events
-	if res := client.PublishEvents(ctx, pubsubName, topicName, publishEventsData); res.Error != nil {
+	if res := client.PublishEvents(ctx, pubsubName, bulkTopicName, publishEventsData); res.Error != nil {
 		panic(err)
 	}
 
