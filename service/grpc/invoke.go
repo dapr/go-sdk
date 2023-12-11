@@ -58,18 +58,18 @@ func (s *Server) OnInvoke(ctx context.Context, in *cpb.InvokeRequest) (*cpb.Invo
 			return nil, errors.New("authentication failed. app token key not exist")
 		}
 	}
-	if fn, ok := s.invokeHandlers[in.Method]; ok {
+	if fn, ok := s.invokeHandlers[in.GetMethod()]; ok {
 		e := &cc.InvocationEvent{}
-		e.ContentType = in.ContentType
+		e.ContentType = in.GetContentType()
 
-		if in.Data != nil {
-			e.Data = in.Data.Value
-			e.DataTypeURL = in.Data.TypeUrl
+		if in.GetData() != nil {
+			e.Data = in.GetData().GetValue()
+			e.DataTypeURL = in.GetData().GetTypeUrl()
 		}
 
-		if in.HttpExtension != nil {
-			e.Verb = in.HttpExtension.Verb.String()
-			e.QueryString = in.HttpExtension.Querystring
+		if in.GetHttpExtension() != nil {
+			e.Verb = in.GetHttpExtension().GetVerb().String()
+			e.QueryString = in.GetHttpExtension().GetQuerystring()
 		}
 
 		ct, er := fn(ctx, e)
@@ -89,5 +89,5 @@ func (s *Server) OnInvoke(ctx context.Context, in *cpb.InvokeRequest) (*cpb.Invo
 			},
 		}, nil
 	}
-	return nil, fmt.Errorf("method not implemented: %s", in.Method)
+	return nil, fmt.Errorf("method not implemented: %s", in.GetMethod())
 }

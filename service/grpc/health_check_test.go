@@ -18,7 +18,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func testHealthCheckHandler(ctx context.Context) (err error) {
@@ -32,7 +32,7 @@ func testHealthCheckHandlerWithError(ctx context.Context) (err error) {
 func TestHealthCheckHandlerForErrors(t *testing.T) {
 	server := getTestServer()
 	err := server.AddHealthCheckHandler("", nil)
-	assert.Errorf(t, err, "expected error on nil health check handler")
+	require.Errorf(t, err, "expected error on nil health check handler")
 }
 
 // go test -timeout 30s ./service/grpc -count 1 -run ^TestHealthCheck$
@@ -44,23 +44,23 @@ func TestHealthCheck(t *testing.T) {
 
 	t.Run("health check without handler", func(t *testing.T) {
 		_, err := server.HealthCheck(ctx, nil)
-		assert.Error(t, err)
+		require.Error(t, err)
 	})
 
 	err := server.AddHealthCheckHandler("", testHealthCheckHandler)
-	assert.Nil(t, err)
+	require.NoError(t, err)
 
 	t.Run("health check with handler", func(t *testing.T) {
 		_, err = server.HealthCheck(ctx, nil)
-		assert.Nil(t, err)
+		require.NoError(t, err)
 	})
 
 	err = server.AddHealthCheckHandler("", testHealthCheckHandlerWithError)
-	assert.Nil(t, err)
+	require.NoError(t, err)
 
 	t.Run("health check with error handler", func(t *testing.T) {
 		_, err = server.HealthCheck(ctx, nil)
-		assert.Error(t, err)
+		require.Error(t, err)
 	})
 
 	stopTestServer(t, server)

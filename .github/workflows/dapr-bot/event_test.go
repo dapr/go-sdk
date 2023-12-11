@@ -8,9 +8,10 @@ import (
 
 	"github.com/google/go-github/v55/github"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
-var testEvent Event = Event{
+var testEvent = Event{
 	Type: "issue_comment",
 	Path: "test/test",
 	IssueCommentEvent: &github.IssueCommentEvent{
@@ -36,14 +37,14 @@ func TestProcessEvent(t *testing.T) {
 	}
 	t.Run("process event", func(t *testing.T) {
 		event, err := ProcessEvent(testEvent.Type, testEvent.Path, testEventData)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.NotNil(t, event)
 		assert.Equal(t, "test/test", event.Path)
 	})
 
 	t.Run("process event with empty path", func(t *testing.T) {
 		event, err := ProcessEvent(testEvent.Type, "", testEventData)
-		assert.Error(t, err)
+		require.Error(t, err)
 		assert.Empty(t, event)
 	})
 
@@ -53,14 +54,14 @@ func TestProcessEvent(t *testing.T) {
 
 	t.Run("process issue_comment event", func(t *testing.T) {
 		event, err := ProcessEvent(testEvent.Type, testEvent.Path, testEventData)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.NotNil(t, event)
 		assert.Equal(t, "issue_comment", event.Type)
 	})
 
 	t.Run("process invalid event", func(t *testing.T) {
 		event, err := ProcessEvent(testEvent.Type, testEvent.Path, randomData.Bytes())
-		assert.Error(t, err)
+		require.Error(t, err)
 		assert.Empty(t, event)
 	})
 }
@@ -68,7 +69,7 @@ func TestProcessEvent(t *testing.T) {
 func TestGetIssueAssignees(t *testing.T) {
 	t.Run("get assignees", func(t *testing.T) {
 		assignees := testEvent.GetIssueAssignees()
-		assert.Equal(t, 1, len(assignees))
+		assert.Len(t, assignees, 1)
 		assert.Equal(t, "testAssignee", assignees[0])
 	})
 }

@@ -54,19 +54,19 @@ func (s *Server) OnBindingEvent(ctx context.Context, in *pb.BindingEventRequest)
 	if in == nil {
 		return nil, errors.New("nil binding event request")
 	}
-	if fn, ok := s.bindingHandlers[in.Name]; ok {
+	if fn, ok := s.bindingHandlers[in.GetName()]; ok {
 		e := &common.BindingEvent{
-			Data:     in.Data,
-			Metadata: in.Metadata,
+			Data:     in.GetData(),
+			Metadata: in.GetMetadata(),
 		}
 		data, err := fn(ctx, e)
 		if err != nil {
-			return nil, fmt.Errorf("error executing %s binding: %w", in.Name, err)
+			return nil, fmt.Errorf("error executing %s binding: %w", in.GetName(), err)
 		}
 		return &pb.BindingEventResponse{
 			Data: data,
 		}, nil
 	}
 
-	return nil, fmt.Errorf("binding not implemented: %s", in.Name)
+	return nil, fmt.Errorf("binding not implemented: %s", in.GetName())
 }

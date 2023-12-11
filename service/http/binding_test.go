@@ -21,6 +21,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/stretchr/testify/assert"
 
 	"github.com/dapr/go-sdk/service/common"
@@ -29,7 +31,7 @@ import (
 func TestBindingHandlerWithoutHandler(t *testing.T) {
 	s := newServer("", nil)
 	err := s.AddBindingInvocationHandler("/", nil)
-	assert.Errorf(t, err, "expected error adding nil binding event handler")
+	require.Errorf(t, err, "expected error adding nil binding event handler")
 }
 
 func TestBindingHandlerWithoutData(t *testing.T) {
@@ -43,10 +45,10 @@ func TestBindingHandlerWithoutData(t *testing.T) {
 		}
 		return nil, nil
 	})
-	assert.NoErrorf(t, err, "error adding binding event handler")
+	require.NoErrorf(t, err, "error adding binding event handler")
 
 	req, err := http.NewRequest(http.MethodPost, "/", nil)
-	assert.NoErrorf(t, err, "error creating request")
+	require.NoErrorf(t, err, "error creating request")
 	req.Header.Set("Content-Type", "application/json")
 
 	resp := httptest.NewRecorder()
@@ -64,10 +66,10 @@ func TestBindingHandlerWithData(t *testing.T) {
 		}
 		return []byte("test"), nil
 	})
-	assert.NoErrorf(t, err, "error adding binding event handler")
+	require.NoErrorf(t, err, "error adding binding event handler")
 
 	req, err := http.NewRequest(http.MethodPost, "/", strings.NewReader(data))
-	assert.NoErrorf(t, err, "error creating request")
+	require.NoErrorf(t, err, "error creating request")
 	req.Header.Set("Content-Type", "application/json")
 
 	resp := httptest.NewRecorder()
@@ -91,13 +93,13 @@ func TestBindingHandlerErrors(t *testing.T) {
 	data := `{"name": "test"}`
 	s := newServer("", nil)
 	err := s.AddBindingInvocationHandler("", bindingHandlerFn)
-	assert.Errorf(t, err, "expected error adding binding event handler sans route")
+	require.Errorf(t, err, "expected error adding binding event handler sans route")
 
 	err = s.AddBindingInvocationHandler("errors", bindingHandlerFnWithError)
-	assert.NoErrorf(t, err, "error adding binding event handler sans slash")
+	require.NoErrorf(t, err, "error adding binding event handler sans slash")
 
 	req, err := http.NewRequest(http.MethodPost, "/errors", strings.NewReader(data))
-	assert.NoErrorf(t, err, "error creating request")
+	require.NoErrorf(t, err, "error creating request")
 	req.Header.Set("Content-Type", "application/json")
 
 	resp := httptest.NewRecorder()

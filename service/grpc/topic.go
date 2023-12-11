@@ -76,13 +76,13 @@ func convertRoutes(routes *internal.TopicRoutes) *runtimev1pb.TopicRoutes {
 // OnTopicEvent fired whenever a message has been published to a topic that has been subscribed.
 // Dapr sends published messages in a CloudEvents v1.0 envelope.
 func (s *Server) OnTopicEvent(ctx context.Context, in *runtimev1pb.TopicEventRequest) (*runtimev1pb.TopicEventResponse, error) {
-	if in == nil || in.Topic == "" || in.PubsubName == "" {
+	if in == nil || in.GetTopic() == "" || in.GetPubsubName() == "" {
 		// this is really Dapr issue more than the event request format.
 		// since Dapr will not get updated until long after this event expires, just drop it
 		return &runtimev1pb.TopicEventResponse{Status: runtimev1pb.TopicEventResponse_DROP}, errors.New("pub/sub and topic names required")
 	}
-	key := in.PubsubName + "-" + in.Topic
-	noValidationKey := in.PubsubName
+	key := in.GetPubsubName() + "-" + in.GetTopic()
+	noValidationKey := in.GetPubsubName()
 
 	var sub *internal.TopicRegistration
 	var ok bool
@@ -93,23 +93,23 @@ func (s *Server) OnTopicEvent(ctx context.Context, in *runtimev1pb.TopicEventReq
 	}
 
 	if ok {
-		data := interface{}(in.Data)
-		if len(in.Data) > 0 {
-			mediaType, _, err := mime.ParseMediaType(in.DataContentType)
+		data := interface{}(in.GetData())
+		if len(in.GetData()) > 0 {
+			mediaType, _, err := mime.ParseMediaType(in.GetDataContentType())
 			if err == nil {
 				var v interface{}
 				switch mediaType {
 				case "application/json":
-					if err := json.Unmarshal(in.Data, &v); err == nil {
+					if err := json.Unmarshal(in.GetData(), &v); err == nil {
 						data = v
 					}
 				case "text/plain":
 					// Assume UTF-8 encoded string.
-					data = string(in.Data)
+					data = string(in.GetData())
 				default:
 					if strings.HasPrefix(mediaType, "application/") &&
 						strings.HasSuffix(mediaType, "+json") {
-						if err := json.Unmarshal(in.Data, &v); err == nil {
+						if err := json.Unmarshal(in.GetData(), &v); err == nil {
 							data = v
 						}
 					}
@@ -118,26 +118,26 @@ func (s *Server) OnTopicEvent(ctx context.Context, in *runtimev1pb.TopicEventReq
 		}
 
 		e := &common.TopicEvent{
-			ID:              in.Id,
-			Source:          in.Source,
-			Type:            in.Type,
-			SpecVersion:     in.SpecVersion,
-			DataContentType: in.DataContentType,
+			ID:              in.GetId(),
+			Source:          in.GetSource(),
+			Type:            in.GetType(),
+			SpecVersion:     in.GetSpecVersion(),
+			DataContentType: in.GetDataContentType(),
 			Data:            data,
-			RawData:         in.Data,
-			Topic:           in.Topic,
-			PubsubName:      in.PubsubName,
+			RawData:         in.GetData(),
+			Topic:           in.GetTopic(),
+			PubsubName:      in.GetPubsubName(),
 		}
 		h := sub.DefaultHandler
-		if in.Path != "" {
-			if pathHandler, ok := sub.RouteHandlers[in.Path]; ok {
+		if in.GetPath() != "" {
+			if pathHandler, ok := sub.RouteHandlers[in.GetPath()]; ok {
 				h = pathHandler
 			}
 		}
 		if h == nil {
 			return &runtimev1pb.TopicEventResponse{Status: runtimev1pb.TopicEventResponse_RETRY}, fmt.Errorf(
 				"route %s for pub/sub and topic combination not configured: %s/%s",
-				in.Path, in.PubsubName, in.Topic,
+				in.GetPath(), in.GetPubsubName(), in.GetTopic(),
 			)
 		}
 		retry, err := h(ctx, e)
@@ -151,6 +151,6 @@ func (s *Server) OnTopicEvent(ctx context.Context, in *runtimev1pb.TopicEventReq
 	}
 	return &runtimev1pb.TopicEventResponse{Status: runtimev1pb.TopicEventResponse_RETRY}, fmt.Errorf(
 		"pub/sub and topic combination not configured: %s/%s",
-		in.PubsubName, in.Topic,
+		in.GetPubsubName(), in.GetTopic(),
 	)
 }

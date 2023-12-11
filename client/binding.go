@@ -68,8 +68,8 @@ func (c *GRPCClient) InvokeBinding(ctx context.Context, in *InvokeBindingRequest
 
 	if resp != nil {
 		return &BindingEvent{
-			Data:     resp.Data,
-			Metadata: resp.Metadata,
+			Data:     resp.GetData(),
+			Metadata: resp.GetMetadata(),
 		}, nil
 	}
 
