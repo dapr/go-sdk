@@ -47,17 +47,25 @@ dapr run --app-id configuration-api\
 The subscription event order may out of order.
 
 ```
-get config = myConfigValue
-get updated config key = mySubscribeKey1, value = mySubscribeValue1 
-get updated config key = mySubscribeKey2, value = mySubscribeValue1 
-get updated config key = mySubscribeKey3, value = mySubscribeValue1 
-get updated config key = mySubscribeKey1, value = mySubscribeValue2 
-get updated config key = mySubscribeKey2, value = mySubscribeValue2 
-get updated config key = mySubscribeKey3, value = mySubscribeValue2 
-get updated config key = mySubscribeKey1, value = mySubscribeValue3 
-get updated config key = mySubscribeKey2, value = mySubscribeValue3 
-get updated config key = mySubscribeKey3, value = mySubscribeValue3 
+got config key = mykey, with value = myConfigValue
+
+got config key = mySubscribeKey1, with value = mySubscribeValue1 
+got config key = mySubscribeKey2, with value = mySubscribeValue1 
+got config key = mySubscribeKey3, with value = mySubscribeValue1 
+got config key = mySubscribeKey1, with value = mySubscribeValue2 
+got config key = mySubscribeKey2, with value = mySubscribeValue2 
+got config key = mySubscribeKey3, with value = mySubscribeValue2 
+got config key = mySubscribeKey1, with value = mySubscribeValue3 
+got config key = mySubscribeKey2, with value = mySubscribeValue3 
+got config key = mySubscribeKey3, with value = mySubscribeValue3 
+got config key = mySubscribeKey1, with value = mySubscribeValue4 
+got config key = mySubscribeKey2, with value = mySubscribeValue4 
+got config key = mySubscribeKey3, with value = mySubscribeValue4 
+got config key = mySubscribeKey1, with value = mySubscribeValue5 
+got config key = mySubscribeKey2, with value = mySubscribeValue5 
+got config key = mySubscribeKey3, with value = mySubscribeValue5 
 dapr configuration subscribe finished.
+dapr configuration unsubscribed
 ✅  Exited App successfully
 
 ```
