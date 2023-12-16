@@ -7,6 +7,7 @@ package mock
 import (
 	context "context"
 	reflect "reflect"
+	"time"
 
 	actor "github.com/dapr/go-sdk/actor"
 	gomock "github.com/golang/mock/gomock"
@@ -555,4 +556,18 @@ func (m *MockStateManagerContext) Set(ctx context.Context, stateName string, val
 func (mr *MockStateManagerContextMockRecorder) Set(ctx, stateName, value interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Set", reflect.TypeOf((*MockStateManagerContext)(nil).Set), ctx, stateName, value)
+}
+
+// SetWithTTL indicates sets TTL for the state.
+func (m *MockStateManagerContext) SetWithTTL(ctx context.Context, stateName string, value any, ttl time.Duration) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SetWithTTL", ctx, stateName, value, ttl)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Set indicates an expected call of Set.
+func (mr *MockStateManagerContextMockRecorder) SetWithTTL(ctx, stateName, value interface{}, ttl time.Duration) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetWithTTL", reflect.TypeOf((*MockStateManagerContext)(nil).Set), ctx, stateName, value, ttl)
 }
