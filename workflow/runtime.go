@@ -116,8 +116,6 @@ func (wr *WorkflowRuntime) Start() error {
 			select {
 			case <-wr.quit:
 				return
-			default:
-				// continue serving
 			}
 		}
 	}()

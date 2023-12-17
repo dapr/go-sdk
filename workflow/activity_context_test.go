@@ -3,9 +3,10 @@ package workflow
 import (
 	"context"
 	"encoding/json"
+	"testing"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 type testingTaskActivityContext struct {
@@ -28,7 +29,8 @@ func TestActivityContext(t *testing.T) {
 	ac := ActivityContext{ctx: &testingTaskActivityContext{inputBytes: inputBytes}}
 	t.Run("test getinput", func(t *testing.T) {
 		var inputReturn string
-		ac.GetInput(&inputReturn)
+		err := ac.GetInput(&inputReturn)
+		require.NoError(t, err)
 		assert.Equal(t, inputString, inputReturn)
 	})
 }
