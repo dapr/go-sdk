@@ -71,14 +71,17 @@ func getDecorator(f interface{}) (string, error) {
 	return funcName, nil
 }
 
-func (wr *WorkflowRuntime) RegisterWorkflow(w Workflow) error {
-	wrappedOrchestration := func(ctx *task.OrchestrationContext) (any, error) {
+func wrapWorkflow(w Workflow) task.Orchestrator {
+	return func(ctx *task.OrchestrationContext) (any, error) {
 		wfCtx := &Context{orchestrationContext: ctx}
-
 		return w(wfCtx)
 	}
+}
 
-	// getdecorator for workflow
+func (wr *WorkflowRuntime) RegisterWorkflow(w Workflow) error {
+	wrappedOrchestration := wrapWorkflow(w)
+
+	// get decorator for workflow
 	name, err := getDecorator(w)
 	if err != nil {
 		return fmt.Errorf("failed to get workflow decorator: %v", err)
@@ -88,14 +91,18 @@ func (wr *WorkflowRuntime) RegisterWorkflow(w Workflow) error {
 	return err
 }
 
-func (wr *WorkflowRuntime) RegisterActivity(a Activity) error {
-	wrappedActivity := func(ctx task.ActivityContext) (any, error) {
-		ac := ActivityContext{ctx: ctx}
+func wrapActivity(a Activity) task.Activity {
+	return func(ctx task.ActivityContext) (any, error) {
+		aCtx := ActivityContext{ctx: ctx}
 
-		return a(ac)
+		return a(aCtx)
 	}
+}
 
-	// getdecorator for activity
+func (wr *WorkflowRuntime) RegisterActivity(a Activity) error {
+	wrappedActivity := wrapActivity(a)
+
+	// get decorator for activity
 	name, err := getDecorator(a)
 	if err != nil {
 		return fmt.Errorf("failed to get activity decorator: %v", err)
