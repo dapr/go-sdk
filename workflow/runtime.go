@@ -32,7 +32,7 @@ type Workflow func(ctx *Context) (any, error)
 type Activity func(ctx ActivityContext) (any, error)
 
 func NewRuntime(host string, port string) (*WorkflowRuntime, error) {
-	ctx, canc := context.WithTimeout(context.Background(), time.Second*10)
+	ctx, canc := context.WithTimeout(context.Background(), time.Second*10) // TODO: add timeout option
 	defer canc()
 
 	address := fmt.Sprintf("%s:%s", host, port)
@@ -44,7 +44,7 @@ func NewRuntime(host string, port string) (*WorkflowRuntime, error) {
 		grpc.WithBlock(), // TODO: config
 	)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create runtime - grpc connection failed: %v", err)
+		return &WorkflowRuntime{}, fmt.Errorf("failed to create runtime - grpc connection failed: %v", err)
 	}
 
 	return &WorkflowRuntime{
@@ -63,6 +63,10 @@ func getDecorator(f interface{}) (string, error) {
 	callSplit := strings.Split(runtime.FuncForPC(reflect.ValueOf(f).Pointer()).Name(), ".")
 
 	funcName := callSplit[len(callSplit)-1]
+
+	if funcName == "1" {
+		return "", errors.New("anonymous function name")
+	}
 
 	return funcName, nil
 }
