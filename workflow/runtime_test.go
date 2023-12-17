@@ -50,6 +50,20 @@ func TestWorkflowRuntime(t *testing.T) {
 	})
 }
 
+func TestWrapWorkflow(t *testing.T) {
+	t.Run("wrap workflow", func(t *testing.T) {
+		orchestrator := wrapWorkflow(testWorkflow)
+		assert.NotNil(t, orchestrator)
+	})
+}
+
+func TestWrapActivity(t *testing.T) {
+	t.Run("wrap activity", func(t *testing.T) {
+		activity := wrapActivity(testActivity)
+		assert.NotNil(t, activity)
+	})
+}
+
 func TestGetDecorator(t *testing.T) {
 	name, err := getDecorator(testWorkflow)
 	require.NoError(t, err)

@@ -33,4 +33,8 @@ func TestActivityContext(t *testing.T) {
 		require.NoError(t, err)
 		assert.Equal(t, inputString, inputReturn)
 	})
+
+	t.Run("test context", func(t *testing.T) {
+		assert.Equal(t, context.TODO(), ac.Context())
+	})
 }
