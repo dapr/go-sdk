@@ -1,11 +1,12 @@
 package workflow
 
 import (
+	"testing"
+	"time"
+
 	"github.com/microsoft/durabletask-go/task"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"testing"
-	"time"
 )
 
 func TestContext(t *testing.T) {
@@ -37,6 +38,6 @@ func TestContext(t *testing.T) {
 	})
 	t.Run("is replaying", func(t *testing.T) {
 		replaying := c.IsReplaying()
-		assert.Equal(t, false, replaying)
+		assert.False(t, replaying)
 	})
 }
