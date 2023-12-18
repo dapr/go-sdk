@@ -57,48 +57,48 @@ func (c *GRPCClient) GetMetadata(ctx context.Context) (metadata *GetMetadataResp
 		return nil, fmt.Errorf("error invoking service: %w", err)
 	}
 	if resp != nil {
-		activeActorsCount := make([]*MetadataActiveActorsCount, len(resp.ActiveActorsCount))
-		for a := range resp.ActiveActorsCount {
-			activeActorsCount[a] = &MetadataActiveActorsCount{
-				Type:  resp.ActiveActorsCount[a].Type,
-				Count: resp.ActiveActorsCount[a].Count,
+		activeActorsCount := make([]*MetadataActiveActorsCount, len(resp.GetActiveActorsCount()))
+		for i, a := range resp.GetActiveActorsCount() {
+			activeActorsCount[i] = &MetadataActiveActorsCount{
+				Type:  a.GetType(),
+				Count: a.GetCount(),
 			}
 		}
-		registeredComponents := make([]*MetadataRegisteredComponents, len(resp.RegisteredComponents))
-		for r := range resp.RegisteredComponents {
-			registeredComponents[r] = &MetadataRegisteredComponents{
-				Name:         resp.RegisteredComponents[r].Name,
-				Type:         resp.RegisteredComponents[r].Type,
-				Version:      resp.RegisteredComponents[r].Version,
-				Capabilities: resp.RegisteredComponents[r].Capabilities,
+		registeredComponents := make([]*MetadataRegisteredComponents, len(resp.GetRegisteredComponents()))
+		for i, r := range resp.GetRegisteredComponents() {
+			registeredComponents[i] = &MetadataRegisteredComponents{
+				Name:         r.GetName(),
+				Type:         r.GetType(),
+				Version:      r.GetVersion(),
+				Capabilities: r.GetCapabilities(),
 			}
 		}
-		subscriptions := make([]*MetadataSubscription, len(resp.Subscriptions))
-		for s := range resp.Subscriptions {
+		subscriptions := make([]*MetadataSubscription, len(resp.GetSubscriptions()))
+		for i, s := range resp.GetSubscriptions() {
 			rules := &PubsubSubscriptionRules{}
-			for r := range resp.Subscriptions[s].Rules.Rules {
+			for _, r := range s.GetRules().GetRules() {
 				rules.Rules = append(rules.Rules, &PubsubSubscriptionRule{
-					Match: resp.Subscriptions[s].Rules.Rules[r].Match,
-					Path:  resp.Subscriptions[s].Rules.Rules[r].Path,
+					Match: r.GetMatch(),
+					Path:  r.GetPath(),
 				})
 			}
 
-			subscriptions[s] = &MetadataSubscription{
-				PubsubName:      resp.Subscriptions[s].PubsubName,
-				Topic:           resp.Subscriptions[s].Topic,
-				Metadata:        resp.Subscriptions[s].Metadata,
+			subscriptions[i] = &MetadataSubscription{
+				PubsubName:      s.GetPubsubName(),
+				Topic:           s.GetTopic(),
+				Metadata:        s.GetMetadata(),
 				Rules:           rules,
-				DeadLetterTopic: resp.Subscriptions[s].DeadLetterTopic,
+				DeadLetterTopic: s.GetDeadLetterTopic(),
 			}
 		}
-		httpEndpoints := make([]*MetadataHTTPEndpoint, len(resp.HttpEndpoints))
-		for e := range resp.HttpEndpoints {
-			httpEndpoints[e] = &MetadataHTTPEndpoint{
-				Name: resp.HttpEndpoints[e].Name,
+		httpEndpoints := make([]*MetadataHTTPEndpoint, len(resp.GetHttpEndpoints()))
+		for i, e := range resp.GetHttpEndpoints() {
+			httpEndpoints[i] = &MetadataHTTPEndpoint{
+				Name: e.GetName(),
 			}
 		}
 		metadata = &GetMetadataResponse{
-			ID:                   resp.Id,
+			ID:                   resp.GetId(),
 			ActiveActorsCount:    activeActorsCount,
 			RegisteredComponents: registeredComponents,
 			ExtendedMetadata:     resp.GetExtendedMetadata(),

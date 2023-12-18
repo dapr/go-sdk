@@ -236,13 +236,13 @@ func (s *testDaprServer) performCryptoOperation(stream grpc.ServerStream, reqPro
 
 			payload := reqProto.GetPayload()
 			if payload != nil {
-				if payload.Seq != expectSeq {
-					pw.CloseWithError(fmt.Errorf("invalid sequence number: %d (expected: %d)", payload.Seq, expectSeq))
+				if payload.GetSeq() != expectSeq {
+					pw.CloseWithError(fmt.Errorf("invalid sequence number: %d (expected: %d)", payload.GetSeq(), expectSeq))
 					return
 				}
 				expectSeq++
 
-				_, err = pw.Write(payload.Data)
+				_, err = pw.Write(payload.GetData())
 				if err != nil {
 					pw.CloseWithError(err)
 					return

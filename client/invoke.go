@@ -46,7 +46,7 @@ func (c *GRPCClient) invokeServiceWithRequest(ctx context.Context, req *pb.Invok
 
 	// allow for service to not return any value
 	if resp != nil && resp.GetData() != nil {
-		out = resp.GetData().Value
+		out = resp.GetData().GetValue()
 		return
 	}
 

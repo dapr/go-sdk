@@ -19,6 +19,8 @@ import (
 	"os"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/anypb"
@@ -45,13 +47,13 @@ func testInvokeHandlerWithError(ctx context.Context, in *cc.InvocationEvent) (ou
 func TestInvokeErrors(t *testing.T) {
 	server := getTestServer()
 	err := server.AddServiceInvocationHandler("", nil)
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	err = server.AddServiceInvocationHandler("/", nil)
-	assert.Error(t, err)
+	require.Error(t, err)
 
 	err = server.AddServiceInvocationHandler("test", nil)
-	assert.Error(t, err)
+	require.Error(t, err)
 }
 
 func TestInvokeWithToken(t *testing.T) {
@@ -60,7 +62,7 @@ func TestInvokeWithToken(t *testing.T) {
 	startTestServer(server)
 	methodName := "test"
 	err := server.AddServiceInvocationHandler(methodName, testInvokeHandler)
-	assert.Nil(t, err)
+	require.NoError(t, err)
 	t.Run("invoke with token, return success", func(t *testing.T) {
 		grpcMetadata := metadata.New(map[string]string{
 			cc.APITokenKey: os.Getenv(cc.AppAPITokenEnvVar),
@@ -68,12 +70,12 @@ func TestInvokeWithToken(t *testing.T) {
 		ctx := metadata.NewIncomingContext(context.Background(), grpcMetadata)
 		in := &common.InvokeRequest{Method: methodName}
 		_, err := server.OnInvoke(ctx, in)
-		assert.Nil(t, err)
+		require.NoError(t, err)
 	})
 	t.Run("invoke with empty token, return failed", func(t *testing.T) {
 		in := &common.InvokeRequest{Method: methodName}
 		_, err := server.OnInvoke(context.Background(), in)
-		assert.Error(t, err)
+		require.Error(t, err)
 	})
 	t.Run("invoke with mismatch token, return failed", func(t *testing.T) {
 		grpcMetadata := metadata.New(map[string]string{
@@ -82,7 +84,7 @@ func TestInvokeWithToken(t *testing.T) {
 		ctx := metadata.NewOutgoingContext(context.Background(), grpcMetadata)
 		in := &common.InvokeRequest{Method: methodName}
 		_, err := server.OnInvoke(ctx, in)
-		assert.Error(t, err)
+		require.Error(t, err)
 	})
 	_ = os.Unsetenv(cc.AppAPITokenEnvVar)
 }
@@ -95,28 +97,28 @@ func TestInvoke(t *testing.T) {
 
 	server := getTestServer()
 	err := server.AddServiceInvocationHandler("/"+methodName, testInvokeHandler)
-	assert.Nil(t, err)
+	require.NoError(t, err)
 
 	err = server.AddServiceInvocationHandler(methodNameWithError, testInvokeHandlerWithError)
-	assert.Nil(t, err)
+	require.NoError(t, err)
 
 	startTestServer(server)
 
 	t.Run("invoke without request", func(t *testing.T) {
 		_, err := server.OnInvoke(ctx, nil)
-		assert.Error(t, err)
+		require.Error(t, err)
 	})
 
 	t.Run("invoke request with invalid method name", func(t *testing.T) {
 		in := &common.InvokeRequest{Method: "invalid"}
 		_, err := server.OnInvoke(ctx, in)
-		assert.Error(t, err)
+		require.Error(t, err)
 	})
 
 	t.Run("invoke request without data", func(t *testing.T) {
 		in := &common.InvokeRequest{Method: methodName}
 		_, err := server.OnInvoke(ctx, in)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 	})
 
 	t.Run("invoke request with data", func(t *testing.T) {
@@ -126,10 +128,10 @@ func TestInvoke(t *testing.T) {
 		in.Data = &anypb.Any{Value: []byte(data)}
 		in.ContentType = dataContentType
 		out, err := server.OnInvoke(ctx, in)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.NotNil(t, out)
-		assert.Equal(t, dataContentType, out.ContentType)
-		assert.Equal(t, data, string(out.Data.Value))
+		assert.Equal(t, dataContentType, out.GetContentType())
+		assert.Equal(t, data, string(out.GetData().GetValue()))
 	})
 
 	t.Run("invoke request with error", func(t *testing.T) {
@@ -139,7 +141,7 @@ func TestInvoke(t *testing.T) {
 		in.Data = &anypb.Any{Value: []byte(data)}
 		in.ContentType = dataContentType
 		_, err := server.OnInvoke(ctx, in)
-		assert.Error(t, err)
+		require.Error(t, err)
 	})
 
 	stopTestServer(t, server)

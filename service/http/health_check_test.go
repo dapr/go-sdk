@@ -21,13 +21,15 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/stretchr/testify/assert"
 )
 
 func TestHealthCheckHandlerWithoutHandler(t *testing.T) {
 	s := newServer("", nil)
 	err := s.AddHealthCheckHandler("/", nil)
-	assert.Errorf(t, err, "expected error adding nil health check handler")
+	require.Errorf(t, err, "expected error adding nil health check handler")
 }
 
 func TestHealthCheckHandler(t *testing.T) {
@@ -37,10 +39,10 @@ func TestHealthCheckHandler(t *testing.T) {
 			return nil
 		})
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		req, err := http.NewRequest(http.MethodGet, "/", nil)
-		assert.NoErrorf(t, err, "error creating request")
+		require.NoErrorf(t, err, "error creating request")
 		req.Header.Set("Content-Type", "application/json")
 
 		resp := httptest.NewRecorder()
@@ -55,10 +57,10 @@ func TestHealthCheckHandler(t *testing.T) {
 			return errors.New("app is unhealthy")
 		})
 
-		assert.NoError(t, err)
+		require.NoError(t, err)
 
 		req, err := http.NewRequest(http.MethodGet, "/", nil)
-		assert.NoErrorf(t, err, "error creating request")
+		require.NoErrorf(t, err, "error creating request")
 		req.Header.Set("Content-Type", "application/json")
 
 		resp := httptest.NewRecorder()

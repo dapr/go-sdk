@@ -8,9 +8,10 @@ import (
 	"github.com/google/go-github/v55/github"
 	"github.com/jinzhu/copier"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
-var testBot *Bot = &Bot{
+var testBot = &Bot{
 	ctx:         context.Background(),
 	issueClient: &testClient{},
 }
@@ -50,7 +51,7 @@ func TestHandleEvent(t *testing.T) {
 		}
 		testEventCopy.IssueCommentEvent.Comment.Body = github.String("/assign")
 		res, err := testBot.HandleEvent(ctx, testEventCopy)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.NotEmpty(t, res)
 	})
 
@@ -67,7 +68,7 @@ func TestHandleEvent(t *testing.T) {
 		}
 		testEventCopy.IssueCommentEvent.Comment.Body = github.String("/assign \r \ntest body")
 		res, err := testBot.HandleEvent(ctx, testEventCopy)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.NotEmpty(t, res)
 	})
 
@@ -84,7 +85,7 @@ func TestHandleEvent(t *testing.T) {
 		}
 		testEventCopy.IssueCommentEvent.Comment.Body = github.String("/assign")
 		res, err := testBot.HandleEvent(ctx, testEventCopy)
-		assert.Error(t, err)
+		require.Error(t, err)
 		assert.NotEmpty(t, res)
 	})
 
@@ -99,7 +100,7 @@ func TestHandleEvent(t *testing.T) {
 		}
 		testEventCopy.IssueCommentEvent.Comment.Body = github.String("assign")
 		res, err := testBot.HandleEvent(ctx, testEventCopy)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, "no command found", res)
 	})
 }
@@ -111,7 +112,7 @@ func TestCreateIssueComment(t *testing.T) {
 		}
 		testBot.issueClient = &tc
 		err := testBot.CreateIssueComment("test", testEvent)
-		assert.Error(t, err)
+		require.Error(t, err)
 	})
 
 	t.Run("create issue comment", func(t *testing.T) {
@@ -120,7 +121,7 @@ func TestCreateIssueComment(t *testing.T) {
 		}
 		testBot.issueClient = &tc
 		err := testBot.CreateIssueComment("test", testEvent)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 	})
 
 	t.Run("create issue comment with empty body", func(t *testing.T) {
@@ -129,7 +130,7 @@ func TestCreateIssueComment(t *testing.T) {
 		}
 		testBot.issueClient = &tc
 		err := testBot.CreateIssueComment("", testEvent)
-		assert.Error(t, err)
+		require.Error(t, err)
 	})
 }
 
@@ -140,7 +141,7 @@ func TestAssignIssueToCommenter(t *testing.T) {
 		}
 		testBot.issueClient = &tc
 		assignee, err := testBot.AssignIssueToCommenter(testEvent)
-		assert.Error(t, err)
+		require.Error(t, err)
 		assert.Empty(t, assignee)
 	})
 
@@ -156,7 +157,7 @@ func TestAssignIssueToCommenter(t *testing.T) {
 		}
 		testEventCopy.IssueCommentEvent.Issue.Assignees = []*github.User{}
 		assignee, err := testBot.AssignIssueToCommenter(testEventCopy)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, "testCommentLogin", assignee)
 	})
 
@@ -170,7 +171,7 @@ func TestAssignIssueToCommenter(t *testing.T) {
 		}
 		testEventCopy.IssueCommentEvent.Issue.State = github.String("closed")
 		assignee, err := testBot.AssignIssueToCommenter(testEventCopy)
-		assert.Error(t, err)
+		require.Error(t, err)
 		assert.Empty(t, assignee)
 	})
 
@@ -184,7 +185,7 @@ func TestAssignIssueToCommenter(t *testing.T) {
 		}
 		testEventCopy.IssueCommentEvent.Issue.Assignees = []*github.User{{Login: github.String("testCommentLogin")}}
 		assignee, err := testBot.AssignIssueToCommenter(testEventCopy)
-		assert.Error(t, err)
+		require.Error(t, err)
 		assert.Empty(t, assignee)
 	})
 
@@ -200,7 +201,7 @@ func TestAssignIssueToCommenter(t *testing.T) {
 		}
 		testEventCopy.IssueCommentEvent.Issue.Assignees = []*github.User{{Login: github.String("testCommentLogin2")}}
 		assignee, err := testBot.AssignIssueToCommenter(testEventCopy)
-		assert.Error(t, err)
+		require.Error(t, err)
 		assert.Empty(t, assignee)
 	})
 }

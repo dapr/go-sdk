@@ -15,6 +15,7 @@ package client
 
 import (
 	"context"
+	"crypto/tls"
 	"errors"
 	"fmt"
 	"io"
@@ -28,9 +29,11 @@ import (
 
 	"github.com/dapr/go-sdk/actor"
 	"github.com/dapr/go-sdk/actor/config"
+	"github.com/dapr/go-sdk/client/internal"
 	"github.com/dapr/go-sdk/version"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
 
@@ -43,6 +46,7 @@ import (
 const (
 	daprPortDefault                = "50001"
 	daprPortEnvVarName             = "DAPR_GRPC_PORT" /* #nosec */
+	daprGRPCEndpointEnvVarName     = "DAPR_GRPC_ENDPOINT"
 	traceparentKey                 = "traceparent"
 	apiTokenKey                    = "dapr-api-token" /* #nosec */
 	apiTokenEnvVarName             = "DAPR_API_TOKEN" /* #nosec */
@@ -219,18 +223,28 @@ type Client interface {
 //	NewClientWithConnection(conn *grpc.ClientConn) Client
 //	NewClientWithSocket(socket string) (client Client, err error)
 func NewClient() (client Client, err error) {
-	port := os.Getenv(daprPortEnvVarName)
-	if port == "" {
-		port = daprPortDefault
-	}
-	if defaultClient != nil {
-		return defaultClient, nil
-	}
 	lock.Lock()
 	defer lock.Unlock()
+
 	if defaultClient != nil {
 		return defaultClient, nil
 	}
+
+	addr, ok := os.LookupEnv(daprGRPCEndpointEnvVarName)
+	if ok {
+		client, err = NewClientWithAddress(addr)
+		if err != nil {
+			return nil, fmt.Errorf("error creating %q client: %w", daprGRPCEndpointEnvVarName, err)
+		}
+		defaultClient = client
+		return defaultClient, nil
+	}
+
+	port, ok := os.LookupEnv(daprPortEnvVarName)
+	if !ok {
+		port = daprPortDefault
+	}
+
 	c, err := NewClientWithPort(port)
 	if err != nil {
 		return nil, fmt.Errorf("error creating default client: %w", err)
@@ -266,13 +280,28 @@ func NewClientWithAddressContext(ctx context.Context, address string) (client Cl
 	if err != nil {
 		return nil, err
 	}
+
+	parsedAddress, err := internal.ParseGRPCEndpoint(address)
+	if err != nil {
+		return nil, fmt.Errorf("error parsing address '%s': %w", address, err)
+	}
+
+	opts := []grpc.DialOption{
+		grpc.WithUserAgent(userAgent()),
+		grpc.WithBlock(),
+	}
+
+	if parsedAddress.TLS {
+		opts = append(opts, grpc.WithTransportCredentials(credentials.NewTLS(new(tls.Config))))
+	} else {
+		opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	}
+
 	ctx, cancel := context.WithTimeout(ctx, time.Duration(timeoutSeconds)*time.Second)
 	conn, err := grpc.DialContext(
 		ctx,
-		address,
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
-		grpc.WithUserAgent(userAgent()),
-		grpc.WithBlock(),
+		parsedAddress.Target,
+		opts...,
 	)
 	cancel()
 	if err != nil {

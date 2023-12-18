@@ -6,6 +6,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/stretchr/testify/assert"
 )
 
@@ -18,13 +20,13 @@ func TestGetConfigurationItem(t *testing.T) {
 
 	t.Run("get configuration item", func(t *testing.T) {
 		resp, err := testClient.GetConfigurationItem(ctx, "example-config", "mykey")
-		assert.Nil(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, "mykey"+valueSuffix, resp.Value)
 	})
 
 	t.Run("get configuration item with invalid storeName", func(t *testing.T) {
 		_, err := testClient.GetConfigurationItem(ctx, "", "mykey")
-		assert.NotNil(t, err)
+		require.Error(t, err)
 	})
 }
 
@@ -34,7 +36,7 @@ func TestGetConfigurationItems(t *testing.T) {
 	keys := []string{"mykey1", "mykey2", "mykey3"}
 	t.Run("Test get configuration items", func(t *testing.T) {
 		resp, err := testClient.GetConfigurationItems(ctx, "example-config", keys)
-		assert.Nil(t, err)
+		require.NoError(t, err)
 		for _, k := range keys {
 			assert.Equal(t, k+valueSuffix, resp[k].Value)
 		}
@@ -57,7 +59,7 @@ func TestSubscribeConfigurationItems(t *testing.T) {
 					atomic.AddUint32(&totalCounter, 1)
 				}
 			})
-		assert.Nil(t, err)
+		require.NoError(t, err)
 	})
 	time.Sleep(time.Second*5 + time.Millisecond*500)
 	assert.Equal(t, uint32(5), atomic.LoadUint32(&counter))
@@ -78,11 +80,11 @@ func TestUnSubscribeConfigurationItems(t *testing.T) {
 					atomic.AddUint32(&totalCounter, 1)
 				}
 			})
-		assert.Nil(t, err)
+		require.NoError(t, err)
 		time.Sleep(time.Second * 2)
 		time.Sleep(time.Millisecond * 500)
 		err = testClient.UnsubscribeConfigurationItems(ctx, "example-config", subscribeID)
-		assert.Nil(t, err)
+		require.NoError(t, err)
 	})
 	time.Sleep(time.Second * 5)
 	assert.Equal(t, uint32(3), atomic.LoadUint32(&counter))

@@ -17,6 +17,8 @@ import (
 	"context"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
@@ -41,17 +43,17 @@ func TestPublishEvent(t *testing.T) {
 
 	t.Run("with data", func(t *testing.T) {
 		err := testClient.PublishEvent(ctx, "messages", "test", []byte("ping"))
-		assert.Nil(t, err)
+		require.NoError(t, err)
 	})
 
 	t.Run("without data", func(t *testing.T) {
 		err := testClient.PublishEvent(ctx, "messages", "test", nil)
-		assert.Nil(t, err)
+		require.NoError(t, err)
 	})
 
 	t.Run("with empty topic name", func(t *testing.T) {
 		err := testClient.PublishEvent(ctx, "messages", "", []byte("ping"))
-		assert.NotNil(t, err)
+		require.Error(t, err)
 	})
 
 	t.Run("from struct with text", func(t *testing.T) {
@@ -60,7 +62,7 @@ func TestPublishEvent(t *testing.T) {
 			Key2: "value2",
 		}
 		err := testClient.PublishEventfromCustomContent(ctx, "messages", "test", testdata)
-		assert.Nil(t, err)
+		require.NoError(t, err)
 	})
 
 	t.Run("from struct with text and numbers", func(t *testing.T) {
@@ -69,7 +71,7 @@ func TestPublishEvent(t *testing.T) {
 			Key2: 2500,
 		}
 		err := testClient.PublishEventfromCustomContent(ctx, "messages", "test", testdata)
-		assert.Nil(t, err)
+		require.NoError(t, err)
 	})
 
 	t.Run("from struct with slices", func(t *testing.T) {
@@ -78,17 +80,17 @@ func TestPublishEvent(t *testing.T) {
 			Key2: []int{25, 40, 600},
 		}
 		err := testClient.PublishEventfromCustomContent(ctx, "messages", "test", testdata)
-		assert.Nil(t, err)
+		require.NoError(t, err)
 	})
 
 	t.Run("error serializing JSON", func(t *testing.T) {
 		err := testClient.PublishEventfromCustomContent(ctx, "messages", "test", make(chan struct{}))
-		assert.Error(t, err)
+		require.Error(t, err)
 	})
 
 	t.Run("raw payload", func(t *testing.T) {
 		err := testClient.PublishEvent(ctx, "messages", "test", []byte("ping"), PublishEventWithRawPayload())
-		assert.Nil(t, err)
+		require.NoError(t, err)
 	})
 }
 
@@ -98,7 +100,7 @@ func TestPublishEvents(t *testing.T) {
 
 	t.Run("without pubsub name", func(t *testing.T) {
 		res := testClient.PublishEvents(ctx, "", "test", []interface{}{"ping", "pong"})
-		assert.Error(t, res.Error)
+		require.Error(t, res.Error)
 		assert.Len(t, res.FailedEvents, 2)
 		assert.Contains(t, res.FailedEvents, "ping")
 		assert.Contains(t, res.FailedEvents, "pong")
@@ -106,7 +108,7 @@ func TestPublishEvents(t *testing.T) {
 
 	t.Run("without topic name", func(t *testing.T) {
 		res := testClient.PublishEvents(ctx, "messages", "", []interface{}{"ping", "pong"})
-		assert.Error(t, res.Error)
+		require.Error(t, res.Error)
 		assert.Len(t, res.FailedEvents, 2)
 		assert.Contains(t, res.FailedEvents, "ping")
 		assert.Contains(t, res.FailedEvents, "pong")
@@ -114,14 +116,14 @@ func TestPublishEvents(t *testing.T) {
 
 	t.Run("with data", func(t *testing.T) {
 		res := testClient.PublishEvents(ctx, "messages", "test", []interface{}{"ping", "pong"})
-		assert.Nil(t, res.Error)
-		assert.Len(t, res.FailedEvents, 0)
+		require.NoError(t, res.Error)
+		assert.Empty(t, res.FailedEvents)
 	})
 
 	t.Run("without data", func(t *testing.T) {
 		res := testClient.PublishEvents(ctx, "messages", "test", nil)
-		assert.Nil(t, res.Error)
-		assert.Len(t, res.FailedEvents, 0)
+		require.NoError(t, res.Error)
+		assert.Empty(t, res.FailedEvents)
 	})
 
 	t.Run("with struct data", func(t *testing.T) {
@@ -155,47 +157,47 @@ func TestPublishEvents(t *testing.T) {
 		for _, tc := range testcases {
 			t.Run(tc.name, func(t *testing.T) {
 				res := testClient.PublishEvents(ctx, "messages", "test", []interface{}{tc.data})
-				assert.Nil(t, res.Error)
-				assert.Len(t, res.FailedEvents, 0)
+				require.NoError(t, res.Error)
+				assert.Empty(t, res.FailedEvents)
 			})
 		}
 	})
 
 	t.Run("error serializing one event", func(t *testing.T) {
 		res := testClient.PublishEvents(ctx, "messages", "test", []interface{}{make(chan struct{}), "pong"})
-		assert.Error(t, res.Error)
+		require.Error(t, res.Error)
 		assert.Len(t, res.FailedEvents, 1)
 		assert.IsType(t, make(chan struct{}), res.FailedEvents[0])
 	})
 
 	t.Run("with raw payload", func(t *testing.T) {
 		res := testClient.PublishEvents(ctx, "messages", "test", []interface{}{"ping", "pong"}, PublishEventsWithRawPayload())
-		assert.Nil(t, res.Error)
-		assert.Len(t, res.FailedEvents, 0)
+		require.NoError(t, res.Error)
+		assert.Empty(t, res.FailedEvents)
 	})
 
 	t.Run("with metadata", func(t *testing.T) {
 		res := testClient.PublishEvents(ctx, "messages", "test", []interface{}{"ping", "pong"}, PublishEventsWithMetadata(map[string]string{"key": "value"}))
-		assert.Nil(t, res.Error)
-		assert.Len(t, res.FailedEvents, 0)
+		require.NoError(t, res.Error)
+		assert.Empty(t, res.FailedEvents)
 	})
 
 	t.Run("with custom content type", func(t *testing.T) {
 		res := testClient.PublishEvents(ctx, "messages", "test", []interface{}{"ping", "pong"}, PublishEventsWithContentType("text/plain"))
-		assert.Nil(t, res.Error)
-		assert.Len(t, res.FailedEvents, 0)
+		require.NoError(t, res.Error)
+		assert.Empty(t, res.FailedEvents)
 	})
 
 	t.Run("with events that will fail some events", func(t *testing.T) {
 		res := testClient.PublishEvents(ctx, "messages", "test", []interface{}{"ping", "pong", "fail-ping"})
-		assert.Error(t, res.Error)
+		require.Error(t, res.Error)
 		assert.Len(t, res.FailedEvents, 1)
 		assert.Contains(t, res.FailedEvents, "fail-ping")
 	})
 
 	t.Run("with events that will fail the entire request", func(t *testing.T) {
 		res := testClient.PublishEvents(ctx, "messages", "test", []interface{}{"ping", "pong", "failall-ping"})
-		assert.Error(t, res.Error)
+		require.Error(t, res.Error)
 		assert.Len(t, res.FailedEvents, 3)
 		assert.Contains(t, res.FailedEvents, "ping")
 		assert.Contains(t, res.FailedEvents, "pong")
@@ -275,11 +277,11 @@ func TestCreateBulkPublishRequestEntry(t *testing.T) {
 			t.Run(tc.name, func(t *testing.T) {
 				entry, err := createBulkPublishRequestEntry(tc.data)
 				if tc.expectedError {
-					assert.Error(t, err)
+					require.Error(t, err)
 				} else {
-					assert.Nil(t, err)
-					assert.Equal(t, tc.expectedEvent, entry.Event)
-					assert.Equal(t, tc.expectedContentType, entry.ContentType)
+					require.NoError(t, err)
+					assert.Equal(t, tc.expectedEvent, entry.GetEvent())
+					assert.Equal(t, tc.expectedContentType, entry.GetContentType())
 				}
 			})
 		}
@@ -292,9 +294,9 @@ func TestCreateBulkPublishRequestEntry(t *testing.T) {
 			EntryID:     "123",
 			Metadata:    map[string]string{"key": "value"},
 		})
-		assert.Nil(t, err)
-		assert.Equal(t, "123", entry.EntryId)
-		assert.Equal(t, map[string]string{"key": "value"}, entry.Metadata)
+		require.NoError(t, err)
+		assert.Equal(t, "123", entry.GetEntryId())
+		assert.Equal(t, map[string]string{"key": "value"}, entry.GetMetadata())
 	})
 
 	t.Run("should set random uuid as entryID when not provided", func(t *testing.T) {
@@ -318,12 +320,12 @@ func TestCreateBulkPublishRequestEntry(t *testing.T) {
 		for _, tc := range testcases {
 			t.Run(tc.name, func(t *testing.T) {
 				entry, err := createBulkPublishRequestEntry(tc.data)
-				assert.Nil(t, err)
-				assert.NotEmpty(t, entry.EntryId)
-				assert.Nil(t, entry.Metadata)
+				require.NoError(t, err)
+				assert.NotEmpty(t, entry.GetEntryId())
+				assert.Nil(t, entry.GetMetadata())
 
-				_, err = uuid.Parse(entry.EntryId)
-				assert.Nil(t, err)
+				_, err = uuid.Parse(entry.GetEntryId())
+				require.NoError(t, err)
 			})
 		}
 	})

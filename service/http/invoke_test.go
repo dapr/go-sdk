@@ -24,6 +24,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/grpc/metadata"
 
@@ -33,10 +35,10 @@ import (
 func TestInvocationHandlerWithoutHandler(t *testing.T) {
 	s := newServer("", nil)
 	err := s.AddServiceInvocationHandler("/hello", nil)
-	assert.Errorf(t, err, "expected error adding event handler")
+	require.Errorf(t, err, "expected error adding event handler")
 
 	err = s.AddServiceInvocationHandler("/", nil)
-	assert.Errorf(t, err, "expected error adding event handler, invalid router")
+	require.Errorf(t, err, "expected error adding event handler, invalid router")
 }
 
 func TestInvocationHandlerWithToken(t *testing.T) {
@@ -55,11 +57,11 @@ func TestInvocationHandlerWithToken(t *testing.T) {
 		}
 		return
 	})
-	assert.NoErrorf(t, err, "adding event handler success")
+	require.NoErrorf(t, err, "adding event handler success")
 
 	// forbbiden.
 	req, err := http.NewRequest(http.MethodPost, "/hello", strings.NewReader(data))
-	assert.NoErrorf(t, err, "creating request success")
+	require.NoErrorf(t, err, "creating request success")
 	req.Header.Set("Content-Type", "application/json")
 
 	resp := httptest.NewRecorder()
@@ -89,10 +91,10 @@ func TestInvocationHandlerWithData(t *testing.T) {
 		}
 		return
 	})
-	assert.NoErrorf(t, err, "adding event handler success")
+	require.NoErrorf(t, err, "adding event handler success")
 
 	req, err := http.NewRequest(http.MethodPost, "/hello", strings.NewReader(data))
-	assert.NoErrorf(t, err, "creating request success")
+	require.NoErrorf(t, err, "creating request success")
 	req.Header.Set("Content-Type", "application/json")
 
 	resp := httptest.NewRecorder()
@@ -100,7 +102,7 @@ func TestInvocationHandlerWithData(t *testing.T) {
 	assert.Equal(t, http.StatusOK, resp.Code)
 
 	b, err := io.ReadAll(resp.Body)
-	assert.NoErrorf(t, err, "reading response body success")
+	require.NoErrorf(t, err, "reading response body success")
 	assert.Equal(t, data, string(b))
 }
 
@@ -113,10 +115,10 @@ func TestInvocationHandlerWithoutInputData(t *testing.T) {
 		}
 		return &common.Content{}, nil
 	})
-	assert.NoErrorf(t, err, "adding event handler success")
+	require.NoErrorf(t, err, "adding event handler success")
 
 	req, err := http.NewRequest(http.MethodPost, "/hello", nil)
-	assert.NoErrorf(t, err, "creating request success")
+	require.NoErrorf(t, err, "creating request success")
 	req.Header.Set("Content-Type", "application/json")
 
 	resp := httptest.NewRecorder()
@@ -124,7 +126,7 @@ func TestInvocationHandlerWithoutInputData(t *testing.T) {
 	assert.Equal(t, http.StatusOK, resp.Code)
 
 	b, err := io.ReadAll(resp.Body)
-	assert.NoErrorf(t, err, "reading response body success")
+	require.NoErrorf(t, err, "reading response body success")
 	assert.NotNil(t, b)
 	assert.Equal(t, "", string(b))
 }
@@ -137,13 +139,13 @@ func TestInvocationHandlerWithInvalidRoute(t *testing.T) {
 	s := newServer("", nil)
 
 	err := s.AddServiceInvocationHandler("no-slash", emptyInvocationFn)
-	assert.NoErrorf(t, err, "adding no slash route event handler success")
+	require.NoErrorf(t, err, "adding no slash route event handler success")
 
 	err = s.AddServiceInvocationHandler("", emptyInvocationFn)
-	assert.Errorf(t, err, "expected error from adding no route event handler")
+	require.Errorf(t, err, "expected error from adding no route event handler")
 
 	err = s.AddServiceInvocationHandler("/a", emptyInvocationFn)
-	assert.NoErrorf(t, err, "adding event handler success")
+	require.NoErrorf(t, err, "adding event handler success")
 
 	makeEventRequest(t, s, "/b", "", http.StatusNotFound)
 }
@@ -156,7 +158,7 @@ func TestInvocationHandlerWithError(t *testing.T) {
 	s := newServer("", nil)
 
 	err := s.AddServiceInvocationHandler("/error", errorInvocationFn)
-	assert.NoErrorf(t, err, "adding error event handler success")
+	require.NoErrorf(t, err, "adding error event handler success")
 
 	makeEventRequest(t, s, "/error", "", http.StatusInternalServerError)
 }
@@ -195,11 +197,11 @@ func TestInvocationHandlerWithCustomizedHeader(t *testing.T) {
 		return
 	})
 
-	assert.NoErrorf(t, err, "adding event handler success")
+	require.NoErrorf(t, err, "adding event handler success")
 	customizedHeader := "Customized-Header"
 
 	req, err := http.NewRequest(http.MethodPost, "/hello", strings.NewReader(data))
-	assert.NoErrorf(t, err, "creating request success")
+	require.NoErrorf(t, err, "creating request success")
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set(customizedHeader, "Value")
 
@@ -208,11 +210,11 @@ func TestInvocationHandlerWithCustomizedHeader(t *testing.T) {
 	assert.Equal(t, http.StatusOK, resp.Code)
 
 	b, err := io.ReadAll(resp.Body)
-	assert.NoErrorf(t, err, "reading response body success")
+	require.NoErrorf(t, err, "reading response body success")
 
 	d2 := map[string]interface{}{}
 	err = json.Unmarshal(b, &d2)
-	assert.Nil(t, err)
+	require.NoError(t, err)
 	assert.Contains(t, d2, customizedHeader)
-	assert.Equal(t, d2[customizedHeader], "Value")
+	assert.Equal(t, "Value", d2[customizedHeader])
 }

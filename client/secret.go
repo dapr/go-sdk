@@ -67,10 +67,10 @@ func (c *GRPCClient) GetBulkSecret(ctx context.Context, storeName string, meta m
 	if resp != nil {
 		data = map[string]map[string]string{}
 
-		for secretName, secretResponse := range resp.Data {
+		for secretName, secretResponse := range resp.GetData() {
 			data[secretName] = map[string]string{}
 
-			for k, v := range secretResponse.Secrets {
+			for k, v := range secretResponse.GetSecrets() {
 				data[secretName][k] = v
 			}
 		}
