@@ -331,7 +331,7 @@ func (s *Server) AddBulkTopicEventHandler(sub *common.Subscription, fn common.To
 	// Route is only required for HTTP but should be specified for the
 	// app protocol to be interchangeable.
 	if sub.Route == "" {
-		return errors.New("handler route name")
+		return errors.New("missing route for bulk subscription")
 	}
 	if err := s.topicRegistrar.AddBulkSubscription(sub, fn, maxMessagesCount, maxAwaitDurationMs); err != nil {
 		return err
