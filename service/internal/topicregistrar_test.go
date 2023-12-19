@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/dapr/go-sdk/service/common"
 	"github.com/dapr/go-sdk/service/internal"
@@ -66,9 +67,9 @@ func TestTopicRegistrarValidation(t *testing.T) {
 			t.Run(name, func(t *testing.T) {
 				m := internal.TopicRegistrar{}
 				if tt.err != "" {
-					assert.EqualError(t, m.AddSubscription(&tt.sub, tests[name].fn), tt.err)
+					require.EqualError(t, m.AddSubscription(&tt.sub, tests[name].fn), tt.err)
 				} else {
-					assert.NoError(t, m.AddSubscription(&tt.sub, tt.fn))
+					require.NoError(t, m.AddSubscription(&tt.sub, tt.fn))
 				}
 			})
 		}
@@ -79,9 +80,9 @@ func TestTopicRegistrarValidation(t *testing.T) {
 			t.Run(name, func(t *testing.T) {
 				m := internal.TopicRegistrar{}
 				if tt.err != "" {
-					assert.EqualError(t, m.AddBulkSubscription(&tt.sub, tests[name].fn, 10, 1000), tt.err)
+					require.EqualError(t, m.AddBulkSubscription(&tt.sub, tests[name].fn, 10, 1000), tt.err)
 				} else {
-					assert.NoError(t, m.AddBulkSubscription(&tt.sub, tt.fn, 10, 1000))
+					require.NoError(t, m.AddBulkSubscription(&tt.sub, tt.fn, 10, 1000))
 				}
 			})
 		}
@@ -100,7 +101,7 @@ func TestTopicAddSubscriptionMetadata(t *testing.T) {
 
 	t.Run("with subscription", func(t *testing.T) {
 		topicRegistrar := internal.TopicRegistrar{}
-		assert.NoError(t, topicRegistrar.AddSubscription(sub, handler))
+		require.NoError(t, topicRegistrar.AddSubscription(sub, handler))
 
 		actual := topicRegistrar["pubsubname-topic"].Subscription
 		expected := &internal.TopicSubscription{
@@ -112,7 +113,7 @@ func TestTopicAddSubscriptionMetadata(t *testing.T) {
 	})
 	t.Run("with bulk subscription", func(t *testing.T) {
 		topicRegistrar := internal.TopicRegistrar{}
-		assert.NoError(t, topicRegistrar.AddBulkSubscription(sub, handler, 10, 1000))
+		require.NoError(t, topicRegistrar.AddBulkSubscription(sub, handler, 10, 1000))
 
 		actual := topicRegistrar["pubsubname-topic"].Subscription
 		expected := &internal.TopicSubscription{

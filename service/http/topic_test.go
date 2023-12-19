@@ -58,7 +58,7 @@ func TestEventNilHandler(t *testing.T) {
 			Metadata:   map[string]string{},
 		}
 		err := s.AddTopicEventHandler(sub, nil)
-		assert.Error(t, err, "expected error adding event handler")
+		require.Error(t, err, "expected error adding event handler")
 	})
 	t.Run("With bulk event handling", func(t *testing.T) {
 		s := newServer("", nil)
@@ -69,7 +69,7 @@ func TestEventNilHandler(t *testing.T) {
 			Metadata:   map[string]string{},
 		}
 		err := s.AddBulkTopicEventHandler(sub, nil, 10, 1000)
-		assert.Error(t, err, "expected error adding event handler")
+		require.Error(t, err, "expected error adding event handler")
 	})
 }
 
@@ -96,7 +96,7 @@ func TestEventHandler(t *testing.T) {
 		Metadata:   map[string]string{},
 	}
 	err := s.AddTopicEventHandler(sub, testTopicFunc)
-	assert.NoError(t, err, "error adding event handler")
+	require.NoError(t, err, "error adding event handler")
 
 	sub2 := &common.Subscription{
 		PubsubName: "messages",
@@ -105,7 +105,7 @@ func TestEventHandler(t *testing.T) {
 		Metadata:   map[string]string{},
 	}
 	err = s.AddTopicEventHandler(sub2, testErrorTopicFunc)
-	assert.NoError(t, err, "error adding error event handler")
+	require.NoError(t, err, "error adding error event handler")
 
 	sub3 := &common.Subscription{
 		PubsubName: "messages",
@@ -115,7 +115,7 @@ func TestEventHandler(t *testing.T) {
 		Priority:   1,
 	}
 	err = s.AddTopicEventHandler(sub3, testTopicFunc)
-	assert.NoError(t, err, "error adding error event handler")
+	require.NoError(t, err, "error adding error event handler")
 
 	s.registerBaseHandler()
 
@@ -182,7 +182,7 @@ func TestBulkEventHandler(t *testing.T) {
 		Metadata:   map[string]string{},
 	}
 	err := s.AddBulkTopicEventHandler(sub, testTopicFunc, 10, 1000)
-	assert.NoError(t, err, "error adding event handler")
+	require.NoError(t, err, "error adding event handler")
 
 	sub2 := &common.Subscription{
 		PubsubName: "messages",
@@ -191,7 +191,7 @@ func TestBulkEventHandler(t *testing.T) {
 		Metadata:   map[string]string{},
 	}
 	err = s.AddBulkTopicEventHandler(sub2, testErrorTopicFunc, 10, 1000)
-	assert.NoError(t, err, "error adding error event handler")
+	require.NoError(t, err, "error adding error event handler")
 
 	sub3 := &common.Subscription{
 		PubsubName: "messages",
@@ -201,7 +201,7 @@ func TestBulkEventHandler(t *testing.T) {
 		Priority:   1,
 	}
 	err = s.AddBulkTopicEventHandler(sub3, testTopicFunc, 10, 1000)
-	assert.NoError(t, err, "error adding error event handler")
+	require.NoError(t, err, "error adding error event handler")
 
 	s.registerBaseHandler()
 
@@ -355,7 +355,7 @@ func TestEventDataHandling(t *testing.T) {
 		return false, nil
 	}
 	err := s.AddTopicEventHandler(sub, handler)
-	assert.NoError(t, err, "error adding event handler")
+	require.NoError(t, err, "error adding event handler")
 
 	s.registerBaseHandler()
 
@@ -523,7 +523,7 @@ func TestBulkEventDataHandling(t *testing.T) {
 		return false, nil
 	}
 	err := s.AddBulkTopicEventHandler(sub, handler, 5, 1000)
-	assert.NoError(t, err, "error adding event handler")
+	require.NoError(t, err, "error adding event handler")
 
 	s.registerBaseHandler()
 
@@ -605,7 +605,7 @@ func makeRequest(t *testing.T, s *Server, route, data, method string, expectedSt
 	t.Helper()
 
 	req, err := http.NewRequest(method, route, strings.NewReader(data))
-	assert.NoErrorf(t, err, "error creating request: %s", data)
+	require.NoErrorf(t, err, "error creating request: %s", data)
 	testRequest(t, s, req, expectedStatusCode)
 }
 
@@ -613,7 +613,7 @@ func makeRequestWithExpectedBody(t *testing.T, s *Server, route, data, method st
 	t.Helper()
 
 	req, err := http.NewRequest(method, route, strings.NewReader(data))
-	assert.NoErrorf(t, err, "error creating request: %s", data)
+	require.NoErrorf(t, err, "error creating request: %s", data)
 	testRequestWithResponseBody(t, s, req, expectedStatusCode, expectedBody)
 }
 
@@ -621,7 +621,7 @@ func makeEventRequest(t *testing.T, s *Server, route, data string, expectedStatu
 	t.Helper()
 
 	req, err := http.NewRequest(http.MethodPost, route, strings.NewReader(data))
-	assert.NoErrorf(t, err, "error creating request: %s", data)
+	require.NoErrorf(t, err, "error creating request: %s", data)
 	req.Header.Set("Content-Type", "application/json")
 	testRequest(t, s, req, expectedStatusCode)
 }
@@ -629,37 +629,37 @@ func makeEventRequest(t *testing.T, s *Server, route, data string, expectedStatu
 func TestAddingInvalidEventHandlers(t *testing.T) {
 	s := newServer("", nil)
 	err := s.AddTopicEventHandler(nil, testTopicFunc)
-	assert.Error(t, err, "expected error adding no sub event handler")
+	require.Error(t, err, "expected error adding no sub event handler")
 
 	sub := &common.Subscription{Metadata: map[string]string{}}
 	err = s.AddTopicEventHandler(sub, testTopicFunc)
-	assert.Error(t, err, "expected error adding empty sub event handler")
+	require.Error(t, err, "expected error adding empty sub event handler")
 
 	sub.Topic = "test"
 	err = s.AddTopicEventHandler(sub, testTopicFunc)
-	assert.Error(t, err, "expected error adding sub without component event handler")
+	require.Error(t, err, "expected error adding sub without component event handler")
 
 	sub.PubsubName = "messages"
 	err = s.AddTopicEventHandler(sub, testTopicFunc)
-	assert.Error(t, err, "expected error adding sub without route event handler")
+	require.Error(t, err, "expected error adding sub without route event handler")
 }
 
 func TestAddingInvalidBulkEventHandlers(t *testing.T) {
 	s := newServer("", nil)
 	err := s.AddBulkTopicEventHandler(nil, testTopicFunc, 10, 1000)
-	assert.Error(t, err, "expected error adding no sub event handler")
+	require.Error(t, err, "expected error adding no sub event handler")
 
 	sub := &common.Subscription{Metadata: map[string]string{}}
 	err = s.AddBulkTopicEventHandler(sub, testTopicFunc, 10, 1000)
-	assert.Error(t, err, "expected error adding empty sub event handler")
+	require.Error(t, err, "expected error adding empty sub event handler")
 
 	sub.Topic = "test"
 	err = s.AddBulkTopicEventHandler(sub, testTopicFunc, 10, 1000)
-	assert.Error(t, err, "expected error adding sub without component event handler")
+	require.Error(t, err, "expected error adding sub without component event handler")
 
 	sub.PubsubName = "messages"
 	err = s.AddBulkTopicEventHandler(sub, testTopicFunc, 10, 1000)
-	assert.Error(t, err, "expected error adding sub without route event handler")
+	require.Error(t, err, "expected error adding sub without route event handler")
 }
 
 func TestRawPayloadDecode(t *testing.T) {
@@ -671,7 +671,7 @@ func TestRawPayloadDecode(t *testing.T) {
 			err = errors.New("error decode data_base64")
 		}
 		if err != nil {
-			assert.NoError(t, err, "error rawPayload decode")
+			require.NoError(t, err, "error rawPayload decode")
 		}
 		return
 	}
@@ -693,7 +693,7 @@ func TestRawPayloadDecode(t *testing.T) {
 			},
 		}
 		err := s.AddTopicEventHandler(sub3, testRawTopicFunc)
-		assert.NoError(t, err, "error adding raw event handler")
+		require.NoError(t, err, "error adding raw event handler")
 
 		s.registerBaseHandler()
 		makeEventRequest(t, s, "/raw", rawData, http.StatusOK)
@@ -710,7 +710,7 @@ func TestRawPayloadDecode(t *testing.T) {
 			},
 		}
 		err := s.AddBulkTopicEventHandler(sub3, testRawTopicFunc, 10, 1000)
-		assert.NoError(t, err, "error adding raw event handler")
+		require.NoError(t, err, "error adding raw event handler")
 
 		s.registerBaseHandler()
 		makeEventRequest(t, s, "/raw", rawData, http.StatusOK)
