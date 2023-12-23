@@ -29,29 +29,29 @@ import (
 func TestTopicErrors(t *testing.T) {
 	server := getTestServer()
 	err := server.AddTopicEventHandler(nil, nil)
-	require.Errorf(t, err, "expected error on nil sub with AddTopicEventHandler")
+	require.Error(t, err, "expected error on nil sub with AddTopicEventHandler")
 
 	err = server.AddBulkTopicEventHandler(nil, nil, 0, 0)
-	require.Errorf(t, err, "expected error on nil sub with AddBulkTopicEventHandler")
+	require.Error(t, err, "expected error on nil sub with AddBulkTopicEventHandler")
 
 	sub := &common.Subscription{}
 	err = server.AddTopicEventHandler(sub, nil)
-	require.Errorf(t, err, "expected error on invalid sub with AddTopicEventHandler")
+	require.Error(t, err, "expected error on invalid sub with AddTopicEventHandler")
 	err = server.AddBulkTopicEventHandler(sub, nil, 0, 0)
-	require.Errorf(t, err, "expected error on invalid sub with AddBulkTopicEventHandler")
+	require.Error(t, err, "expected error on invalid sub with AddBulkTopicEventHandler")
 
 	sub.PubsubName = "messages"
 	err = server.AddTopicEventHandler(sub, nil)
-	require.Errorf(t, err, "expected error on sub without topic with AddTopicEventHandler")
+	require.Error(t, err, "expected error on sub without topic with AddTopicEventHandler")
 	sub.PubsubName = "messages"
 	err = server.AddBulkTopicEventHandler(sub, nil, 0, 0)
-	require.Errorf(t, err, "expected error on sub without topic with AddBulkTopicEventHandler")
+	require.Error(t, err, "expected error on sub without topic with AddBulkTopicEventHandler")
 
 	sub.Topic = "test"
 	err = server.AddTopicEventHandler(sub, nil)
-	require.Errorf(t, err, "expected error on sub without handler")
+	require.Error(t, err, "expected error on sub without handler")
 	err = server.AddBulkTopicEventHandler(sub, nil, 0, 0)
-	require.Errorf(t, err, "expected error on sub without handler")
+	require.Error(t, err, "expected error on sub without handler")
 }
 
 func TestTopicSubscriptionList(t *testing.T) {
@@ -64,7 +64,7 @@ func TestTopicSubscriptionList(t *testing.T) {
 			Route:      "/test",
 		}
 		err := server.AddTopicEventHandler(sub1, eventHandler)
-		assert.Nil(t, err)
+		require.NoError(t, err)
 		resp, err := server.ListTopicSubscriptions(context.Background(), &empty.Empty{})
 		require.NoError(t, err)
 		assert.NotNil(t, resp)
@@ -83,7 +83,7 @@ func TestTopicSubscriptionList(t *testing.T) {
 			Match:      `event.type == "other"`,
 		}
 		err = server.AddTopicEventHandler(sub2, eventHandler)
-		assert.Nil(t, err)
+		require.NoError(t, err)
 		resp, err = server.ListTopicSubscriptions(context.Background(), &empty.Empty{})
 		require.NoError(t, err)
 		assert.NotNil(t, resp)
@@ -109,7 +109,7 @@ func TestTopicSubscriptionList(t *testing.T) {
 			Route:      "/test",
 		}
 		err := server.AddBulkTopicEventHandler(sub1, eventHandler, 10, 1000)
-		assert.Nil(t, err)
+		require.NoError(t, err)
 		resp, err := server.ListTopicSubscriptions(context.Background(), &empty.Empty{})
 		require.NoError(t, err)
 		assert.NotNil(t, resp)
@@ -128,7 +128,7 @@ func TestTopicSubscriptionList(t *testing.T) {
 			Match:      `event.type == "other"`,
 		}
 		err = server.AddBulkTopicEventHandler(sub2, eventHandler, 10, 1000)
-		assert.Nil(t, err)
+		require.NoError(t, err)
 		resp, err = server.ListTopicSubscriptions(context.Background(), &empty.Empty{})
 		require.NoError(t, err)
 		assert.NotNil(t, resp)
@@ -160,7 +160,7 @@ func TestTopic(t *testing.T) {
 		server := getTestServer()
 
 		err := server.AddTopicEventHandler(sub, eventHandler)
-		assert.Nil(t, err)
+		require.NoError(t, err)
 
 		startTestServer(server)
 
@@ -204,7 +204,7 @@ func TestTopic(t *testing.T) {
 		server := getTestServer()
 
 		err := server.AddBulkTopicEventHandler(sub, eventHandler, 10, 1000)
-		assert.Nil(t, err)
+		require.NoError(t, err)
 
 		startTestServer(server)
 
@@ -252,7 +252,7 @@ func TestTopicWithValidationDisabled(t *testing.T) {
 		server := getTestServer()
 
 		err := server.AddTopicEventHandler(sub, eventHandler)
-		assert.Nil(t, err)
+		require.NoError(t, err)
 
 		startTestServer(server)
 
@@ -281,7 +281,7 @@ func TestTopicWithValidationDisabled(t *testing.T) {
 		server := getTestServer()
 
 		err := server.AddBulkTopicEventHandler(sub, eventHandler, 10, 1000)
-		assert.Nil(t, err)
+		require.NoError(t, err)
 
 		startTestServer(server)
 
@@ -317,10 +317,10 @@ func TestTopicWithErrors(t *testing.T) {
 		server := getTestServer()
 
 		err := server.AddTopicEventHandler(sub1, eventHandlerWithRetryError)
-		assert.Nil(t, err)
+		require.NoError(t, err)
 
 		err = server.AddTopicEventHandler(sub2, eventHandlerWithError)
-		assert.Nil(t, err)
+		require.NoError(t, err)
 
 		startTestServer(server)
 
@@ -373,10 +373,10 @@ func TestTopicWithErrors(t *testing.T) {
 		server := getTestServer()
 
 		err := server.AddBulkTopicEventHandler(sub1, eventHandlerWithRetryError, 10, 1000)
-		assert.Nil(t, err)
+		require.NoError(t, err)
 
 		err = server.AddBulkTopicEventHandler(sub2, eventHandlerWithError, 10, 1000)
-		assert.Nil(t, err)
+		require.NoError(t, err)
 
 		startTestServer(server)
 
@@ -483,7 +483,7 @@ func TestEventDataHandling(t *testing.T) {
 			return false, nil
 		}
 		err := s.AddTopicEventHandler(sub, handler)
-		require.NoErrorf(t, err, "error adding event handler")
+		require.NoError(t, err, "error adding event handler")
 
 		startTestServer(s)
 
@@ -557,7 +557,7 @@ func TestEventDataHandling(t *testing.T) {
 			return false, nil
 		}
 		err := s.AddBulkTopicEventHandler(sub, handler, 10, 1000)
-		require.NoErrorf(t, err, "error adding event handler")
+		require.NoError(t, err, "error adding event handler")
 
 		startTestServer(s)
 
