@@ -23,6 +23,8 @@ background: true
 sleep: 15
 -->
 
+#### Note: sub/sub.go contains both AddTopicEventHandler (used for subscribe of messages) and AddBulkTopicEventHandler (used for bulksubscribe of messages)
+
 ```bash
 dapr run --app-id sub \
          --app-protocol http \
@@ -44,9 +46,11 @@ expected_stdout_lines:
 background: true
 sleep: 15
 -->
+#### Note: pub/pub.go contains both PublishEvents (used for publish of messages) and PublishEvent (used for bulkPublish of messages) 
 
 ```bash
 export DAPR_PUBSUB_NAME=messages
+
 
 dapr run --app-id pub \
          --log-level debug \
