@@ -20,7 +20,7 @@ func addItems(wg *sync.WaitGroup) {
 	// set config value
 	client.Set(context.Background(), "mykey", "myConfigValue", -1)
 	ticker := time.NewTicker(time.Second)
-	wg.Add(3*5)
+	wg.Add(3 * 5)
 	go func() {
 		for i := 0; i < 5; i++ {
 			<-ticker.C
@@ -46,7 +46,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("got config key = mykey, with value = %s \n", (*items).Value)
+	fmt.Printf("got config key = mykey, value = %s \n", (*items).Value)
 
 	ctx, f := context.WithTimeout(ctx, 60*time.Second)
 	md := metadata.Pairs("dapr-app-id", "configuration-api")
@@ -55,7 +55,7 @@ func main() {
 	subscribeID, err := client.SubscribeConfigurationItems(ctx, "example-config", []string{"mySubscribeKey1", "mySubscribeKey2", "mySubscribeKey3"}, func(id string, items map[string]*dapr.ConfigurationItem) {
 		wg.Done()
 		for k, v := range items {
-			fmt.Printf("got config key = %s, with value = %s \n", k, v.Value)
+			fmt.Printf("got config key = %s, value = %s \n", k, v.Value)
 		}
 	})
 	if err != nil {
