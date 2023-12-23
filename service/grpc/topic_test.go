@@ -68,7 +68,7 @@ func TestTopicSubscriptionList(t *testing.T) {
 		resp, err := server.ListTopicSubscriptions(context.Background(), &empty.Empty{})
 		require.NoError(t, err)
 		assert.NotNil(t, resp)
-		if assert.Lenf(t, resp.Subscriptions, 1, "expected 1 handlers") {
+		if assert.Len(t, resp.Subscriptions, 1, "expected 1 handlers") {
 			sub := resp.Subscriptions[0]
 			assert.Equal(t, "messages", sub.PubsubName)
 			assert.Equal(t, "test", sub.Topic)
@@ -87,7 +87,7 @@ func TestTopicSubscriptionList(t *testing.T) {
 		resp, err = server.ListTopicSubscriptions(context.Background(), &empty.Empty{})
 		require.NoError(t, err)
 		assert.NotNil(t, resp)
-		if assert.Lenf(t, resp.Subscriptions, 1, "expected 1 handlers") {
+		if assert.Len(t, resp.Subscriptions, 1, "expected 1 handlers") {
 			sub := resp.Subscriptions[0]
 			assert.Equal(t, "messages", sub.PubsubName)
 			assert.Equal(t, "test", sub.Topic)
@@ -113,7 +113,7 @@ func TestTopicSubscriptionList(t *testing.T) {
 		resp, err := server.ListTopicSubscriptions(context.Background(), &empty.Empty{})
 		require.NoError(t, err)
 		assert.NotNil(t, resp)
-		if assert.Lenf(t, resp.Subscriptions, 1, "expected 1 handlers") {
+		if assert.Len(t, resp.Subscriptions, 1, "expected 1 handlers") {
 			sub := resp.Subscriptions[0]
 			assert.Equal(t, "messages", sub.PubsubName)
 			assert.Equal(t, "test", sub.Topic)
@@ -132,7 +132,7 @@ func TestTopicSubscriptionList(t *testing.T) {
 		resp, err = server.ListTopicSubscriptions(context.Background(), &empty.Empty{})
 		require.NoError(t, err)
 		assert.NotNil(t, resp)
-		if assert.Lenf(t, resp.Subscriptions, 1, "expected 1 handlers") {
+		if assert.Len(t, resp.Subscriptions, 1, "expected 1 handlers") {
 			sub := resp.Subscriptions[0]
 			assert.Equal(t, "messages", sub.PubsubName)
 			assert.Equal(t, "test", sub.Topic)
