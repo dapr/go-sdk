@@ -37,7 +37,7 @@ func main() {
 		logger.Fatalf("error adding binding handler: %v", err)
 	}
 
-	the_service = service.NewService()
+	the_service = service.NewService("")
 	defer the_service.CloseService()
 
 	// start the service
