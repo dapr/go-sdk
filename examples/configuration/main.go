@@ -24,7 +24,6 @@ func addItems(wg *sync.WaitGroup) {
 	go func() {
 		for i := 0; i < 5; i++ {
 			<-ticker.C
-			// update config value
 			client.Set(context.Background(), "mySubscribeKey1", "mySubscribeValue"+strconv.Itoa(i+1), -1)
 			client.Set(context.Background(), "mySubscribeKey2", "mySubscribeValue"+strconv.Itoa(i+1), -1)
 			client.Set(context.Background(), "mySubscribeKey3", "mySubscribeValue"+strconv.Itoa(i+1), -1)
