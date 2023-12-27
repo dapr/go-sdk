@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mock-client
+  labels:
+    app: mock-client
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mock-client
+  template:
+    metadata:
+      annotations:
+        dapr.io/app-id: mock-client
+        dapr.io/enabled: "true"
+        dapr.io/app-port: "6005"
+        dapr.io/config: "appconfig"
+        dapr.io/enable-api-logging: "true"
+        dapr.io/log-level: "error"
+      creationTimestamp: null
+      labels:
+        app: mock-client
+    spec:
+      containers:
+      - name: mock-client
+        image: seahope/mock-client-go-image
+        env:
+        - name: APP_ID
+          value: server-test
+        - name: APP_CHANNEL_ADDRESS
+        - name: APP_PORT
+          value: "6005"
+        - name: DAPR_METRICS_PORT
+          value: "55215"
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: postgres-url
+              key: postgres-url
+      imagePullPolicy: Always
+

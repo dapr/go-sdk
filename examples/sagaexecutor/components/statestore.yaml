@@ -1,0 +1,13 @@
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: sagalogs
+spec:
+  type: state.postgresql
+  version: v1
+  metadata:
+    # Connection string
+    - name: connectionString
+      secretKeyRef:
+              name: postgres-url
+              key: postgres-url

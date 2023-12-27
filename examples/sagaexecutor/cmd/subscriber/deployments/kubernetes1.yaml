@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sagasubscriber1
+  labels:
+    app: sagasubscriber1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sagasubscriber1
+  template:
+    metadata:
+      labels:
+        app: sagasubscriber1
+      annotations:
+        dapr.io/enabled: "true"
+        dapr.io/app-id: "sagasubscriber1"
+        dapr.io/config: "appconfig"
+        dapr.io/app-port: "7006"
+        dapr.io/metrics-port: "55215"
+        dapr.io/unix-domain-socket-path: ""
+        dapr.io/log-level: "debug"
+    spec:
+      containers:
+      - name: sagasubscriber1
+        image: seahope/saga-subscriber-go-image
+        env:
+        - name: APP_ID
+          value: sagasubscriber1
+        - name: APP_CHANNEL_ADDRESS
+        - name: APP_PORT
+          value: "7006"
+        - name: DAPR_METRICS_PORT
+          value: "55215"
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: postgres-url
+              key: postgres-url
+        imagePullPolicy: Always

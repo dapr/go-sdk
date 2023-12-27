@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: server-test
+  labels:
+    app: server-test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: server-test
+  template:
+    metadata:
+      annotations:
+        dapr.io/app-id: server-test
+        dapr.io/enabled: "true"
+        dapr.io/app-port: "6006"
+        dapr.io/config: "appconfig"
+        dapr.io/enable-api-logging: "true"
+        dapr.io/log-level: "debug"
+      creationTimestamp: null
+      labels:
+        app: server-test
+    spec:
+      containers:
+      - name: server-test
+        image: seahope/saga-server-test-go-image
+        env:
+        - name: APP_ID
+          value: server-test
+        - name: APP_CHANNEL_ADDRESS
+        - name: APP_PORT
+          value: "6006"
+        - name: DAPR_METRICS_PORT
+          value: "55215"
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: postgres-url
+              key: postgres-url
+      imagePullPolicy: Always

@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sagapoller
+  labels:
+    app: sagapoller
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sagapoller
+  template:
+    metadata:
+      labels:
+        app: sagapoller
+      annotations:
+        dapr.io/enabled: "true"
+        dapr.io/app-id: "sagapoller"
+        dapr.io/app-protocol: "http"
+        dapr.io/app-port: "8080"
+        dapr.io/config: "appconfig"
+        dapr.io/log-as-json: "true"
+        dapr.io/log-level: "error"
+    spec:
+      containers:
+      - name: sagapoller
+        image: seahope/saga-poller-go-image
+        ports:
+        - containerPort: 8080
+        env:
+        - name: ADDRESS
+          value: ":8080"
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: postgres-url
+              key: postgres-url
+      imagePullPolicy: Always

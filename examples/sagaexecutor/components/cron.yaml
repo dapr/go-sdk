@@ -1,0 +1,15 @@
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: sagapoller
+spec:
+  type: bindings.cron
+  version: v1
+  metadata:
+  - name: schedule
+    value: "@every 5s" # valid cron schedule
+  - name: direction
+    value: "input"
+scopes:
+- sagapoller
+

@@ -1,0 +1,17 @@
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: sagatxs
+spec:
+  type: pubsub.redis
+  version: v1
+  metadata:
+  - name: concurrency
+    value: 1
+  - name: redisHost
+    value: 10.42.0.145:6379
+  - name: redisPassword
+    secretKeyRef:
+        name: my-release-redis
+        key: redis-password
+    
