@@ -5,8 +5,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/dapr/go-sdk/actor/mock"
 	"github.com/golang/mock/gomock"
+
+	"github.com/dapr/go-sdk/actor/mock"
 )
 
 func TestStateManager(t *testing.T) {
