@@ -22,7 +22,7 @@ expected_stdout_lines:
   - '== APP == got config key = mySubscribeKey3, value = mySubscribeValue2'
   - '== APP == got config key = mySubscribeKey1, value = mySubscribeValue3'
   - '== APP == got config key = mySubscribeKey2, value = mySubscribeValue3'
-  - '== APP == get config key = mySubscribeKey3, value = mySubscribeValue3'
+  - '== APP == got config key = mySubscribeKey3, value = mySubscribeValue3'
   - '== APP == dapr configuration subscribe finished.'
 background: false
 sleep: 40
