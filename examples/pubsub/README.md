@@ -18,8 +18,8 @@ This folder contains two Go files that use the Go SDK to invoke the Dapr Pub/Sub
 name: Run Subscriber Server
 output_match_mode: substring
 expected_stdout_lines:
-  - 'event - PubsubName: messages, Topic: newbulkorder'
   - 'event - PubsubName: messages, Topic: neworder'
+  - 'event - PubsubName: messages, Topic: newbulkorder'
 background: true
 sleep: 15
 -->
