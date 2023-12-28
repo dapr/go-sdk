@@ -18,6 +18,7 @@ This folder contains two Go files that use the Go SDK to invoke the Dapr Pub/Sub
 name: Run Subscriber Server
 output_match_mode: substring
 expected_stdout_lines:
+  - 'event - PubsubName: messages, Topic: newbulkorder'
   - 'event - PubsubName: messages, Topic: neworder'
 background: true
 sleep: 15
@@ -49,9 +50,6 @@ sleep: 15
 #### Note: pub/pub.go contains both PublishEvents (used for publish of messages) and PublishEvent (used for bulkPublish of messages) 
 
 ```bash
-export DAPR_PUBSUB_NAME=messages
-
-
 dapr run --app-id pub \
          --log-level debug \
          --resources-path ./config \
@@ -80,6 +78,6 @@ dapr stop --app-id sub
 
 ```shell
 == APP == 2023/03/29 21:36:07 event - PubsubName: messages, Topic: neworder, ID: 82427280-1c18-4fab-b901-c7e68d295d31, Data: ping
-== APP == 2023/03/29 21:36:07 event - PubsubName: messages, Topic: neworder, ID: cc13829c-af77-4303-a4d7-55cdc0b0fa7d, Data: multi-pong
-== APP == 2023/03/29 21:36:07 event - PubsubName: messages, Topic: neworder, ID: 0147f10a-d6c3-4b16-ad5a-6776956757dd, Data: multi-ping
+== APP == 2023/03/29 21:36:07 event - PubsubName: messages, Topic: newbulkorder, ID: cc13829c-af77-4303-a4d7-55cdc0b0fa7d, Data: multi-pong
+== APP == 2023/03/29 21:36:07 event - PubsubName: messages, Topic: newbulkorder, ID: 0147f10a-d6c3-4b16-ad5a-6776956757dd, Data: multi-ping
 ```

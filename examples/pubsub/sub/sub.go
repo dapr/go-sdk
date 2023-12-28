@@ -36,28 +36,19 @@ var defaultSubscription = &common.Subscription{
 }
 
 var bulkSubscription = &common.Subscription{
-	PubsubName: "bulkmessages",
+	PubsubName: "messages",
 	Topic:      "newbulkorder",
 	Route:      "/bulkorders",
-}
-
-var importantSubscription = &common.Subscription{
-	PubsubName: "messages",
-	Topic:      "neworder",
-	Route:      "/important",
-	Match:      `event.type == "important"`,
-	Priority:   1,
 }
 
 func main() {
 	s := daprd.NewService(":8080")
 
-	// use this for bulk subscription
-	// if err := s.AddBulkTopicEventHandler(defaultSubscription, eventHandler, 10, 100); err != nil {
-	// 	log.Fatalf("error adding topic subscription: %v", err)
-	// }
-
 	if err := s.AddTopicEventHandler(defaultSubscription, eventHandler); err != nil {
+		log.Fatalf("error adding topic subscription: %v", err)
+	}
+
+	if err := s.AddBulkTopicEventHandler(bulkSubscription, eventHandler, 10, 100); err != nil {
 		log.Fatalf("error adding topic subscription: %v", err)
 	}
 
@@ -68,10 +59,5 @@ func main() {
 
 func eventHandler(ctx context.Context, e *common.TopicEvent) (retry bool, err error) {
 	log.Printf("event - PubsubName: %s, Topic: %s, ID: %s, Data: %s", e.PubsubName, e.Topic, e.ID, e.Data)
-	return false, nil
-}
-
-func importantEventHandler(ctx context.Context, e *common.TopicEvent) (retry bool, err error) {
-	log.Printf("important event - PubsubName: %s, Topic: %s, ID: %s, Data: %s", e.PubsubName, e.Topic, e.ID, e.Data)
 	return false, nil
 }
