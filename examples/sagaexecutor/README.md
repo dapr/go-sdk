@@ -26,6 +26,7 @@ To get started with running this proejct, there are some prerequisites:
    build images for my DockerHub repo, so you will need to change these images to suitable names and then update the
    deployment/kubernetes.yaml files to reference the revised image names. Also, unless your cluster is running on arm64 hardware
    (Mx Macso or RPIs etc), you will need to change the GOARCH value from arm64 to say amd64 for 64-bit X86 platforms.
+4. Go needs to be installed (latest version)
 
 I used a personal hosted k3s cluster running on RPi4s, with k3s depolyed, this seems fairly solid but a Cloud SaaS version is expected to be used for real use cases of this software.
 
@@ -39,7 +40,8 @@ Then I created a DB for this project, which I called hasura - on mac/Linux):
   kubectl port-forward acid-minimal-cluster-0 -n postgres 5432:5432
   psql --host localhost --username postgres
   create database hasura with owner postgres;
-  create table sagastate ( key text PRIMARY KEY, value jsonb );
+  \c hasura;
+  create table sagastate ( key text PRIMARY KEY, value text );
   GRANT ALL PRIVILEGES ON DATABASE hasura to postgres;
   GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public to postgres;
 ```
