@@ -52,9 +52,10 @@ var importantSubscription = &common.Subscription{
 func main() {
 	s := daprd.NewService(":8080")
 
-	if err := s.AddBulkTopicEventHandler(defaultSubscription, eventHandler, 10, 100); err != nil {
-		log.Fatalf("error adding topic subscription: %v", err)
-	}
+	// use this for bulk subscription
+	// if err := s.AddBulkTopicEventHandler(defaultSubscription, eventHandler, 10, 100); err != nil {
+	// 	log.Fatalf("error adding topic subscription: %v", err)
+	// }
 
 	if err := s.AddTopicEventHandler(defaultSubscription, eventHandler); err != nil {
 		log.Fatalf("error adding topic subscription: %v", err)
