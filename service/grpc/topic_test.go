@@ -71,7 +71,7 @@ func TestTopicSubscriptionList(t *testing.T) {
 		if assert.Len(t, resp.GetSubscriptions(), 1, "expected 1 handlers") {
 			sub := resp.GetSubscriptions()[0]
 			assert.Equal(t, "messages", sub.GetPubsubName())
-			assert.Equal(t, "test", sub.Topic)
+			assert.Equal(t, "test", sub.GetTopic())
 			assert.Nil(t, sub.GetRoutes())
 		}
 
@@ -90,11 +90,11 @@ func TestTopicSubscriptionList(t *testing.T) {
 		if assert.Len(t, resp.GetSubscriptions(), 1, "expected 1 handlers") {
 			sub := resp.GetSubscriptions()[0]
 			assert.Equal(t, "messages", sub.GetPubsubName())
-			assert.Equal(t, "test", sub.Topic)
+			assert.Equal(t, "test", sub.GetTopic())
 			if assert.NotNil(t, sub.GetRoutes()) {
-				assert.Equal(t, "/test", sub.GetRoutes().Default)
-				if assert.Len(t, sub.GetRoutes().Rules, 1) {
-					rule := sub.GetRoutes().Rules[0]
+				assert.Equal(t, "/test", sub.GetRoutes().GetDefault())
+				if assert.Len(t, sub.GetRoutes().GetRules(), 1) {
+					rule := sub.GetRoutes().GetRules()[0]
 					assert.Equal(t, "/other", rule.GetPath())
 					assert.Equal(t, `event.type == "other"`, rule.GetMatch())
 				}
@@ -116,7 +116,7 @@ func TestTopicSubscriptionList(t *testing.T) {
 		if assert.Len(t, resp.GetSubscriptions(), 1, "expected 1 handlers") {
 			sub := resp.GetSubscriptions()[0]
 			assert.Equal(t, "messages", sub.GetPubsubName())
-			assert.Equal(t, "test", sub.Topic)
+			assert.Equal(t, "test", sub.GetTopic())
 			assert.Nil(t, sub.GetRoutes())
 		}
 
@@ -135,11 +135,11 @@ func TestTopicSubscriptionList(t *testing.T) {
 		if assert.Len(t, resp.GetSubscriptions(), 1, "expected 1 handlers") {
 			sub := resp.GetSubscriptions()[0]
 			assert.Equal(t, "messages", sub.GetPubsubName())
-			assert.Equal(t, "test", sub.Topic)
+			assert.Equal(t, "test", sub.GetTopic())
 			if assert.NotNil(t, sub.GetRoutes()) {
-				assert.Equal(t, "/test", sub.GetRoutes().Default)
-				if assert.Len(t, sub.GetRoutes().Rules, 1) {
-					rule := sub.GetRoutes().Rules[0]
+				assert.Equal(t, "/test", sub.GetRoutes().GetDefault())
+				if assert.Len(t, sub.GetRoutes().GetRules(), 1) {
+					rule := sub.GetRoutes().GetRules()[0]
 					assert.Equal(t, "/other", rule.GetPath())
 					assert.Equal(t, `event.type == "other"`, rule.GetMatch())
 				}
