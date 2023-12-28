@@ -22,10 +22,9 @@ import (
 
 var (
 	// set the environment as instructions.
-	pubsubName     = "messages"
-	bulkpubsubName = "bulkmessages"
-	topicName      = "neworder"
-	bulkTopicName  = "newbulkorder"
+	pubsubName    = "messages"
+	topicName     = "neworder"
+	bulkTopicName = "newbulkorder"
 )
 
 func main() {
