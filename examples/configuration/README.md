@@ -13,16 +13,16 @@ name: Run Configuration Client
 output_match_mode: substring
 match_order: none
 expected_stdout_lines:
-  - '== APP == get config = myConfigValue'
-  - '== APP == get updated config key = mySubscribeKey1, value = mySubscribeValue1'
-  - '== APP == get updated config key = mySubscribeKey2, value = mySubscribeValue1'
-  - '== APP == get updated config key = mySubscribeKey3, value = mySubscribeValue1'
-  - '== APP == get updated config key = mySubscribeKey1, value = mySubscribeValue2'
-  - '== APP == get updated config key = mySubscribeKey2, value = mySubscribeValue2'
-  - '== APP == get updated config key = mySubscribeKey3, value = mySubscribeValue2'
-  - '== APP == get updated config key = mySubscribeKey1, value = mySubscribeValue3'
-  - '== APP == get updated config key = mySubscribeKey2, value = mySubscribeValue3'
-  - '== APP == get updated config key = mySubscribeKey3, value = mySubscribeValue3'
+  - '== APP == got config key = mykey, value = myConfigValue'
+  - '== APP == got config key = mySubscribeKey1, value = mySubscribeValue1'
+  - '== APP == got config key = mySubscribeKey2, value = mySubscribeValue1'
+  - '== APP == got config key = mySubscribeKey3, value = mySubscribeValue1'
+  - '== APP == got config key = mySubscribeKey1, value = mySubscribeValue2'
+  - '== APP == got config key = mySubscribeKey2, value = mySubscribeValue2'
+  - '== APP == got config key = mySubscribeKey3, value = mySubscribeValue2'
+  - '== APP == got config key = mySubscribeKey1, value = mySubscribeValue3'
+  - '== APP == got config key = mySubscribeKey2, value = mySubscribeValue3'
+  - '== APP == got config key = mySubscribeKey3, value = mySubscribeValue3'
   - '== APP == dapr configuration subscribe finished.'
 background: false
 sleep: 40
@@ -47,17 +47,25 @@ dapr run --app-id configuration-api\
 The subscription event order may out of order.
 
 ```
-get config = myConfigValue
-get updated config key = mySubscribeKey1, value = mySubscribeValue1 
-get updated config key = mySubscribeKey2, value = mySubscribeValue1 
-get updated config key = mySubscribeKey3, value = mySubscribeValue1 
-get updated config key = mySubscribeKey1, value = mySubscribeValue2 
-get updated config key = mySubscribeKey2, value = mySubscribeValue2 
-get updated config key = mySubscribeKey3, value = mySubscribeValue2 
-get updated config key = mySubscribeKey1, value = mySubscribeValue3 
-get updated config key = mySubscribeKey2, value = mySubscribeValue3 
-get updated config key = mySubscribeKey3, value = mySubscribeValue3 
+got config key = mykey, value = myConfigValue
+
+got config key = mySubscribeKey1, value = mySubscribeValue1 
+got config key = mySubscribeKey2, value = mySubscribeValue1 
+got config key = mySubscribeKey3, value = mySubscribeValue1 
+got config key = mySubscribeKey1, value = mySubscribeValue2 
+got config key = mySubscribeKey2, value = mySubscribeValue2 
+got config key = mySubscribeKey3, value = mySubscribeValue2 
+got config key = mySubscribeKey1, value = mySubscribeValue3 
+got config key = mySubscribeKey2, value = mySubscribeValue3 
+got config key = mySubscribeKey3, value = mySubscribeValue3 
+got config key = mySubscribeKey1, value = mySubscribeValue4 
+got config key = mySubscribeKey2, value = mySubscribeValue4 
+got config key = mySubscribeKey3, value = mySubscribeValue4 
+got config key = mySubscribeKey1, value = mySubscribeValue5 
+got config key = mySubscribeKey2, value = mySubscribeValue5 
+got config key = mySubscribeKey3, value = mySubscribeValue5 
 dapr configuration subscribe finished.
+dapr configuration unsubscribed
 ✅  Exited App successfully
 
 ```
