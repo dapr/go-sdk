@@ -20,6 +20,7 @@ output_match_mode: substring
 expected_stdout_lines:
   - 'event - PubsubName: messages, Topic: neworder'
   - 'event - PubsubName: messages, Topic: newbulkorder'
+  - 'event - PubsubName: messages, Topic: newbulkorder'
 background: true
 sleep: 15
 -->
