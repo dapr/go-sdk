@@ -131,7 +131,7 @@ func main() {
 		fmt.Printf("failed to purge workflow: %v\n", err.Error())
 	}
 
-	fmt.Printf("", body)
+	fmt.Printf("%v", body)
 
 	time.Sleep(time.Second * 5)
 
