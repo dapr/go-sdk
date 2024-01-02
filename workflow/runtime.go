@@ -32,8 +32,8 @@ type Workflow func(ctx *Context) (any, error)
 type Activity func(ctx ActivityContext) (any, error)
 
 func NewRuntime(host string, port string) (*WorkflowRuntime, error) {
-	ctx, canc := context.WithTimeout(context.Background(), time.Second*10) // TODO: add timeout option
-	defer canc()
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10) // TODO: add timeout option
+	defer cancel()
 
 	address := fmt.Sprintf("%s:%s", host, port)
 
@@ -51,7 +51,7 @@ func NewRuntime(host string, port string) (*WorkflowRuntime, error) {
 		tasks:  task.NewTaskRegistry(),
 		client: client.NewTaskHubGrpcClient(clientConn, backend.DefaultLogger()),
 		quit:   make(chan bool),
-		cancel: canc,
+		cancel: cancel,
 	}, nil
 }
 
@@ -119,13 +119,8 @@ func (wr *WorkflowRuntime) Start() error {
 		if err != nil {
 			log.Fatalf("failed to start work stream: %v", err)
 		}
-		for {
-			select {
-			case <-wr.quit:
-				return
-			}
-		}
 	}()
+	<-wr.quit
 
 	return nil
 }
