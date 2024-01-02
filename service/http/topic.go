@@ -19,6 +19,7 @@ import (
 	"errors"
 	"io"
 	"net/http"
+	"strings"
 
 	"github.com/go-chi/chi/v5"
 
@@ -251,6 +252,17 @@ func (s *Server) AddTopicEventHandler(sub *common.Subscription, fn common.TopicE
 				return
 			}
 
+			// extract custom metadata from headers
+			var md map[string]string
+			for k, v := range r.Header {
+				if strings.HasPrefix(strings.ToLower(k), "metadata.") {
+					if md == nil {
+						md = make(map[string]string)
+					}
+					md[k[9:]] = v[0]
+				}
+			}
+
 			// deserialize the event
 			var in topicEventJSON
 			if err = json.Unmarshal(body, &in); err != nil {
@@ -278,6 +290,7 @@ func (s *Server) AddTopicEventHandler(sub *common.Subscription, fn common.TopicE
 				Subject:         in.Subject,
 				PubsubName:      in.PubsubName,
 				Topic:           in.Topic,
+				Metadata:        md,
 			}
 
 			w.Header().Add("Content-Type", "application/json")

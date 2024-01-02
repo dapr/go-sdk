@@ -19,6 +19,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+	"google.golang.org/grpc/metadata"
 
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/stretchr/testify/assert"
@@ -133,6 +134,32 @@ func TestTopic(t *testing.T) {
 			PubsubName:      sub.PubsubName,
 		}
 		_, err := server.OnTopicEvent(ctx, in)
+		require.NoError(t, err)
+	})
+
+	t.Run("topic event for valid topic with metadata", func(t *testing.T) {
+		sub2 := &common.Subscription{
+			PubsubName: "messages",
+			Topic:      "test2",
+		}
+		err := server.AddTopicEventHandler(sub2, func(ctx context.Context, e *common.TopicEvent) (retry bool, err error) {
+			assert.Equal(t, "value1", e.Metadata["key1"])
+			return false, nil
+		})
+		require.NoError(t, err)
+
+		in := &runtime.TopicEventRequest{
+			Id:              "a123",
+			Source:          "test",
+			Type:            "test",
+			SpecVersion:     "v1.0",
+			DataContentType: "text/plain",
+			Data:            []byte("test"),
+			Topic:           sub2.Topic,
+			PubsubName:      sub2.PubsubName,
+		}
+		ctx := metadata.NewIncomingContext(context.Background(), metadata.New(map[string]string{"Metadata.key1": "value1"}))
+		_, err = server.OnTopicEvent(ctx, in)
 		require.NoError(t, err)
 	})
 

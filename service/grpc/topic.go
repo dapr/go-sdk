@@ -22,6 +22,7 @@ import (
 	"strings"
 
 	"github.com/golang/protobuf/ptypes/empty"
+	"google.golang.org/grpc/metadata"
 
 	runtimev1pb "github.com/dapr/dapr/pkg/proto/runtime/v1"
 	"github.com/dapr/go-sdk/service/common"
@@ -117,6 +118,20 @@ func (s *Server) OnTopicEvent(ctx context.Context, in *runtimev1pb.TopicEventReq
 			}
 		}
 
+		// extract custom metadata from the context
+		var md map[string]string
+		meta, ok := metadata.FromIncomingContext(ctx)
+		if ok {
+			for k, v := range meta {
+				if strings.HasPrefix(strings.ToLower(k), "metadata.") {
+					if md == nil {
+						md = make(map[string]string)
+					}
+					md[k[9:]] = v[0]
+				}
+			}
+		}
+
 		e := &common.TopicEvent{
 			ID:              in.GetId(),
 			Source:          in.GetSource(),
@@ -127,6 +142,7 @@ func (s *Server) OnTopicEvent(ctx context.Context, in *runtimev1pb.TopicEventReq
 			RawData:         in.GetData(),
 			Topic:           in.GetTopic(),
 			PubsubName:      in.GetPubsubName(),
+			Metadata:        md,
 		}
 		h := sub.DefaultHandler
 		if in.GetPath() != "" {
