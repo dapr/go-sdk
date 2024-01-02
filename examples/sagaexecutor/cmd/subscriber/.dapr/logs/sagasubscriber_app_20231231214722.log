@@ -1,4 +1,0 @@
-== APP - sagasubscriber == Database URL: postgresql://postgres:mysecretpassword@localhost:5432/hasura
-== APP - sagasubscriber == dapr client initializing for: 127.0.0.1:63466
-
-termination signal received: shutting down
