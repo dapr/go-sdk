@@ -14,15 +14,15 @@ on:
   workflow_dispatch:
     inputs:
       daprdapr_commit:
-        description: 'Dapr/Dapr commit to build custom daprd from'
+        description: "Dapr/Dapr commit to build custom daprd from"
         required: false
-        default: ''
+        default: ""
       daprcli_commit:
-        description: 'Dapr/CLI commit to build custom dapr CLI from'
+        description: "Dapr/CLI commit to build custom dapr CLI from"
         required: false
-        default: ''
+        default: ""
   repository_dispatch:
-    types: [ validate-examples ]
+    types: [validate-examples]
   merge_group:
 jobs:
   setup:
@@ -154,7 +154,17 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        examples: [ "actor", "configuration", "grpc-service", "hello-world", "pubsub", "service", "socket" ]
+        examples:
+          [
+            "actor",
+            "configuration",
+            "grpc-service",
+            "hello-world",
+            "pubsub",
+            "service",
+            "socket",
+            "workflow",
+          ]
     steps:
       - name: Check out code onto GOPATH
         uses: actions/checkout@v4
