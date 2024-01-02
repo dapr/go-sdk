@@ -1,4 +1,4 @@
 FROM alpine
 WORKDIR /app
 ADD build build
-ENTRYPOINT build/poller
+ENTRYPOINT build/server-test
