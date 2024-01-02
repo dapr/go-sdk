@@ -22,3 +22,5 @@ vendor
 # docs 
 golang.org
 coverage.txt
+
+.dapr
