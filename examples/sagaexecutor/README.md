@@ -155,6 +155,12 @@ Sadly, there is a need to find the IP Address of the Master Redis Pod (my-releas
 kubectl get pod my-release-redis-master-0  --template '{{.status.podIP}}'
 ```
 
+Also in the pubsub.yaml file it is necessary for kubernetest to delete these two lines so that publishing error's don't occur
+```
+auth:
+  secretStore: local-secret-store
+```
+
 Before running the core Subscriber & Postgres componnets the config files in components need to be applied to the cluster e.g
 ```
 kubectl create -f components/.
