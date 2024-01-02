@@ -3,12 +3,13 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"github.com/dapr/go-sdk/workflow"
 	"io"
 	"log"
 	"net/http"
 	"sync"
 	"time"
+
+	"github.com/dapr/go-sdk/workflow"
 )
 
 func main() {
