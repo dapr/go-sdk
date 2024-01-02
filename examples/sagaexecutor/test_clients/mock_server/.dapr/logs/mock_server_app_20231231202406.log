@@ -1,0 +1,9 @@
+== APP - mock_server == dapr client initializing for: 127.0.0.1:56613
+== APP - mock_server == Database URL: postgresql://postgres:mysecretpassword@localhost:5432/hasura
+== APP - mock_server == 2023/12/31 20:24:08 Sleeping for a bit
+== APP - mock_server == 2023/12/31 20:24:18 Successfully pubished a start message for later callback
+== APP - mock_server == 2023/12/31 20:24:18 Successfully pubished Second start message callback
+== APP - mock_server == 2023/12/31 20:24:18 Successfully pubished Second stop message to cancel the start
+== APP - mock_server == 2023/12/31 20:24:18 setting up handler
+
+termination signal received: shutting down

@@ -2,6 +2,7 @@ package database
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"os"
 
@@ -16,6 +17,7 @@ import (
 
 func OpenDBConnection(connectionString string) *pgxpool.Pool {
 
+	fmt.Printf("Database URL: %s\n", os.Getenv("DATABASE_URL"))
 	dbpool, err := pgxpool.New(context.Background(), os.Getenv("DATABASE_URL"))
 
 	if err != nil {

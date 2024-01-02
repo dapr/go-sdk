@@ -1,0 +1,27 @@
+== APP - sagapoller == dapr client initializing for: 127.0.0.1:58680
+== APP - sagapoller == Database URL: postgresql://postgres:mysecretpassword@localhost:5432/hasura
+== APP - sagapoller == 2023/12/31 21:07:04 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:07:04 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:07:09 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:07:09 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:07:14 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:07:14 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:07:19 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:07:19 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:07:24 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:07:24 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:07:29 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:07:29 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:07:34 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:07:34 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:07:39 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:07:39 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:07:44 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:07:44 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:07:49 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:07:49 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:07:54 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:07:54 Returned 0 records
+
+termination signal received: shutting down
+The App process exited with error code: signal: killed

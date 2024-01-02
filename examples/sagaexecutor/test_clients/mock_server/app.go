@@ -54,7 +54,7 @@ func main() {
 	time.Sleep(10 * time.Second)
 
 	// Now ensure that the Poller will call us back
-	err = s.SendStart(client, "server-test", "test1", "abcdefgh1235", "callback", `{"fred":1}`, 20)
+	err = s.SendStart(client, "server-test", "test1", "abcdefgh1235", "callback", `{"fred":1}`, 10)
 	if err != nil {
 		log.Printf("First Publish error got %s", err)
 	} else {

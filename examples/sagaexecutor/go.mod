@@ -1,6 +1,6 @@
 module github.com/stevef1uk/sagaexecutor
 
-go 1.21.4
+go 1.21.5
 
 require (
 	cloud.google.com/go/pubsub v1.33.0

@@ -1,0 +1,67 @@
+Starting Dapr with id mock_server. HTTP Port: 60528. gRPC Port: 60529
+Updating metadata for cliPID: 76996
+time="2023-12-31T21:26:15.755004+01:00" level=info msg="Starting Dapr Runtime -- version 1.12.2 -- commit f954254ed520409602024ea6d507d0405afa1f07" app_id=mock_server instance=stevens-air.home scope=dapr.runtime type=log ver=1.12.2
+time="2023-12-31T21:26:15.755042+01:00" level=info msg="Log level set to: info" app_id=mock_server instance=stevens-air.home scope=dapr.runtime type=log ver=1.12.2
+time="2023-12-31T21:26:15.755138+01:00" level=warning msg="mTLS is disabled. Skipping certificate request and tls validation" app_id=mock_server instance=stevens-air.home scope=dapr.runtime.security type=log ver=1.12.2
+time="2023-12-31T21:26:15.756312+01:00" level=warning msg="A non-YAML resiliency file .DS_Store was detected, it will not be loaded" app_id=mock_server instance=stevens-air.home scope=dapr.runtime type=log ver=1.12.2
+time="2023-12-31T21:26:15.756615+01:00" level=warning msg="A non-YAML resiliency file secrets.json was detected, it will not be loaded" app_id=mock_server instance=stevens-air.home scope=dapr.runtime type=log ver=1.12.2
+time="2023-12-31T21:26:15.757381+01:00" level=info msg="metrics server started on :60530/" app_id=mock_server instance=stevens-air.home scope=dapr.runtime type=log ver=1.12.2
+time="2023-12-31T21:26:15.757411+01:00" level=info msg="standalone mode configured" app_id=mock_server instance=stevens-air.home scope=dapr.runtime type=log ver=1.12.2
+time="2023-12-31T21:26:15.757466+01:00" level=info msg="app id: mock_server" app_id=mock_server instance=stevens-air.home scope=dapr.runtime type=log ver=1.12.2
+time="2023-12-31T21:26:15.757566+01:00" level=info msg="Dapr trace sampler initialized: DaprTraceSampler(P=1.000000)" app_id=mock_server instance=stevens-air.home scope=dapr.runtime type=log ver=1.12.2
+time="2023-12-31T21:26:15.757902+01:00" level=info msg="local service entry announced: mock_server -> 192.168.1.46:60531" app_id=mock_server component="mdns (nameResolution/v1)" instance=stevens-air.home scope=dapr.contrib type=log ver=1.12.2
+time="2023-12-31T21:26:15.757987+01:00" level=info msg="Initialized name resolution to mdns" app_id=mock_server instance=stevens-air.home scope=dapr.runtime type=log ver=1.12.2
+time="2023-12-31T21:26:15.758061+01:00" level=info msg="Loading components…" app_id=mock_server instance=stevens-air.home scope=dapr.runtime type=log ver=1.12.2
+time="2023-12-31T21:26:15.758202+01:00" level=warning msg="A non-YAML Component file .DS_Store was detected, it will not be loaded" app_id=mock_server instance=stevens-air.home scope=dapr.runtime.components type=log ver=1.12.2
+time="2023-12-31T21:26:15.759186+01:00" level=warning msg="A non-YAML Component file secrets.json was detected, it will not be loaded" app_id=mock_server instance=stevens-air.home scope=dapr.runtime.components type=log ver=1.12.2
+time="2023-12-31T21:26:15.761132+01:00" level=info msg="Component loaded: local-secret-store (secretstores.local.file/v1)" app_id=mock_server instance=stevens-air.home scope=dapr.runtime type=log ver=1.12.2
+time="2023-12-31T21:26:15.768134+01:00" level=info msg="Component loaded: sagatxs (pubsub.redis/v1)" app_id=mock_server instance=stevens-air.home scope=dapr.runtime type=log ver=1.12.2
+time="2023-12-31T21:26:15.768197+01:00" level=info msg="Waiting for all outstanding components to be processed…" app_id=mock_server instance=stevens-air.home scope=dapr.runtime type=log ver=1.12.2
+time="2023-12-31T21:26:15.808748+01:00" level=info msg="Component loaded: sagalogs (state.postgresql/v1)" app_id=mock_server instance=stevens-air.home scope=dapr.runtime type=log ver=1.12.2
+time="2023-12-31T21:26:15.808804+01:00" level=info msg="All outstanding components processed" app_id=mock_server instance=stevens-air.home scope=dapr.runtime type=log ver=1.12.2
+time="2023-12-31T21:26:15.80882+01:00" level=info msg="Loading endpoints…" app_id=mock_server instance=stevens-air.home scope=dapr.runtime type=log ver=1.12.2
+time="2023-12-31T21:26:15.808844+01:00" level=info msg="Schedule expired data clean up every 1h0m0s" app_id=mock_server component="sagalogs (state.postgresql/v1)" instance=stevens-air.home scope=dapr.contrib type=log ver=1.12.2
+time="2023-12-31T21:26:15.808964+01:00" level=warning msg="A non-YAML HTTPEndpoint file .DS_Store was detected, it will not be loaded" app_id=mock_server instance=stevens-air.home scope=dapr.runtime.components type=log ver=1.12.2
+time="2023-12-31T21:26:15.809319+01:00" level=warning msg="A non-YAML HTTPEndpoint file secrets.json was detected, it will not be loaded" app_id=mock_server instance=stevens-air.home scope=dapr.runtime.components type=log ver=1.12.2
+time="2023-12-31T21:26:15.809771+01:00" level=info msg="Waiting for all outstanding http endpoints to be processed…" app_id=mock_server instance=stevens-air.home scope=dapr.runtime type=log ver=1.12.2
+time="2023-12-31T21:26:15.809784+01:00" level=info msg="All outstanding http endpoints processed" app_id=mock_server instance=stevens-air.home scope=dapr.runtime type=log ver=1.12.2
+time="2023-12-31T21:26:15.809882+01:00" level=info msg="gRPC server listening on TCP address: :60529" app_id=mock_server instance=stevens-air.home scope=dapr.runtime.grpc.api type=log ver=1.12.2
+time="2023-12-31T21:26:15.809896+01:00" level=info msg="Enabled gRPC tracing middleware" app_id=mock_server instance=stevens-air.home scope=dapr.runtime.grpc.api type=log ver=1.12.2
+time="2023-12-31T21:26:15.809904+01:00" level=info msg="Enabled gRPC metrics middleware" app_id=mock_server instance=stevens-air.home scope=dapr.runtime.grpc.api type=log ver=1.12.2
+time="2023-12-31T21:26:15.809961+01:00" level=info msg="Registering workflow engine for gRPC endpoint: [::]:60529" app_id=mock_server instance=stevens-air.home scope=dapr.runtime.grpc.api type=log ver=1.12.2
+time="2023-12-31T21:26:15.810011+01:00" level=info msg="API gRPC server is running on port 60529" app_id=mock_server instance=stevens-air.home scope=dapr.runtime type=log ver=1.12.2
+time="2023-12-31T21:26:15.81006+01:00" level=info msg="Enabled max body size HTTP middleware with size 4 MB" app_id=mock_server instance=stevens-air.home scope=dapr.runtime.http type=log ver=1.12.2
+time="2023-12-31T21:26:15.810071+01:00" level=info msg="Enabled tracing HTTP middleware" app_id=mock_server instance=stevens-air.home scope=dapr.runtime.http type=log ver=1.12.2
+time="2023-12-31T21:26:15.810076+01:00" level=info msg="Enabled metrics HTTP middleware" app_id=mock_server instance=stevens-air.home scope=dapr.runtime.http type=log ver=1.12.2
+time="2023-12-31T21:26:15.810307+01:00" level=info msg="HTTP server listening on TCP address: :60528" app_id=mock_server instance=stevens-air.home scope=dapr.runtime.http type=log ver=1.12.2
+time="2023-12-31T21:26:15.810332+01:00" level=info msg="HTTP server is running on port 60528" app_id=mock_server instance=stevens-air.home scope=dapr.runtime type=log ver=1.12.2
+time="2023-12-31T21:26:15.81034+01:00" level=info msg="The request body size parameter is: 4" app_id=mock_server instance=stevens-air.home scope=dapr.runtime type=log ver=1.12.2
+time="2023-12-31T21:26:15.810367+01:00" level=info msg="gRPC server listening on TCP address: :60531" app_id=mock_server instance=stevens-air.home scope=dapr.runtime.grpc.internal type=log ver=1.12.2
+time="2023-12-31T21:26:15.810377+01:00" level=info msg="Enabled gRPC tracing middleware" app_id=mock_server instance=stevens-air.home scope=dapr.runtime.grpc.internal type=log ver=1.12.2
+time="2023-12-31T21:26:15.810382+01:00" level=info msg="Enabled gRPC metrics middleware" app_id=mock_server instance=stevens-air.home scope=dapr.runtime.grpc.internal type=log ver=1.12.2
+time="2023-12-31T21:26:15.810398+01:00" level=info msg="Internal gRPC server is running on port 60531" app_id=mock_server instance=stevens-air.home scope=dapr.runtime type=log ver=1.12.2
+time="2023-12-31T21:26:15.810468+01:00" level=info msg="application protocol: http. waiting on port 6006.  This will block until the app is listening on that port." app_id=mock_server instance=stevens-air.home scope=dapr.runtime type=log ver=1.12.2
+Updating metadata for app command: go run .
+Updating metadata for appPID: 77008
+You're up and running! Dapr logs will appear here.
+
+time="2023-12-31T21:26:27.975873+01:00" level=info msg="application discovered on port 6006" app_id=mock_server instance=stevens-air.home scope=dapr.runtime type=log ver=1.12.2
+time="2023-12-31T21:26:27.977484+01:00" level=info msg="Application configuration loaded" app_id=mock_server instance=stevens-air.home scope=dapr.runtime type=log ver=1.12.2
+time="2023-12-31T21:26:27.977614+01:00" level=info msg="actors: state store is not configured - this is okay for clients but services with hosted actors will fail to initialize!" app_id=mock_server instance=stevens-air.home scope=dapr.runtime type=log ver=1.12.2
+time="2023-12-31T21:26:27.977804+01:00" level=info msg="Actor runtime started. Actor idle timeout: 1h0m0s. Actor scan interval: 30s" app_id=mock_server instance=stevens-air.home scope=dapr.runtime.actor type=log ver=1.12.2
+time="2023-12-31T21:26:27.977859+01:00" level=info msg="Configuring workflow engine with actors backend" app_id=mock_server instance=stevens-air.home scope=dapr.runtime.wfengine type=log ver=1.12.2
+time="2023-12-31T21:26:27.9779+01:00" level=info msg="Registering component for dapr workflow engine..." app_id=mock_server instance=stevens-air.home scope=dapr.runtime type=log ver=1.12.2
+time="2023-12-31T21:26:27.977952+01:00" level=info msg="Initializing Dapr workflow component" app_id=mock_server component="dapr (workflow.dapr/v1)" instance=stevens-air.home scope=dapr.contrib type=log ver=1.12.2
+time="2023-12-31T21:26:27.980874+01:00" level=warning msg="A non-YAML pubsub file .DS_Store was detected, it will not be loaded" app_id=mock_server instance=stevens-air.home scope=dapr.runtime.processor.pubsub type=log ver=1.12.2
+time="2023-12-31T21:26:27.983074+01:00" level=warning msg="A non-YAML pubsub file secrets.json was detected, it will not be loaded" app_id=mock_server instance=stevens-air.home scope=dapr.runtime.processor.pubsub type=log ver=1.12.2
+time="2023-12-31T21:26:27.988258+01:00" level=info msg="dapr initialized. Status: Running. Init Elapsed 12231ms" app_id=mock_server instance=stevens-air.home scope=dapr.runtime type=log ver=1.12.2
+time="2023-12-31T21:26:28.059586+01:00" level=info msg="Placement tables updated, version: 0" app_id=mock_server instance=stevens-air.home scope=dapr.runtime.actors.placement type=log ver=1.12.2
+
+termination signal received: shutting down
+time="2023-12-31T21:26:58.149999+01:00" level=info msg="Received signal 'interrupt'; beginning shutdown" app_id=mock_server instance=stevens-air.home scope=dapr.signals type=log ver=1.12.2
+time="2023-12-31T21:26:58.150385+01:00" level=info msg="Shutting down actor" app_id=mock_server instance=stevens-air.home scope=dapr.runtime type=log ver=1.12.2
+time="2023-12-31T21:26:58.15047+01:00" level=info msg="Closing HTTP server [::]:60528…" app_id=mock_server instance=stevens-air.home scope=dapr.runtime.http type=log ver=1.12.2
+time="2023-12-31T21:26:58.150641+01:00" level=info msg="stopping mDNS server for app id: mock_server" app_id=mock_server component="mdns (nameResolution/v1)" instance=stevens-air.home scope=dapr.contrib type=log ver=1.12.2
+Exited Dapr successfully
+time="2023-12-31T21:26:58.150461+01:00" level=info msg="Dapr is shutting down" app_id=mock_server instance=stevens-air.home scope=dapr.runtime type=log ver=1.12.2
+Exited App successfully

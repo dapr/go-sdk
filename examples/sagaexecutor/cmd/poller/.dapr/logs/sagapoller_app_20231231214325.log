@@ -1,0 +1,544 @@
+== APP - sagapoller == dapr client initializing for: 127.0.0.1:63190
+== APP - sagapoller == Database URL: postgresql://postgres:mysecretpassword@localhost:5432/hasura
+== APP - sagapoller == 2023/12/31 21:43:33 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:43:33 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:43:38 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:43:38 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:43:43 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:43:43 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:43:48 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:43:48 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:43:53 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:43:53 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:43:58 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:43:58 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:44:03 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:44:03 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:44:08 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:44:08 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:44:13 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:44:13 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:44:18 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:44:18 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:44:23 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:44:23 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:44:28 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:44:28 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:44:33 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:44:33 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:44:38 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:44:38 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:44:43 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:44:43 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:44:48 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:44:48 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:44:53 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:44:53 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:44:58 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:44:58 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:45:03 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:45:03 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:45:08 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:45:08 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:45:13 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:45:13 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:45:18 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:45:18 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:45:23 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:45:23 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:45:28 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:45:28 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:45:33 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:45:33 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:45:38 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:45:38 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:45:43 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:45:43 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:45:48 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:45:48 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:45:53 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:45:53 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:45:58 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:45:58 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:46:03 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:46:03 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:46:08 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:46:08 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:46:13 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:46:13 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:46:18 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:46:18 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:46:23 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:46:23 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:46:28 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:46:28 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:46:33 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:46:33 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:46:38 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:46:38 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:46:43 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:46:43 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:46:48 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:46:48 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:46:53 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:46:53 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:46:58 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:46:58 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:47:03 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:47:03 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:47:08 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:47:08 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:47:13 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:47:13 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:47:18 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:47:18 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:47:23 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:47:23 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:47:28 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:47:28 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:47:33 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:47:33 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:47:38 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:47:38 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:47:43 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:47:43 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:47:48 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:47:48 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:47:53 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:47:53 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:47:58 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:47:58 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:48:03 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:48:03 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:48:08 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:48:08 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:48:13 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:48:13 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:48:18 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:48:18 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:48:23 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:48:23 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:48:28 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:48:28 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:48:33 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:48:33 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:48:38 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:48:38 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:48:43 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:48:43 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:48:48 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:48:48 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:48:53 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:48:53 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:48:58 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:48:58 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:49:03 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:49:03 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:49:08 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:49:08 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:49:13 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:49:13 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:49:18 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:49:18 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:49:23 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:49:23 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:49:28 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:49:28 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:49:33 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:49:33 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:49:38 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:49:38 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:49:43 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:49:43 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:49:48 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:49:48 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:49:53 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:49:53 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:49:58 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:49:58 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:50:03 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:50:03 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:50:08 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:50:08 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:50:13 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:50:13 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:50:18 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:50:18 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:50:23 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:50:23 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:50:28 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:50:28 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:50:33 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:50:33 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:50:38 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:50:38 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:50:43 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:50:43 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:50:48 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:50:48 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:50:53 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:50:53 Returned 1 records
+== APP - sagapoller == 2023/12/31 21:50:53 time_tmp = 2023-12-31 205049.150617 +0000 UTC}. time_tmp = 2023-12-31 205049
+== APP - sagapoller == 2023/12/31 21:50:53 App_id = server-test
+== APP - sagapoller == 2023/12/31 21:50:53 Token = abcdefgh1235, Elapsed value = 4.009523s, Compared value = 20
+== APP - sagapoller == 2023/12/31 21:50:58 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:50:58 Returned 1 records
+== APP - sagapoller == 2023/12/31 21:50:58 time_tmp = 2023-12-31 205049.150617 +0000 UTC}. time_tmp = 2023-12-31 205049
+== APP - sagapoller == 2023/12/31 21:50:58 App_id = server-test
+== APP - sagapoller == 2023/12/31 21:50:58 Token = abcdefgh1235, Elapsed value = 9.004354s, Compared value = 20
+== APP - sagapoller == 2023/12/31 21:51:03 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:51:03 Returned 1 records
+== APP - sagapoller == 2023/12/31 21:51:03 time_tmp = 2023-12-31 205049.150617 +0000 UTC}. time_tmp = 2023-12-31 205049
+== APP - sagapoller == 2023/12/31 21:51:03 App_id = server-test
+== APP - sagapoller == 2023/12/31 21:51:03 Token = abcdefgh1235, Elapsed value = 14.006108s, Compared value = 20
+== APP - sagapoller == 2023/12/31 21:51:08 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:51:08 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:51:13 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:51:13 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:51:18 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:51:18 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:51:23 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:51:23 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:51:28 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:51:28 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:51:33 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:51:33 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:51:38 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:51:38 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:51:43 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:51:43 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:51:48 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:51:48 Returned 1 records
+== APP - sagapoller == 2023/12/31 21:51:48 time_tmp = 2023-12-31 205143.488455 +0000 UTC}. time_tmp = 2023-12-31 205143
+== APP - sagapoller == 2023/12/31 21:51:48 App_id = server-test
+== APP - sagapoller == 2023/12/31 21:51:48 Token = abcdefgh1235, Elapsed value = 5.006024s, Compared value = 20
+== APP - sagapoller == 2023/12/31 21:51:53 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:51:53 Returned 1 records
+== APP - sagapoller == 2023/12/31 21:51:53 time_tmp = 2023-12-31 205143.488455 +0000 UTC}. time_tmp = 2023-12-31 205143
+== APP - sagapoller == 2023/12/31 21:51:53 App_id = server-test
+== APP - sagapoller == 2023/12/31 21:51:53 Token = abcdefgh1235, Elapsed value = 10.006144s, Compared value = 20
+== APP - sagapoller == 2023/12/31 21:51:58 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:51:58 Returned 1 records
+== APP - sagapoller == 2023/12/31 21:51:58 time_tmp = 2023-12-31 205143.488455 +0000 UTC}. time_tmp = 2023-12-31 205143
+== APP - sagapoller == 2023/12/31 21:51:58 App_id = server-test
+== APP - sagapoller == 2023/12/31 21:51:58 Token = abcdefgh1235, Elapsed value = 15.006544s, Compared value = 20
+== APP - sagapoller == 2023/12/31 21:52:03 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:52:03 Returned 1 records
+== APP - sagapoller == 2023/12/31 21:52:03 time_tmp = 2023-12-31 205143.488455 +0000 UTC}. time_tmp = 2023-12-31 205143
+== APP - sagapoller == 2023/12/31 21:52:03 App_id = server-test
+== APP - sagapoller == 2023/12/31 21:52:03 Token = abcdefgh1235, Elapsed value = 20.005708s, Compared value = 20
+== APP - sagapoller == 2023/12/31 21:52:03 Token abcdefgh1235, need to invoke callback callback
+== APP - sagapoller == sendCallBack invoked with key server-testtest1abcdefgh1235, params = {server-test test1 abcdefgh1235 callback               20 false 2023-12-31 20:51:43 +0000 UTC}
+== APP - sagapoller == sendCallBack App_ID = server-test, Method = callback
+== APP - sagapoller == 2023/12/31 21:52:03 DB:Delete Key = server-testtest1abcdefgh1235
+== APP - sagapoller == Deleted Log with key: server-testtest1abcdefgh1235
+== APP - sagapoller == 2023/12/31 21:52:08 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:52:08 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:52:13 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:52:13 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:52:18 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:52:18 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:52:23 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:52:23 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:52:28 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:52:28 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:52:33 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:52:33 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:52:38 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:52:38 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:52:43 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:52:43 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:52:48 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:52:48 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:52:53 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:52:53 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:52:58 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:52:58 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:53:03 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:53:03 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:53:08 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:53:08 Returned 1 records
+== APP - sagapoller == 2023/12/31 21:53:08 time_tmp = 2023-12-31 205306.429651 +0000 UTC}. time_tmp = 2023-12-31 205306
+== APP - sagapoller == 2023/12/31 21:53:08 App_id = server-test
+== APP - sagapoller == 2023/12/31 21:53:08 Token = abcdefgh1235, Elapsed value = 2.006113s, Compared value = 20
+== APP - sagapoller == 2023/12/31 21:53:13 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:53:13 Returned 1 records
+== APP - sagapoller == 2023/12/31 21:53:13 time_tmp = 2023-12-31 205306.429651 +0000 UTC}. time_tmp = 2023-12-31 205306
+== APP - sagapoller == 2023/12/31 21:53:13 App_id = server-test
+== APP - sagapoller == 2023/12/31 21:53:13 Token = abcdefgh1235, Elapsed value = 7.007263s, Compared value = 20
+== APP - sagapoller == 2023/12/31 21:53:18 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:53:18 Returned 1 records
+== APP - sagapoller == 2023/12/31 21:53:18 time_tmp = 2023-12-31 205306.429651 +0000 UTC}. time_tmp = 2023-12-31 205306
+== APP - sagapoller == 2023/12/31 21:53:18 App_id = server-test
+== APP - sagapoller == 2023/12/31 21:53:18 Token = abcdefgh1235, Elapsed value = 12.006676s, Compared value = 20
+== APP - sagapoller == 2023/12/31 21:53:23 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:53:23 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:53:28 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:53:28 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:53:33 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:53:33 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:53:38 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:53:38 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:53:43 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:53:43 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:53:48 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:53:48 Returned 1 records
+== APP - sagapoller == 2023/12/31 21:53:48 time_tmp = 2023-12-31 205345.830335 +0000 UTC}. time_tmp = 2023-12-31 205345
+== APP - sagapoller == 2023/12/31 21:53:48 App_id = server-test
+== APP - sagapoller == 2023/12/31 21:53:48 Token = abcdefgh1235, Elapsed value = 3.004861s, Compared value = 10
+== APP - sagapoller == 2023/12/31 21:53:53 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:53:53 Returned 1 records
+== APP - sagapoller == 2023/12/31 21:53:53 time_tmp = 2023-12-31 205345.830335 +0000 UTC}. time_tmp = 2023-12-31 205345
+== APP - sagapoller == 2023/12/31 21:53:53 App_id = server-test
+== APP - sagapoller == 2023/12/31 21:53:53 Token = abcdefgh1235, Elapsed value = 8.00467s, Compared value = 10
+== APP - sagapoller == 2023/12/31 21:53:58 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:53:58 Returned 1 records
+== APP - sagapoller == 2023/12/31 21:53:58 time_tmp = 2023-12-31 205345.830335 +0000 UTC}. time_tmp = 2023-12-31 205345
+== APP - sagapoller == 2023/12/31 21:53:58 App_id = server-test
+== APP - sagapoller == 2023/12/31 21:53:58 Token = abcdefgh1235, Elapsed value = 13.005754s, Compared value = 10
+== APP - sagapoller == 2023/12/31 21:53:58 Token abcdefgh1235, need to invoke callback callback
+== APP - sagapoller == sendCallBack invoked with key server-testtest1abcdefgh1235, params = {server-test test1 abcdefgh1235 callback               10 false 2023-12-31 20:53:45 +0000 UTC}
+== APP - sagapoller == sendCallBack App_ID = server-test, Method = callback
+== APP - sagapoller == 2023/12/31 21:54:03 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:54:03 Returned 1 records
+== APP - sagapoller == 2023/12/31 21:54:03 time_tmp = 2023-12-31 205345.830335 +0000 UTC}. time_tmp = 2023-12-31 205345
+== APP - sagapoller == 2023/12/31 21:54:03 App_id = server-test
+== APP - sagapoller == 2023/12/31 21:54:03 Token = abcdefgh1235, Elapsed value = 18.003934s, Compared value = 10
+== APP - sagapoller == 2023/12/31 21:54:03 Token abcdefgh1235, need to invoke callback callback
+== APP - sagapoller == sendCallBack invoked with key server-testtest1abcdefgh1235, params = {server-test test1 abcdefgh1235 callback               10 false 2023-12-31 20:53:45 +0000 UTC}
+== APP - sagapoller == sendCallBack App_ID = server-test, Method = callback
+== APP - sagapoller == 2023/12/31 21:54:03 DB:Delete Key = server-testtest1abcdefgh1235
+== APP - sagapoller == Deleted Log with key: server-testtest1abcdefgh1235
+== APP - sagapoller == 2023/12/31 21:54:08 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:54:08 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:54:13 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:54:13 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:54:18 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:54:18 Returned 1 records
+== APP - sagapoller == 2023/12/31 21:54:18 time_tmp = 2023-12-31 205414.417283 +0000 UTC}. time_tmp = 2023-12-31 205414
+== APP - sagapoller == 2023/12/31 21:54:18 App_id = server-test
+== APP - sagapoller == 2023/12/31 21:54:18 Token = abcdefgh1235, Elapsed value = 4.003335s, Compared value = 20
+== APP - sagapoller == 2023/12/31 21:54:23 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:54:23 Returned 1 records
+== APP - sagapoller == 2023/12/31 21:54:23 time_tmp = 2023-12-31 205414.417283 +0000 UTC}. time_tmp = 2023-12-31 205414
+== APP - sagapoller == 2023/12/31 21:54:23 App_id = server-test
+== APP - sagapoller == 2023/12/31 21:54:23 Token = abcdefgh1235, Elapsed value = 9.005315s, Compared value = 20
+== APP - sagapoller == 2023/12/31 21:54:28 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:54:28 Returned 1 records
+== APP - sagapoller == 2023/12/31 21:54:28 time_tmp = 2023-12-31 205414.417283 +0000 UTC}. time_tmp = 2023-12-31 205414
+== APP - sagapoller == 2023/12/31 21:54:28 App_id = server-test
+== APP - sagapoller == 2023/12/31 21:54:28 Token = abcdefgh1235, Elapsed value = 14.007509s, Compared value = 20
+== APP - sagapoller == 2023/12/31 21:54:33 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:54:33 Returned 1 records
+== APP - sagapoller == 2023/12/31 21:54:33 time_tmp = 2023-12-31 205414.417283 +0000 UTC}. time_tmp = 2023-12-31 205414
+== APP - sagapoller == 2023/12/31 21:54:33 App_id = server-test
+== APP - sagapoller == 2023/12/31 21:54:33 Token = abcdefgh1235, Elapsed value = 19.005906s, Compared value = 20
+== APP - sagapoller == 2023/12/31 21:54:38 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:54:38 Returned 1 records
+== APP - sagapoller == 2023/12/31 21:54:38 time_tmp = 2023-12-31 205414.417283 +0000 UTC}. time_tmp = 2023-12-31 205414
+== APP - sagapoller == 2023/12/31 21:54:38 App_id = server-test
+== APP - sagapoller == 2023/12/31 21:54:38 Token = abcdefgh1235, Elapsed value = 24.006073s, Compared value = 20
+== APP - sagapoller == 2023/12/31 21:54:38 Token abcdefgh1235, need to invoke callback callback
+== APP - sagapoller == sendCallBack invoked with key server-testtest1abcdefgh1235, params = {server-test test1 abcdefgh1235 callback               20 false 2023-12-31 20:54:14 +0000 UTC}
+== APP - sagapoller == sendCallBack App_ID = server-test, Method = callback
+== APP - sagapoller == 2023/12/31 21:54:38 DB:Delete Key = server-testtest1abcdefgh1235
+== APP - sagapoller == Deleted Log with key: server-testtest1abcdefgh1235
+== APP - sagapoller == 2023/12/31 21:54:43 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:54:43 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:54:48 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:54:48 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:54:53 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:54:53 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:54:58 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:54:58 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:55:03 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:55:03 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:55:08 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:55:08 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:55:13 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:55:13 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:55:18 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:55:18 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:55:23 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:55:23 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:55:28 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:55:28 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:55:33 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:55:33 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:55:38 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:55:38 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:55:43 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:55:43 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:55:48 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:55:48 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:55:53 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:55:53 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:55:58 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:55:58 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:56:03 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:56:03 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:56:08 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:56:08 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:56:13 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:56:13 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:56:18 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:56:18 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:56:23 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:56:23 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:56:28 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:56:28 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:56:33 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:56:33 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:56:38 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:56:38 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:56:43 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:56:43 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:56:48 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:56:48 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:56:53 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:56:53 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:56:58 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:56:58 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:57:03 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:57:03 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:57:08 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:57:08 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:57:13 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:57:13 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:57:18 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:57:18 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:57:23 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:57:23 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:57:28 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:57:28 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:57:33 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:57:33 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:57:38 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:57:38 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:57:43 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:57:43 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:57:48 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:57:48 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:57:53 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:57:53 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:57:58 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:57:58 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:58:03 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:58:03 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:58:08 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:58:08 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:58:13 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:58:13 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:58:18 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:58:18 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:58:23 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:58:23 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:58:28 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:58:28 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:58:33 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:58:33 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:58:38 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:58:38 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:58:43 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:58:43 Returned 1 records
+== APP - sagapoller == 2023/12/31 21:58:43 time_tmp = 2023-12-31 205838.539396 +0000 UTC}. time_tmp = 2023-12-31 205838
+== APP - sagapoller == 2023/12/31 21:58:43 App_id = server-test
+== APP - sagapoller == 2023/12/31 21:58:43 Token = abcdefgh1235, Elapsed value = 5.007065s, Compared value = 20
+== APP - sagapoller == 2023/12/31 21:58:48 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:58:48 Returned 1 records
+== APP - sagapoller == 2023/12/31 21:58:48 time_tmp = 2023-12-31 205838.539396 +0000 UTC}. time_tmp = 2023-12-31 205838
+== APP - sagapoller == 2023/12/31 21:58:48 App_id = server-test
+== APP - sagapoller == 2023/12/31 21:58:48 Token = abcdefgh1235, Elapsed value = 10.00691s, Compared value = 20
+== APP - sagapoller == 2023/12/31 21:58:53 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:58:53 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:58:58 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:58:58 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:59:03 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:59:03 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:59:08 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:59:08 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:59:13 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:59:13 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:59:18 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:59:18 Returned 1 records
+== APP - sagapoller == 2023/12/31 21:59:18 time_tmp = 2023-12-31 205917.149987 +0000 UTC}. time_tmp = 2023-12-31 205917
+== APP - sagapoller == 2023/12/31 21:59:18 App_id = server-test
+== APP - sagapoller == 2023/12/31 21:59:18 Token = abcdefgh1235, Elapsed value = 1.003716s, Compared value = 10
+== APP - sagapoller == 2023/12/31 21:59:23 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:59:23 Returned 1 records
+== APP - sagapoller == 2023/12/31 21:59:23 time_tmp = 2023-12-31 205917.149987 +0000 UTC}. time_tmp = 2023-12-31 205917
+== APP - sagapoller == 2023/12/31 21:59:23 App_id = server-test
+== APP - sagapoller == 2023/12/31 21:59:23 Token = abcdefgh1235, Elapsed value = 6.003689s, Compared value = 10
+== APP - sagapoller == 2023/12/31 21:59:28 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:59:28 Returned 1 records
+== APP - sagapoller == 2023/12/31 21:59:28 time_tmp = 2023-12-31 205917.149987 +0000 UTC}. time_tmp = 2023-12-31 205917
+== APP - sagapoller == 2023/12/31 21:59:28 App_id = server-test
+== APP - sagapoller == 2023/12/31 21:59:28 Token = abcdefgh1235, Elapsed value = 11.005341s, Compared value = 10
+== APP - sagapoller == 2023/12/31 21:59:28 Token abcdefgh1235, need to invoke callback callback
+== APP - sagapoller == sendCallBack invoked with key server-testtest1abcdefgh1235, params = {server-test test1 abcdefgh1235 callback               10 false 2023-12-31 20:59:17 +0000 UTC}
+== APP - sagapoller == sendCallBack App_ID = server-test, Method = callback
+== APP - sagapoller == 2023/12/31 21:59:28 DB:Delete Key = server-testtest1abcdefgh1235
+== APP - sagapoller == Deleted Log with key: server-testtest1abcdefgh1235
+== APP - sagapoller == 2023/12/31 21:59:33 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:59:33 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:59:38 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:59:38 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:59:43 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:59:43 Returned 0 records
+== APP - sagapoller == 2023/12/31 21:59:48 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:59:48 Returned 1 records
+== APP - sagapoller == 2023/12/31 21:59:48 time_tmp = 2023-12-31 205943.602841 +0000 UTC}. time_tmp = 2023-12-31 205943
+== APP - sagapoller == 2023/12/31 21:59:48 App_id = server-test
+== APP - sagapoller == 2023/12/31 21:59:48 Token = abcdefgh1235, Elapsed value = 5.006244s, Compared value = 20
+== APP - sagapoller == 2023/12/31 21:59:53 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:59:53 Returned 1 records
+== APP - sagapoller == 2023/12/31 21:59:53 time_tmp = 2023-12-31 205943.602841 +0000 UTC}. time_tmp = 2023-12-31 205943
+== APP - sagapoller == 2023/12/31 21:59:53 App_id = server-test
+== APP - sagapoller == 2023/12/31 21:59:53 Token = abcdefgh1235, Elapsed value = 10.006871s, Compared value = 20
+== APP - sagapoller == 2023/12/31 21:59:58 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 21:59:58 Returned 1 records
+== APP - sagapoller == 2023/12/31 21:59:58 time_tmp = 2023-12-31 205943.602841 +0000 UTC}. time_tmp = 2023-12-31 205943
+== APP - sagapoller == 2023/12/31 21:59:58 App_id = server-test
+== APP - sagapoller == 2023/12/31 21:59:58 Token = abcdefgh1235, Elapsed value = 15.005914s, Compared value = 20
+== APP - sagapoller == 2023/12/31 22:00:03 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 22:00:03 Returned 1 records
+== APP - sagapoller == 2023/12/31 22:00:03 time_tmp = 2023-12-31 205943.602841 +0000 UTC}. time_tmp = 2023-12-31 205943
+== APP - sagapoller == 2023/12/31 22:00:03 App_id = server-test
+== APP - sagapoller == 2023/12/31 22:00:03 Token = abcdefgh1235, Elapsed value = 20.005176s, Compared value = 20
+== APP - sagapoller == 2023/12/31 22:00:03 Token abcdefgh1235, need to invoke callback callback
+== APP - sagapoller == sendCallBack invoked with key server-testtest1abcdefgh1235, params = {server-test test1 abcdefgh1235 callback               20 false 2023-12-31 20:59:43 +0000 UTC}
+== APP - sagapoller == sendCallBack App_ID = server-test, Method = callback
+== APP - sagapoller == 2023/12/31 22:00:03 DB:Delete Key = server-testtest1abcdefgh1235
+== APP - sagapoller == Deleted Log with key: server-testtest1abcdefgh1235
+== APP - sagapoller == 2023/12/31 22:00:08 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 22:00:08 Returned 0 records
+== APP - sagapoller == 2023/12/31 22:00:13 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 22:00:13 Returned 0 records
+== APP - sagapoller == 2023/12/31 22:00:18 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 22:00:18 Returned 0 records
+== APP - sagapoller == 2023/12/31 22:00:23 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 22:00:23 Returned 0 records
+== APP - sagapoller == 2023/12/31 22:00:28 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 22:00:28 Returned 0 records
+== APP - sagapoller == 2023/12/31 22:00:33 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 22:00:33 Returned 0 records
+== APP - sagapoller == 2023/12/31 22:00:38 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 22:00:38 Returned 0 records
+== APP - sagapoller == 2023/12/31 22:00:43 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 22:00:43 Returned 0 records
+== APP - sagapoller == 2023/12/31 22:00:48 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 22:00:48 Returned 0 records
+== APP - sagapoller == 2023/12/31 22:00:53 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 22:00:53 Returned 0 records
+== APP - sagapoller == 2023/12/31 22:00:58 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 22:00:58 Returned 0 records
+== APP - sagapoller == 2023/12/31 22:01:03 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 22:01:03 Returned 0 records
+== APP - sagapoller == 2023/12/31 22:01:08 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 22:01:08 Returned 0 records
+== APP - sagapoller == 2023/12/31 22:01:13 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 22:01:13 Returned 0 records
+== APP - sagapoller == 2023/12/31 22:01:18 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 22:01:18 Returned 0 records
+
+termination signal received: shutting down

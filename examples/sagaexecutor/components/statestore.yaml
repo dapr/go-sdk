@@ -11,3 +11,5 @@ spec:
       secretKeyRef:
               name: postgres-url
               key: postgres-url
+auth:
+  secretStore: local-secret-store

@@ -1,0 +1,41 @@
+== APP - sagapoller == dapr client initializing for: 127.0.0.1:56422
+== APP - sagapoller == Database URL: postgresql://postgres:mysecretpassword@localhost:5432/hasura
+== APP - sagapoller == 2023/12/31 20:23:27 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 20:23:27 Returned 0 records
+== APP - sagapoller == 2023/12/31 20:23:32 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 20:23:32 Returned 0 records
+== APP - sagapoller == 2023/12/31 20:23:37 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 20:23:37 Returned 0 records
+== APP - sagapoller == 2023/12/31 20:23:42 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 20:23:42 Returned 0 records
+== APP - sagapoller == 2023/12/31 20:23:47 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 20:23:47 Returned 0 records
+== APP - sagapoller == 2023/12/31 20:23:52 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 20:23:52 Returned 0 records
+== APP - sagapoller == 2023/12/31 20:23:57 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 20:23:57 Returned 0 records
+== APP - sagapoller == 2023/12/31 20:24:02 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 20:24:02 Returned 0 records
+== APP - sagapoller == 2023/12/31 20:24:07 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 20:24:07 Returned 0 records
+== APP - sagapoller == 2023/12/31 20:24:12 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 20:24:12 Returned 0 records
+== APP - sagapoller == 2023/12/31 20:24:17 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 20:24:17 Returned 0 records
+== APP - sagapoller == 2023/12/31 20:24:22 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 20:24:22 Returned 0 records
+== APP - sagapoller == 2023/12/31 20:24:27 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 20:24:27 Returned 0 records
+== APP - sagapoller == 2023/12/31 20:24:32 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 20:24:32 Returned 0 records
+== APP - sagapoller == 2023/12/31 20:24:37 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 20:24:37 Returned 0 records
+== APP - sagapoller == 2023/12/31 20:24:42 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 20:24:42 Returned 0 records
+== APP - sagapoller == 2023/12/31 20:24:47 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 20:24:47 Returned 0 records
+== APP - sagapoller == 2023/12/31 20:24:52 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 20:24:52 Returned 0 records
+
+termination signal received: shutting down
+The App process exited with error code: signal: killed

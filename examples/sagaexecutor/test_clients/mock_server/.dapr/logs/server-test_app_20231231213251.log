@@ -1,0 +1,9 @@
+== APP - server-test == dapr client initializing for: 127.0.0.1:62375
+== APP - server-test == Database URL: postgresql://postgres:mysecretpassword@localhost:5432/hasura
+== APP - server-test == 2023/12/31 21:32:53 Sleeping for a bit
+== APP - server-test == 2023/12/31 21:33:03 Successfully pubished a start message for later callback
+== APP - server-test == 2023/12/31 21:33:03 Successfully pubished Second start message callback
+== APP - server-test == 2023/12/31 21:33:03 Successfully pubished Second stop message to cancel the start
+== APP - server-test == 2023/12/31 21:33:03 setting up handler
+
+termination signal received: shutting down

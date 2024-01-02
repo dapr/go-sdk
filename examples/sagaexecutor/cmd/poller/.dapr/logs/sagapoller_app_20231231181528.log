@@ -1,0 +1,77 @@
+== APP - sagapoller == dapr client initializing for: 127.0.0.1:55142
+== APP - sagapoller == Database URL: postgresql://postgres:mysecretpassword@localhost:5432/hasura
+== APP - sagapoller == 2023/12/31 18:15:36 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 18:15:36 Returned 0 records
+== APP - sagapoller == 2023/12/31 18:15:41 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 18:15:41 Returned 0 records
+== APP - sagapoller == 2023/12/31 18:15:46 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 18:15:46 Returned 0 records
+== APP - sagapoller == 2023/12/31 18:15:51 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 18:15:51 Returned 0 records
+== APP - sagapoller == 2023/12/31 18:15:56 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 18:15:56 Returned 0 records
+== APP - sagapoller == 2023/12/31 18:16:01 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 18:16:01 Returned 0 records
+== APP - sagapoller == 2023/12/31 18:16:06 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 18:16:06 Returned 0 records
+== APP - sagapoller == 2023/12/31 18:16:11 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 18:16:11 Returned 0 records
+== APP - sagapoller == 2023/12/31 18:16:16 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 18:16:16 Returned 0 records
+== APP - sagapoller == 2023/12/31 18:16:21 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 18:16:21 Returned 0 records
+== APP - sagapoller == 2023/12/31 18:16:26 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 18:16:26 Returned 0 records
+== APP - sagapoller == 2023/12/31 18:16:31 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 18:16:31 Returned 0 records
+== APP - sagapoller == 2023/12/31 18:16:36 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 18:16:36 Returned 0 records
+== APP - sagapoller == 2023/12/31 18:16:41 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 18:16:41 Returned 0 records
+== APP - sagapoller == 2023/12/31 18:16:46 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 18:16:46 Returned 0 records
+== APP - sagapoller == 2023/12/31 18:16:51 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 18:16:51 Returned 0 records
+== APP - sagapoller == 2023/12/31 18:16:56 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 18:16:56 Returned 0 records
+== APP - sagapoller == 2023/12/31 18:17:01 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 18:17:01 Returned 0 records
+== APP - sagapoller == 2023/12/31 18:17:06 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 18:17:06 Returned 0 records
+== APP - sagapoller == 2023/12/31 18:17:11 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 18:17:11 Returned 0 records
+== APP - sagapoller == 2023/12/31 18:17:16 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 18:17:16 Returned 0 records
+== APP - sagapoller == 2023/12/31 18:17:21 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 18:17:21 Returned 0 records
+== APP - sagapoller == 2023/12/31 18:17:26 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 18:17:26 Returned 0 records
+== APP - sagapoller == 2023/12/31 18:17:31 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 18:17:31 Returned 0 records
+== APP - sagapoller == 2023/12/31 18:17:36 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 18:17:36 Returned 0 records
+== APP - sagapoller == 2023/12/31 18:17:41 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 18:17:41 Returned 0 records
+== APP - sagapoller == 2023/12/31 18:17:46 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 18:17:46 Returned 0 records
+== APP - sagapoller == 2023/12/31 18:17:51 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 18:17:51 Returned 0 records
+== APP - sagapoller == 2023/12/31 18:17:56 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 18:17:56 Returned 0 records
+== APP - sagapoller == 2023/12/31 18:18:01 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 18:18:01 Returned 0 records
+== APP - sagapoller == 2023/12/31 18:18:06 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 18:18:06 Returned 0 records
+== APP - sagapoller == 2023/12/31 18:18:11 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 18:18:11 Returned 0 records
+== APP - sagapoller == 2023/12/31 18:18:16 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 18:18:16 Returned 0 records
+== APP - sagapoller == 2023/12/31 18:18:21 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 18:18:21 Returned 0 records
+== APP - sagapoller == 2023/12/31 18:18:26 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 18:18:26 Returned 0 records
+== APP - sagapoller == 2023/12/31 18:18:31 Hello I am called by cron!
+== APP - sagapoller == 2023/12/31 18:18:31 Returned 0 records
+
+termination signal received: shutting down
+== APP - sagapoller == signal: interrupt

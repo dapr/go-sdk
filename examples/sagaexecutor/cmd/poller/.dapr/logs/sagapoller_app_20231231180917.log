@@ -1,0 +1,2 @@
+== APP - sagapoller == dapr client initializing for: 127.0.0.1:54905
+== APP - sagapoller == Database URL: postgresql://postgres:mysecretpassword@localhost:5432/hasura

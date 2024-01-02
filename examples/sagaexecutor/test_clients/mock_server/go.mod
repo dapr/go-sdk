@@ -1,11 +1,11 @@
-module mick_server.sagasexector
+module mock_server.sagasexector
 
-go 1.21.4
+go 1.21.5
 
 require (
 	github.com/dapr/go-sdk v1.9.1
 	github.com/gorilla/mux v1.8.1
-	github.com/stevef1uk/sagaexecutor v0.0.0-00010101000000-000000000000
+	github.com/stevef1uk/sagaexecutor v0.0.0-20240101155219-2ef3e1f12a3c
 )
 
 require (
@@ -26,7 +26,7 @@ require (
 	github.com/jackc/pgservicefile v0.0.0-20221227161230-091c0ba34f0a // indirect
 	github.com/jackc/pgx/v5 v5.5.1 // indirect
 	github.com/jackc/puddle/v2 v2.2.1 // indirect
-	github.com/rogpeppe/go-internal v1.9.0 // indirect
+	github.com/rogpeppe/go-internal v1.12.0 // indirect
 	go.opencensus.io v0.24.0 // indirect
 	golang.org/x/crypto v0.13.0 // indirect
 	golang.org/x/net v0.15.0 // indirect
@@ -43,5 +43,3 @@ require (
 	google.golang.org/protobuf v1.31.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
-
-replace github.com/stevef1uk/sagaexecutor => /Users/stevef/dev/sagaexecutor

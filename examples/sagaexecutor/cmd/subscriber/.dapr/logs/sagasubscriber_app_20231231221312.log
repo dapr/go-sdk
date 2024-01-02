@@ -1,0 +1,4 @@
+== APP - sagasubscriber == Database URL: postgresql://postgres:mysecretpassword@localhost:5432/hasura
+== APP - sagasubscriber == 2023/12/31 22:13:14 Unable to connect to database: failed to connect to `host=localhost user=postgres database=hasura`: dial error (dial tcp 127.0.0.1:5432: connect: connection refused)
+== APP - sagasubscriber == exit status 1
+The App process exited with error code: exit status 1

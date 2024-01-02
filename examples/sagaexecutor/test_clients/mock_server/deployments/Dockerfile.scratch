@@ -1,0 +1,29 @@
+FROM golang:1.21-alpine as golang
+
+RUN apk add -U git
+RUN apk add -U tzdata
+RUN apk --update add ca-certificates
+
+WORKDIR /app
+COPY ../app.go .
+COPY ../go.mod .
+
+RUN go mod tidy
+RUN go mod verify
+
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build  -o /server .
+
+
+
+
+FROM scratch
+
+WORKDIR /app
+
+COPY --from=golang /usr/share/zoneinfo /usr/share/zoneinfo
+COPY --from=golang /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+COPY --from=golang /etc/passwd /etc/passwd
+COPY --from=golang /etc/group /etc/group
+COPY --from=golang /server /server
+
+CMD ["/server"]

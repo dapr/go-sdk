@@ -1,0 +1,34 @@
+version: 1
+common: # optional section for variables shared across apps
+  resourcesPath: ../../components # any dapr resources to be shared across apps
+  env:  # any environment variable shared across apps
+    DEBUG: true
+apps:
+  - appID: sagapoller # optional
+    appDirPath: ../../cmd/poller # REQUIRED
+    appProtocol: http
+    appPort: 8080
+    appHealthCheckPath: "/healthz"
+    command: ["go", "run", "."]
+    env:
+      DEBUG: true
+      DATABASE_URL: postgresql://postgres:mysecretpassword@localhost:5432/hasura
+  - appID: sagasubscriber # optional
+    appDirPath: ../../cmd/subscriber # REQUIRED
+    appProtocol: http
+    appPort: 7005
+    configFilePath: ./deployments/test_service_sub.yaml
+    appHealthCheckPath: "/healthz"
+    command: ["go", "run", "."]
+    env:
+      DEBUG: true
+      DATABASE_URL: postgresql://postgres:mysecretpassword@localhost:5432/hasura
+  - appID: server-test # optional
+    appDirPath: ../mock_server # REQUIRED
+    appProtocol: http
+    appPort: 6006
+    appHealthCheckPath: "/healthz"
+    command: ["go", "run", "."]
+    env:
+      DEBUG: true
+      DATABASE_URL: postgresql://postgres:mysecretpassword@localhost:5432/hasura

@@ -63,8 +63,9 @@ func postMessage(client dapr.Client, app_id string, s utility.Start_stop) error 
 			OrderingKey: m.OrderingField,
 		})
 	if err != nil {
-		return fmt.Errorf("sendStart() failed to publish start_stop struct %q", err)
+		return fmt.Errorf("postMessage() failed to publish start_stop struct %q", err)
 	}
+
 	return nil
 }
 
@@ -117,8 +118,6 @@ func sendCallback(client dapr.Client, key string, params utility.Start_stop) {
 		ContentType: "application/json",
 		Data:        data,
 	}
-
-	// remove the sagasubscriber|| string at the front added by Dapr
 
 	fmt.Printf("sendCallBack invoked with key %s, params = %v\n", key, params)
 	fmt.Printf("sendCallBack App_ID = %s, Method = %s\n", params.App_id, params.Callback_service)

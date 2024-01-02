@@ -1,0 +1,64 @@
+Starting Dapr with id sagasubscriber2. HTTP Port: 50085. gRPC Port: 50086
+Updating metadata for cliPID: 95703
+time="2023-12-31T22:19:35.111902+01:00" level=info msg="Starting Dapr Runtime -- version 1.12.2 -- commit f954254ed520409602024ea6d507d0405afa1f07" app_id=sagasubscriber2 instance=stevens-air.home scope=dapr.runtime type=log ver=1.12.2
+time="2023-12-31T22:19:35.111948+01:00" level=info msg="Log level set to: info" app_id=sagasubscriber2 instance=stevens-air.home scope=dapr.runtime type=log ver=1.12.2
+time="2023-12-31T22:19:35.112192+01:00" level=warning msg="mTLS is disabled. Skipping certificate request and tls validation" app_id=sagasubscriber2 instance=stevens-air.home scope=dapr.runtime.security type=log ver=1.12.2
+time="2023-12-31T22:19:35.113593+01:00" level=warning msg="A non-YAML resiliency file .DS_Store was detected, it will not be loaded" app_id=sagasubscriber2 instance=stevens-air.home scope=dapr.runtime type=log ver=1.12.2
+time="2023-12-31T22:19:35.115286+01:00" level=warning msg="A non-YAML resiliency file secrets.json was detected, it will not be loaded" app_id=sagasubscriber2 instance=stevens-air.home scope=dapr.runtime type=log ver=1.12.2
+time="2023-12-31T22:19:35.116739+01:00" level=info msg="standalone mode configured" app_id=sagasubscriber2 instance=stevens-air.home scope=dapr.runtime type=log ver=1.12.2
+time="2023-12-31T22:19:35.116811+01:00" level=info msg="app id: sagasubscriber2" app_id=sagasubscriber2 instance=stevens-air.home scope=dapr.runtime type=log ver=1.12.2
+time="2023-12-31T22:19:35.116762+01:00" level=info msg="metrics server started on :50087/" app_id=sagasubscriber2 instance=stevens-air.home scope=dapr.runtime type=log ver=1.12.2
+time="2023-12-31T22:19:35.117046+01:00" level=info msg="Dapr trace sampler initialized: DaprTraceSampler(P=0.000100)" app_id=sagasubscriber2 instance=stevens-air.home scope=dapr.runtime type=log ver=1.12.2
+time="2023-12-31T22:19:35.117289+01:00" level=info msg="local service entry announced: sagasubscriber2 -> 192.168.1.46:50088" app_id=sagasubscriber2 component="mdns (nameResolution/v1)" instance=stevens-air.home scope=dapr.contrib type=log ver=1.12.2
+time="2023-12-31T22:19:35.11732+01:00" level=info msg="Initialized name resolution to mdns" app_id=sagasubscriber2 instance=stevens-air.home scope=dapr.runtime type=log ver=1.12.2
+time="2023-12-31T22:19:35.117372+01:00" level=info msg="Loading components…" app_id=sagasubscriber2 instance=stevens-air.home scope=dapr.runtime type=log ver=1.12.2
+time="2023-12-31T22:19:35.125759+01:00" level=warning msg="A non-YAML Component file .DS_Store was detected, it will not be loaded" app_id=sagasubscriber2 instance=stevens-air.home scope=dapr.runtime.components type=log ver=1.12.2
+time="2023-12-31T22:19:35.127105+01:00" level=warning msg="A non-YAML Component file secrets.json was detected, it will not be loaded" app_id=sagasubscriber2 instance=stevens-air.home scope=dapr.runtime.components type=log ver=1.12.2
+time="2023-12-31T22:19:35.128765+01:00" level=info msg="Component loaded: local-secret-store (secretstores.local.file/v1)" app_id=sagasubscriber2 instance=stevens-air.home scope=dapr.runtime type=log ver=1.12.2
+time="2023-12-31T22:19:35.134876+01:00" level=info msg="Component loaded: sagatxs (pubsub.redis/v1)" app_id=sagasubscriber2 instance=stevens-air.home scope=dapr.runtime type=log ver=1.12.2
+time="2023-12-31T22:19:35.135186+01:00" level=info msg="Waiting for all outstanding components to be processed…" app_id=sagasubscriber2 instance=stevens-air.home scope=dapr.runtime type=log ver=1.12.2
+time="2023-12-31T22:19:35.167756+01:00" level=info msg="Component loaded: sagalogs (state.postgresql/v1)" app_id=sagasubscriber2 instance=stevens-air.home scope=dapr.runtime type=log ver=1.12.2
+time="2023-12-31T22:19:35.167799+01:00" level=info msg="All outstanding components processed" app_id=sagasubscriber2 instance=stevens-air.home scope=dapr.runtime type=log ver=1.12.2
+time="2023-12-31T22:19:35.167795+01:00" level=info msg="Schedule expired data clean up every 1h0m0s" app_id=sagasubscriber2 component="sagalogs (state.postgresql/v1)" instance=stevens-air.home scope=dapr.contrib type=log ver=1.12.2
+time="2023-12-31T22:19:35.16781+01:00" level=info msg="Loading endpoints…" app_id=sagasubscriber2 instance=stevens-air.home scope=dapr.runtime type=log ver=1.12.2
+time="2023-12-31T22:19:35.167975+01:00" level=warning msg="A non-YAML HTTPEndpoint file .DS_Store was detected, it will not be loaded" app_id=sagasubscriber2 instance=stevens-air.home scope=dapr.runtime.components type=log ver=1.12.2
+time="2023-12-31T22:19:35.168525+01:00" level=warning msg="A non-YAML HTTPEndpoint file secrets.json was detected, it will not be loaded" app_id=sagasubscriber2 instance=stevens-air.home scope=dapr.runtime.components type=log ver=1.12.2
+time="2023-12-31T22:19:35.169258+01:00" level=info msg="Waiting for all outstanding http endpoints to be processed…" app_id=sagasubscriber2 instance=stevens-air.home scope=dapr.runtime type=log ver=1.12.2
+time="2023-12-31T22:19:35.169276+01:00" level=info msg="All outstanding http endpoints processed" app_id=sagasubscriber2 instance=stevens-air.home scope=dapr.runtime type=log ver=1.12.2
+time="2023-12-31T22:19:35.169368+01:00" level=info msg="gRPC server listening on TCP address: :50086" app_id=sagasubscriber2 instance=stevens-air.home scope=dapr.runtime.grpc.api type=log ver=1.12.2
+time="2023-12-31T22:19:35.169382+01:00" level=info msg="Enabled gRPC tracing middleware" app_id=sagasubscriber2 instance=stevens-air.home scope=dapr.runtime.grpc.api type=log ver=1.12.2
+time="2023-12-31T22:19:35.16939+01:00" level=info msg="Enabled gRPC metrics middleware" app_id=sagasubscriber2 instance=stevens-air.home scope=dapr.runtime.grpc.api type=log ver=1.12.2
+time="2023-12-31T22:19:35.169448+01:00" level=info msg="Registering workflow engine for gRPC endpoint: [::]:50086" app_id=sagasubscriber2 instance=stevens-air.home scope=dapr.runtime.grpc.api type=log ver=1.12.2
+time="2023-12-31T22:19:35.169474+01:00" level=info msg="API gRPC server is running on port 50086" app_id=sagasubscriber2 instance=stevens-air.home scope=dapr.runtime type=log ver=1.12.2
+time="2023-12-31T22:19:35.169518+01:00" level=info msg="Enabled max body size HTTP middleware with size 4 MB" app_id=sagasubscriber2 instance=stevens-air.home scope=dapr.runtime.http type=log ver=1.12.2
+time="2023-12-31T22:19:35.169527+01:00" level=info msg="Enabled tracing HTTP middleware" app_id=sagasubscriber2 instance=stevens-air.home scope=dapr.runtime.http type=log ver=1.12.2
+time="2023-12-31T22:19:35.169532+01:00" level=info msg="Enabled metrics HTTP middleware" app_id=sagasubscriber2 instance=stevens-air.home scope=dapr.runtime.http type=log ver=1.12.2
+time="2023-12-31T22:19:35.169708+01:00" level=info msg="HTTP server listening on TCP address: :50085" app_id=sagasubscriber2 instance=stevens-air.home scope=dapr.runtime.http type=log ver=1.12.2
+time="2023-12-31T22:19:35.169727+01:00" level=info msg="HTTP server is running on port 50085" app_id=sagasubscriber2 instance=stevens-air.home scope=dapr.runtime type=log ver=1.12.2
+time="2023-12-31T22:19:35.169733+01:00" level=info msg="The request body size parameter is: 4" app_id=sagasubscriber2 instance=stevens-air.home scope=dapr.runtime type=log ver=1.12.2
+time="2023-12-31T22:19:35.169758+01:00" level=info msg="gRPC server listening on TCP address: :50088" app_id=sagasubscriber2 instance=stevens-air.home scope=dapr.runtime.grpc.internal type=log ver=1.12.2
+time="2023-12-31T22:19:35.169765+01:00" level=info msg="Enabled gRPC tracing middleware" app_id=sagasubscriber2 instance=stevens-air.home scope=dapr.runtime.grpc.internal type=log ver=1.12.2
+time="2023-12-31T22:19:35.16977+01:00" level=info msg="Enabled gRPC metrics middleware" app_id=sagasubscriber2 instance=stevens-air.home scope=dapr.runtime.grpc.internal type=log ver=1.12.2
+time="2023-12-31T22:19:35.169786+01:00" level=info msg="Internal gRPC server is running on port 50088" app_id=sagasubscriber2 instance=stevens-air.home scope=dapr.runtime type=log ver=1.12.2
+time="2023-12-31T22:19:35.169847+01:00" level=info msg="application protocol: http. waiting on port 7007.  This will block until the app is listening on that port." app_id=sagasubscriber2 instance=stevens-air.home scope=dapr.runtime type=log ver=1.12.2
+Updating metadata for app command: go run .
+Updating metadata for appPID: 95800
+You're up and running! Dapr logs will appear here.
+
+time="2023-12-31T22:19:36.081904+01:00" level=info msg="application discovered on port 7007" app_id=sagasubscriber2 instance=stevens-air.home scope=dapr.runtime type=log ver=1.12.2
+time="2023-12-31T22:19:36.083589+01:00" level=info msg="Application configuration loaded" app_id=sagasubscriber2 instance=stevens-air.home scope=dapr.runtime type=log ver=1.12.2
+time="2023-12-31T22:19:36.083653+01:00" level=info msg="actors: state store is not configured - this is okay for clients but services with hosted actors will fail to initialize!" app_id=sagasubscriber2 instance=stevens-air.home scope=dapr.runtime type=log ver=1.12.2
+time="2023-12-31T22:19:36.083788+01:00" level=info msg="Actor runtime started. Actor idle timeout: 1h0m0s. Actor scan interval: 30s" app_id=sagasubscriber2 instance=stevens-air.home scope=dapr.runtime.actor type=log ver=1.12.2
+time="2023-12-31T22:19:36.083836+01:00" level=info msg="Configuring workflow engine with actors backend" app_id=sagasubscriber2 instance=stevens-air.home scope=dapr.runtime.wfengine type=log ver=1.12.2
+time="2023-12-31T22:19:36.083866+01:00" level=info msg="Registering component for dapr workflow engine..." app_id=sagasubscriber2 instance=stevens-air.home scope=dapr.runtime type=log ver=1.12.2
+time="2023-12-31T22:19:36.083922+01:00" level=info msg="Initializing Dapr workflow component" app_id=sagasubscriber2 component="dapr (workflow.dapr/v1)" instance=stevens-air.home scope=dapr.contrib type=log ver=1.12.2
+time="2023-12-31T22:19:36.086555+01:00" level=warning msg="A non-YAML pubsub file .DS_Store was detected, it will not be loaded" app_id=sagasubscriber2 instance=stevens-air.home scope=dapr.runtime.processor.pubsub type=log ver=1.12.2
+time="2023-12-31T22:19:36.087921+01:00" level=warning msg="A non-YAML pubsub file secrets.json was detected, it will not be loaded" app_id=sagasubscriber2 instance=stevens-air.home scope=dapr.runtime.processor.pubsub type=log ver=1.12.2
+time="2023-12-31T22:19:36.089574+01:00" level=info msg="app is subscribed to the following topics: [Dummy-Not-Used] through pubsub=sagatxs" app_id=sagasubscriber2 instance=stevens-air.home scope=dapr.runtime.processor.pubsub type=log ver=1.12.2
+time="2023-12-31T22:19:36.091406+01:00" level=info msg="dapr initialized. Status: Running. Init Elapsed 974ms" app_id=sagasubscriber2 instance=stevens-air.home scope=dapr.runtime type=log ver=1.12.2
+time="2023-12-31T22:19:36.143747+01:00" level=info msg="Placement tables updated, version: 0" app_id=sagasubscriber2 instance=stevens-air.home scope=dapr.runtime.actors.placement type=log ver=1.12.2
+time="2023-12-31T22:20:11.995831+01:00" level=info msg="Received signal 'interrupt'; beginning shutdown" app_id=sagasubscriber2 instance=stevens-air.home scope=dapr.signals type=log ver=1.12.2
+
+termination signal received: shutting down
+Exited Dapr successfully
+Exited App successfully

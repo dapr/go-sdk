@@ -18,8 +18,9 @@ docker_build(
   dockerfile='deployments/Dockerfile',
   only=[
     './build',
-
-  ])
+  ]
+  )
+  
 allow_k8s_contexts('default')
 k8s_yaml('deployments/kubernetes.yaml')
 
