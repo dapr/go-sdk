@@ -119,14 +119,11 @@ func (s *Server) OnTopicEvent(ctx context.Context, in *runtimev1pb.TopicEventReq
 		}
 
 		// extract custom metadata from the context
-		var md map[string]string
+		md := make(map[string]string)
 		meta, ok := metadata.FromIncomingContext(ctx)
 		if ok {
 			for k, v := range meta {
 				if strings.HasPrefix(strings.ToLower(k), "metadata.") {
-					if md == nil {
-						md = make(map[string]string)
-					}
 					md[k[9:]] = v[0]
 				}
 			}

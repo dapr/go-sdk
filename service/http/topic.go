@@ -253,12 +253,9 @@ func (s *Server) AddTopicEventHandler(sub *common.Subscription, fn common.TopicE
 			}
 
 			// extract custom metadata from headers
-			var md map[string]string
+			md := make(map[string]string)
 			for k, v := range r.Header {
 				if strings.HasPrefix(strings.ToLower(k), "metadata.") {
-					if md == nil {
-						md = make(map[string]string)
-					}
 					md[k[9:]] = v[0]
 				}
 			}
