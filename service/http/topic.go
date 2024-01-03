@@ -252,14 +252,6 @@ func (s *Server) AddTopicEventHandler(sub *common.Subscription, fn common.TopicE
 				return
 			}
 
-			// extract custom metadata from headers
-			md := make(map[string]string)
-			for k, v := range r.Header {
-				if strings.HasPrefix(strings.ToLower(k), "metadata.") {
-					md[k[9:]] = v[0]
-				}
-			}
-
 			// deserialize the event
 			var in topicEventJSON
 			if err = json.Unmarshal(body, &in); err != nil {
@@ -287,7 +279,7 @@ func (s *Server) AddTopicEventHandler(sub *common.Subscription, fn common.TopicE
 				Subject:         in.Subject,
 				PubsubName:      in.PubsubName,
 				Topic:           in.Topic,
-				Metadata:        md,
+				Metadata:        getCustomMetdataFromHeaders(r),
 			}
 
 			w.Header().Add("Content-Type", "application/json")
@@ -309,6 +301,16 @@ func (s *Server) AddTopicEventHandler(sub *common.Subscription, fn common.TopicE
 		})))
 
 	return nil
+}
+
+func getCustomMetdataFromHeaders(r *http.Request) map[string]string {
+	md := make(map[string]string)
+	for k, v := range r.Header {
+		if strings.HasPrefix(strings.ToLower(k), "metadata.") {
+			md[k[9:]] = v[0]
+		}
+	}
+	return md
 }
 
 func writeStatus(w http.ResponseWriter, s string) {
