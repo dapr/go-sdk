@@ -3,13 +3,12 @@ package main
 import (
 	"context"
 	"os"
+	"log"
 
 	"github.com/google/go-github/v55/github"
 
-	"github.com/dapr/kit/logger"
 )
 
-var log = logger.NewLogger("dapr.github.workflows")
 
 func main() {
 	ctx := context.Background()
@@ -30,11 +29,11 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to process event: %v", err)
 	}
-	log.Infof("processing event: %s", event.Type)
+	log.Printf("processing event: %s", event.Type)
 
 	res, err := bot.HandleEvent(ctx, event)
 	if err != nil {
 		log.Fatalf("failed to handle event: %v", err)
 	}
-	log.Info(res)
+	log.Println(res)
 }
