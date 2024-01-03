@@ -2,13 +2,11 @@ package main
 
 import (
 	"context"
-	"os"
 	"log"
+	"os"
 
 	"github.com/google/go-github/v55/github"
-
 )
-
 
 func main() {
 	ctx := context.Background()
