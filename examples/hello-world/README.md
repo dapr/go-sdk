@@ -83,7 +83,6 @@ name: Run and send order
 background: true
 sleep: 5
 expected_stdout_lines:
-  - '== APP == msg="dapr client initializing for: 127.0.0.1:3500"'
   - '== APP == Sending order ID 20'
   - '== APP == Successfully persisted state'
 -->
@@ -99,7 +98,6 @@ name: Run and get order
 background: true
 sleep: 5
 expected_stdout_lines:
-  - '== APP == time="2024-01-03T05:22:47.668571201Z" level=info msg="dapr client initializing for: 127.0.0.1:3500"'
   - '== APP == Getting order'
   - '== APP == Order ID 20'
 -->
