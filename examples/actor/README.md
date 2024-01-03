@@ -84,7 +84,6 @@ dapr stop --app-id  actor-serving
 ## Result
 - client side
 ```
-== APP == time="2024-01-03T05:22:47.668571201Z" level=info msg="dapr client initializing for: 127.0.0.1:55776"
 == APP == get user result =  &{abc 123}
 == APP == get invoke result =  laurence
 == APP == get post result =  laurence
