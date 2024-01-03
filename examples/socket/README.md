@@ -71,7 +71,7 @@ name: Run and send order
 background: true
 sleep: 5
 expected_stdout_lines:
-  - '== APP == dapr client initializing for: /tmp/dapr-order-app-grpc.socket'
+  - '== APP == msg="dapr client initializing for: /tmp/dapr-order-app-grpc.socket"'
   - '== APP == Sending order ID 20'
   - '== APP == Successfully persisted state'
 -->
@@ -87,7 +87,7 @@ name: Run and get order
 background: true
 sleep: 5
 expected_stdout_lines:
-  - '== APP == dapr client initializing for: /tmp/dapr-order-app-grpc.socket'
+  - '== APP == msg="dapr client initializing for: /tmp/dapr-order-app-grpc.socket"'
   - '== APP == Getting order'
   - '== APP == Order ID 20'
 -->
