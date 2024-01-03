@@ -15,7 +15,6 @@ package manager
 
 import (
 	"context"
-	"log"
 	"reflect"
 
 	"github.com/dapr/go-sdk/actor"
@@ -23,7 +22,10 @@ import (
 	actorErr "github.com/dapr/go-sdk/actor/error"
 	"github.com/dapr/go-sdk/actor/state"
 	dapr "github.com/dapr/go-sdk/client"
+	"github.com/dapr/kit/logger"
 )
+
+var log = logger.NewLogger("dapr.actor.manager")
 
 // Deprecated: use ActorContainerContext instead.
 type ActorContainer interface {
@@ -87,7 +89,7 @@ func NewDefaultActorContainerContext(ctx context.Context, actorID string, impl a
 	}
 	methodType, err := getAbsctractMethodMap(impl)
 	if err != nil {
-		log.Printf("failed to get absctract method map from registered provider, err = %s", err)
+		log.Infof("failed to get absctract method map from registered provider, err = %s", err)
 		return nil, actorErr.ErrActorServerInvalid
 	}
 	return &DefaultActorContainerContext{

@@ -48,7 +48,7 @@ type Server struct {
 func (s *Server) Close() {
 	close(s.done)
 	if err := s.listener.Close(); err != nil {
-		logger.Fatal(err)
+		log.Fatal(err)
 	}
 	os.Remove(unresponsiveUnixSocketFilePath)
 }
@@ -61,7 +61,7 @@ func (s *Server) listenButKeepSilent() {
 			case <-s.done:
 				return
 			default:
-				logger.Fatal(err)
+				log.Fatal(err)
 				break
 			}
 		} else {
@@ -85,7 +85,7 @@ func createUnresponsiveUnixServer() (*Server, error) {
 func createUnresponsiveServer(network string, unresponsiveServerAddress string) (*Server, error) {
 	serverListener, err := net.Listen(network, unresponsiveServerAddress)
 	if err != nil {
-		logger.Fatalf("Creation of test server on network %s and address %s failed with error: %v",
+		log.Fatalf("Creation of test server on network %s and address %s failed with error: %v",
 			network, unresponsiveServerAddress, err)
 		return nil, err
 	}
@@ -109,7 +109,7 @@ func createNonBlockingClient(ctx context.Context, serverAddr string) (client Cli
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 	if err != nil {
-		logger.Fatal(err)
+		log.Fatal(err)
 		return nil, err
 	}
 	return NewClientWithConnection(conn), nil

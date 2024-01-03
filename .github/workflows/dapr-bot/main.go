@@ -2,10 +2,15 @@ package main
 
 import (
 	"context"
-	"log"
 	"os"
-
+	
 	"github.com/google/go-github/v55/github"
+
+	"github.com/dapr/kit/logger"
+)
+
+var (
+	log        = logger.NewLogger("dapr.github.workflows")
 )
 
 func main() {

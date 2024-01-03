@@ -17,7 +17,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"reflect"
 	"sync"
 	"unicode"
@@ -181,7 +180,7 @@ func (m *DefaultActorManagerContext) InvokeReminder(ctx context.Context, actorID
 	}
 	reminderParams := &api.ActorReminderParams{}
 	if err := m.serializer.Unmarshal(params, reminderParams); err != nil {
-		log.Printf("failed to unmarshal reminder param, err: %v ", err)
+		log.Infof("failed to unmarshal reminder param, err: %v ", err)
 		return actorErr.ErrRemindersParamsInvalid
 	}
 	actorContainer, aerr := m.getAndCreateActorContainerIfNotExist(ctx, actorID)
@@ -204,7 +203,7 @@ func (m *DefaultActorManagerContext) InvokeTimer(ctx context.Context, actorID, t
 	}
 	timerParams := &api.ActorTimerParam{}
 	if err := m.serializer.Unmarshal(params, timerParams); err != nil {
-		log.Printf("failed to unmarshal reminder param, err: %v ", err)
+		log.Infof("failed to unmarshal reminder param, err: %v ", err)
 		return actorErr.ErrTimerParamsInvalid
 	}
 	actorContainer, aerr := m.getAndCreateActorContainerIfNotExist(ctx, actorID)
@@ -251,7 +250,7 @@ func suitableMethods(typ reflect.Type) map[string]*MethodType {
 	for m := 0; m < typ.NumMethod(); m++ {
 		method := typ.Method(m)
 		if mt, err := suiteMethod(method); err != nil {
-			log.Printf("method %s is illegal, err = %s, just skip it", method.Name, err)
+			log.Infof("method %s is illegal, err = %s, just skip it", method.Name, err)
 		} else {
 			methods[method.Name] = mt
 		}

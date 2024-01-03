@@ -15,12 +15,14 @@ package main
 
 import (
 	"context"
-	"log"
 	"net/http"
 
 	"github.com/dapr/go-sdk/service/common"
 	daprd "github.com/dapr/go-sdk/service/http"
+	"github.com/dapr/kit/logger"
 )
+
+var log = logger.NewLogger("dapr.examples.pubsub.sub")
 
 // Subscription to tell the dapr what topic to subscribe.
 //   - PubsubName: is the name of the component configured in the metadata of pubsub.yaml.
@@ -60,11 +62,11 @@ func main() {
 }
 
 func eventHandler(ctx context.Context, e *common.TopicEvent) (retry bool, err error) {
-	log.Printf("event - PubsubName: %s, Topic: %s, ID: %s, Data: %s", e.PubsubName, e.Topic, e.ID, e.Data)
+	log.Infof("event - PubsubName: %s, Topic: %s, ID: %s, Data: %s", e.PubsubName, e.Topic, e.ID, e.Data)
 	return false, nil
 }
 
 func importantEventHandler(ctx context.Context, e *common.TopicEvent) (retry bool, err error) {
-	log.Printf("important event - PubsubName: %s, Topic: %s, ID: %s, Data: %s", e.PubsubName, e.Topic, e.ID, e.Data)
+	log.Infof("important event - PubsubName: %s, Topic: %s, ID: %s, Data: %s", e.PubsubName, e.Topic, e.ID, e.Data)
 	return false, nil
 }

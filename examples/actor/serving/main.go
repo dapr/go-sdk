@@ -16,7 +16,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/dapr/go-sdk/actor"
@@ -24,6 +23,11 @@ import (
 	"github.com/dapr/go-sdk/examples/actor/api"
 
 	daprd "github.com/dapr/go-sdk/service/http"
+	"github.com/dapr/kit/logger"
+)
+
+var (
+	log = logger.NewLogger("dapr.examples.actor")
 )
 
 func testActorFactory() actor.ServerContext {

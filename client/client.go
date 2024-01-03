@@ -19,7 +19,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"net"
 	"os"
 	"strconv"
@@ -41,6 +40,7 @@ import (
 
 	// used to import codec implements.
 	_ "github.com/dapr/go-sdk/actor/codec/impl"
+	"github.com/dapr/kit/logger"
 )
 
 const (
@@ -55,7 +55,7 @@ const (
 )
 
 var (
-	logger               = log.New(os.Stdout, "", 0)
+	log                  = logger.NewLogger("dapr.client")
 	lock                 = &sync.Mutex{}
 	_             Client = (*GRPCClient)(nil)
 	defaultClient Client
@@ -274,7 +274,7 @@ func NewClientWithAddressContext(ctx context.Context, address string) (client Cl
 	if address == "" {
 		return nil, errors.New("empty address")
 	}
-	logger.Printf("dapr client initializing for: %s", address)
+	log.Infof("dapr client initializing for: %s", address)
 
 	timeoutSeconds, err := getClientTimeoutSeconds()
 	if err != nil {
@@ -308,7 +308,7 @@ func NewClientWithAddressContext(ctx context.Context, address string) (client Cl
 		return nil, fmt.Errorf("error creating connection to '%s': %w", address, err)
 	}
 	if hasToken := os.Getenv(apiTokenEnvVarName); hasToken != "" {
-		logger.Println("client uses API token")
+		log.Info("client uses API token")
 	}
 
 	return NewClientWithConnection(conn), nil
@@ -334,7 +334,7 @@ func NewClientWithSocket(socket string) (client Client, err error) {
 	if socket == "" {
 		return nil, errors.New("nil socket")
 	}
-	logger.Printf("dapr client initializing for: %s", socket)
+	log.Infof("dapr client initializing for: %s", socket)
 	addr := "unix://" + socket
 	conn, err := grpc.Dial(
 		addr,
@@ -345,7 +345,7 @@ func NewClientWithSocket(socket string) (client Client, err error) {
 		return nil, fmt.Errorf("error creating connection to '%s': %w", addr, err)
 	}
 	if hasToken := os.Getenv(apiTokenEnvVarName); hasToken != "" {
-		logger.Println("client uses API token")
+		log.Info("client uses API token")
 	}
 	return NewClientWithConnection(conn), nil
 }
@@ -385,7 +385,7 @@ func (c *GRPCClient) WithTraceID(ctx context.Context, id string) context.Context
 	if id == "" {
 		return ctx
 	}
-	logger.Printf("using trace parent ID: %s", id)
+	log.Infof("using trace parent ID: %s", id)
 	md := metadata.Pairs(traceparentKey, id)
 	return metadata.NewOutgoingContext(ctx, md)
 }
