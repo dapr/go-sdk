@@ -71,7 +71,7 @@ The handler method itself can be any method with the expected signature:
 
 ```go
 func eventHandler(ctx context.Context, e *common.TopicEvent) (retry bool, err error) {
-	log.Printf("event - PubsubName:%s, Topic:%s, ID:%s, Data: %v", e.PubsubName, e.Topic, e.ID, e.Data)
+	log.Infof("event - PubsubName:%s, Topic:%s, ID:%s, Data: %v", e.PubsubName, e.Topic, e.ID, e.Data)
 	// do something with the event
 	return true, nil
 }
@@ -91,7 +91,7 @@ The handler method itself can be any method with the expected signature:
 
 ```go
 func echoHandler(ctx context.Context, in *common.InvocationEvent) (out *common.Content, err error) {
-	log.Printf("echo - ContentType:%s, Verb:%s, QueryString:%s, %+v", in.ContentType, in.Verb, in.QueryString, string(in.Data))
+	log.Infof("echo - ContentType:%s, Verb:%s, QueryString:%s, %+v", in.ContentType, in.Verb, in.QueryString, string(in.Data))
 	// do something with the invocation here
 	out = &common.Content{
 		Data:        in.Data,
@@ -116,7 +116,7 @@ The handler method itself can be any method with the expected signature:
 
 ```go
 func runHandler(ctx context.Context, in *common.BindingEvent) (out []byte, err error) {
-	log.Printf("binding - Data:%v, Meta:%v", in.Data, in.Metadata)
+	log.Infof("binding - Data:%v, Meta:%v", in.Data, in.Metadata)
 	// do something with the invocation here
 	return nil, nil
 }
