@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"google.golang.org/grpc/metadata"
 	"log"
 	"sync"
 	"time"
@@ -48,10 +49,12 @@ func main() {
 	}()
 
 	daprClient, err := client.NewClient()
+	defer daprClient.Close()
 	if err != nil {
 		log.Fatalf("failed to intialise client: %v", err)
 	}
-	ctx := context.TODO()
+	ctx := context.Background()
+	ctx = metadata.AppendToOutgoingContext(ctx, "dapr-app-id", "workflow-sequential")
 
 	// Start workflow test
 	respStart, err := daprClient.StartWorkflowBeta1(ctx, &client.StartWorkflowRequest{
