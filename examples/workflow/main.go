@@ -48,7 +48,7 @@ func main() {
 		}
 	}()
 
-	daprClient, err := client.NewClient()
+	daprClient, err := client.NewClientWithPort("50001")
 	defer daprClient.Close()
 	if err != nil {
 		log.Fatalf("failed to intialise client: %v", err)
