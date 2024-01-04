@@ -119,9 +119,10 @@ func (wr *WorkflowRuntime) Start() error {
 		if err != nil {
 			log.Fatalf("failed to start work stream: %v", err)
 		}
+		log.Println("work item listener started")
+		<-wr.quit
+		log.Println("work item listener shutdown")
 	}()
-	<-wr.quit
-
 	return nil
 }
 
@@ -130,6 +131,6 @@ func (wr *WorkflowRuntime) Shutdown() error {
 	wr.cancel()
 	// send close signal
 	wr.quit <- true
-
+	log.Println("work item listener shutdown signal sent")
 	return nil
 }
