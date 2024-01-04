@@ -103,7 +103,7 @@ func (c *GRPCClient) StartWorkflowAlpha1(ctx context.Context, req *StartWorkflow
 		return nil, fmt.Errorf("failed to start workflow instance: %v", err)
 	}
 	return &StartWorkflowResponse{
-		InstanceID: resp.InstanceId,
+		InstanceID: resp.GetInstanceId(),
 	}, nil
 }
 
@@ -123,19 +123,19 @@ func (c *GRPCClient) GetWorkflowAlpha1(ctx context.Context, req *GetWorkflowRequ
 		return nil, fmt.Errorf("failed to get workflow status: %v", err)
 	}
 
-	if resp.CreatedAt == nil {
+	if resp.GetCreatedAt() == nil {
 		resp.CreatedAt = timestamppb.Now()
 	}
-	if resp.LastUpdatedAt == nil {
+	if resp.GetLastUpdatedAt() == nil {
 		resp.LastUpdatedAt = timestamppb.Now()
 	}
 	return &GetWorkflowResponse{
-		InstanceID:    resp.InstanceId,
-		WorkflowName:  resp.WorkflowName,
-		CreatedAt:     resp.CreatedAt.AsTime(),
-		LastUpdatedAt: resp.LastUpdatedAt.AsTime(),
-		RuntimeStatus: resp.RuntimeStatus,
-		Properties:    resp.Properties,
+		InstanceID:    resp.GetInstanceId(),
+		WorkflowName:  resp.GetWorkflowName(),
+		CreatedAt:     resp.GetCreatedAt().AsTime(),
+		LastUpdatedAt: resp.GetLastUpdatedAt().AsTime(),
+		RuntimeStatus: resp.GetRuntimeStatus(),
+		Properties:    resp.GetProperties(),
 	}, nil
 }
 
@@ -280,7 +280,7 @@ func (c *GRPCClient) StartWorkflowBeta1(ctx context.Context, req *StartWorkflowR
 		return nil, fmt.Errorf("failed to start workflow instance: %v", err)
 	}
 	return &StartWorkflowResponse{
-		InstanceID: resp.InstanceId,
+		InstanceID: resp.GetInstanceId(),
 	}, nil
 }
 
@@ -299,19 +299,19 @@ func (c *GRPCClient) GetWorkflowBeta1(ctx context.Context, req *GetWorkflowReque
 	if err != nil {
 		return nil, fmt.Errorf("failed to get workflow status: %v", err)
 	}
-	if resp.CreatedAt == nil {
+	if resp.GetCreatedAt() == nil {
 		resp.CreatedAt = timestamppb.Now()
 	}
-	if resp.LastUpdatedAt == nil {
+	if resp.GetLastUpdatedAt() == nil {
 		resp.LastUpdatedAt = timestamppb.Now()
 	}
 	return &GetWorkflowResponse{
-		InstanceID:    resp.InstanceId,
-		WorkflowName:  resp.WorkflowName,
-		CreatedAt:     resp.CreatedAt.AsTime(),
-		LastUpdatedAt: resp.LastUpdatedAt.AsTime(),
-		RuntimeStatus: resp.RuntimeStatus,
-		Properties:    resp.Properties,
+		InstanceID:    resp.GetInstanceId(),
+		WorkflowName:  resp.GetWorkflowName(),
+		CreatedAt:     resp.GetCreatedAt().AsTime(),
+		LastUpdatedAt: resp.GetLastUpdatedAt().AsTime(),
+		RuntimeStatus: resp.GetRuntimeStatus(),
+		Properties:    resp.GetProperties(),
 	}, nil
 }
 
