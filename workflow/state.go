@@ -18,17 +18,17 @@ const (
 
 func (s Status) String() string {
 	status := [...]string{
-		"running",
-		"completed",
-		"continued_as_new",
-		"failed",
-		"canceled",
-		"terminated",
-		"pending",
-		"suspended",
+		"RUNNING",
+		"COMPLETED",
+		"CONTINUED_AS_NEW",
+		"FAILED",
+		"CANCELED",
+		"TERMINATED",
+		"PENDING",
+		"SUSPENDED",
 	}
 	if s > StatusSuspended || s < StatusRunning {
-		return "unknown"
+		return "UNKNOWN"
 	}
 	return status[s]
 }
