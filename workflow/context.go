@@ -35,7 +35,7 @@ func (wfc *Context) IsReplaying() bool {
 }
 
 func (wfc *Context) CallActivity(activity interface{}, opts ...callActivityOption) task.Task {
-	var inp string
+	var inp any
 	if err := wfc.GetInput(&inp); err != nil {
 		log.Printf("unable to get activity input: %v", err)
 	}

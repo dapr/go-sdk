@@ -28,7 +28,7 @@ type callActivityOptions struct {
 	rawInput *wrapperspb.StringValue
 }
 
-func WithActivityInput(input any) callActivityOption {
+func ActivityInput(input any) callActivityOption {
 	return func(opt *callActivityOptions) error {
 		data, err := marshalData(input)
 		if err != nil {
