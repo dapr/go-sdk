@@ -14,10 +14,19 @@ output_match_mode: substring
 expected_stdout_lines:
   - '== APP == Runtime initialized'
   - '== APP == TestWorkflow registered'
-  - '== APP == TestActivityStep1 registered'
-  - '== APP == TestActivityStep2 registered'
-  - '== APP == Status for (start) request: 202 Accepted'
-  - 'Created new workflow instance with ID'
+  - '== APP == TestActivity registered'
+  - '== APP == runner 1'
+  - '== APP == workflow started with id: a7a4168d-3a1c-41da-8a4f-e7f6d9c718d9'
+  - '== APP == workflow paused'
+  - '== APP == workflow resumed'
+  - '== APP == workflow event raised'
+  - '== APP == stage: 2'
+  - '== APP == workflow status: COMPLETED'
+  - '== APP == workflow purged'
+  - '== APP == stage: 2'
+  - '== APP == workflow started with id: a7a4168d-3a1c-41da-8a4f-e7f6d9c718d9'
+  - '== APP == workflow terminated'
+  - '== APP == workflow purged'
 background: true
 sleep: 30
 -->
@@ -26,7 +35,6 @@ sleep: 30
 dapr run --app-id workflow-sequential \
          --app-protocol grpc \
          --dapr-grpc-port 50001 \
-         --dapr-http-port 3500 \
          --placement-host-address localhost:50005 \
          --log-level debug \
          --resources-path ./config \
@@ -40,10 +48,19 @@ dapr run --app-id workflow-sequential \
 - workflow
 
 ```
-    - '== APP == Runtime initialized'
-    - '== APP == TestWorkflow registered'
-    - '== APP == TestActivityStep1 registered'
-    - '== APP == TestActivityStep2 registered'
-    - '== APP == Status for (start) request: 202 Accepted'
-    - 'Created new workflow instance with ID 'a7a4168d-3a1c-41da-8a4f-e7f6d9c718d9'
+  - '== APP == Runtime initialized'
+  - '== APP == TestWorkflow registered'
+  - '== APP == TestActivity registered'
+  - '== APP == runner 1'
+  - '== APP == workflow started with id: a7a4168d-3a1c-41da-8a4f-e7f6d9c718d9'
+  - '== APP == workflow paused'
+  - '== APP == workflow resumed'
+  - '== APP == workflow event raised'
+  - '== APP == stage: 2'
+  - '== APP == workflow status: COMPLETED'
+  - '== APP == workflow purged'
+  - '== APP == stage: 2'
+  - '== APP == workflow started with id: a7a4168d-3a1c-41da-8a4f-e7f6d9c718d9'
+  - '== APP == workflow terminated'
+  - '== APP == workflow purged'
 ```
