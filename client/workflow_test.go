@@ -5,6 +5,8 @@ import (
 	"math"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/stretchr/testify/assert"
 )
 
@@ -18,7 +20,7 @@ func TestWorkflowAlpha1(t *testing.T) {
 			WorkflowComponent: "dapr",
 			WorkflowName:      "TestWorkflow",
 		})
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.NotNil(t, resp.InstanceID)
 	})
 	t.Run("start workflow - valid (with id)", func(t *testing.T) {
@@ -27,7 +29,7 @@ func TestWorkflowAlpha1(t *testing.T) {
 			WorkflowComponent: "dapr",
 			WorkflowName:      "TestWorkflow",
 		})
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, "TestID", resp.InstanceID)
 	})
 	t.Run("start workflow - rpc failure", func(t *testing.T) {
@@ -36,7 +38,7 @@ func TestWorkflowAlpha1(t *testing.T) {
 			WorkflowComponent: "dapr",
 			WorkflowName:      "TestWorkflow",
 		})
-		assert.Error(t, err)
+		require.Error(t, err)
 		assert.Nil(t, resp)
 	})
 	t.Run("start workflow - invalid WorkflowComponent", func(t *testing.T) {
@@ -45,7 +47,7 @@ func TestWorkflowAlpha1(t *testing.T) {
 			WorkflowComponent: "",
 			WorkflowName:      "TestWorkflow",
 		})
-		assert.Error(t, err)
+		require.Error(t, err)
 		assert.Nil(t, resp)
 	})
 	t.Run("start workflow - grpc failure", func(t *testing.T) {
@@ -54,7 +56,7 @@ func TestWorkflowAlpha1(t *testing.T) {
 			WorkflowComponent: "dapr",
 			WorkflowName:      "",
 		})
-		assert.Error(t, err)
+		require.Error(t, err)
 		assert.Nil(t, resp)
 	})
 	t.Run("start workflow - cannot serialize input", func(t *testing.T) {
@@ -65,7 +67,7 @@ func TestWorkflowAlpha1(t *testing.T) {
 			Input:             math.NaN(),
 			SendRawInput:      false,
 		})
-		assert.Error(t, err)
+		require.Error(t, err)
 		assert.Nil(t, resp)
 	})
 	t.Run("start workflow - raw input", func(t *testing.T) {
@@ -76,7 +78,7 @@ func TestWorkflowAlpha1(t *testing.T) {
 			Input:             []byte("stringtest"),
 			SendRawInput:      true,
 		})
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.NotNil(t, resp)
 	})
 
@@ -86,7 +88,7 @@ func TestWorkflowAlpha1(t *testing.T) {
 			InstanceID:        "TestID",
 			WorkflowComponent: "dapr",
 		})
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.NotNil(t, resp)
 	})
 
@@ -95,7 +97,7 @@ func TestWorkflowAlpha1(t *testing.T) {
 			InstanceID:        "TestID",
 			WorkflowComponent: "dapr",
 		})
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.NotNil(t, resp)
 	})
 
@@ -104,7 +106,7 @@ func TestWorkflowAlpha1(t *testing.T) {
 			InstanceID:        "",
 			WorkflowComponent: "dapr",
 		})
-		assert.Error(t, err)
+		require.Error(t, err)
 		assert.Nil(t, resp)
 	})
 
@@ -113,7 +115,7 @@ func TestWorkflowAlpha1(t *testing.T) {
 			InstanceID:        "TestID",
 			WorkflowComponent: "",
 		})
-		assert.Error(t, err)
+		require.Error(t, err)
 		assert.Nil(t, resp)
 	})
 
@@ -122,7 +124,7 @@ func TestWorkflowAlpha1(t *testing.T) {
 			InstanceID:        testWorkflowFailureID,
 			WorkflowComponent: "dapr",
 		})
-		assert.Error(t, err)
+		require.Error(t, err)
 		assert.Nil(t, resp)
 	})
 	// 3: PauseWorkflow
@@ -131,7 +133,7 @@ func TestWorkflowAlpha1(t *testing.T) {
 			InstanceID:        "TestID",
 			WorkflowComponent: "dapr",
 		})
-		assert.NoError(t, err)
+		require.NoError(t, err)
 	})
 
 	t.Run("pause workflow - invalid instanceid", func(t *testing.T) {
@@ -139,7 +141,7 @@ func TestWorkflowAlpha1(t *testing.T) {
 			InstanceID:        "",
 			WorkflowComponent: "dapr",
 		})
-		assert.Error(t, err)
+		require.Error(t, err)
 	})
 
 	t.Run("pause workflow - invalid workflowcomponent", func(t *testing.T) {
@@ -147,7 +149,7 @@ func TestWorkflowAlpha1(t *testing.T) {
 			InstanceID:        "TestID",
 			WorkflowComponent: "",
 		})
-		assert.Error(t, err)
+		require.Error(t, err)
 	})
 
 	t.Run("pause workflow", func(t *testing.T) {
@@ -155,7 +157,7 @@ func TestWorkflowAlpha1(t *testing.T) {
 			InstanceID:        testWorkflowFailureID,
 			WorkflowComponent: "dapr",
 		})
-		assert.Error(t, err)
+		require.Error(t, err)
 	})
 
 	// 4: ResumeWorkflow
@@ -164,7 +166,7 @@ func TestWorkflowAlpha1(t *testing.T) {
 			InstanceID:        "TestID",
 			WorkflowComponent: "dapr",
 		})
-		assert.NoError(t, err)
+		require.NoError(t, err)
 	})
 
 	t.Run("resume workflow - invalid instanceid", func(t *testing.T) {
@@ -172,7 +174,7 @@ func TestWorkflowAlpha1(t *testing.T) {
 			InstanceID:        "",
 			WorkflowComponent: "dapr",
 		})
-		assert.Error(t, err)
+		require.Error(t, err)
 	})
 
 	t.Run("resume workflow - invalid workflowcomponent", func(t *testing.T) {
@@ -180,7 +182,7 @@ func TestWorkflowAlpha1(t *testing.T) {
 			InstanceID:        "TestID",
 			WorkflowComponent: "",
 		})
-		assert.Error(t, err)
+		require.Error(t, err)
 	})
 
 	t.Run("resume workflow - grpc fail", func(t *testing.T) {
@@ -188,7 +190,7 @@ func TestWorkflowAlpha1(t *testing.T) {
 			InstanceID:        testWorkflowFailureID,
 			WorkflowComponent: "dapr",
 		})
-		assert.Error(t, err)
+		require.Error(t, err)
 	})
 
 	// 5: TerminateWorkflow
@@ -197,7 +199,7 @@ func TestWorkflowAlpha1(t *testing.T) {
 			InstanceID:        "TestID",
 			WorkflowComponent: "dapr",
 		})
-		assert.NoError(t, err)
+		require.NoError(t, err)
 	})
 
 	t.Run("terminate workflow - invalid instanceid", func(t *testing.T) {
@@ -205,7 +207,7 @@ func TestWorkflowAlpha1(t *testing.T) {
 			InstanceID:        "",
 			WorkflowComponent: "dapr",
 		})
-		assert.Error(t, err)
+		require.Error(t, err)
 	})
 
 	t.Run("terminate workflow - invalid workflowcomponent", func(t *testing.T) {
@@ -213,7 +215,7 @@ func TestWorkflowAlpha1(t *testing.T) {
 			InstanceID:        "TestID",
 			WorkflowComponent: "",
 		})
-		assert.Error(t, err)
+		require.Error(t, err)
 	})
 
 	t.Run("terminate workflow - grpc failure", func(t *testing.T) {
@@ -221,7 +223,7 @@ func TestWorkflowAlpha1(t *testing.T) {
 			InstanceID:        testWorkflowFailureID,
 			WorkflowComponent: "dapr",
 		})
-		assert.Error(t, err)
+		require.Error(t, err)
 	})
 
 	// 6: RaiseEventWorkflow
@@ -231,7 +233,7 @@ func TestWorkflowAlpha1(t *testing.T) {
 			WorkflowComponent: "dapr",
 			EventName:         "TestEvent",
 		})
-		assert.NoError(t, err)
+		require.NoError(t, err)
 	})
 
 	t.Run("raise event workflow - invalid instanceid", func(t *testing.T) {
@@ -240,7 +242,7 @@ func TestWorkflowAlpha1(t *testing.T) {
 			WorkflowComponent: "dapr",
 			EventName:         "TestEvent",
 		})
-		assert.Error(t, err)
+		require.Error(t, err)
 	})
 
 	t.Run("raise event workflow - invalid workflowcomponent", func(t *testing.T) {
@@ -249,7 +251,7 @@ func TestWorkflowAlpha1(t *testing.T) {
 			WorkflowComponent: "",
 			EventName:         "TestEvent",
 		})
-		assert.Error(t, err)
+		require.Error(t, err)
 	})
 
 	t.Run("raise event workflow - invalid eventname", func(t *testing.T) {
@@ -258,7 +260,7 @@ func TestWorkflowAlpha1(t *testing.T) {
 			WorkflowComponent: "dapr",
 			EventName:         "",
 		})
-		assert.Error(t, err)
+		require.Error(t, err)
 	})
 
 	t.Run("raise event workflow - grpc failure", func(t *testing.T) {
@@ -267,7 +269,7 @@ func TestWorkflowAlpha1(t *testing.T) {
 			WorkflowComponent: "dapr",
 			EventName:         "TestEvent",
 		})
-		assert.Error(t, err)
+		require.Error(t, err)
 	})
 	t.Run("raise event workflow - cannot serialize input", func(t *testing.T) {
 		err := testClient.RaiseEventWorkflowAlpha1(ctx, &RaiseEventWorkflowRequest{
@@ -277,7 +279,7 @@ func TestWorkflowAlpha1(t *testing.T) {
 			EventData:         math.NaN(),
 			SendRawData:       false,
 		})
-		assert.Error(t, err)
+		require.Error(t, err)
 	})
 	t.Run("raise event workflow - raw input", func(t *testing.T) {
 		err := testClient.RaiseEventWorkflowAlpha1(ctx, &RaiseEventWorkflowRequest{
@@ -287,7 +289,7 @@ func TestWorkflowAlpha1(t *testing.T) {
 			EventData:         []byte("teststring"),
 			SendRawData:       true,
 		})
-		assert.Error(t, err)
+		require.Error(t, err)
 	})
 
 	// 7: PurgeWorkflow
@@ -296,7 +298,7 @@ func TestWorkflowAlpha1(t *testing.T) {
 			InstanceID:        "TestID",
 			WorkflowComponent: "dapr",
 		})
-		assert.NoError(t, err)
+		require.NoError(t, err)
 	})
 
 	t.Run("purge workflow - invalid instanceid", func(t *testing.T) {
@@ -304,7 +306,7 @@ func TestWorkflowAlpha1(t *testing.T) {
 			InstanceID:        "",
 			WorkflowComponent: "dapr",
 		})
-		assert.Error(t, err)
+		require.Error(t, err)
 	})
 
 	t.Run("purge workflow - invalid workflowcomponent", func(t *testing.T) {
@@ -312,7 +314,7 @@ func TestWorkflowAlpha1(t *testing.T) {
 			InstanceID:        "TestID",
 			WorkflowComponent: "",
 		})
-		assert.Error(t, err)
+		require.Error(t, err)
 	})
 
 	t.Run("purge workflow - grpc failure", func(t *testing.T) {
@@ -320,7 +322,7 @@ func TestWorkflowAlpha1(t *testing.T) {
 			InstanceID:        testWorkflowFailureID,
 			WorkflowComponent: "dapr",
 		})
-		assert.Error(t, err)
+		require.Error(t, err)
 	})
 }
 
@@ -334,7 +336,7 @@ func TestWorkflowBeta1(t *testing.T) {
 			WorkflowComponent: "dapr",
 			WorkflowName:      "TestWorkflow",
 		})
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.NotNil(t, resp.InstanceID)
 	})
 	t.Run("start workflow - valid (with id)", func(t *testing.T) {
@@ -343,7 +345,7 @@ func TestWorkflowBeta1(t *testing.T) {
 			WorkflowComponent: "dapr",
 			WorkflowName:      "TestWorkflow",
 		})
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, "TestID", resp.InstanceID)
 	})
 	t.Run("start workflow - rpc failure", func(t *testing.T) {
@@ -352,7 +354,7 @@ func TestWorkflowBeta1(t *testing.T) {
 			WorkflowComponent: "dapr",
 			WorkflowName:      "TestWorkflow",
 		})
-		assert.Error(t, err)
+		require.Error(t, err)
 		assert.Nil(t, resp)
 	})
 	t.Run("start workflow - invalid WorkflowComponent", func(t *testing.T) {
@@ -361,7 +363,7 @@ func TestWorkflowBeta1(t *testing.T) {
 			WorkflowComponent: "",
 			WorkflowName:      "TestWorkflow",
 		})
-		assert.Error(t, err)
+		require.Error(t, err)
 		assert.Nil(t, resp)
 	})
 	t.Run("start workflow - grpc failure", func(t *testing.T) {
@@ -370,7 +372,7 @@ func TestWorkflowBeta1(t *testing.T) {
 			WorkflowComponent: "dapr",
 			WorkflowName:      "",
 		})
-		assert.Error(t, err)
+		require.Error(t, err)
 		assert.Nil(t, resp)
 	})
 	t.Run("start workflow - cannot serialize input", func(t *testing.T) {
@@ -381,7 +383,7 @@ func TestWorkflowBeta1(t *testing.T) {
 			Input:             math.NaN(),
 			SendRawInput:      false,
 		})
-		assert.Error(t, err)
+		require.Error(t, err)
 		assert.Nil(t, resp)
 	})
 	t.Run("start workflow - raw input", func(t *testing.T) {
@@ -392,7 +394,7 @@ func TestWorkflowBeta1(t *testing.T) {
 			Input:             []byte("stringtest"),
 			SendRawInput:      true,
 		})
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.NotNil(t, resp)
 	})
 
@@ -402,7 +404,7 @@ func TestWorkflowBeta1(t *testing.T) {
 			InstanceID:        "TestID",
 			WorkflowComponent: "dapr",
 		})
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.NotNil(t, resp)
 	})
 
@@ -411,7 +413,7 @@ func TestWorkflowBeta1(t *testing.T) {
 			InstanceID:        "TestID",
 			WorkflowComponent: "dapr",
 		})
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.NotNil(t, resp)
 	})
 
@@ -420,7 +422,7 @@ func TestWorkflowBeta1(t *testing.T) {
 			InstanceID:        "",
 			WorkflowComponent: "dapr",
 		})
-		assert.Error(t, err)
+		require.Error(t, err)
 		assert.Nil(t, resp)
 	})
 
@@ -429,7 +431,7 @@ func TestWorkflowBeta1(t *testing.T) {
 			InstanceID:        "TestID",
 			WorkflowComponent: "",
 		})
-		assert.Error(t, err)
+		require.Error(t, err)
 		assert.Nil(t, resp)
 	})
 
@@ -438,7 +440,7 @@ func TestWorkflowBeta1(t *testing.T) {
 			InstanceID:        testWorkflowFailureID,
 			WorkflowComponent: "dapr",
 		})
-		assert.Error(t, err)
+		require.Error(t, err)
 		assert.Nil(t, resp)
 	})
 
@@ -448,7 +450,7 @@ func TestWorkflowBeta1(t *testing.T) {
 			InstanceID:        "TestID",
 			WorkflowComponent: "dapr",
 		})
-		assert.NoError(t, err)
+		require.NoError(t, err)
 	})
 
 	t.Run("pause workflow invalid instanceid", func(t *testing.T) {
@@ -456,7 +458,7 @@ func TestWorkflowBeta1(t *testing.T) {
 			InstanceID:        "",
 			WorkflowComponent: "dapr",
 		})
-		assert.Error(t, err)
+		require.Error(t, err)
 	})
 
 	t.Run("pause workflow - invalid workflowcomponent", func(t *testing.T) {
@@ -464,7 +466,7 @@ func TestWorkflowBeta1(t *testing.T) {
 			InstanceID:        "TestID",
 			WorkflowComponent: "",
 		})
-		assert.Error(t, err)
+		require.Error(t, err)
 	})
 
 	t.Run("pause workflow", func(t *testing.T) {
@@ -472,7 +474,7 @@ func TestWorkflowBeta1(t *testing.T) {
 			InstanceID:        testWorkflowFailureID,
 			WorkflowComponent: "dapr",
 		})
-		assert.Error(t, err)
+		require.Error(t, err)
 	})
 
 	// 4: ResumeWorkflow
@@ -481,7 +483,7 @@ func TestWorkflowBeta1(t *testing.T) {
 			InstanceID:        "TestID",
 			WorkflowComponent: "dapr",
 		})
-		assert.NoError(t, err)
+		require.NoError(t, err)
 	})
 
 	t.Run("resume workflow - invalid instanceid", func(t *testing.T) {
@@ -489,7 +491,7 @@ func TestWorkflowBeta1(t *testing.T) {
 			InstanceID:        "",
 			WorkflowComponent: "dapr",
 		})
-		assert.Error(t, err)
+		require.Error(t, err)
 	})
 
 	t.Run("resume workflow - invalid workflowcomponent", func(t *testing.T) {
@@ -497,7 +499,7 @@ func TestWorkflowBeta1(t *testing.T) {
 			InstanceID:        "TestID",
 			WorkflowComponent: "",
 		})
-		assert.Error(t, err)
+		require.Error(t, err)
 	})
 
 	t.Run("resume workflow - grpc fail", func(t *testing.T) {
@@ -505,7 +507,7 @@ func TestWorkflowBeta1(t *testing.T) {
 			InstanceID:        testWorkflowFailureID,
 			WorkflowComponent: "dapr",
 		})
-		assert.Error(t, err)
+		require.Error(t, err)
 	})
 
 	// 5: TerminateWorkflow
@@ -514,7 +516,7 @@ func TestWorkflowBeta1(t *testing.T) {
 			InstanceID:        "TestID",
 			WorkflowComponent: "dapr",
 		})
-		assert.NoError(t, err)
+		require.NoError(t, err)
 	})
 
 	t.Run("terminate workflow - invalid instanceid", func(t *testing.T) {
@@ -522,7 +524,7 @@ func TestWorkflowBeta1(t *testing.T) {
 			InstanceID:        "",
 			WorkflowComponent: "dapr",
 		})
-		assert.Error(t, err)
+		require.Error(t, err)
 	})
 
 	t.Run("terminate workflow - invalid workflowcomponent", func(t *testing.T) {
@@ -530,7 +532,7 @@ func TestWorkflowBeta1(t *testing.T) {
 			InstanceID:        "TestID",
 			WorkflowComponent: "",
 		})
-		assert.Error(t, err)
+		require.Error(t, err)
 	})
 
 	t.Run("terminate workflow - grpc failure", func(t *testing.T) {
@@ -538,7 +540,7 @@ func TestWorkflowBeta1(t *testing.T) {
 			InstanceID:        testWorkflowFailureID,
 			WorkflowComponent: "dapr",
 		})
-		assert.Error(t, err)
+		require.Error(t, err)
 	})
 
 	// 6: RaiseEventWorkflow
@@ -548,7 +550,7 @@ func TestWorkflowBeta1(t *testing.T) {
 			WorkflowComponent: "dapr",
 			EventName:         "TestEvent",
 		})
-		assert.NoError(t, err)
+		require.NoError(t, err)
 	})
 
 	t.Run("raise event workflow - invalid instanceid", func(t *testing.T) {
@@ -557,7 +559,7 @@ func TestWorkflowBeta1(t *testing.T) {
 			WorkflowComponent: "dapr",
 			EventName:         "TestEvent",
 		})
-		assert.Error(t, err)
+		require.Error(t, err)
 	})
 
 	t.Run("raise event workflow - invalid workflowcomponent", func(t *testing.T) {
@@ -566,7 +568,7 @@ func TestWorkflowBeta1(t *testing.T) {
 			WorkflowComponent: "",
 			EventName:         "TestEvent",
 		})
-		assert.Error(t, err)
+		require.Error(t, err)
 	})
 
 	t.Run("raise event workflow - invalid eventname", func(t *testing.T) {
@@ -575,7 +577,7 @@ func TestWorkflowBeta1(t *testing.T) {
 			WorkflowComponent: "dapr",
 			EventName:         "",
 		})
-		assert.Error(t, err)
+		require.Error(t, err)
 	})
 
 	t.Run("raise event workflow - grpc failure", func(t *testing.T) {
@@ -584,7 +586,7 @@ func TestWorkflowBeta1(t *testing.T) {
 			WorkflowComponent: "dapr",
 			EventName:         "TestEvent",
 		})
-		assert.Error(t, err)
+		require.Error(t, err)
 	})
 	t.Run("raise event workflow - cannot serialize input", func(t *testing.T) {
 		err := testClient.RaiseEventWorkflowBeta1(ctx, &RaiseEventWorkflowRequest{
@@ -594,7 +596,7 @@ func TestWorkflowBeta1(t *testing.T) {
 			EventData:         math.NaN(),
 			SendRawData:       false,
 		})
-		assert.Error(t, err)
+		require.Error(t, err)
 	})
 	t.Run("raise event workflow - raw input", func(t *testing.T) {
 		err := testClient.RaiseEventWorkflowBeta1(ctx, &RaiseEventWorkflowRequest{
@@ -604,7 +606,7 @@ func TestWorkflowBeta1(t *testing.T) {
 			EventData:         []byte("teststring"),
 			SendRawData:       true,
 		})
-		assert.Error(t, err)
+		require.Error(t, err)
 	})
 
 	// 7: PurgeWorkflow
@@ -613,7 +615,7 @@ func TestWorkflowBeta1(t *testing.T) {
 			InstanceID:        "TestID",
 			WorkflowComponent: "dapr",
 		})
-		assert.NoError(t, err)
+		require.NoError(t, err)
 	})
 
 	t.Run("purge workflow - invalid instanceid", func(t *testing.T) {
@@ -621,7 +623,7 @@ func TestWorkflowBeta1(t *testing.T) {
 			InstanceID:        "",
 			WorkflowComponent: "dapr",
 		})
-		assert.Error(t, err)
+		require.Error(t, err)
 	})
 
 	t.Run("purge workflow - invalid workflowcomponent", func(t *testing.T) {
@@ -629,7 +631,7 @@ func TestWorkflowBeta1(t *testing.T) {
 			InstanceID:        "TestID",
 			WorkflowComponent: "",
 		})
-		assert.Error(t, err)
+		require.Error(t, err)
 	})
 
 	t.Run("purge workflow - grpc failure", func(t *testing.T) {
@@ -637,6 +639,6 @@ func TestWorkflowBeta1(t *testing.T) {
 			InstanceID:        testWorkflowFailureID,
 			WorkflowComponent: "dapr",
 		})
-		assert.Error(t, err)
+		require.Error(t, err)
 	})
 }
