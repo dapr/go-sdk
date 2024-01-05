@@ -11,7 +11,7 @@ require (
 )
 
 require (
-	github.com/dapr/dapr v1.12.1-0.20231030205344-441017b888c5 // indirect
+	github.com/dapr/dapr v1.12.0-rc.4 // indirect
 	github.com/go-chi/chi/v5 v5.0.10 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
