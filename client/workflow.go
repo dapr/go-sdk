@@ -92,7 +92,7 @@ func (c *GRPCClient) StartWorkflowAlpha1(ctx context.Context, req *StartWorkflow
 		input = []byte(fmt.Sprintf("%v", req.Input))
 	}
 
-	resp, err := c.protoClient.StartWorkflowAlpha1(ctx, &pb.StartWorkflowRequest{
+	resp, err := c.protoClient.StartWorkflowAlpha1(c.withAuthToken(ctx), &pb.StartWorkflowRequest{
 		InstanceId:        req.InstanceID,
 		WorkflowComponent: req.WorkflowComponent,
 		WorkflowName:      req.WorkflowName,
@@ -115,7 +115,7 @@ func (c *GRPCClient) GetWorkflowAlpha1(ctx context.Context, req *GetWorkflowRequ
 	if req.WorkflowComponent == "" {
 		return nil, errors.New("failed to get workflow status: WorkflowComponent must be supplied")
 	}
-	resp, err := c.protoClient.GetWorkflowAlpha1(ctx, &pb.GetWorkflowRequest{
+	resp, err := c.protoClient.GetWorkflowAlpha1(c.withAuthToken(ctx), &pb.GetWorkflowRequest{
 		InstanceId:        req.InstanceID,
 		WorkflowComponent: req.WorkflowComponent,
 	})
@@ -147,7 +147,7 @@ func (c *GRPCClient) PurgeWorkflowAlpha1(ctx context.Context, req *PurgeWorkflow
 	if req.WorkflowComponent == "" {
 		return errors.New("failed to purge workflow: WorkflowComponent must be supplied")
 	}
-	_, err := c.protoClient.PurgeWorkflowAlpha1(ctx, &pb.PurgeWorkflowRequest{
+	_, err := c.protoClient.PurgeWorkflowAlpha1(c.withAuthToken(ctx), &pb.PurgeWorkflowRequest{
 		InstanceId:        req.InstanceID,
 		WorkflowComponent: req.WorkflowComponent,
 	})
@@ -165,7 +165,7 @@ func (c *GRPCClient) TerminateWorkflowAlpha1(ctx context.Context, req *Terminate
 	if req.WorkflowComponent == "" {
 		return errors.New("failed to terminate workflow: WorkflowComponent must be supplied")
 	}
-	_, err := c.protoClient.TerminateWorkflowAlpha1(ctx, &pb.TerminateWorkflowRequest{
+	_, err := c.protoClient.TerminateWorkflowAlpha1(c.withAuthToken(ctx), &pb.TerminateWorkflowRequest{
 		InstanceId:        req.InstanceID,
 		WorkflowComponent: req.WorkflowComponent,
 	})
@@ -183,7 +183,7 @@ func (c *GRPCClient) PauseWorkflowAlpha1(ctx context.Context, req *PauseWorkflow
 	if req.WorkflowComponent == "" {
 		return errors.New("failed to pause workflow: WorkflowComponent must be supplied")
 	}
-	_, err := c.protoClient.PauseWorkflowAlpha1(ctx, &pb.PauseWorkflowRequest{
+	_, err := c.protoClient.PauseWorkflowAlpha1(c.withAuthToken(ctx), &pb.PauseWorkflowRequest{
 		InstanceId:        req.InstanceID,
 		WorkflowComponent: req.WorkflowComponent,
 	})
@@ -201,7 +201,7 @@ func (c *GRPCClient) ResumeWorkflowAlpha1(ctx context.Context, req *ResumeWorkfl
 	if req.WorkflowComponent == "" {
 		return errors.New("failed to resume workflow: WorkflowComponent must be supplied")
 	}
-	_, err := c.protoClient.ResumeWorkflowAlpha1(ctx, &pb.ResumeWorkflowRequest{
+	_, err := c.protoClient.ResumeWorkflowAlpha1(c.withAuthToken(ctx), &pb.ResumeWorkflowRequest{
 		InstanceId:        req.InstanceID,
 		WorkflowComponent: req.WorkflowComponent,
 	})
@@ -234,7 +234,7 @@ func (c *GRPCClient) RaiseEventWorkflowAlpha1(ctx context.Context, req *RaiseEve
 		eventData = []byte(fmt.Sprintf("%v", req.EventData))
 	}
 
-	_, err = c.protoClient.RaiseEventWorkflowAlpha1(ctx, &pb.RaiseEventWorkflowRequest{
+	_, err = c.protoClient.RaiseEventWorkflowAlpha1(c.withAuthToken(ctx), &pb.RaiseEventWorkflowRequest{
 		InstanceId:        req.InstanceID,
 		WorkflowComponent: req.WorkflowComponent,
 		EventName:         req.EventName,
@@ -269,7 +269,7 @@ func (c *GRPCClient) StartWorkflowBeta1(ctx context.Context, req *StartWorkflowR
 		input = []byte(fmt.Sprintf("%v", req.Input))
 	}
 
-	resp, err := c.protoClient.StartWorkflowBeta1(ctx, &pb.StartWorkflowRequest{
+	resp, err := c.protoClient.StartWorkflowBeta1(c.withAuthToken(ctx), &pb.StartWorkflowRequest{
 		InstanceId:        req.InstanceID,
 		WorkflowComponent: req.WorkflowComponent,
 		WorkflowName:      req.WorkflowName,
@@ -292,7 +292,7 @@ func (c *GRPCClient) GetWorkflowBeta1(ctx context.Context, req *GetWorkflowReque
 	if req.WorkflowComponent == "" {
 		return nil, errors.New("failed to get workflow status: WorkflowComponent must be supplied")
 	}
-	resp, err := c.protoClient.GetWorkflowBeta1(ctx, &pb.GetWorkflowRequest{
+	resp, err := c.protoClient.GetWorkflowBeta1(c.withAuthToken(ctx), &pb.GetWorkflowRequest{
 		InstanceId:        req.InstanceID,
 		WorkflowComponent: req.WorkflowComponent,
 	})
@@ -323,7 +323,7 @@ func (c *GRPCClient) PurgeWorkflowBeta1(ctx context.Context, req *PurgeWorkflowR
 	if req.WorkflowComponent == "" {
 		return errors.New("failed to purge workflow: WorkflowComponent must be supplied")
 	}
-	_, err := c.protoClient.PurgeWorkflowBeta1(ctx, &pb.PurgeWorkflowRequest{
+	_, err := c.protoClient.PurgeWorkflowBeta1(c.withAuthToken(ctx), &pb.PurgeWorkflowRequest{
 		InstanceId:        req.InstanceID,
 		WorkflowComponent: req.WorkflowComponent,
 	})
@@ -377,7 +377,7 @@ func (c *GRPCClient) ResumeWorkflowBeta1(ctx context.Context, req *ResumeWorkflo
 	if req.WorkflowComponent == "" {
 		return errors.New("failed to resume workflow: WorkflowComponent must be supplied")
 	}
-	_, err := c.protoClient.ResumeWorkflowBeta1(ctx, &pb.ResumeWorkflowRequest{
+	_, err := c.protoClient.ResumeWorkflowBeta1(c.withAuthToken(ctx), &pb.ResumeWorkflowRequest{
 		InstanceId:        req.InstanceID,
 		WorkflowComponent: req.WorkflowComponent,
 	})
@@ -410,7 +410,7 @@ func (c *GRPCClient) RaiseEventWorkflowBeta1(ctx context.Context, req *RaiseEven
 		eventData = []byte(fmt.Sprintf("%v", req.EventData))
 	}
 
-	_, err = c.protoClient.RaiseEventWorkflowBeta1(ctx, &pb.RaiseEventWorkflowRequest{
+	_, err = c.protoClient.RaiseEventWorkflowBeta1(c.withAuthToken(ctx), &pb.RaiseEventWorkflowRequest{
 		InstanceId:        req.InstanceID,
 		WorkflowComponent: req.WorkflowComponent,
 		EventName:         req.EventName,
