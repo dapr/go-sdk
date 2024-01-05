@@ -250,7 +250,7 @@ func suitableMethods(typ reflect.Type) map[string]*MethodType {
 	for m := 0; m < typ.NumMethod(); m++ {
 		method := typ.Method(m)
 		if mt, err := suiteMethod(method); err != nil {
-			log.Infof("method %s is illegal, err = %s, just skip it", method.Name, err)
+			log.Infof("method %s is illegal, err = %v, just skip it", method.Name, err)
 		} else {
 			methods[method.Name] = mt
 		}

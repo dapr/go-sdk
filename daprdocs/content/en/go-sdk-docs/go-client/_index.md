@@ -242,7 +242,7 @@ type MyActor struct {
 
 // MyActorMethod is a method that can be invoked on MyActor.
 func (a *MyActor) MyActorMethod(ctx context.Context, req *actors.Message) (string, error) {
-	log.Infof("Received message: %s", req.Data)
+	log.Printf("Received message: %s", req.Data)
 	return "Hello from MyActor!", nil
 }
 
@@ -274,7 +274,7 @@ func main() {
 		log.Fatal("Error invoking actor method: ", err)
 	}
 
-	log.Infof("Response from actor: %s", resp.Data)
+	log.Printf("Response from actor: %s", resp.Data)
 
 	// Wait for a few seconds before terminating
 	time.Sleep(5 * time.Second)
