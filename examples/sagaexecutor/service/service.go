@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -11,11 +10,12 @@ import (
 	"time"
 
 	"cloud.google.com/go/pubsub"
-	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/dapr/components-contrib/bindings/postgres"
 
 	dapr "github.com/dapr/go-sdk/client"
 
 	"github.com/stevef1uk/sagaexecutor/database"
+	"github.com/stevef1uk/sagaexecutor/encodedecode"
 	"github.com/stevef1uk/sagaexecutor/utility"
 )
 
@@ -29,18 +29,18 @@ type Start_stop = utility.Start_stop
 type service struct { // Needed don't delete
 }
 
-var the_db *pgxpool.Pool
+var the_db *postgres.Postgres
 var message_count int = 1
 var pubsub_topic string
 
 func NewService(topic string) Server {
-	the_db = database.OpenDBConnection(os.Getenv("DATABASE_URL"))
+	the_db, _ = database.OpenDBConnection(os.Getenv("DATABASE_URL"))
 	pubsub_topic = topic
 	return &service{}
 }
 
 func (service) CloseService() {
-	the_db.Close()
+	database.CloseDBConnection(context.Background(), the_db)
 }
 
 func getNextMessageOrder() string {
@@ -55,6 +55,7 @@ func postMessage(client dapr.Client, app_id string, s utility.Start_stop) error 
 		return fmt.Errorf("postMessage() failed to marshall start_stop struct %v, %s", s, err)
 	}
 
+	//encode := utility.EncodeData(s_bytes)
 	m := &utility.OrderedMessage{OrderingField: getNextMessageOrder(), Data: s_bytes}
 
 	err = client.PublishEvent(context.Background(), PubsubComponentName, pubsub_topic,
@@ -71,13 +72,12 @@ func postMessage(client dapr.Client, app_id string, s utility.Start_stop) error 
 
 func (service) SendStart(client dapr.Client, app_id string, service string, token string, callback_service string, params string, timeout int) error {
 	// Base64 encode params as they should be a json string
-	params = base64.StdEncoding.EncodeToString([]byte(params))
+	params = encodedecode.EncodeData([]byte(params))
 	s1 := utility.Start_stop{App_id: app_id, Service: service, Token: token, Callback_service: callback_service, Params: params, Timeout: timeout, Event: utility.Start, LogTime: time.Now()}
 	return postMessage(client, app_id, s1)
 }
 
 func (service) SendStop(client dapr.Client, app_id string, service string, token string) error {
-
 	s1 := utility.Start_stop{App_id: app_id, Service: service, Callback_service: "", Token: token, Params: "", Timeout: 0, Event: utility.Stop}
 	return postMessage(client, app_id, s1)
 }
@@ -105,7 +105,7 @@ func (service) GetAllLogs(client dapr.Client, app_id string, service string) {
 
 		if time.Duration.Seconds(elapsed) > float64(allowed_time) {
 			log.Printf("Token %s, need to invoke callback %s\n", log_entry.Token, log_entry.Callback_service)
-
+			log_entry.Params = encodedecode.DecodeData(log_entry.Params)
 			sendCallback(client, res_entry.Key, log_entry)
 		}
 	}

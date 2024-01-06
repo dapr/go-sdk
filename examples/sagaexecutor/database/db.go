@@ -4,30 +4,41 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"os"
 
-	//"github.com/jackc/pgx"
-
-	"github.com/jackc/pgx/v5/pgxpool"
-	//_ "github.com/lib/pq"
-	//_ "github.com/jackc/pgx/v5/pgxpool"
-	//"github.com/jackc/pgx/v5"
-	//_ "github.com/jackc/pgx/v5/stdlib"
+	"github.com/dapr/components-contrib/bindings"
+	"github.com/dapr/components-contrib/bindings/postgres"
+	"github.com/dapr/components-contrib/metadata"
+	"github.com/dapr/kit/logger"
 )
 
-func OpenDBConnection(connectionString string) *pgxpool.Pool {
+func OpenDBConnection(connectionString string) (*postgres.Postgres, *bindings.Metadata) {
 
-	fmt.Printf("Database URL: %s\n", os.Getenv("DATABASE_URL"))
-	dbpool, err := pgxpool.New(context.Background(), os.Getenv("DATABASE_URL"))
-
-	if err != nil {
-		log.Fatalf("Unable to connect to database: %v\n", err)
-	}
-	err = dbpool.Ping(context.Background())
-
-	if err != nil {
-		log.Fatalf("Unable to connect to database: %v\n", err)
+	// live DB test
+	bPg := postgres.NewPostgres(logger.NewLogger("test")).(*postgres.Postgres)
+	mPg := bindings.Metadata{Base: metadata.Base{Properties: map[string]string{"connectionString": connectionString}}}
+	if err := bPg.Init(context.Background(), mPg); err != nil {
+		log.Fatalf("Unable to connect to database: %s\n", err)
 	}
 
-	return dbpool
+	return bPg, &mPg
+}
+
+func CloseDBConnection(ctx context.Context, bPg *postgres.Postgres) {
+	req := &bindings.InvokeRequest{
+		Operation: "exec",
+		Metadata:  map[string]string{},
+	}
+	req.Operation = "close"
+	req.Metadata = nil
+	req.Data = nil
+	_, err := bPg.Invoke(ctx, req)
+	if err != nil {
+		fmt.Errorf("Error on DB close %s", err)
+	}
+
+	err = bPg.Close()
+	if err != nil {
+		log.Fatalln("Error on binding close", err)
+	}
+
 }

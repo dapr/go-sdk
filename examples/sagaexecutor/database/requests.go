@@ -2,17 +2,22 @@ package database
 
 import (
 	"context"
-	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"log"
-	"time"
 
-	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/dapr/components-contrib/bindings"
+	"github.com/dapr/components-contrib/bindings/postgres"
+	"github.com/stevef1uk/sagaexecutor/encodedecode"
 )
 
 const (
-	sleep_time = 250 * time.Millisecond
-	max_reties = 4
+	stateInsert     = "INSERT INTO sagastate (key, value) values ('%s', '%s')"
+	stateDelete     = "DELETE FROM sagastate WHERE key = '%s';"
+	stateSelect     = "SELECT key, value FROM sagastate;"
+	theRowsAffected = "rows-affected"
+	operationExec   = "exec"
+	sql             = "sql"
 )
 
 type StateRecord struct {
@@ -20,127 +25,91 @@ type StateRecord struct {
 	Value string
 }
 
-func GetStateRecords(ctx context.Context, the_db *pgxpool.Pool) ([]StateRecord, error) {
-	var err error
-	var ret []StateRecord = make([]StateRecord, 0)
-
-	retries := 0
-
-	//log.Printf("Entered GetStateRecords\n")
-	for retries < max_reties {
-		//log.Printf("Retries = %v\n", retries)
-		rows, err := the_db.Query(ctx, "SELECT key, value FROM sagastate;")
-		if err != nil {
-			//log.Printf("`Error path` = %v\n", err)
-			if err.Error() != "conn busy" { // Should be ErrConnBusy
-				return nil, fmt.Errorf("Error: Select query failed: %v", err)
-			} else {
-				log.Printf("DB Busy for select of state record: %v\n", err)
-				time.Sleep(sleep_time)
-				retries = retries + 1
-			}
-		} else {
-			// Loop through rows, using Scan to assign column data to struct fields.
-			for rows.Next() {
-				//log.Printf("Scanning a row \n")
-				var state = &StateRecord{}
-				if err := rows.Scan(&state.Key, &state.Value); err != nil {
-					return nil, fmt.Errorf("Error state query Scan: %v", err)
-				}
-				//log.Printf("Appending a row key = %s\n", state.Key)
-				ret = append(ret, *state)
-			}
-			defer rows.Close()
-			if err := rows.Err(); err != nil {
-				return nil, fmt.Errorf("Error state processing of records: %v", err)
-			}
-			break
-		}
-	}
-
-	if retries == max_reties {
-		return nil, fmt.Errorf("DB remained busy for too long on select: %s\n", err)
-	}
-
-	return ret, nil
+var req = &bindings.InvokeRequest{
+	Operation: operationExec,
+	Metadata:  map[string]string{},
 }
 
-func Delete(ctx context.Context, the_db *pgxpool.Pool, key string) error {
+func (r *StateRecord) String() string {
+	data, err := json.Marshal(r)
+	if err != nil {
+		log.Printf("StateRecord error marshalling %v, err = %s\n", r, err)
+	}
+	return string(data)
+}
+
+func GetStateRecords(ctx context.Context, the_db *postgres.Postgres) ([]StateRecord, error) {
 	var err error
 
-	retries := 0
+	req.Operation = "query"
+	req.Metadata["sql"] = stateSelect
+	res, err := the_db.Invoke(ctx, req)
+	if err != nil {
+		return nil, fmt.Errorf("Error on Query %s", err)
+	}
+
+	ret := getTheRows(res.Data)
+	return ret, err
+}
+
+func Delete(ctx context.Context, the_db *postgres.Postgres, key string) error {
+	var err error
 
 	log.Printf("DB:Delete Key = %s\n", key)
-	tx, err := the_db.Begin(ctx)
-	for retries < max_reties {
-		res, err := the_db.Exec(ctx, "DELETE FROM sagastate WHERE key = $1;", key)
-		if err != nil {
-			if err.Error() != "conn busy" { // Should be ErrConnBusy
-				return fmt.Errorf("`Delete failed for state record with key %s: %v", key, err)
-			} else {
-				log.Printf("DB Busy for delete of state record with key %s: %v\n", key, err)
-				time.Sleep(sleep_time)
-				retries = retries + 1
-			}
-		} else {
-			rowsAffected := res.RowsAffected()
 
-			if rowsAffected > 1 {
-				log.Printf("Wrong number of records deleted %v \n", rowsAffected)
-			}
-			err = tx.Commit(ctx)
-			if err != nil {
-				log.Printf("DB Commit failed %s\n", err)
-			}
-			break
-		}
+	req.Operation = operationExec
+	req.Metadata[sql] = fmt.Sprintf(stateDelete, key)
+	res, err := the_db.Invoke(ctx, req)
+	if err != nil {
+		return fmt.Errorf("Error on delete for key %s, err %s", key, err)
 	}
-	if retries == max_reties {
-		_ = tx.Rollback(ctx)
-		return fmt.Errorf("DB remained busy for too long on delete for key = %s: err %s \n", key, err)
+	if res.Metadata[theRowsAffected] != "1" {
+		return fmt.Errorf("Error on delete row count %s for key = %s", res.Metadata[theRowsAffected], key)
+	}
+	return err
+}
+
+func StoreState(ctx context.Context, the_db *postgres.Postgres, key string, value []byte) error {
+	var err error
+
+	log.Printf("DB:Store Key = %s\n", key)
+	//log.Printf("DB:Store Value = %s\n", string(value))
+	//log.Printf("DB:Store Data = %s\n", base64.URLEncoding.EncodeToString([]byte(value)))
+	// Validate encode & decode
+
+	req.Operation = operationExec
+	req.Metadata[sql] = fmt.Sprintf(stateInsert, key, encodedecode.EncodeData(value))
+	res, err := the_db.Invoke(ctx, req)
+	if err != nil {
+		return fmt.Errorf("Error on insert for key %s %s", key, err)
+	}
+	if res.Metadata[theRowsAffected] != "1" {
+		return fmt.Errorf("error on insert row count wrong for key %s", key)
 	}
 
 	return err
 }
 
-func StoreState(ctx context.Context, the_db *pgxpool.Pool, key string, value []byte) error {
-	var err error
+// [[\"one\",\"two\"],[\"mykey\",\"eyJhcHBfaWQiOnRlc3QxLCJzZXJ2aWNlIjp0ZXN0c2VydmljZSwidG9rZW4iOmFiY2QxMjMsImNhbGxiYWNrX3NlcnZpY2UiOmR1bW15LCJwYXJhbXMiOmUzMD0sImV2ZW50IjogdHJ1ZSwidGltZW91dCI6MTAsImxvZ3RpbWUiOjIwMjQtMDEtMDMgMTU6MTI6NDEuOTQ4MDIgKzAwMDAgVVRDfQ==\"]]"
+func getTheRows(input []byte) []StateRecord {
+	var ret []StateRecord
 
-	params := base64.StdEncoding.EncodeToString([]byte(value))
-	str := string(params)
+	var decodedData [][]string
 
-	retries := 0
-	log.Printf("DB:Store Key = %s\n", key)
-	tx, err := the_db.Begin(ctx)
-	for retries < max_reties {
-		res, err := the_db.Exec(ctx, `INSERT INTO sagastate (key, value) values ($1, $2)`, &key, &str)
-		if err != nil {
-			if err.Error() != "conn busy" { // Should be ErrConnBusy
-				return fmt.Errorf("`Insert failed for state record with key %s: %v", key, err)
-			} else {
-				log.Printf("DB Busy for insert of state record with key %s: %v\n", key, err)
-				time.Sleep(sleep_time)
-				retries = retries + 1
-			}
-		} else {
-			rowsAffected := res.RowsAffected()
-
-			if rowsAffected != 1 {
-				log.Printf("Wrong number of records for insert %v \n", rowsAffected)
-			} else {
-				err = tx.Commit(ctx)
-				if err != nil {
-					log.Printf("DB Commit failed %s\n", err)
-				}
-			}
-			break
-		}
+	// Unmarshal the JSON string
+	err := json.Unmarshal(input, &decodedData)
+	if err != nil {
+		fmt.Println("Error decoding JSON:", err)
+		return nil
 	}
 
-	if retries == max_reties {
-		_ = tx.Rollback(ctx)
-		return fmt.Errorf("DB remained busy for too long on insert for key %s: err %s \n", key, err)
+	ret = make([]StateRecord, len(decodedData))
+	for i := 0; i < len(decodedData); i++ {
+		ret[i].Key = decodedData[i][0]
+		ret[i].Value = decodedData[i][1]
+		//fmt.Printf("Row %d from DB = Key = %s, Value = %s\n", i, ret[i].Key, ret[i].Value)
+		ret[i].Value = encodedecode.DecodeData(ret[i].Value)
 	}
 
-	return err
+	return ret
 }
