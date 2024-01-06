@@ -85,8 +85,6 @@ func storeMessage(client dapr.Client, m *utility.Start_stop) error {
 			log.Printf("storeMessage error marshalling %v, err = %s\n", m, err)
 		}
 
-		log.Printf("Start Storing key = %s, data = %s\n", key, data)
-
 		// Save state into the state store
 		err = the_service.StoreStateEntry(key, []byte(data))
 		if err != nil {
@@ -94,11 +92,6 @@ func storeMessage(client dapr.Client, m *utility.Start_stop) error {
 		}
 	} else { // Stop means we delete the corresponding Start entry
 		// Delete state from the state store
-		fmt.Printf("Stop so will delete state with key: %s\n", key)
-		/*err = client.DeleteState(context.Background(), stateStoreComponentName, key, nil)
-		if err != nil {
-			log.Fatal(err)
-		}*/
 		err = the_service.DeleteStateEntry(key) // Yes I really want to delete the Start record now!
 		if err != nil {
 			log.Fatal(err)
@@ -106,14 +99,12 @@ func storeMessage(client dapr.Client, m *utility.Start_stop) error {
 		log.Printf("Deleted Log with key %s\n", key)
 	}
 
-	//log.Printf("exit storeMessage\n")
 	return err
 }
 
 func eventHandler(ctx context.Context, e *common.TopicEvent) (retry bool, err error) {
 
-	fmt.Printf("eventHandler received:%v\n", e.Data)
-	//fmt.Printf("type of e.Data: %s\n", reflect.TypeOf(e.Data))
+	//fmt.Printf("eventHandler received:%v\n", e.Data)
 
 	//return false, err // Uncomment this to flush through queues if necessary for testing
 

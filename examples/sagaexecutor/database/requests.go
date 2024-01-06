@@ -73,9 +73,6 @@ func StoreState(ctx context.Context, the_db *postgres.Postgres, key string, valu
 	var err error
 
 	log.Printf("DB:Store Key = %s\n", key)
-	//log.Printf("DB:Store Value = %s\n", string(value))
-	//log.Printf("DB:Store Data = %s\n", base64.URLEncoding.EncodeToString([]byte(value)))
-	// Validate encode & decode
 
 	req.Operation = operationExec
 	req.Metadata[sql] = fmt.Sprintf(stateInsert, key, encodedecode.EncodeData(value))
