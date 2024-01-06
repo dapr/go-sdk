@@ -62,6 +62,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	defer client.Close()
 
 	s = service.NewService(myTopic)
 	defer s.CloseService()

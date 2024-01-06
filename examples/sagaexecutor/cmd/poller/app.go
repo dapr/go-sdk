@@ -31,6 +31,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	defer client.Close()
 
 	// add some input binding handler
 	if err := s.AddBindingInvocationHandler("sagapoller", sagaHandler); err != nil {
