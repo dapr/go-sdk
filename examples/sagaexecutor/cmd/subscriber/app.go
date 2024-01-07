@@ -10,6 +10,8 @@ import (
 	//"fmt"
 	"log"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	dapr "github.com/dapr/go-sdk/client"
@@ -28,15 +30,45 @@ type dataElement struct {
 	LogData utility.Start_stop `json:"logdata"`
 }
 
-var sub = &common.Subscription{
-	PubsubName: service.PubsubComponentName,
-	Topic:      "Dummy-Not-Used",
-	Route:      "/receivemessage",
+var (
+	sub = &common.Subscription{
+		PubsubName: service.PubsubComponentName,
+		Topic:      "Dummy-Not-Used",
+		Route:      "/receivemessage",
+	}
+	sub_client  dapr.Client
+	logger      = log.New(os.Stdout, "", 0)
+	the_service service.Server
+)
+
+func closeAll() {
+	sub_client.Close()
+	the_service.CloseService()
 }
 
-var sub_client dapr.Client
+func multiSignalHandler(signal os.Signal) {
 
-var the_service service.Server
+	switch signal {
+	case syscall.SIGHUP:
+		logger.Println("Signal:", signal.String())
+		closeAll()
+		os.Exit(0)
+	case syscall.SIGINT:
+		closeAll()
+		logger.Println("Signal:", signal.String())
+		os.Exit(0)
+	case syscall.SIGTERM:
+		logger.Println("Signal:", signal.String())
+		closeAll()
+		os.Exit(0)
+	case syscall.SIGQUIT:
+		closeAll()
+		logger.Println("Signal:", signal.String())
+		os.Exit(0)
+	default:
+		logger.Println("Unhandled/unknown signal")
+	}
+}
 
 func main() {
 	var err error
@@ -61,6 +93,17 @@ func main() {
 		log.Fatalf("error adding topic subscription: %v", err)
 	}
 
+	sigchnl := make(chan os.Signal, 1)
+	signal.Notify(sigchnl, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM) //we can add more sycalls.SIGQUIT etc.
+	exitchnl := make(chan int)
+
+	go func() {
+		for {
+			s := <-sigchnl
+			multiSignalHandler(s)
+		}
+	}()
+
 	//log.Printf("Starting the server using port %s'n", appPort)
 	// Start the server
 	err = s.Start()
@@ -69,6 +112,9 @@ func main() {
 		log.Fatalf("error listenning: %v", err)
 	}
 	sub_client.Close()
+
+	exitcode := <-exitchnl
+	os.Exit(exitcode)
 }
 
 func storeMessage(client dapr.Client, m *utility.Start_stop) error {
@@ -104,11 +150,7 @@ func storeMessage(client dapr.Client, m *utility.Start_stop) error {
 }
 
 func eventHandler(ctx context.Context, e *common.TopicEvent) (retry bool, err error) {
-
-	//fmt.Printf("eventHandler received:%v\n", e.Data)
-
 	//return false, err // Uncomment this to flush through queues if necessary for testing
-
 	var m map[string]interface{} = e.Data.(map[string]interface{})
 
 	fmt.Printf("eventHandler Ordering Key = %s\n", m["OrderingKey"].(string))
