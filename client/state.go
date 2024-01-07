@@ -46,6 +46,19 @@ const (
 	StateOperationTypeUpsert OperationType = 1
 	// StateOperationTypeDelete represents delete operation type value.
 	StateOperationTypeDelete OperationType = 2
+
+	// EventualType represents the eventual type value.
+	EventualType = "eventual"
+	// StrongType represents the strong type value.
+	StrongType = "strong"
+	// FirstWriteType represents the first write type value.
+	FirstWriteType = "first-write"
+	// LastWriteType represents the last write type value.
+	LastWriteType = "last-write"
+	// UpsertType represents the upsert type value.
+	UpsertType = "upsert"
+	// DeleteType represents the delete type value.
+	DeleteType = "delete"
 	// UndefinedType represents undefined type value.
 	UndefinedType = "undefined"
 )
@@ -73,8 +86,8 @@ func (s StateConcurrency) GetPBConcurrency() v1.StateOptions_StateConcurrency {
 func (o OperationType) String() string {
 	names := [...]string{
 		UndefinedType,
-		"upsert",
-		"delete",
+		UpsertType,
+		DeleteType,
 	}
 	if o < StateOperationTypeUpsert || o > StateOperationTypeDelete {
 		return UndefinedType
@@ -87,8 +100,8 @@ func (o OperationType) String() string {
 func (s StateConsistency) String() string {
 	names := [...]string{
 		UndefinedType,
-		"eventual",
-		"strong",
+		EventualType,
+		StrongType,
 	}
 	if s < StateConsistencyEventual || s > StateConsistencyStrong {
 		return UndefinedType
@@ -101,8 +114,8 @@ func (s StateConsistency) String() string {
 func (s StateConcurrency) String() string {
 	names := [...]string{
 		UndefinedType,
-		"first-write",
-		"last-write",
+		FirstWriteType,
+		LastWriteType,
 	}
 	if s < StateConcurrencyFirstWrite || s > StateConcurrencyLastWrite {
 		return UndefinedType

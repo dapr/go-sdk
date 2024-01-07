@@ -35,19 +35,19 @@ func TestTypes(t *testing.T) {
 		var a OperationType = -1
 		assert.Equal(t, UndefinedType, a.String())
 		a = 2
-		assert.Equal(t, "delete", a.String())
+		assert.Equal(t, DeleteType, a.String())
 	})
 	t.Run("test state concurrency type", func(t *testing.T) {
 		var b StateConcurrency = -1
 		assert.Equal(t, UndefinedType, b.String())
 		b = 2
-		assert.Equal(t, "last-write", b.String())
+		assert.Equal(t, LastWriteType, b.String())
 	})
 	t.Run("test state consistency type", func(t *testing.T) {
 		var c StateConsistency = -1
 		assert.Equal(t, UndefinedType, c.String())
 		c = 2
-		assert.Equal(t, "strong", c.String())
+		assert.Equal(t, StrongType, c.String())
 	})
 }
 
