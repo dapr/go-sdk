@@ -33,12 +33,19 @@ var the_db *postgres.Postgres
 var message_count int = 1
 var pubsub_topic string
 
+// @Summary Creates an instace of the Saga service. The DATABASE_URL environmnet variable must be set to the postgres URL.
+// @ID NewService
+// @Produce nil
+// @Param topic The name of the topic to use to send to the corresponding Subscriber
 func NewService(topic string) Server {
 	the_db, _ = database.OpenDBConnection(os.Getenv("DATABASE_URL"))
 	pubsub_topic = topic
 	return &service{}
 }
 
+// @Summary Closes the postgres database connection(s) and the dapr client instance.
+// @ID CloseService
+// @Produce nil
 func (service) CloseService() {
 	database.CloseDBConnection(context.Background(), the_db)
 }
@@ -70,6 +77,16 @@ func postMessage(client dapr.Client, app_id string, s utility.Start_stop) error 
 	return nil
 }
 
+// @Summary Creates a Saga Log Start entry based on the passed parameters. Internally, the primary key for this record will be a concatination of the the first three parameters
+// @ID SendStart
+// @Produce error
+// @Param client The dapr client name
+// @Param app_id A unique apllication ID for this client of the Saga service
+// @Param service A unique name for the dapr service.
+// @Param token A unique string for this client & service e.g. a GUID to identify this specific Saga Log entry
+// @Param callback_service The name of the call back handler for the defined dapr service to invoke after any tmeout occurs
+// @Param params A json string that will be passed back to the callback_service by the Poller component. This is expected to hold state information that can be used to roll-back the processing.
+// @Param timeout The timeout value in seconds for the Poller to use when it reads the Saga Log stored for this call to determine expiry and a need to invoke the callback_service handler
 func (service) SendStart(client dapr.Client, app_id string, service string, token string, callback_service string, params string, timeout int) error {
 	// Base64 encode params as they should be a json string
 	params = encodedecode.EncodeData([]byte(params))
@@ -77,6 +94,13 @@ func (service) SendStart(client dapr.Client, app_id string, service string, toke
 	return postMessage(client, app_id, s1)
 }
 
+// @Summary Deletes a Saga Log Start entry based on the passed parameters.
+// @ID SendStop
+// @Produce error
+// @Param client The dapr client name
+// @Param app_id A unique apllication ID for this client of the Saga service
+// @Param service A unique name for the dapr service.
+// @Param token The value of the token passed on the preceeding call to SendStart to entry the Saga Log entry to delete
 func (service) SendStop(client dapr.Client, app_id string, service string, token string) error {
 	s1 := utility.Start_stop{App_id: app_id, Service: service, Callback_service: "", Token: token, Params: "", Timeout: 0, Event: utility.Stop}
 	return postMessage(client, app_id, s1)

@@ -22,23 +22,28 @@ The Saga Poll queries the State store for Start messages that exist and for whic
 These components use Darp capabilities to reduce the amount of code required:
 ```
 gocloc .
--------------------------------------------------------------------------------
-Language                     files          blank        comment           code
--------------------------------------------------------------------------------
-Go                              11            183             62            651
-YAML                            18              5              2            468
-Markdown                         1             40              0            254
-JSON                             3              0              0             50
-Makefile                         4              1              0             25
-BASH                             1              4              3             20
--------------------------------------------------------------------------------
-TOTAL                           38            233             67           1468
--------------------------------------------------------------------------------
+-------------------------------------------------------------------------
+Language               files          blank        comment           code
+-------------------------------------------------------------------------
+Go                        11            187             76            733
+YAML                      22             11              2            569
+Markdown                   1             46              0            284
+Makefile                   5             91             80            135
+JSON                       3              0              0             50
+BASH                       1              4              3             20
+-------------------------------------------------------------------------
+TOTAL                     43            339            161           1791
+-------------------------------------------------------------------------
 ```
 
 Dapr allows you to deploy the same microservices from your local machines to the cloud. Correspondingly, this project has instructions for deploying [locally](#Run-Locally) or in [Kubernetes](#Run-in-Kubernetes). 
 
 ## Run locally
+
+### Prerequisites
+1. Docker installed
+2. dapr installed (dapr init -k)
+3. Go installed (latest version)
 
 To demonstrate this project running locally it can be run on your machine as follows:
 
@@ -99,6 +104,8 @@ This should start the two core Saga components, the Poller and the Subscriber pl
 == APP - sagapoller == 2024/01/01 09:14:26 Returned 0 records
 ```
 
+You will need to manally delete the postgres container for a full clean-up.
+
 ## Run in Kubernetes
 
 To get started with running this proejct, there are some prerequisites:
@@ -106,17 +113,26 @@ To get started with running this proejct, there are some prerequisites:
 ### Prerequisites
 1. A kubernetes cluster is required with dapr installed (dapr init -k)
 2. Redis & Postgres must be installed on the cluster
-3. Tilt is is used to deply the components (see: https://tilt.dev). However, manual deployment is possible. Please note that these files
+3. Tilt is is used to deply the components (see: https://tilt.dev). However, Makefiles are provided as well. Please note that these files
    build images for my DockerHub repo, so you will need to change these images to suitable names and then update the           deployment/kubernetes.yaml files to reference the revised image names. Also, unless your cluster is running on arm64 hardware (Mx Macs or     RPIs etc, you will need to change the GOARCH value from arm64 to say amd64 for 64-bit X86 platforms.
 4. Go installed (latest version)
 
-I used a personal hosted k3s cluster running on RPi4s, with k3s depolyed, this seems fairly solid but a Cloud SaaS version is expected to be used for real use cases of this software.
+I used a personal hosted k3s cluster running on RPi4s, with k3s depolyed, this seems fairly solid but a Cloud SaaS version is expected to be used for real use cases of this software. I have also trtied this with Rancher Desktop on my Mac server.
 
-To install Postgres on my home cluster I used the Postgres Operator, which configures a HA set-up by default. See:  https://github.com/zalando/postgres-operator/tree/master
+To install Postgres on my home cluster I used the Postgres Operator, which configures a HA set-up by default. See:  https://github.com/zalando/postgres-operator/tree/master The route of less resistance is to deploy the operator into the default namespace and deploy the database into the postgres namespace.
 
 As I am using an arm system I needed to change the image being deployed: Change: image: registry.opensource.zalan.do/acid/postgres-operator:v1.10.1 in manifests/postgres-operator.yaml to: ghcr.io/zalando/postgres-operator:v1.10.1
+ Then I deployed the yaml files:
+```
+kubectl create -f manifests/configmap.yaml 
+kubectl create -f manifests/operator-service-account-rbac.yaml  
+kubectl create -f manifests/postgres-operator.yaml  
+kubectl create -f manifests/api-service.yaml 
+# Wait for a bit for the pod to start up
+kubectl create -f manifests/minimal-postgres-manifest.yaml -n postgres
+```
 
-Then I created a DB for this project, which I called hasura - on mac/Linux):
+With my postgres database running I created a DB for this project, which I called hasura - on mac/Linux):
 ```
   export POSTGRES=$(kubectl get secret postgres.acid-minimal-cluster.credentials.postgresql.acid.zalan.do -n postgres -o 'jsonpath={.data.password}' | base64 -d)
   kubectl port-forward acid-minimal-cluster-0 -n postgres 5432:5432
@@ -146,9 +162,11 @@ cmd
 database
 service
 utility
+encodedecode
 test_clients
-    mock_server
-    mock_client
+    mock_client1
+    mock_client2
+    mock_client3
 ```
 
 Sadly, there is a need to find the IP Address of the Master Redis Pod (my-release-redis-master-0) and update the pubsub.yaml file in Components with this.
@@ -167,13 +185,25 @@ Before running the core Subscriber & Postgres componnets the config files in com
 ```
 kubectl create -f components/.
 ```
-(the following files need to be used: : cron.yaml, observability.yaml, statestore.yaml & pubsub.yaml)
+(the following files need to be used: : cron.yaml, appconfig.yaml, statestore.yaml & pubsub.yaml)
 
 First deploy & run the Subscribers & Poller components (tilt up and tilt down to undeploy)
 
-Then the test clients can be run (mock_server, mock_client, mock_client2) to demonstrate (or see) if it is working (again tilt up)
+Whilst I used Tilt for rapid development cycles, standard Makefiles have been provided. As before, the name of the container registry will need to be updated to your own in these. There are build & push commands for both amd64 & arm64 e.g.
+```
+make build-amd64-and-push 
+or
+make build-amd64-and-push
 
-If the mock_client is run the output should look like this:
+make deploy
+make undeploy
+```
+
+When using the Makefiles start the Poller first then the Subscriber before running a test client as the required dapr compoents are deployed for you in these Makefile from the components directory.
+
+Then the test clients can be run (mock_client1, mock_client2, mock_client3) to demonstrate (or see) if it is working (again tilt up or make deploy)
+
+If the mock_client1 is run the output should look like this:
 
 ```
 apr client initializing for: 127.0.0.1:50001
@@ -195,8 +225,7 @@ transaction callback invoked {mock-client test2 abcdefg1235 callback {"Param1":F
 2023/12/19 14:44:01 Finished sending starts & stops
 2023/12/19 14:44:01 Sleeping for quite a bit to allow time to receive any callbacks
 ```
-I removed use of the Dapr Statestore and used Postgres directly having created my own table for Saga log entries as shown above.
-The Subscriber & Poller components can't access the same Dapr State entries other than using Postgres. 
+I removed use of the Dapr Statestore and used Postgres directly having created my own table for Saga log entries as shown above. 
 
 I also tested this with the GCP Pub/Sub and the updated pubsub.yaml for GCP is as below:
 ```
@@ -278,6 +307,11 @@ scopes:
 The relevant items need to align to the names in the other yaml files for the auto-wiring to work.
 
 Of course one done't need to have separate Subscribers per service client, it is possible to configure the Subscription to point to whatever Subscriber is required to be run.
+
+I left a line in the Subscriber app's eventHander method wich can be uncommented to flush-out any queued messages, which is useful during debugging to avoid duplicate primary key insert errors.
+```
+//return false, err 
+```
 
 ## Usage Scenarios
 

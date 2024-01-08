@@ -38,4 +38,4 @@ spec:
             secretKeyRef:
               name: postgres-url
               key: postgres-url
-        imagePullPolicy: Always
+       
