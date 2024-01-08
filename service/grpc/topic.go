@@ -22,6 +22,7 @@ import (
 	"strings"
 
 	"github.com/golang/protobuf/ptypes/empty"
+	"google.golang.org/grpc/metadata"
 
 	runtimev1pb "github.com/dapr/dapr/pkg/proto/runtime/v1"
 	"github.com/dapr/go-sdk/service/common"
@@ -127,6 +128,7 @@ func (s *Server) OnTopicEvent(ctx context.Context, in *runtimev1pb.TopicEventReq
 			RawData:         in.GetData(),
 			Topic:           in.GetTopic(),
 			PubsubName:      in.GetPubsubName(),
+			Metadata:        getCustomMetadataFromContext(ctx),
 		}
 		h := sub.DefaultHandler
 		if in.GetPath() != "" {
@@ -153,4 +155,17 @@ func (s *Server) OnTopicEvent(ctx context.Context, in *runtimev1pb.TopicEventReq
 		"pub/sub and topic combination not configured: %s/%s",
 		in.GetPubsubName(), in.GetTopic(),
 	)
+}
+
+func getCustomMetadataFromContext(ctx context.Context) map[string]string {
+	md := make(map[string]string)
+	meta, ok := metadata.FromIncomingContext(ctx)
+	if ok {
+		for k, v := range meta {
+			if strings.HasPrefix(strings.ToLower(k), "metadata.") {
+				md[k[9:]] = v[0]
+			}
+		}
+	}
+	return md
 }
