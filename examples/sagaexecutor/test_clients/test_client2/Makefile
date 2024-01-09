@@ -17,17 +17,20 @@ K8S_DEPLOYMENT_FILE := deployments/kubernetes.yaml
 # Default target
 all: build
 
-# Build the Go service for amd64 architecture
+## Build the Go service for amd64 architecture
 build-amd64:
-	GOARCH=amd64 go build -o $(APP_OUTPUT) $(APP_SRC)
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o $(APP_OUTPUT) $(APP_SRC)
 
 # Build the Go service for arm64 architecture
 build-arm64:
-	GOARCH=arm64 go build -o $(APP_OUTPUT) $(APP_SRC)
+	CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o $(APP_OUTPUT) $(APP_SRC)
 
 # Build the Docker image
-docker-build:
-	docker build -t $(DOCKER_REPO):$(DOCKER_TAG) -f $(DOCKERFILE_PATH)/Dockerfile .
+docker-build-arm:
+	docker build --platform linux/arm64  -t $(DOCKER_REPO):$(DOCKER_TAG) -f $(DOCKERFILE_PATH)/Dockerfile .
+
+docker-build-amd:
+	docker build --platform linux/amd64  -t $(DOCKER_REPO):$(DOCKER_TAG) -f $(DOCKERFILE_PATH)/Dockerfile .
 
 # Push the Docker image to DockerHub
 docker-push:
@@ -41,13 +44,11 @@ deploy:
 undeploy:
 	kubectl delete -f $(K8S_DEPLOYMENT_FILE)
 
-
-
 # Build for amd64 and push to DockerHub
-build-amd64-and-push: build-amd64 docker-build docker-push
+build-amd64-and-push: build-amd64 docker-build-amd docker-push
 
 # Build for arm64 and push to DockerHub
-build-arm64-and-push: build-arm64 docker-build docker-push
+build-arm64-and-push: build-arm64 docker-build-arm docker-push
 
 # Build, push to DockerHub, and deploy to Kubernetes
 deploy-all: build-amd64-and-push deploy
