@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"google.golang.org/grpc/metadata"
 	"log"
 	"sync"
 	"time"
@@ -19,7 +18,7 @@ const (
 )
 
 func main() {
-	wr, err := workflow.NewRuntime("localhost", "50001")
+	wr, err := workflow.NewRuntime()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -38,8 +37,8 @@ func main() {
 
 	var wg sync.WaitGroup
 
-	// start workflow runner
-	fmt.Println("runner 1")
+	// Start workflow runner
+	fmt.Println("runner started")
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
@@ -48,13 +47,14 @@ func main() {
 		}
 	}()
 
+	time.Sleep(time.Second * 5)
+
 	daprClient, err := client.NewClient()
-	defer daprClient.Close()
 	if err != nil {
 		log.Fatalf("failed to intialise client: %v", err)
 	}
+	defer daprClient.Close()
 	ctx := context.Background()
-	ctx = metadata.AppendToOutgoingContext(ctx, "dapr-app-id", "workflow-sequential")
 
 	// Start workflow test
 	respStart, err := daprClient.StartWorkflowBeta1(ctx, &client.StartWorkflowRequest{
@@ -116,7 +116,9 @@ func main() {
 		log.Fatalf("workflow not running")
 	}
 
-	fmt.Printf("workflow resumed\n")
+	fmt.Println("workflow resumed")
+
+	fmt.Printf("stage: %d\n", stage)
 
 	// Raise Event Test
 

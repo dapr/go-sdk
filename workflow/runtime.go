@@ -4,54 +4,41 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	dapr "github.com/dapr/go-sdk/client"
 	"log"
 	"reflect"
 	"runtime"
 	"strings"
 	"sync"
-	"time"
 
 	"github.com/microsoft/durabletask-go/backend"
 	"github.com/microsoft/durabletask-go/client"
 	"github.com/microsoft/durabletask-go/task"
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/credentials/insecure"
 )
 
 type WorkflowRuntime struct {
 	tasks  *task.TaskRegistry
 	client *client.TaskHubGrpcClient
 
-	mutex  sync.Mutex // TODO: implement
-	quit   chan bool
-	cancel context.CancelFunc
+	mutex sync.Mutex // TODO: implement
+	quit  chan bool
 }
 
 type Workflow func(ctx *Context) (any, error)
 
 type Activity func(ctx ActivityContext) (any, error)
 
-func NewRuntime(host string, port string) (*WorkflowRuntime, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10) // TODO: add timeout option
-	defer cancel()
-
-	address := fmt.Sprintf("%s:%s", host, port)
-
-	clientConn, err := grpc.DialContext(
-		ctx,
-		address,
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
-		grpc.WithBlock(), // TODO: config
-	)
+func NewRuntime() (*WorkflowRuntime, error) {
+	daprClient, err := dapr.NewClient()
 	if err != nil {
-		return &WorkflowRuntime{}, fmt.Errorf("failed to create runtime - grpc connection failed: %v", err)
+		return nil, err
 	}
+	defer daprClient.Close()
 
 	return &WorkflowRuntime{
 		tasks:  task.NewTaskRegistry(),
-		client: client.NewTaskHubGrpcClient(clientConn, backend.DefaultLogger()),
+		client: client.NewTaskHubGrpcClient(daprClient.GrpcClientConn(), backend.DefaultLogger()),
 		quit:   make(chan bool),
-		cancel: cancel,
 	}, nil
 }
 
@@ -127,8 +114,6 @@ func (wr *WorkflowRuntime) Start() error {
 }
 
 func (wr *WorkflowRuntime) Shutdown() error {
-	// cancel grpc context
-	wr.cancel()
 	// send close signal
 	wr.quit <- true
 	log.Println("work item listener shutdown signal sent")
