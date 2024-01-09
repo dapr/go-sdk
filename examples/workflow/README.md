@@ -15,10 +15,11 @@ expected_stdout_lines:
   - '== APP == Runtime initialized'
   - '== APP == TestWorkflow registered'
   - '== APP == TestActivity registered'
-  - '== APP == runner 1'
+  - '== APP == runner started'
   - '== APP == workflow started with id: a7a4168d-3a1c-41da-8a4f-e7f6d9c718d9'
   - '== APP == workflow paused'
   - '== APP == workflow resumed'
+  - '== APP == stage: 1'
   - '== APP == workflow event raised'
   - '== APP == stage: 2'
   - '== APP == workflow status: COMPLETED'
@@ -28,14 +29,12 @@ expected_stdout_lines:
   - '== APP == workflow terminated'
   - '== APP == workflow purged'
 background: true
-sleep: 30
+sleep: 60
 -->
 
 ```bash
-dapr run --app-id workflow-sequential \
-         --app-protocol grpc \
+dapr run --app-id workflow \
          --dapr-grpc-port 50001 \
-         --placement-host-address localhost:50005 \
          --log-level debug \
          --resources-path ./config \
          -- go run ./main.go
@@ -51,10 +50,11 @@ dapr run --app-id workflow-sequential \
   - '== APP == Runtime initialized'
   - '== APP == TestWorkflow registered'
   - '== APP == TestActivity registered'
-  - '== APP == runner 1'
+  - '== APP == runner started'
   - '== APP == workflow started with id: a7a4168d-3a1c-41da-8a4f-e7f6d9c718d9'
   - '== APP == workflow paused'
   - '== APP == workflow resumed'
+  - '== APP == stage: 1'
   - '== APP == workflow event raised'
   - '== APP == stage: 2'
   - '== APP == workflow status: COMPLETED'

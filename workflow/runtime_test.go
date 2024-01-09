@@ -12,9 +12,9 @@ import (
 
 func TestNewRuntime(t *testing.T) {
 	t.Run("failure to create newruntime without dapr", func(t *testing.T) {
-		wr, err := NewRuntime("localhost", "50001")
-		require.Error(t, err)
-		assert.Equal(t, &WorkflowRuntime{}, wr)
+		wr, err := NewRuntime()
+		require.NoError(t, err)
+		assert.NotEmpty(t, wr)
 	})
 }
 
@@ -24,7 +24,6 @@ func TestWorkflowRuntime(t *testing.T) {
 		client: nil,
 		mutex:  sync.Mutex{},
 		quit:   nil,
-		cancel: nil,
 	}
 
 	// TODO: Mock grpc conn - currently requires dapr to be available

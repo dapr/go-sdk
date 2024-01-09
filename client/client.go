@@ -253,6 +253,8 @@ type Client interface {
 
 	// GrpcClient returns the base grpc client if grpc is used and nil otherwise
 	GrpcClient() pb.DaprClient
+
+	GrpcClientConn() *grpc.ClientConn
 }
 
 // NewClient instantiates Dapr client using DAPR_GRPC_PORT environment variable as port.
