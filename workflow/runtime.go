@@ -4,12 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	dapr "github.com/dapr/go-sdk/client"
 	"log"
 	"reflect"
 	"runtime"
 	"strings"
 	"sync"
+
+	dapr "github.com/dapr/go-sdk/client"
 
 	"github.com/microsoft/durabletask-go/backend"
 	"github.com/microsoft/durabletask-go/client"

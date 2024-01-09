@@ -13,8 +13,8 @@ import (
 func TestNewRuntime(t *testing.T) {
 	t.Run("failure to create newruntime without dapr", func(t *testing.T) {
 		wr, err := NewRuntime()
-		require.NoError(t, err)
-		assert.NotEmpty(t, wr)
+		require.Error(t, err)
+		assert.Empty(t, wr)
 	})
 }
 
