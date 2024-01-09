@@ -23,6 +23,7 @@ type WorkflowRuntime struct {
 
 	mutex sync.Mutex // TODO: implement
 	quit  chan bool
+	close func()
 }
 
 type Workflow func(ctx *Context) (any, error)
@@ -34,12 +35,12 @@ func NewRuntime() (*WorkflowRuntime, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer daprClient.Close()
 
 	return &WorkflowRuntime{
 		tasks:  task.NewTaskRegistry(),
 		client: client.NewTaskHubGrpcClient(daprClient.GrpcClientConn(), backend.DefaultLogger()),
 		quit:   make(chan bool),
+		close:  daprClient.Close,
 	}, nil
 }
 
@@ -103,6 +104,7 @@ func (wr *WorkflowRuntime) RegisterActivity(a Activity) error {
 func (wr *WorkflowRuntime) Start() error {
 	// go func start
 	go func() {
+		defer wr.close()
 		err := wr.client.StartWorkItemListener(context.Background(), wr.tasks)
 		if err != nil {
 			log.Fatalf("failed to start work stream: %v", err)
