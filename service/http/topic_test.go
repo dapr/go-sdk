@@ -148,8 +148,8 @@ func TestEventHandler(t *testing.T) {
 
 func TestEventDataHandling(t *testing.T) {
 	tests := map[string]struct {
-		data   string
-		result interface{}
+		data         string
+		expectedData interface{}
 	}{
 		"JSON nested": {
 			data: `{
@@ -166,7 +166,7 @@ func TestEventDataHandling(t *testing.T) {
 					"message":"hello"
 				}
 			}`,
-			result: map[string]interface{}{
+			expectedData: map[string]interface{}{
 				"message": "hello",
 			},
 		},
@@ -183,7 +183,7 @@ func TestEventDataHandling(t *testing.T) {
 				"datacontenttype" : "application/json",
 				"data" : "eyJtZXNzYWdlIjoiaGVsbG8ifQ=="
 			}`,
-			result: map[string]interface{}{
+			expectedData: map[string]interface{}{
 				"message": "hello",
 			},
 		},
@@ -200,7 +200,7 @@ func TestEventDataHandling(t *testing.T) {
 				"datacontenttype" : "application/json",
 				"data_base64" : "eyJtZXNzYWdlIjoiaGVsbG8ifQ=="
 			}`,
-			result: map[string]interface{}{
+			expectedData: map[string]interface{}{
 				"message": "hello",
 			},
 		},
@@ -217,7 +217,7 @@ func TestEventDataHandling(t *testing.T) {
 				"datacontenttype" : "application/octet-stream",
 				"data_base64" : "eyJtZXNzYWdlIjoiaGVsbG8ifQ=="
 			}`,
-			result: []byte(`{"message":"hello"}`),
+			expectedData: []byte(`{"message":"hello"}`),
 		},
 		"JSON string escaped": {
 			data: `{
@@ -232,7 +232,7 @@ func TestEventDataHandling(t *testing.T) {
 				"datacontenttype" : "application/json",
 				"data" : "{\"message\":\"hello\"}"
 			}`,
-			result: map[string]interface{}{
+			expectedData: map[string]interface{}{
 				"message": "hello",
 			},
 		},
@@ -264,7 +264,85 @@ func TestEventDataHandling(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			makeEventRequest(t, s, "/test", tt.data, http.StatusOK)
 			<-recv
-			assert.Equal(t, tt.result, topicEvent.Data)
+			assert.Equal(t, tt.expectedData, topicEvent.Data)
+		})
+	}
+}
+
+func TestEventMetadataHandling(t *testing.T) {
+	tests := map[string]struct {
+		metadata         map[string]string
+		expectedMetadata map[string]string
+	}{
+		"single key-value pair with prefix": {
+			metadata: map[string]string{
+				"metadata.key1": "value1",
+			},
+			expectedMetadata: map[string]string{
+				"key1": "value1",
+			},
+		},
+		"multiple key-value pairs with prefix": {
+			metadata: map[string]string{
+				"metadata.key1": "value1",
+				"metadata.key2": "value2",
+			},
+			expectedMetadata: map[string]string{
+				"key1": "value1",
+				"key2": "value2",
+			},
+		},
+		"some keys with prefix and some without": {
+			metadata: map[string]string{
+				"metadata.key1": "value1",
+				"key2":          "value2",
+			},
+			expectedMetadata: map[string]string{
+				"key1": "value1",
+			},
+		},
+	}
+
+	s := newServer("", nil)
+
+	sub := &common.Subscription{
+		PubsubName: "messages",
+		Topic:      "test",
+		Route:      "/test",
+		Metadata:   map[string]string{},
+	}
+
+	recv := make(chan struct{}, 1)
+	var topicEvent *common.TopicEvent
+	handler := func(ctx context.Context, e *common.TopicEvent) (retry bool, err error) {
+		topicEvent = e
+		recv <- struct{}{}
+
+		return false, nil
+	}
+	err := s.AddTopicEventHandler(sub, handler)
+	require.NoErrorf(t, err, "error adding event handler")
+
+	s.registerBaseHandler()
+
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			makeEventRequestWithMetadata(t, s, "/test", `{
+				"specversion" : "1.0",
+				"type" : "com.github.pull.create",
+				"source" : "https://github.com/cloudevents/spec/pull",
+				"subject" : "123",
+				"id" : "A234-1234-1234",
+				"time" : "2018-04-05T17:31:00Z",
+				"comexampleextension1" : "value",
+				"comexampleothervalue" : 5,
+				"datacontenttype" : "application/json",
+				"data" : {
+					"message":"hello"
+				}
+			}`, http.StatusOK, tt.metadata)
+			<-recv
+			assert.Equal(t, tt.expectedMetadata, topicEvent.Metadata)
 		})
 	}
 }
@@ -354,6 +432,18 @@ func makeEventRequest(t *testing.T, s *Server, route, data string, expectedStatu
 	req, err := http.NewRequest(http.MethodPost, route, strings.NewReader(data))
 	require.NoErrorf(t, err, "error creating request: %s", data)
 	req.Header.Set("Content-Type", "application/json")
+	testRequest(t, s, req, expectedStatusCode)
+}
+
+func makeEventRequestWithMetadata(t *testing.T, s *Server, route, data string, expectedStatusCode int, metadata map[string]string) {
+	t.Helper()
+
+	req, err := http.NewRequest(http.MethodPost, route, strings.NewReader(data))
+	require.NoErrorf(t, err, "error creating request: %s", data)
+	req.Header.Set("Content-Type", "application/json")
+	for k, v := range metadata {
+		req.Header.Set(k, v)
+	}
 	testRequest(t, s, req, expectedStatusCode)
 }
 
