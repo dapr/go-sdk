@@ -20,7 +20,7 @@ jobs:
       GOPROXY: https://proxy.golang.org
       DAPR_INSTALL_URL: https://raw.githubusercontent.com/dapr/cli/master/install/install.sh
       DAPR_CLI_REF: ""
-      DAPR_REF: 770d4e51604f1264d8bb25cedf16ea9f77539394
+      DAPR_REF: ""
     steps:
       - uses: actions/checkout@v3
       - name: Determine latest Dapr Runtime version
