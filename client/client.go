@@ -209,27 +209,6 @@ type Client interface {
 	// ImplActorClientStub is to impl user defined actor client stub
 	ImplActorClientStub(actorClientStub actor.Client, opt ...config.Option)
 
-	// StartWorkflowAlpha1 starts a workflow.
-	StartWorkflowAlpha1(ctx context.Context, req *StartWorkflowRequest) (*StartWorkflowResponse, error)
-
-	// GetWorkflowAlpha1 gets a workflow.
-	GetWorkflowAlpha1(ctx context.Context, req *GetWorkflowRequest) (*GetWorkflowResponse, error)
-
-	// PurgeWorkflowAlpha1 purges a workflow.
-	PurgeWorkflowAlpha1(ctx context.Context, req *PurgeWorkflowRequest) error
-
-	// TerminateWorkflowAlpha1 terminates a workflow.
-	TerminateWorkflowAlpha1(ctx context.Context, req *TerminateWorkflowRequest) error
-
-	// PauseWorkflowAlpha1 pauses a workflow.
-	PauseWorkflowAlpha1(ctx context.Context, req *PauseWorkflowRequest) error
-
-	// ResumeWorkflowAlpha1 resumes a workflow.
-	ResumeWorkflowAlpha1(ctx context.Context, req *ResumeWorkflowRequest) error
-
-	// RaiseEventWorkflowAlpha1 raises an event for a workflow.
-	RaiseEventWorkflowAlpha1(ctx context.Context, req *RaiseEventWorkflowRequest) error
-
 	// StartWorkflowBeta1 starts a workflow.
 	StartWorkflowBeta1(ctx context.Context, req *StartWorkflowRequest) (*StartWorkflowResponse, error)
 
