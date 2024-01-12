@@ -44,8 +44,6 @@ dapr run --app-id workflow \
 
 ## Result
 
-- workflow
-
 ```
   - '== APP == Runtime initialized'
   - '== APP == TestWorkflow registered'
