@@ -44,7 +44,8 @@ func NewRuntime() (*WorkflowRuntime, error) {
 	}, nil
 }
 
-func getDecorator(f interface{}) (string, error) {
+// getFunctionName returns the function name as a string
+func getFunctionName(f interface{}) (string, error) {
 	if f == nil {
 		return "", errors.New("nil function name")
 	}
@@ -71,7 +72,7 @@ func (wr *WorkflowRuntime) RegisterWorkflow(w Workflow) error {
 	wrappedOrchestration := wrapWorkflow(w)
 
 	// get decorator for workflow
-	name, err := getDecorator(w)
+	name, err := getFunctionName(w)
 	if err != nil {
 		return fmt.Errorf("failed to get workflow decorator: %v", err)
 	}
@@ -92,7 +93,7 @@ func (wr *WorkflowRuntime) RegisterActivity(a Activity) error {
 	wrappedActivity := wrapActivity(a)
 
 	// get decorator for activity
-	name, err := getDecorator(a)
+	name, err := getFunctionName(a)
 	if err != nil {
 		return fmt.Errorf("failed to get activity decorator: %v", err)
 	}
