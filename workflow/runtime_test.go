@@ -65,12 +65,12 @@ func TestWrapActivity(t *testing.T) {
 
 func TestGetDecorator(t *testing.T) {
 	t.Run("get decorator", func(t *testing.T) {
-		name, err := getDecorator(testWorkflow)
+		name, err := getFunctionName(testWorkflow)
 		require.NoError(t, err)
 		assert.Equal(t, "testWorkflow", name)
 	})
 	t.Run("get decorator - nil", func(t *testing.T) {
-		name, err := getDecorator(nil)
+		name, err := getFunctionName(nil)
 		require.Error(t, err)
 		assert.Equal(t, "", name)
 	})
