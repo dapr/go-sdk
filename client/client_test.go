@@ -503,64 +503,6 @@ func (s *testDaprServer) UnsubscribeConfiguration(ctx context.Context, in *pb.Un
 	return &pb.UnsubscribeConfigurationResponse{Ok: true}, nil
 }
 
-func (s *testDaprServer) StartWorkflowAlpha1(ctx context.Context, in *pb.StartWorkflowRequest) (*pb.StartWorkflowResponse, error) {
-	if in.GetInstanceId() == testWorkflowFailureID {
-		return nil, errors.New("test failure")
-	}
-	return &pb.StartWorkflowResponse{
-		InstanceId: in.GetInstanceId(),
-	}, nil
-}
-
-func (s *testDaprServer) GetWorkflowAlpha1(ctx context.Context, in *pb.GetWorkflowRequest) (*pb.GetWorkflowResponse, error) {
-	if in.GetInstanceId() == testWorkflowFailureID {
-		return nil, errors.New("test failure")
-	}
-	return &pb.GetWorkflowResponse{
-		InstanceId:    in.GetInstanceId(),
-		WorkflowName:  "TestWorkflowName",
-		CreatedAt:     timestamppb.Now(),
-		LastUpdatedAt: timestamppb.Now(),
-		RuntimeStatus: "Running",
-		Properties:    make(map[string]string),
-	}, nil
-}
-
-func (s *testDaprServer) PurgeWorkflowAlpha1(ctx context.Context, in *pb.PurgeWorkflowRequest) (*empty.Empty, error) {
-	if in.GetInstanceId() == testWorkflowFailureID {
-		return nil, errors.New("test failure")
-	}
-	return &empty.Empty{}, nil
-}
-
-func (s *testDaprServer) TerminateWorkflowAlpha1(ctx context.Context, in *pb.TerminateWorkflowRequest) (*empty.Empty, error) {
-	if in.GetInstanceId() == testWorkflowFailureID {
-		return nil, errors.New("test failure")
-	}
-	return &empty.Empty{}, nil
-}
-
-func (s *testDaprServer) PauseWorkflowAlpha1(ctx context.Context, in *pb.PauseWorkflowRequest) (*empty.Empty, error) {
-	if in.GetInstanceId() == testWorkflowFailureID {
-		return nil, errors.New("test failure")
-	}
-	return &empty.Empty{}, nil
-}
-
-func (s *testDaprServer) ResumeWorkflowAlpha1(ctx context.Context, in *pb.ResumeWorkflowRequest) (*empty.Empty, error) {
-	if in.GetInstanceId() == testWorkflowFailureID {
-		return nil, errors.New("test failure")
-	}
-	return &empty.Empty{}, nil
-}
-
-func (s *testDaprServer) RaiseEventWorkflowAlpha1(ctx context.Context, in *pb.RaiseEventWorkflowRequest) (*empty.Empty, error) {
-	if in.GetInstanceId() == testWorkflowFailureID {
-		return nil, errors.New("test failure")
-	}
-	return &empty.Empty{}, nil
-}
-
 func (s *testDaprServer) StartWorkflowBeta1(ctx context.Context, in *pb.StartWorkflowRequest) (*pb.StartWorkflowResponse, error) {
 	if in.GetInstanceId() == testWorkflowFailureID {
 		return nil, errors.New("test failure")
