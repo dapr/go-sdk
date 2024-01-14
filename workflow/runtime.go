@@ -13,13 +13,13 @@ import (
 	dapr "github.com/dapr/go-sdk/client"
 
 	"github.com/microsoft/durabletask-go/backend"
-	"github.com/microsoft/durabletask-go/client"
+	durabletaskclient "github.com/microsoft/durabletask-go/client"
 	"github.com/microsoft/durabletask-go/task"
 )
 
 type WorkflowRuntime struct {
 	tasks  *task.TaskRegistry
-	client *client.TaskHubGrpcClient
+	client *durabletaskclient.TaskHubGrpcClient
 
 	mutex sync.Mutex // TODO: implement
 	quit  chan bool
@@ -38,7 +38,7 @@ func NewRuntime() (*WorkflowRuntime, error) {
 
 	return &WorkflowRuntime{
 		tasks:  task.NewTaskRegistry(),
-		client: client.NewTaskHubGrpcClient(daprClient.GrpcClientConn(), backend.DefaultLogger()),
+		client: durabletaskclient.NewTaskHubGrpcClient(daprClient.GrpcClientConn(), backend.DefaultLogger()),
 		quit:   make(chan bool),
 		close:  daprClient.Close,
 	}, nil

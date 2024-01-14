@@ -222,10 +222,76 @@ func main() {
 
 	fmt.Println("workflow purged")
 
+	// WFClient
+	// TODO: Expand client validation
+
+	stage = 0
+	fmt.Println("workflow client test")
+
+	wfClient, err := workflow.NewClient()
+	if err != nil {
+		log.Fatalf("[wfclient] faield to initialize: %v", err)
+	}
+
+	id, err := wfClient.ScheduleNewWorkflow(ctx, "TestWorkflow", workflow.WithInstanceID("a7a4168d-3a1c-41da-8a4f-e7f6d9c718d9"), workflow.WithInput(1))
+	if err != nil {
+		log.Fatalf("[wfclient] failed to start workflow: %v", err)
+	}
+
+	fmt.Printf("[wfclient] started workflow with id: %s\n", id)
+
+	metadata, err := wfClient.FetchWorkflowMetadata(ctx, id)
+	if err != nil {
+		log.Fatalf("[wfclient] failed to get worfklow: %v", err)
+	}
+
+	fmt.Printf("[wfclient] workflow running: %v\n", metadata.IsRunning())
+
+	if stage != 1 {
+		log.Fatalf("Workflow assertion failed while validating the wfclient. Stage 1 expected, current: %d", stage)
+	}
+
+	fmt.Printf("[wfclient] stage: %d\n", stage)
+
+	// TODO: WaitForWorkflowStart
+	// TODO: WaitForWorkflowCompletion
+
+	// raise event
+
+	if err := wfClient.RaiseEvent(ctx, id, "testEvent", workflow.WithEventPayload("testData")); err != nil {
+		log.Fatalf("[wfclient] failed to raise event: %v", err)
+	}
+
+	fmt.Println("[wfclient] event raised")
+
+	// Sleep to allow the workflow to advance
+	time.Sleep(time.Second)
+
+	if stage != 2 {
+		log.Fatalf("Workflow assertion failed while validating the wfclient. Stage 2 expected, current: %d", stage)
+	}
+
+	fmt.Printf("[wfclient] stage: %d\n", stage)
+
+	// stop workflow
+	if err := wfClient.TerminateWorkflow(ctx, id); err != nil {
+		log.Fatalf("[wfclient] failed to terminate workflow: %v", err)
+	}
+
+	fmt.Println("[wfclient] workflow terminated")
+
+	if err := wfClient.PurgeWorkflow(ctx, id); err != nil {
+		log.Fatalf("[wfclient] failed to purge workflow: %v", err)
+	}
+
+	fmt.Println("[wfclient] workflow purged")
+
 	// stop workflow runtime
 	if err := wr.Shutdown(); err != nil {
 		log.Fatalf("failed to shutdown runtime: %v", err)
 	}
+
+	fmt.Println("workflow runtime successfully shutdown")
 
 	time.Sleep(time.Second * 5)
 }

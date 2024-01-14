@@ -28,6 +28,16 @@ expected_stdout_lines:
   - '== APP == workflow started with id: a7a4168d-3a1c-41da-8a4f-e7f6d9c718d9'
   - '== APP == workflow terminated'
   - '== APP == workflow purged'
+  - '== APP == workflow client test'
+  - '== APP == [wfclient] started workflow with id: a7a4168d-3a1c-41da-8a4f-e7f6d9c718d9'
+  - '== APP == [wfclient] workflow running'
+  - '== APP == [wfclient] stage: 1'
+  - '== APP == [wfclient] event raised'
+  - '== APP == [wfclient] stage: 2'
+  - '== APP == [wfclient] workflow terminated'
+  - '== APP == [wfclient] workflow purged'
+  - '== APP == workflow runtime successfully shutdown'
+
 background: true
 sleep: 60
 -->
@@ -61,4 +71,13 @@ dapr run --app-id workflow \
   - '== APP == workflow started with id: a7a4168d-3a1c-41da-8a4f-e7f6d9c718d9'
   - '== APP == workflow terminated'
   - '== APP == workflow purged'
+  - '== APP == workflow client test'
+  - '== APP == [wfclient] started workflow with id: a7a4168d-3a1c-41da-8a4f-e7f6d9c718d9'
+  - '== APP == [wfclient] workflow running'
+  - '== APP == [wfclient] stage: 1'
+  - '== APP == [wfclient] event raised'
+  - '== APP == [wfclient] stage: 2'
+  - '== APP == [wfclient] workflow terminated'
+  - '== APP == [wfclient] workflow purged'
+  - '== APP == workflow runtime successfully shutdown'
 ```
