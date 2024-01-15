@@ -40,4 +40,9 @@ func TestContext(t *testing.T) {
 		replaying := c.IsReplaying()
 		assert.False(t, replaying)
 	})
+
+	t.Run("waitforexternalevent - empty ids", func(t *testing.T) {
+		completableTask := c.WaitForExternalEvent("", time.Second)
+		assert.Nil(t, completableTask)
+	})
 }
