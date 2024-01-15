@@ -292,8 +292,6 @@ func main() {
 	}
 
 	fmt.Println("workflow runtime successfully shutdown")
-
-	time.Sleep(time.Second * 5)
 }
 
 func TestWorkflow(ctx *workflow.Context) (any, error) {
