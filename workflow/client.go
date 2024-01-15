@@ -121,7 +121,7 @@ func (c *client) TerminateWorkflow(ctx context.Context, id string, opts ...api.T
 }
 
 func (c *client) RaiseEvent(ctx context.Context, id, eventName string, opts ...api.RaiseEventOptions) error {
-	if id == " " {
+	if id == "" {
 		return errors.New("no workflow id specified")
 	}
 	if eventName == "" {
@@ -155,8 +155,4 @@ func (c *client) PurgeWorkflow(ctx context.Context, id string) error {
 		return errors.New("no workflow id specified")
 	}
 	return c.taskHubClient.PurgeOrchestrationState(ctx, api.InstanceID(id))
-}
-
-func (c *client) Close() error {
-	return nil
 }
