@@ -24,7 +24,7 @@ on:
     types: [ validate-examples ]
   merge_group:
 jobs:
-  validate:
+  setup:
     runs-on: ubuntu-latest
     env:
       PYTHON_VER: 3.12
@@ -116,12 +116,14 @@ jobs:
           docker stop dapr_placement
           cd dapr_runtime
           ./dist/linux_amd64/release/placement --healthz-port 9091 &
+  validate-examples:
+    needs: [ setup ]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        examples: [ "grpc-service", "configuration", "hello-world", "pubsub", "service", "actor" ]
+    steps:
       - name: Check Examples
         run: |
           cd examples
-          ./validate.sh grpc-service
-          ./validate.sh configuration
-          ./validate.sh hello-world
-          ./validate.sh pubsub
-          ./validate.sh service
-          ./validate.sh actor
+          ./validate.sh ${{ matrix.examples }}
