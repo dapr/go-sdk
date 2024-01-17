@@ -116,14 +116,14 @@ jobs:
           docker stop dapr_placement
           cd dapr_runtime
           ./dist/linux_amd64/release/placement --healthz-port 9091 &
-  validate-examples:
+  validate-example:
     needs: [ setup ]
     runs-on: ubuntu-latest
     strategy:
       matrix:
         examples: [ "grpc-service", "configuration", "hello-world", "pubsub", "service", "actor" ]
     steps:
-      - name: Check Examples
+      - name: Check Example
         run: |
           cd examples
           ./validate.sh ${{ matrix.examples }}
