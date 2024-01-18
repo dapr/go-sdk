@@ -146,16 +146,27 @@ jobs:
       DAPR_RUNTIME_VER: ${{ needs.setup.outputs.DAPR_RUNTIME_VER }}
       DAPR_CLI_REF: ${{ github.event.inputs.daprcli_commit }}
       DAPR_REF: ${{ github.event.inputs.daprdapr_commit }}
+      CHECKOUT_REPO: ${{ needs.setup.outputs.CHECKOUT_REPO }}
+      CHECKOUT_REF: ${{ needs.setup.outputs.CHECKOUT_REF }}
+
 
     strategy:
       matrix:
         examples: [ "actor", "configuation", "grpc-service", "hello-world", "pubsub", "service", "socket" ]
     steps:
+      - name: Check out code onto GOPATH
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ env.CHECKOUT_REPO }}
+          ref: ${{ env.CHECKOUT_REF }}
+
       - name: Make Artifacts destination folder
+        if: env.DAPR_CLI_REF != '' || env.DAPR_REF != ''
         run: |
           mkdir -p $HOME/artifacts/$GITHUB_SHA/
 
       - name: Retrieve dapr-artifacts
+        if: env.DAPR_CLI_REF != '' || env.DAPR_REF != ''
         uses: actions/download-artifact@v4
         with:
           name: dapr-artifacts
