@@ -25,7 +25,7 @@ func (wfc *Context) InstanceID() string {
 	return fmt.Sprintf("%v", wfc.orchestrationContext.ID)
 }
 
-// CurrentUTCDateTime returns the current time as UTC
+// CurrentUTCDateTime returns the current workflow time as UTC. Note that this should be used instead of `time.Now()`, which is not compatible with workflow replays.
 func (wfc *Context) CurrentUTCDateTime() time.Time {
 	return wfc.orchestrationContext.CurrentTimeUtc
 }
