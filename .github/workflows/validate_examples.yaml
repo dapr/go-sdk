@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - release-*
     tags:
       - v*
   pull_request:
@@ -114,13 +115,13 @@ jobs:
           cp dist/linux_amd64/release/daprd $HOME/artifacts/$GITHUB_SHA/daprd
           cp dist/linux_amd64/release/placement $HOME/artifacts/$GITHUB_SHA/placement
 
-
       - name: Upload dapr-artifacts
         uses: actions/upload-artifact@v4
+        if: env.DAPR_REF != '' || env.DAPR_CLI_REF != ''
         with:
           name: dapr-artifacts
           path: $HOME/artifacts/$GITHUB_SHA/
-          if-no-files-found: warn
+          if-no-files-found: error
           retention-days: 1
           compression-level: 0
 
@@ -149,7 +150,6 @@ jobs:
       DAPR_REF: ${{ github.event.inputs.daprdapr_commit }}
       CHECKOUT_REPO: ${{ needs.setup.outputs.CHECKOUT_REPO }}
       CHECKOUT_REF: ${{ needs.setup.outputs.CHECKOUT_REF }}
-
 
     strategy:
       matrix:
