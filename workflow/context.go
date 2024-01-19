@@ -20,7 +20,7 @@ func (wfc *Context) Name() string {
 	return wfc.orchestrationContext.Name
 }
 
-// InstanceID returns the ID of the currently executing orchestration
+// InstanceID returns the ID of the currently executing workflow
 func (wfc *Context) InstanceID() string {
 	return fmt.Sprintf("%v", wfc.orchestrationContext.ID)
 }
