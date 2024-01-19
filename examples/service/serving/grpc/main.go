@@ -16,11 +16,13 @@ package main
 import (
 	"context"
 	"errors"
-	"log"
 
 	"github.com/dapr/go-sdk/service/common"
 	daprd "github.com/dapr/go-sdk/service/grpc"
+	"github.com/dapr/kit/logger"
 )
+
+var log = logger.NewLogger("dapr.examples.service.grpc")
 
 func main() {
 	// create a Dapr service server
@@ -55,7 +57,7 @@ func main() {
 }
 
 func eventHandler(ctx context.Context, e *common.TopicEvent) (retry bool, err error) {
-	log.Printf("event - PubsubName:%s, Topic:%s, ID:%s, Data: %s", e.PubsubName, e.Topic, e.ID, e.Data)
+	log.Infof("event - PubsubName:%s, Topic:%s, ID:%s, Data: %s", e.PubsubName, e.Topic, e.ID, e.Data)
 	return false, nil
 }
 
@@ -64,7 +66,7 @@ func echoHandler(ctx context.Context, in *common.InvocationEvent) (out *common.C
 		err = errors.New("nil invocation parameter")
 		return
 	}
-	log.Printf(
+	log.Infof(
 		"echo - ContentType:%s, Verb:%s, QueryString:%s, %s",
 		in.ContentType, in.Verb, in.QueryString, in.Data,
 	)
@@ -77,6 +79,6 @@ func echoHandler(ctx context.Context, in *common.InvocationEvent) (out *common.C
 }
 
 func runHandler(ctx context.Context, in *common.BindingEvent) (out []byte, err error) {
-	log.Printf("binding - Data:%s, Meta:%v", in.Data, in.Metadata)
+	log.Infof("binding - Data:%s, Meta:%v", in.Data, in.Metadata)
 	return nil, nil
 }

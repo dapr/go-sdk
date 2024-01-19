@@ -143,7 +143,7 @@ func getTestClient(ctx context.Context) (client Client, closer func()) {
 	l := bufconn.Listen(testBufSize)
 	go func() {
 		if err := s.Serve(l); err != nil && err.Error() != "closed" {
-			logger.Fatalf("test server exited with error: %v", err)
+			log.Fatalf("test server exited with error: %v", err)
 		}
 	}()
 
@@ -153,7 +153,7 @@ func getTestClient(ctx context.Context) (client Client, closer func()) {
 
 	c, err := grpc.DialContext(ctx, "", d, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
-		logger.Fatalf("failed to dial test context: %v", err)
+		log.Fatalf("failed to dial test context: %v", err)
 	}
 
 	closer = func() {
@@ -175,12 +175,12 @@ func getTestClientWithSocket(ctx context.Context) (client Client, closer func())
 	var lc net.ListenConfig
 	l, err := lc.Listen(ctx, "unix", testSocket)
 	if err != nil {
-		logger.Fatalf("socket test server created with error: %v", err)
+		log.Fatalf("socket test server created with error: %v", err)
 	}
 
 	go func() {
 		if err = s.Serve(l); err != nil && err.Error() != "accept unix /tmp/dapr.socket: use of closed network connection" {
-			logger.Fatalf("socket test server exited with error: %v", err)
+			log.Fatalf("socket test server exited with error: %v", err)
 		}
 	}()
 
@@ -191,7 +191,7 @@ func getTestClientWithSocket(ctx context.Context) (client Client, closer func())
 	}
 
 	if client, err = NewClientWithSocket(testSocket); err != nil {
-		logger.Fatalf("socket test client created with error: %v", err)
+		log.Fatalf("socket test client created with error: %v", err)
 	}
 
 	return

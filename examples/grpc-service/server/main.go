@@ -2,13 +2,15 @@ package main
 
 import (
 	"context"
-	"log"
 	"net"
 
 	daprd "github.com/dapr/go-sdk/service/grpc"
 	"google.golang.org/grpc"
 	pb "google.golang.org/grpc/examples/helloworld/helloworld"
+	"github.com/dapr/kit/logger"
 )
+
+var log = logger.NewLogger("dapr.examples.grpc-server")
 
 const (
 	port = ":50051"
@@ -21,7 +23,7 @@ type server struct {
 
 // SayHello implements helloworld.GreeterServer
 func (s *server) SayHello(ctx context.Context, in *pb.HelloRequest) (*pb.HelloReply, error) {
-	log.Printf("Received: %v", in.GetName())
+	log.Infof("Received: %v", in.GetName())
 	return &pb.HelloReply{Message: "Hello " + in.GetName()}, nil
 }
 

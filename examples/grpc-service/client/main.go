@@ -2,13 +2,16 @@ package main
 
 import (
 	"context"
-	"log"
 	"time"
 
 	"google.golang.org/grpc"
 	pb "google.golang.org/grpc/examples/helloworld/helloworld"
 	"google.golang.org/grpc/metadata"
+
+	"github.com/dapr/kit/logger"
 )
+
+var log = logger.NewLogger("dapr.examples.grpc-client")
 
 const (
 	address = "localhost:50007"
@@ -32,5 +35,5 @@ func main() {
 		log.Fatalf("could not greet: %v", err)
 	}
 
-	log.Printf("Greeting: %s", r.GetMessage())
+	log.Infof("Greeting: %s", r.GetMessage())
 }
