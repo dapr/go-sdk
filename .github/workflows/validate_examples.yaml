@@ -153,7 +153,7 @@ jobs:
 
     strategy:
       matrix:
-        examples: [ "actor", "configuation", "grpc-service", "hello-world", "pubsub", "service", "socket" ]
+        examples: [ "actor", "configuration", "grpc-service", "hello-world", "pubsub", "service", "socket" ]
     steps:
       - name: Check out code onto GOPATH
         uses: actions/checkout@v4
