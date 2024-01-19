@@ -152,6 +152,7 @@ jobs:
       CHECKOUT_REF: ${{ needs.setup.outputs.CHECKOUT_REF }}
 
     strategy:
+      fail-fast: false
       matrix:
         examples: [ "actor", "configuration", "grpc-service", "hello-world", "pubsub", "service", "socket" ]
     steps:
