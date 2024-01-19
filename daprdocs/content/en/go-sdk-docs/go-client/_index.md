@@ -446,7 +446,7 @@ To encrypt:
 
 ```go
 // Encrypt the data using Dapr
-out, err := sdkClient.Encrypt(context.Background(), rf, dapr.EncryptOptions{
+out, err := client.Encrypt(context.Background(), rf, dapr.EncryptOptions{
 	// These are the 3 required parameters
 	ComponentName: "mycryptocomponent",
 	KeyName:        "mykey",
@@ -461,7 +461,7 @@ To decrypt:
 
 ```go
 // Decrypt the data using Dapr
-out, err := sdkClient.Decrypt(context.Background(), rf, dapr.EncryptOptions{
+out, err := client.Decrypt(context.Background(), rf, dapr.EncryptOptions{
 	// Only required option is the component name
 	ComponentName: "mycryptocomponent",
 })
