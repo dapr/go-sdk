@@ -8,7 +8,7 @@ require (
 	github.com/golang/mock v1.6.0
 	github.com/golang/protobuf v1.5.3
 	github.com/google/uuid v1.3.1
-	github.com/microsoft/durabletask-go v0.3.1
+	github.com/microsoft/durabletask-go v0.4.0
 	github.com/stretchr/testify v1.8.4
 	google.golang.org/grpc v1.57.0
 	google.golang.org/protobuf v1.31.0
@@ -23,9 +23,9 @@ require (
 	github.com/kr/text v0.2.0 // indirect
 	github.com/marusama/semaphore/v2 v2.5.0 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
-	go.opentelemetry.io/otel v1.16.0 // indirect
-	go.opentelemetry.io/otel/metric v1.16.0 // indirect
-	go.opentelemetry.io/otel/trace v1.16.0 // indirect
+	go.opentelemetry.io/otel v1.18.0 // indirect
+	go.opentelemetry.io/otel/metric v1.18.0 // indirect
+	go.opentelemetry.io/otel/trace v1.18.0 // indirect
 	golang.org/x/net v0.19.0 // indirect
 	golang.org/x/sys v0.15.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
