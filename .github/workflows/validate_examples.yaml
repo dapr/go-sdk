@@ -125,6 +125,7 @@ jobs:
           compression-level: 0
 
       - name: Outputs
+        id: outputs
         run: |
           echo "DAPR_INSTALL_URL=$DAPR_INSTALL_URL"
           echo "DAPR_CLI_VER=$DAPR_CLI_VER" >> "$GITHUB_OUTPUT"
