@@ -17,7 +17,7 @@ output_match_mode: substring
 expected_stdout_lines:
   - 'Received: Dapr'
 background: true
-sleep: 15
+sleep: 30
 -->
 
 ```bash
