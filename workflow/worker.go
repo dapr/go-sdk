@@ -31,7 +31,7 @@ import (
 	"github.com/microsoft/durabletask-go/task"
 )
 
-type WorkflowRuntime struct {
+type WorkflowWorker struct {
 	tasks  *task.TaskRegistry
 	client *durabletaskclient.TaskHubGrpcClient
 
@@ -44,13 +44,13 @@ type Workflow func(ctx *Context) (any, error)
 
 type Activity func(ctx ActivityContext) (any, error)
 
-func NewRuntime() (*WorkflowRuntime, error) {
+func NewWorker() (*WorkflowWorker, error) {
 	daprClient, err := dapr.NewClient()
 	if err != nil {
 		return nil, err
 	}
 
-	return &WorkflowRuntime{
+	return &WorkflowWorker{
 		tasks:  task.NewTaskRegistry(),
 		client: durabletaskclient.NewTaskHubGrpcClient(daprClient.GrpcClientConn(), backend.DefaultLogger()),
 		quit:   make(chan bool),
@@ -82,16 +82,16 @@ func wrapWorkflow(w Workflow) task.Orchestrator {
 	}
 }
 
-func (wr *WorkflowRuntime) RegisterWorkflow(w Workflow) error {
+func (ww *WorkflowWorker) RegisterWorkflow(w Workflow) error {
 	wrappedOrchestration := wrapWorkflow(w)
 
-	// get decorator for workflow
+	// get the function name for the passed workflow
 	name, err := getFunctionName(w)
 	if err != nil {
 		return fmt.Errorf("failed to get workflow decorator: %v", err)
 	}
 
-	err = wr.tasks.AddOrchestratorN(name, wrappedOrchestration)
+	err = ww.tasks.AddOrchestratorN(name, wrappedOrchestration)
 	return err
 }
 
@@ -103,37 +103,37 @@ func wrapActivity(a Activity) task.Activity {
 	}
 }
 
-func (wr *WorkflowRuntime) RegisterActivity(a Activity) error {
+func (ww *WorkflowWorker) RegisterActivity(a Activity) error {
 	wrappedActivity := wrapActivity(a)
 
-	// get decorator for activity
+	// get the function name for the passed activity
 	name, err := getFunctionName(a)
 	if err != nil {
 		return fmt.Errorf("failed to get activity decorator: %v", err)
 	}
 
-	err = wr.tasks.AddActivityN(name, wrappedActivity)
+	err = ww.tasks.AddActivityN(name, wrappedActivity)
 	return err
 }
 
-func (wr *WorkflowRuntime) Start() error {
+func (ww *WorkflowWorker) Start() error {
 	// go func start
 	go func() {
-		defer wr.close()
-		err := wr.client.StartWorkItemListener(context.Background(), wr.tasks)
+		defer ww.close()
+		err := ww.client.StartWorkItemListener(context.Background(), ww.tasks)
 		if err != nil {
 			log.Fatalf("failed to start work stream: %v", err)
 		}
 		log.Println("work item listener started")
-		<-wr.quit
+		<-ww.quit
 		log.Println("work item listener shutdown")
 	}()
 	return nil
 }
 
-func (wr *WorkflowRuntime) Shutdown() error {
+func (ww *WorkflowWorker) Shutdown() error {
 	// send close signal
-	wr.quit <- true
+	ww.quit <- true
 	log.Println("work item listener shutdown signal sent")
 	return nil
 }
