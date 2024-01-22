@@ -26,14 +26,14 @@ import (
 
 func TestNewRuntime(t *testing.T) {
 	t.Run("failure to create newruntime without dapr", func(t *testing.T) {
-		wr, err := NewRuntime()
+		wr, err := NewWorker()
 		require.Error(t, err)
 		assert.Empty(t, wr)
 	})
 }
 
 func TestWorkflowRuntime(t *testing.T) {
-	testRuntime := WorkflowRuntime{
+	testWorker := WorkflowWorker{
 		tasks:  task.NewTaskRegistry(),
 		client: nil,
 		mutex:  sync.Mutex{},
@@ -42,21 +42,21 @@ func TestWorkflowRuntime(t *testing.T) {
 
 	// TODO: Mock grpc conn - currently requires dapr to be available
 	t.Run("register workflow", func(t *testing.T) {
-		err := testRuntime.RegisterWorkflow(testWorkflow)
+		err := testWorker.RegisterWorkflow(testWorkflow)
 		require.NoError(t, err)
 	})
 	t.Run("register workflow - anonymous func", func(t *testing.T) {
-		err := testRuntime.RegisterWorkflow(func(ctx *Context) (any, error) {
+		err := testWorker.RegisterWorkflow(func(ctx *Context) (any, error) {
 			return nil, nil
 		})
 		require.Error(t, err)
 	})
 	t.Run("register activity", func(t *testing.T) {
-		err := testRuntime.RegisterActivity(testActivity)
+		err := testWorker.RegisterActivity(testActivity)
 		require.NoError(t, err)
 	})
 	t.Run("register activity - anonymous func", func(t *testing.T) {
-		err := testRuntime.RegisterActivity(func(ctx ActivityContext) (any, error) {
+		err := testWorker.RegisterActivity(func(ctx ActivityContext) (any, error) {
 			return nil, nil
 		})
 		require.Error(t, err)
@@ -77,13 +77,13 @@ func TestWrapActivity(t *testing.T) {
 	})
 }
 
-func TestGetDecorator(t *testing.T) {
-	t.Run("get decorator", func(t *testing.T) {
+func TestGetFunctionName(t *testing.T) {
+	t.Run("get function name", func(t *testing.T) {
 		name, err := getFunctionName(testWorkflow)
 		require.NoError(t, err)
 		assert.Equal(t, "testWorkflow", name)
 	})
-	t.Run("get decorator - nil", func(t *testing.T) {
+	t.Run("get function name - nil", func(t *testing.T) {
 		name, err := getFunctionName(nil)
 		require.Error(t, err)
 		assert.Equal(t, "", name)
