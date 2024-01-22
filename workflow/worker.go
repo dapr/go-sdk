@@ -35,9 +35,10 @@ type WorkflowWorker struct {
 	tasks  *task.TaskRegistry
 	client *durabletaskclient.TaskHubGrpcClient
 
-	mutex sync.Mutex // TODO: implement
-	quit  chan bool
-	close func()
+	mutex  sync.Mutex // TODO: implement
+	quit   chan bool
+	close  func()
+	cancel context.CancelFunc
 }
 
 type Workflow func(ctx *Context) (any, error)
@@ -118,20 +119,28 @@ func (ww *WorkflowWorker) RegisterActivity(a Activity) error {
 
 func (ww *WorkflowWorker) Start() error {
 	// go func start
+	errChan := make(chan error)
 	go func() {
 		defer ww.close()
-		err := ww.client.StartWorkItemListener(context.Background(), ww.tasks)
+		ctx, cancel := context.WithCancel(context.Background())
+		err := ww.client.StartWorkItemListener(ctx, ww.tasks)
 		if err != nil {
-			log.Fatalf("failed to start work stream: %v", err)
+			cancel()
+			errChan <- fmt.Errorf("failed to start work stream: %v", err)
+			return
 		}
+		ww.cancel = cancel
 		log.Println("work item listener started")
+		errChan <- nil
 		<-ww.quit
 		log.Println("work item listener shutdown")
 	}()
-	return nil
+	err := <-errChan
+	return err
 }
 
 func (ww *WorkflowWorker) Shutdown() error {
+	ww.cancel()
 	// send close signal
 	ww.quit <- true
 	log.Println("work item listener shutdown signal sent")

@@ -27,6 +27,10 @@ import (
 	pb "github.com/dapr/dapr/pkg/proto/runtime/v1"
 )
 
+const (
+	DefaultWorkflowComponent = "dapr"
+)
+
 type StartWorkflowRequest struct {
 	InstanceID        string // Optional instance identifier
 	WorkflowComponent string
@@ -88,7 +92,7 @@ func (c *GRPCClient) StartWorkflowBeta1(ctx context.Context, req *StartWorkflowR
 		req.InstanceID = uuid.New().String()
 	}
 	if req.WorkflowComponent == "" {
-		return nil, errors.New("failed to start workflow: WorkflowComponent must be supplied")
+		req.WorkflowComponent = DefaultWorkflowComponent
 	}
 	if req.WorkflowName == "" {
 		return nil, errors.New("failed to start workflow: WorkflowName must be supplied")
@@ -126,7 +130,7 @@ func (c *GRPCClient) GetWorkflowBeta1(ctx context.Context, req *GetWorkflowReque
 		return nil, errors.New("failed to get workflow status: InstanceID must be supplied")
 	}
 	if req.WorkflowComponent == "" {
-		return nil, errors.New("failed to get workflow status: WorkflowComponent must be supplied")
+		req.WorkflowComponent = DefaultWorkflowComponent
 	}
 	resp, err := c.protoClient.GetWorkflowBeta1(c.withAuthToken(ctx), &pb.GetWorkflowRequest{
 		InstanceId:        req.InstanceID,
@@ -157,7 +161,7 @@ func (c *GRPCClient) PurgeWorkflowBeta1(ctx context.Context, req *PurgeWorkflowR
 		return errors.New("failed to purge workflow: InstanceID must be supplied")
 	}
 	if req.WorkflowComponent == "" {
-		return errors.New("failed to purge workflow: WorkflowComponent must be supplied")
+		req.WorkflowComponent = DefaultWorkflowComponent
 	}
 	_, err := c.protoClient.PurgeWorkflowBeta1(c.withAuthToken(ctx), &pb.PurgeWorkflowRequest{
 		InstanceId:        req.InstanceID,
@@ -175,7 +179,7 @@ func (c *GRPCClient) TerminateWorkflowBeta1(ctx context.Context, req *TerminateW
 		return errors.New("failed to terminate workflow: InstanceID must be supplied")
 	}
 	if req.WorkflowComponent == "" {
-		return errors.New("failed to terminate workflow, WorkflowComponent must be supplied")
+		req.WorkflowComponent = DefaultWorkflowComponent
 	}
 	_, err := c.protoClient.TerminateWorkflowBeta1(ctx, &pb.TerminateWorkflowRequest{
 		InstanceId:        req.InstanceID,
@@ -193,7 +197,7 @@ func (c *GRPCClient) PauseWorkflowBeta1(ctx context.Context, req *PauseWorkflowR
 		return errors.New("failed to pause workflow: InstanceID must be supplied")
 	}
 	if req.WorkflowComponent == "" {
-		return errors.New("failed to pause workflow, WorkflowComponent must be supplied")
+		req.WorkflowComponent = DefaultWorkflowComponent
 	}
 	_, err := c.protoClient.PauseWorkflowBeta1(ctx, &pb.PauseWorkflowRequest{
 		InstanceId:        req.InstanceID,
@@ -211,7 +215,7 @@ func (c *GRPCClient) ResumeWorkflowBeta1(ctx context.Context, req *ResumeWorkflo
 		return errors.New("failed to resume workflow: InstanceID must be supplied")
 	}
 	if req.WorkflowComponent == "" {
-		return errors.New("failed to resume workflow: WorkflowComponent must be supplied")
+		req.WorkflowComponent = DefaultWorkflowComponent
 	}
 	_, err := c.protoClient.ResumeWorkflowBeta1(c.withAuthToken(ctx), &pb.ResumeWorkflowRequest{
 		InstanceId:        req.InstanceID,
@@ -229,7 +233,7 @@ func (c *GRPCClient) RaiseEventWorkflowBeta1(ctx context.Context, req *RaiseEven
 		return errors.New("failed to raise event on workflow: InstanceID must be supplied")
 	}
 	if req.WorkflowComponent == "" {
-		return errors.New("failed to raise event on workflow: WorkflowComponent must be supplied")
+		req.WorkflowComponent = DefaultWorkflowComponent
 	}
 	if req.EventName == "" {
 		return errors.New("failed to raise event on workflow: EventName must be supplied")
