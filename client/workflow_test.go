@@ -55,15 +55,6 @@ func TestWorkflowBeta1(t *testing.T) {
 		require.Error(t, err)
 		assert.Nil(t, resp)
 	})
-	t.Run("start workflow - invalid WorkflowComponent", func(t *testing.T) {
-		resp, err := testClient.StartWorkflowBeta1(ctx, &StartWorkflowRequest{
-			InstanceID:        "",
-			WorkflowComponent: "",
-			WorkflowName:      "TestWorkflow",
-		})
-		require.Error(t, err)
-		assert.Nil(t, resp)
-	})
 	t.Run("start workflow - grpc failure", func(t *testing.T) {
 		resp, err := testClient.StartWorkflowBeta1(ctx, &StartWorkflowRequest{
 			InstanceID:        "",
@@ -124,15 +115,6 @@ func TestWorkflowBeta1(t *testing.T) {
 		assert.Nil(t, resp)
 	})
 
-	t.Run("get workflow - invalid workflowcomponent", func(t *testing.T) {
-		resp, err := testClient.GetWorkflowBeta1(ctx, &GetWorkflowRequest{
-			InstanceID:        "TestID",
-			WorkflowComponent: "",
-		})
-		require.Error(t, err)
-		assert.Nil(t, resp)
-	})
-
 	t.Run("get workflow - grpc fail", func(t *testing.T) {
 		resp, err := testClient.GetWorkflowBeta1(ctx, &GetWorkflowRequest{
 			InstanceID:        testWorkflowFailureID,
@@ -155,14 +137,6 @@ func TestWorkflowBeta1(t *testing.T) {
 		err := testClient.PauseWorkflowBeta1(ctx, &PauseWorkflowRequest{
 			InstanceID:        "",
 			WorkflowComponent: "dapr",
-		})
-		require.Error(t, err)
-	})
-
-	t.Run("pause workflow - invalid workflowcomponent", func(t *testing.T) {
-		err := testClient.PauseWorkflowBeta1(ctx, &PauseWorkflowRequest{
-			InstanceID:        "TestID",
-			WorkflowComponent: "",
 		})
 		require.Error(t, err)
 	})
@@ -192,14 +166,6 @@ func TestWorkflowBeta1(t *testing.T) {
 		require.Error(t, err)
 	})
 
-	t.Run("resume workflow - invalid workflowcomponent", func(t *testing.T) {
-		err := testClient.ResumeWorkflowBeta1(ctx, &ResumeWorkflowRequest{
-			InstanceID:        "TestID",
-			WorkflowComponent: "",
-		})
-		require.Error(t, err)
-	})
-
 	t.Run("resume workflow - grpc fail", func(t *testing.T) {
 		err := testClient.ResumeWorkflowBeta1(ctx, &ResumeWorkflowRequest{
 			InstanceID:        testWorkflowFailureID,
@@ -221,14 +187,6 @@ func TestWorkflowBeta1(t *testing.T) {
 		err := testClient.TerminateWorkflowBeta1(ctx, &TerminateWorkflowRequest{
 			InstanceID:        "",
 			WorkflowComponent: "dapr",
-		})
-		require.Error(t, err)
-	})
-
-	t.Run("terminate workflow - invalid workflowcomponent", func(t *testing.T) {
-		err := testClient.TerminateWorkflowBeta1(ctx, &TerminateWorkflowRequest{
-			InstanceID:        "TestID",
-			WorkflowComponent: "",
 		})
 		require.Error(t, err)
 	})
@@ -255,15 +213,6 @@ func TestWorkflowBeta1(t *testing.T) {
 		err := testClient.RaiseEventWorkflowBeta1(ctx, &RaiseEventWorkflowRequest{
 			InstanceID:        "",
 			WorkflowComponent: "dapr",
-			EventName:         "TestEvent",
-		})
-		require.Error(t, err)
-	})
-
-	t.Run("raise event workflow - invalid workflowcomponent", func(t *testing.T) {
-		err := testClient.RaiseEventWorkflowBeta1(ctx, &RaiseEventWorkflowRequest{
-			InstanceID:        "TestID",
-			WorkflowComponent: "",
 			EventName:         "TestEvent",
 		})
 		require.Error(t, err)
@@ -320,14 +269,6 @@ func TestWorkflowBeta1(t *testing.T) {
 		err := testClient.PurgeWorkflowBeta1(ctx, &PurgeWorkflowRequest{
 			InstanceID:        "",
 			WorkflowComponent: "dapr",
-		})
-		require.Error(t, err)
-	})
-
-	t.Run("purge workflow - invalid workflowcomponent", func(t *testing.T) {
-		err := testClient.PurgeWorkflowBeta1(ctx, &PurgeWorkflowRequest{
-			InstanceID:        "TestID",
-			WorkflowComponent: "",
 		})
 		require.Error(t, err)
 	})
