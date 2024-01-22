@@ -1,10 +1,23 @@
+/*
+Copyright 2024 The Dapr Authors
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+	http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
 package main
 
 import (
 	"context"
 	"fmt"
 	"log"
-	"sync"
 	"time"
 
 	"github.com/dapr/go-sdk/client"
@@ -18,36 +31,28 @@ const (
 )
 
 func main() {
-	wr, err := workflow.NewRuntime()
+	w, err := workflow.NewWorker()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Println("Runtime initialized")
+	fmt.Println("Worker initialized")
 
-	if err := wr.RegisterWorkflow(TestWorkflow); err != nil {
+	if err := w.RegisterWorkflow(TestWorkflow); err != nil {
 		log.Fatal(err)
 	}
 	fmt.Println("TestWorkflow registered")
 
-	if err := wr.RegisterActivity(TestActivity); err != nil {
+	if err := w.RegisterActivity(TestActivity); err != nil {
 		log.Fatal(err)
 	}
 	fmt.Println("TestActivity registered")
 
-	var wg sync.WaitGroup
-
 	// Start workflow runner
+	if err := w.Start(); err != nil {
+		log.Fatal(err)
+	}
 	fmt.Println("runner started")
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		if err := wr.Start(); err != nil {
-			log.Fatal(err)
-		}
-	}()
-
-	time.Sleep(time.Second * 5)
 
 	daprClient, err := client.NewClient()
 	if err != nil {
@@ -287,11 +292,11 @@ func main() {
 	fmt.Println("[wfclient] workflow purged")
 
 	// stop workflow runtime
-	if err := wr.Shutdown(); err != nil {
+	if err := w.Shutdown(); err != nil {
 		log.Fatalf("failed to shutdown runtime: %v", err)
 	}
 
-	fmt.Println("workflow runtime successfully shutdown")
+	fmt.Println("workflow worker successfully shutdown")
 }
 
 func TestWorkflow(ctx *workflow.Context) (any, error) {

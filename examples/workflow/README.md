@@ -12,7 +12,7 @@
 name: Run Workflow
 output_match_mode: substring
 expected_stdout_lines:
-  - '== APP == Runtime initialized'
+  - '== APP == Worker initialized'
   - '== APP == TestWorkflow registered'
   - '== APP == TestActivity registered'
   - '== APP == runner started'
@@ -36,7 +36,7 @@ expected_stdout_lines:
   - '== APP == [wfclient] stage: 2'
   - '== APP == [wfclient] workflow terminated'
   - '== APP == [wfclient] workflow purged'
-  - '== APP == workflow runtime successfully shutdown'
+  - '== APP == workflow worker successfully shutdown'
 
 background: true
 sleep: 60
@@ -55,7 +55,7 @@ dapr run --app-id workflow \
 ## Result
 
 ```
-  - '== APP == Runtime initialized'
+  - '== APP == Worker initialized'
   - '== APP == TestWorkflow registered'
   - '== APP == TestActivity registered'
   - '== APP == runner started'
@@ -79,5 +79,5 @@ dapr run --app-id workflow \
   - '== APP == [wfclient] stage: 2'
   - '== APP == [wfclient] workflow terminated'
   - '== APP == [wfclient] workflow purged'
-  - '== APP == workflow runtime successfully shutdown'
+  - '== APP == workflow worker successfully shutdown'
 ```
