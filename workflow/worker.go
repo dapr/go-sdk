@@ -41,7 +41,7 @@ type WorkflowWorker struct {
 	cancel context.CancelFunc
 }
 
-type Workflow func(ctx *Context) (any, error)
+type Workflow func(ctx *WorkflowContext) (any, error)
 
 type Activity func(ctx ActivityContext) (any, error)
 
@@ -78,7 +78,7 @@ func getFunctionName(f interface{}) (string, error) {
 
 func wrapWorkflow(w Workflow) task.Orchestrator {
 	return func(ctx *task.OrchestrationContext) (any, error) {
-		wfCtx := &Context{orchestrationContext: ctx}
+		wfCtx := &WorkflowContext{orchestrationContext: ctx}
 		return w(wfCtx)
 	}
 }

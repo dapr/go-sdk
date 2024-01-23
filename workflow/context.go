@@ -22,33 +22,33 @@ import (
 	"github.com/microsoft/durabletask-go/task"
 )
 
-type Context struct {
+type WorkflowContext struct {
 	orchestrationContext *task.OrchestrationContext
 }
 
-func (wfc *Context) GetInput(v interface{}) error {
+func (wfc *WorkflowContext) GetInput(v interface{}) error {
 	return wfc.orchestrationContext.GetInput(&v)
 }
 
-func (wfc *Context) Name() string {
+func (wfc *WorkflowContext) Name() string {
 	return wfc.orchestrationContext.Name
 }
 
 // InstanceID returns the ID of the currently executing workflow
-func (wfc *Context) InstanceID() string {
+func (wfc *WorkflowContext) InstanceID() string {
 	return fmt.Sprintf("%v", wfc.orchestrationContext.ID)
 }
 
 // CurrentUTCDateTime returns the current workflow time as UTC. Note that this should be used instead of `time.Now()`, which is not compatible with workflow replays.
-func (wfc *Context) CurrentUTCDateTime() time.Time {
+func (wfc *WorkflowContext) CurrentUTCDateTime() time.Time {
 	return wfc.orchestrationContext.CurrentTimeUtc
 }
 
-func (wfc *Context) IsReplaying() bool {
+func (wfc *WorkflowContext) IsReplaying() bool {
 	return wfc.orchestrationContext.IsReplaying
 }
 
-func (wfc *Context) CallActivity(activity interface{}, opts ...callActivityOption) task.Task {
+func (wfc *WorkflowContext) CallActivity(activity interface{}, opts ...callActivityOption) task.Task {
 	var inp any
 	if err := wfc.GetInput(&inp); err != nil {
 		log.Printf("unable to get activity input: %v", err)
@@ -58,15 +58,15 @@ func (wfc *Context) CallActivity(activity interface{}, opts ...callActivityOptio
 	return wfc.orchestrationContext.CallActivity(activity, task.WithActivityInput(inp))
 }
 
-func (wfc *Context) CallChildWorkflow(workflow interface{}) task.Task {
+func (wfc *WorkflowContext) CallChildWorkflow(workflow interface{}) task.Task {
 	return wfc.orchestrationContext.CallSubOrchestrator(workflow)
 }
 
-func (wfc *Context) CreateTimer(duration time.Duration) task.Task {
+func (wfc *WorkflowContext) CreateTimer(duration time.Duration) task.Task {
 	return wfc.orchestrationContext.CreateTimer(duration)
 }
 
-func (wfc *Context) WaitForExternalEvent(eventName string, timeout time.Duration) task.Task {
+func (wfc *WorkflowContext) WaitForExternalEvent(eventName string, timeout time.Duration) task.Task {
 	if eventName == "" {
 		return nil
 	}
@@ -77,7 +77,7 @@ func (wfc *Context) WaitForExternalEvent(eventName string, timeout time.Duration
 	return wfc.orchestrationContext.WaitForSingleEvent(eventName, timeout)
 }
 
-func (wfc *Context) ContinueAsNew(newInput any, keepEvents bool) {
+func (wfc *WorkflowContext) ContinueAsNew(newInput any, keepEvents bool) {
 	if !keepEvents {
 		wfc.orchestrationContext.ContinueAsNew(newInput)
 	}

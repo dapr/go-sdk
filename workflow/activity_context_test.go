@@ -57,8 +57,14 @@ func TestActivityContext(t *testing.T) {
 func TestMarshalData(t *testing.T) {
 	t.Run("test nil input", func(t *testing.T) {
 		out, err := marshalData(nil)
-		require.Error(t, err)
+		require.NoError(t, err)
 		assert.Nil(t, out)
+	})
+
+	t.Run("test bytearray input", func(t *testing.T) {
+		out, err := marshalData([]byte("testString"))
+		require.NoError(t, err)
+		assert.Equal(t, []byte("testString"), out)
 	})
 
 	t.Run("test string input", func(t *testing.T) {
