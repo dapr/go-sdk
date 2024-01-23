@@ -14,7 +14,12 @@ limitations under the License.
 */
 package workflow
 
-import "time"
+import (
+	"fmt"
+	"time"
+
+	"google.golang.org/protobuf/types/known/wrapperspb"
+)
 
 type Metadata struct {
 	InstanceID             string          `json:"id"`
@@ -33,4 +38,36 @@ type FailureDetails struct {
 	Message      string          `json:"message"`
 	StackTrace   string          `json:"stackTrace"`
 	InnerFailure *FailureDetails `json:"innerFailure"`
+}
+
+type callChildWorkflowOptions struct {
+	instanceID string
+	rawInput   *wrapperspb.StringValue
+}
+
+type callChildWorkflowOption func(*callChildWorkflowOptions) error
+
+func ChildWorkflowInput(input any) callChildWorkflowOption {
+	return func(opts *callChildWorkflowOptions) error {
+		bytes, err := marshalData(input)
+		if err != nil {
+			return fmt.Errorf("failed to marshal input data to JSON: %v", err)
+		}
+		opts.rawInput = wrapperspb.String(string(bytes))
+		return nil
+	}
+}
+
+func ChildWorkflowRawInput(input string) callChildWorkflowOption {
+	return func(opts *callChildWorkflowOptions) error {
+		opts.rawInput = wrapperspb.String(input)
+		return nil
+	}
+}
+
+func ChildWorkflowInstanceID(instanceID string) callChildWorkflowOption {
+	return func(opts *callChildWorkflowOptions) error {
+		opts.instanceID = instanceID
+		return nil
+	}
 }

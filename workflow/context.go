@@ -16,7 +16,6 @@ package workflow
 
 import (
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/microsoft/durabletask-go/task"
@@ -49,17 +48,27 @@ func (wfc *WorkflowContext) IsReplaying() bool {
 }
 
 func (wfc *WorkflowContext) CallActivity(activity interface{}, opts ...callActivityOption) task.Task {
-	var inp any
-	if err := wfc.GetInput(&inp); err != nil {
-		log.Printf("unable to get activity input: %v", err)
+	options := new(callActivityOptions)
+	for _, configure := range opts {
+		if err := configure(options); err != nil {
+			return nil
+		}
 	}
-	// the call should continue despite being unable to obtain an input
 
-	return wfc.orchestrationContext.CallActivity(activity, task.WithActivityInput(inp))
+	return wfc.orchestrationContext.CallActivity(activity, task.WithRawActivityInput(options.rawInput.GetValue()))
 }
 
-func (wfc *WorkflowContext) CallChildWorkflow(workflow interface{}) task.Task {
-	return wfc.orchestrationContext.CallSubOrchestrator(workflow)
+func (wfc *WorkflowContext) CallChildWorkflow(workflow interface{}, opts ...callChildWorkflowOption) task.Task {
+	options := new(callChildWorkflowOptions)
+	for _, configure := range opts {
+		if err := configure(options); err != nil {
+			return nil
+		}
+	}
+	if options.instanceID != "" {
+		return wfc.orchestrationContext.CallSubOrchestrator(workflow, task.WithRawSubOrchestratorInput(options.rawInput.GetValue()), task.WithSubOrchestrationInstanceID(options.instanceID))
+	}
+	return wfc.orchestrationContext.CallSubOrchestrator(workflow, task.WithRawSubOrchestratorInput(options.rawInput.GetValue()))
 }
 
 func (wfc *WorkflowContext) CreateTimer(duration time.Duration) task.Task {
