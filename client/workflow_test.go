@@ -24,6 +24,22 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestMarshalInput(t *testing.T) {
+	var input any
+	t.Run("string", func(t *testing.T) {
+		input = "testString"
+		data, err := marshalInput(input)
+		require.NoError(t, err)
+		assert.Equal(t, []byte{0x22, 0x74, 0x65, 0x73, 0x74, 0x53, 0x74, 0x72, 0x69, 0x6e, 0x67, 0x22}, data)
+	})
+	t.Run("bytearray", func(t *testing.T) {
+		input = []byte("testByteArray")
+		data, err := marshalInput(input)
+		require.NoError(t, err)
+		assert.Equal(t, []byte("testByteArray"), data)
+	})
+}
+
 func TestWorkflowBeta1(t *testing.T) {
 	ctx := context.Background()
 
@@ -41,6 +57,15 @@ func TestWorkflowBeta1(t *testing.T) {
 		resp, err := testClient.StartWorkflowBeta1(ctx, &StartWorkflowRequest{
 			InstanceID:        "TestID",
 			WorkflowComponent: "dapr",
+			WorkflowName:      "TestWorkflow",
+		})
+		require.NoError(t, err)
+		assert.Equal(t, "TestID", resp.InstanceID)
+	})
+	t.Run("start workflow - valid (without component name)", func(t *testing.T) {
+		resp, err := testClient.StartWorkflowBeta1(ctx, &StartWorkflowRequest{
+			InstanceID:        "TestID",
+			WorkflowComponent: "",
 			WorkflowName:      "TestWorkflow",
 		})
 		require.NoError(t, err)
@@ -106,6 +131,15 @@ func TestWorkflowBeta1(t *testing.T) {
 		assert.NotNil(t, resp)
 	})
 
+	t.Run("get workflow - valid (without component)", func(t *testing.T) {
+		resp, err := testClient.GetWorkflowBeta1(ctx, &GetWorkflowRequest{
+			InstanceID:        "TestID",
+			WorkflowComponent: "",
+		})
+		require.NoError(t, err)
+		assert.NotNil(t, resp)
+	})
+
 	t.Run("get workflow - invalid id", func(t *testing.T) {
 		resp, err := testClient.GetWorkflowBeta1(ctx, &GetWorkflowRequest{
 			InstanceID:        "",
@@ -129,6 +163,14 @@ func TestWorkflowBeta1(t *testing.T) {
 		err := testClient.PauseWorkflowBeta1(ctx, &PauseWorkflowRequest{
 			InstanceID:        "TestID",
 			WorkflowComponent: "dapr",
+		})
+		require.NoError(t, err)
+	})
+
+	t.Run("pause workflow - valid (without component)", func(t *testing.T) {
+		err := testClient.PauseWorkflowBeta1(ctx, &PauseWorkflowRequest{
+			InstanceID:        "TestID",
+			WorkflowComponent: "",
 		})
 		require.NoError(t, err)
 	})
@@ -158,6 +200,14 @@ func TestWorkflowBeta1(t *testing.T) {
 		require.NoError(t, err)
 	})
 
+	t.Run("resume workflow - valid (without component)", func(t *testing.T) {
+		err := testClient.ResumeWorkflowBeta1(ctx, &ResumeWorkflowRequest{
+			InstanceID:        "TestID",
+			WorkflowComponent: "",
+		})
+		require.NoError(t, err)
+	})
+
 	t.Run("resume workflow - invalid instanceid", func(t *testing.T) {
 		err := testClient.ResumeWorkflowBeta1(ctx, &ResumeWorkflowRequest{
 			InstanceID:        "",
@@ -183,6 +233,14 @@ func TestWorkflowBeta1(t *testing.T) {
 		require.NoError(t, err)
 	})
 
+	t.Run("terminate workflow - valid (without component)", func(t *testing.T) {
+		err := testClient.TerminateWorkflowBeta1(ctx, &TerminateWorkflowRequest{
+			InstanceID:        "TestID",
+			WorkflowComponent: "",
+		})
+		require.NoError(t, err)
+	})
+
 	t.Run("terminate workflow - invalid instanceid", func(t *testing.T) {
 		err := testClient.TerminateWorkflowBeta1(ctx, &TerminateWorkflowRequest{
 			InstanceID:        "",
@@ -204,6 +262,15 @@ func TestWorkflowBeta1(t *testing.T) {
 		err := testClient.RaiseEventWorkflowBeta1(ctx, &RaiseEventWorkflowRequest{
 			InstanceID:        "TestID",
 			WorkflowComponent: "dapr",
+			EventName:         "TestEvent",
+		})
+		require.NoError(t, err)
+	})
+
+	t.Run("raise event workflow - valid (without component)", func(t *testing.T) {
+		err := testClient.RaiseEventWorkflowBeta1(ctx, &RaiseEventWorkflowRequest{
+			InstanceID:        "TestID",
+			WorkflowComponent: "",
 			EventName:         "TestEvent",
 		})
 		require.NoError(t, err)
@@ -261,6 +328,14 @@ func TestWorkflowBeta1(t *testing.T) {
 		err := testClient.PurgeWorkflowBeta1(ctx, &PurgeWorkflowRequest{
 			InstanceID:        "TestID",
 			WorkflowComponent: "dapr",
+		})
+		require.NoError(t, err)
+	})
+
+	t.Run("purge workflow - valid (without component)", func(t *testing.T) {
+		err := testClient.PurgeWorkflowBeta1(ctx, &PurgeWorkflowRequest{
+			InstanceID:        "TestID",
+			WorkflowComponent: "",
 		})
 		require.NoError(t, err)
 	})

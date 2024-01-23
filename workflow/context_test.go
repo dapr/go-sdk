@@ -24,7 +24,7 @@ import (
 )
 
 func TestContext(t *testing.T) {
-	c := Context{
+	c := WorkflowContext{
 		orchestrationContext: &task.OrchestrationContext{
 			ID:             "test-id",
 			Name:           "test-workflow-context",

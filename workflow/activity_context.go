@@ -17,7 +17,6 @@ package workflow
 import (
 	"context"
 	"encoding/json"
-	"errors"
 
 	"google.golang.org/protobuf/types/known/wrapperspb"
 
@@ -55,7 +54,10 @@ func ActivityInput(input any) callActivityOption {
 
 func marshalData(input any) ([]byte, error) {
 	if input == nil {
-		return nil, errors.New("empty input")
+		return nil, nil
+	}
+	if _, typeByteArray := input.([]byte); typeByteArray {
+		return input.([]byte), nil
 	}
 	return json.Marshal(input)
 }

@@ -46,7 +46,7 @@ func TestWorkflowRuntime(t *testing.T) {
 		require.NoError(t, err)
 	})
 	t.Run("register workflow - anonymous func", func(t *testing.T) {
-		err := testWorker.RegisterWorkflow(func(ctx *Context) (any, error) {
+		err := testWorker.RegisterWorkflow(func(ctx *WorkflowContext) (any, error) {
 			return nil, nil
 		})
 		require.Error(t, err)
@@ -90,7 +90,7 @@ func TestGetFunctionName(t *testing.T) {
 	})
 }
 
-func testWorkflow(ctx *Context) (any, error) {
+func testWorkflow(ctx *WorkflowContext) (any, error) {
 	_ = ctx
 	return nil, nil
 }

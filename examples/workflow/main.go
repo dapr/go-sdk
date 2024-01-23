@@ -299,7 +299,7 @@ func main() {
 	fmt.Println("workflow worker successfully shutdown")
 }
 
-func TestWorkflow(ctx *workflow.Context) (any, error) {
+func TestWorkflow(ctx *workflow.WorkflowContext) (any, error) {
 	var input int
 	if err := ctx.GetInput(&input); err != nil {
 		return nil, err

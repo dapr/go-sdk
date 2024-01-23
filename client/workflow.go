@@ -100,13 +100,13 @@ func (c *GRPCClient) StartWorkflowBeta1(ctx context.Context, req *StartWorkflowR
 
 	var input []byte
 	var err error
-	if (!req.SendRawInput) && (req.Input != nil) {
-		input, err = json.Marshal(req.Input)
-		if err != nil {
-			return nil, fmt.Errorf("failed to marshal input: %v", err)
-		}
+	if req.SendRawInput {
+		input = req.Input.([]byte)
 	} else {
-		input = []byte(fmt.Sprintf("%v", req.Input))
+		input, err = marshalInput(req.Input)
+		if err != nil {
+			return nil, fmt.Errorf("failed to start workflow: %v", err)
+		}
 	}
 
 	resp, err := c.protoClient.StartWorkflowBeta1(c.withAuthToken(ctx), &pb.StartWorkflowRequest{
@@ -238,16 +238,15 @@ func (c *GRPCClient) RaiseEventWorkflowBeta1(ctx context.Context, req *RaiseEven
 	if req.EventName == "" {
 		return errors.New("failed to raise event on workflow: EventName must be supplied")
 	}
-
 	var eventData []byte
 	var err error
-	if (!req.SendRawData) && (req.EventData != nil) {
-		eventData, err = json.Marshal(req.EventData)
-		if err != nil {
-			return fmt.Errorf("failed to marshal input: %v", err)
-		}
+	if req.SendRawData {
+		eventData = req.EventData.([]byte)
 	} else {
-		eventData = []byte(fmt.Sprintf("%v", req.EventData))
+		eventData, err = marshalInput(req.EventData)
+		if err != nil {
+			return fmt.Errorf("failed to raise an event on workflow: %v", err)
+		}
 	}
 
 	_, err = c.protoClient.RaiseEventWorkflowBeta1(c.withAuthToken(ctx), &pb.RaiseEventWorkflowRequest{
@@ -260,4 +259,14 @@ func (c *GRPCClient) RaiseEventWorkflowBeta1(ctx context.Context, req *RaiseEven
 		return fmt.Errorf("failed to raise event on workflow: %v", err)
 	}
 	return nil
+}
+
+func marshalInput(input any) (data []byte, err error) {
+	if input == nil {
+		return nil, nil
+	}
+	if _, typeByteArray := input.([]byte); typeByteArray {
+		return input.([]byte), nil
+	}
+	return json.Marshal(input)
 }
