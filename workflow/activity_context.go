@@ -42,12 +42,19 @@ type callActivityOptions struct {
 }
 
 func ActivityInput(input any) callActivityOption {
-	return func(opt *callActivityOptions) error {
+	return func(opts *callActivityOptions) error {
 		data, err := marshalData(input)
 		if err != nil {
 			return err
 		}
-		opt.rawInput = wrapperspb.String(string(data))
+		opts.rawInput = wrapperspb.String(string(data))
+		return nil
+	}
+}
+
+func ActivityRawInput(input string) callActivityOption {
+	return func(opts *callActivityOptions) error {
+		opts.rawInput = wrapperspb.String(input)
 		return nil
 	}
 }
