@@ -54,6 +54,28 @@ func TestActivityContext(t *testing.T) {
 	})
 }
 
+func TestCallActivityOptions(t *testing.T) {
+	t.Run("activity input - valid", func(t *testing.T) {
+		opts := returnCallActivityOptions(ActivityInput("test"))
+		assert.Equal(t, "\"test\"", opts.rawInput.GetValue())
+	})
+
+	t.Run("activity raw input - valid", func(t *testing.T) {
+		opts := returnCallActivityOptions(ActivityRawInput("test"))
+		assert.Equal(t, "test", opts.rawInput.GetValue())
+	})
+}
+
+func returnCallActivityOptions(opts ...callActivityOption) callActivityOptions {
+	options := new(callActivityOptions)
+	for _, configure := range opts {
+		if err := configure(options); err != nil {
+			return *options
+		}
+	}
+	return *options
+}
+
 func TestMarshalData(t *testing.T) {
 	t.Run("test nil input", func(t *testing.T) {
 		out, err := marshalData(nil)
