@@ -148,18 +148,12 @@ func (c *client) SuspendWorkflow(ctx context.Context, id, reason string) error {
 	if id == "" {
 		return errors.New("no workflow id specified")
 	}
-	if reason == "" {
-		return errors.New("no reason specified")
-	}
 	return c.taskHubClient.SuspendOrchestration(ctx, api.InstanceID(id), reason)
 }
 
 func (c *client) ResumeWorkflow(ctx context.Context, id, reason string) error {
 	if id == "" {
 		return errors.New("no workflow id specified")
-	}
-	if reason == "" {
-		return errors.New("no reason specified")
 	}
 	return c.taskHubClient.ResumeOrchestration(ctx, api.InstanceID(id), reason)
 }
