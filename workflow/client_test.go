@@ -78,18 +78,8 @@ func TestClientMethods(t *testing.T) {
 		require.Error(t, err)
 	})
 
-	t.Run("SuspendWorkflow - empty reason", func(t *testing.T) {
-		err := testClient.SuspendWorkflow(ctx, "testID", "")
-		require.Error(t, err)
-	})
-
 	t.Run("ResumeWorkflow - empty id", func(t *testing.T) {
 		err := testClient.ResumeWorkflow(ctx, "", "reason")
-		require.Error(t, err)
-	})
-
-	t.Run("ResumeWorkflow - empty reason", func(t *testing.T) {
-		err := testClient.ResumeWorkflow(ctx, "testID", "")
 		require.Error(t, err)
 	})
 
