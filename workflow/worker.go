@@ -69,11 +69,11 @@ func NewWorker(opts ...workerOption) (*WorkflowWorker, error) {
 	var err error
 	if options.daprClient == nil {
 		daprClient, err = dapr.NewClient()
-		if err != nil {
-			return nil, err
-		}
 	} else {
 		daprClient = options.daprClient
+	}
+	if err != nil {
+		return nil, err
 	}
 	grpcConn := daprClient.GrpcClientConn()
 

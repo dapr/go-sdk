@@ -20,6 +20,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	daprClient "github.com/dapr/go-sdk/client"
 )
 
 func TestNewClient(t *testing.T) {
@@ -27,6 +29,23 @@ func TestNewClient(t *testing.T) {
 	testClient, err := NewClient()
 	assert.Empty(t, testClient)
 	require.Error(t, err)
+}
+
+func TestClientOptions(t *testing.T) {
+	t.Run("with client", func(t *testing.T) {
+		opts := returnClientOptions(WithDaprClient(&daprClient.GRPCClient{}))
+		assert.NotNil(t, opts.daprClient)
+	})
+}
+
+func returnClientOptions(opts ...clientOption) clientOptions {
+	options := new(clientOptions)
+	for _, configure := range opts {
+		if err := configure(options); err != nil {
+			return *options
+		}
+	}
+	return *options
 }
 
 func TestClientMethods(t *testing.T) {
