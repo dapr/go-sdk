@@ -45,15 +45,42 @@ type Workflow func(ctx *WorkflowContext) (any, error)
 
 type Activity func(ctx ActivityContext) (any, error)
 
-func NewWorker() (*WorkflowWorker, error) {
-	daprClient, err := dapr.NewClient()
-	if err != nil {
-		return nil, err
+type workerOption func(*workerOptions) error
+
+type workerOptions struct {
+	daprClient dapr.Client
+	logger     log.Logger
+}
+
+func WorkerWithDaprClient(input dapr.Client) workerOption {
+	return func(opts *workerOptions) error {
+		opts.daprClient = input
+		return nil
 	}
+}
+
+func NewWorker(opts ...workerOption) (*WorkflowWorker, error) {
+	options := new(workerOptions)
+	for _, configure := range opts {
+		if err := configure(options); err != nil {
+			return nil, errors.New("failed to load options")
+		}
+	}
+	var daprClient dapr.Client
+	var err error
+	if options.daprClient == nil {
+		daprClient, err = dapr.NewClient()
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		daprClient = options.daprClient
+	}
+	grpcConn := daprClient.GrpcClientConn()
 
 	return &WorkflowWorker{
 		tasks:  task.NewTaskRegistry(),
-		client: durabletaskclient.NewTaskHubGrpcClient(daprClient.GrpcClientConn(), backend.DefaultLogger()),
+		client: durabletaskclient.NewTaskHubGrpcClient(grpcConn, backend.DefaultLogger()),
 		quit:   make(chan bool),
 		close:  daprClient.Close,
 	}, nil
