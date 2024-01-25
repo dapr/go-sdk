@@ -49,7 +49,6 @@ type workerOption func(*workerOptions) error
 
 type workerOptions struct {
 	daprClient dapr.Client
-	logger     log.Logger
 }
 
 func WorkerWithDaprClient(input dapr.Client) workerOption {
