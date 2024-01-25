@@ -17,6 +17,7 @@ package workflow
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/microsoft/durabletask-go/api"
@@ -80,12 +81,37 @@ func WithRawOutput(data string) api.TerminateOptions {
 	return api.WithRawOutput(data)
 }
 
+type clientOption func(*clientOptions) error
+
+type clientOptions struct {
+	daprClient dapr.Client
+}
+
+func WithDaprClient(input dapr.Client) clientOption {
+	return func(opt *clientOptions) error {
+		opt.daprClient = input
+		return nil
+	}
+}
+
 // TODO: Implement mocks
 
-func NewClient() (client, error) { // TODO: Implement custom connection
-	daprClient, err := dapr.NewClient()
+func NewClient(opts ...clientOption) (client, error) {
+	options := new(clientOptions)
+	for _, configure := range opts {
+		if err := configure(options); err != nil {
+			return client{}, fmt.Errorf("failed to load options: %v", err)
+		}
+	}
+	var daprClient dapr.Client
+	var err error
+	if options.daprClient == nil {
+		daprClient, err = dapr.NewClient()
+	} else {
+		daprClient = options.daprClient
+	}
 	if err != nil {
-		return client{}, err
+		return client{}, fmt.Errorf("failed to initialise dapr.Client: %v", err)
 	}
 
 	taskHubClient := durabletaskclient.NewTaskHubGrpcClient(daprClient.GrpcClientConn(), backend.DefaultLogger())

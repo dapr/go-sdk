@@ -18,6 +18,8 @@ import (
 	"sync"
 	"testing"
 
+	daprClient "github.com/dapr/go-sdk/client"
+
 	"github.com/microsoft/durabletask-go/task"
 
 	"github.com/stretchr/testify/assert"
@@ -61,6 +63,23 @@ func TestWorkflowRuntime(t *testing.T) {
 		})
 		require.Error(t, err)
 	})
+}
+
+func TestWorkerOptions(t *testing.T) {
+	t.Run("worker client option", func(t *testing.T) {
+		options := returnWorkerOptions(WorkerWithDaprClient(&daprClient.GRPCClient{}))
+		assert.NotNil(t, options.daprClient)
+	})
+}
+
+func returnWorkerOptions(opts ...workerOption) workerOptions {
+	options := new(workerOptions)
+	for _, configure := range opts {
+		if err := configure(options); err != nil {
+			return *options
+		}
+	}
+	return *options
 }
 
 func TestWrapWorkflow(t *testing.T) {
