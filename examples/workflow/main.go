@@ -250,7 +250,7 @@ func main() {
 		log.Fatalf("[wfclient] failed to get worfklow: %v", err)
 	}
 
-	fmt.Printf("[wfclient] workflow running: %v\n", metadata.IsRunning())
+	fmt.Printf("[wfclient] workflow status: %v\n", metadata.RuntimeStatus.String())
 
 	if stage != 1 {
 		log.Fatalf("Workflow assertion failed while validating the wfclient. Stage 1 expected, current: %d", stage)

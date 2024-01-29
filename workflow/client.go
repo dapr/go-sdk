@@ -132,25 +132,31 @@ func (c *client) ScheduleNewWorkflow(ctx context.Context, workflow string, opts 
 	return string(workflowID), nil
 }
 
-func (c *client) FetchWorkflowMetadata(ctx context.Context, id string, opts ...api.FetchOrchestrationMetadataOptions) (*api.OrchestrationMetadata, error) {
+func (c *client) FetchWorkflowMetadata(ctx context.Context, id string, opts ...api.FetchOrchestrationMetadataOptions) (*Metadata, error) {
 	if id == "" {
 		return nil, errors.New("no workflow id specified")
 	}
-	return c.taskHubClient.FetchOrchestrationMetadata(ctx, api.InstanceID(id), opts...)
+	wfMetadata, err := c.taskHubClient.FetchOrchestrationMetadata(ctx, api.InstanceID(id), opts...)
+
+	return convertMetadata(wfMetadata), err
 }
 
-func (c *client) WaitForWorkflowStart(ctx context.Context, id string, opts ...api.FetchOrchestrationMetadataOptions) (*api.OrchestrationMetadata, error) {
+func (c *client) WaitForWorkflowStart(ctx context.Context, id string, opts ...api.FetchOrchestrationMetadataOptions) (*Metadata, error) {
 	if id == "" {
 		return nil, errors.New("no workflow id specified")
 	}
-	return c.taskHubClient.WaitForOrchestrationStart(ctx, api.InstanceID(id), opts...)
+	wfMetadata, err := c.taskHubClient.WaitForOrchestrationStart(ctx, api.InstanceID(id), opts...)
+
+	return convertMetadata(wfMetadata), err
 }
 
-func (c *client) WaitForWorkflowCompletion(ctx context.Context, id string, opts ...api.FetchOrchestrationMetadataOptions) (*api.OrchestrationMetadata, error) {
+func (c *client) WaitForWorkflowCompletion(ctx context.Context, id string, opts ...api.FetchOrchestrationMetadataOptions) (*Metadata, error) {
 	if id == "" {
 		return nil, errors.New("no workflow id specified")
 	}
-	return c.taskHubClient.WaitForOrchestrationCompletion(ctx, api.InstanceID(id), opts...)
+	wfMetadata, err := c.taskHubClient.WaitForOrchestrationCompletion(ctx, api.InstanceID(id), opts...)
+
+	return convertMetadata(wfMetadata), err
 }
 
 func (c *client) TerminateWorkflow(ctx context.Context, id string, opts ...api.TerminateOptions) error {
