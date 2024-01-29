@@ -59,4 +59,9 @@ func TestContext(t *testing.T) {
 		completableTask := c.WaitForExternalEvent("", time.Second)
 		assert.Nil(t, completableTask)
 	})
+
+	t.Run("continueasnew", func(t *testing.T) {
+		c.ContinueAsNew("test", true)
+		c.ContinueAsNew("test", false)
+	})
 }

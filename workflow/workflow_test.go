@@ -3,8 +3,19 @@ package workflow
 import (
 	"testing"
 
+	"github.com/microsoft/durabletask-go/api"
 	"github.com/stretchr/testify/assert"
 )
+
+func TestConvertMetadata(t *testing.T) {
+	t.Run("convert metadata", func(t *testing.T) {
+		rawMetadata := &api.OrchestrationMetadata{
+			InstanceID: api.InstanceID("test"),
+		}
+		metadata := convertMetadata(rawMetadata)
+		assert.NotEmpty(t, metadata)
+	})
+}
 
 func TestCallChildWorkflowOptions(t *testing.T) {
 	t.Run("child workflow input - valid", func(t *testing.T) {
