@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/microsoft/durabletask-go/api"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 )
 
@@ -34,10 +35,53 @@ type Metadata struct {
 }
 
 type FailureDetails struct {
-	Type         string          `json:"type"`
-	Message      string          `json:"message"`
-	StackTrace   string          `json:"stackTrace"`
-	InnerFailure *FailureDetails `json:"innerFailure"`
+	Type           string          `json:"type"`
+	Message        string          `json:"message"`
+	StackTrace     string          `json:"stackTrace"`
+	InnerFailure   *FailureDetails `json:"innerFailure"`
+	IsNonRetriable bool            `json:"IsNonRetriable"`
+}
+
+func convertMetadata(orchestrationMetadata *api.OrchestrationMetadata) *Metadata {
+	metadata := Metadata{
+		InstanceID:             string(orchestrationMetadata.InstanceID),
+		Name:                   orchestrationMetadata.Name,
+		RuntimeStatus:          Status(orchestrationMetadata.RuntimeStatus.Number()),
+		CreatedAt:              orchestrationMetadata.CreatedAt,
+		LastUpdatedAt:          orchestrationMetadata.LastUpdatedAt,
+		SerializedInput:        orchestrationMetadata.SerializedInput,
+		SerializedOutput:       orchestrationMetadata.SerializedOutput,
+		SerializedCustomStatus: orchestrationMetadata.SerializedCustomStatus,
+	}
+	if orchestrationMetadata.FailureDetails != nil {
+		metadata.FailureDetails = &FailureDetails{
+			Type:           orchestrationMetadata.FailureDetails.GetErrorType(),
+			Message:        orchestrationMetadata.FailureDetails.GetErrorMessage(),
+			StackTrace:     orchestrationMetadata.FailureDetails.GetStackTrace().GetValue(),
+			IsNonRetriable: orchestrationMetadata.FailureDetails.GetIsNonRetriable(),
+		}
+		if orchestrationMetadata.FailureDetails.GetInnerFailure() != nil {
+			var root FailureDetails
+			current := root
+			failure := orchestrationMetadata.FailureDetails
+			for {
+				current.Type = failure.GetErrorType()
+				current.Message = failure.GetErrorMessage()
+				if failure.GetStackTrace() != nil {
+					current.StackTrace = failure.GetStackTrace().GetValue()
+				}
+				if failure.GetInnerFailure() == nil {
+					break
+				}
+				failure = failure.GetInnerFailure()
+				var inner FailureDetails
+				current.InnerFailure = &inner
+				current = inner
+			}
+			metadata.FailureDetails = &root
+		}
+	}
+	return &metadata
 }
 
 type callChildWorkflowOptions struct {
