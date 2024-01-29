@@ -312,7 +312,7 @@ func NewClientWithAddressContext(ctx context.Context, address string) (client Cl
 		return nil, fmt.Errorf("error creating connection to '%s': %w", address, err)
 	}
 
-	return NewClientWithConnection(conn, at), nil
+	return newClientWithConnection(conn, at), nil
 }
 
 func getClientTimeoutSeconds() (int, error) {
@@ -348,11 +348,10 @@ func NewClientWithSocket(socket string) (client Client, err error) {
 	if err != nil {
 		return nil, fmt.Errorf("error creating connection to '%s': %w", addr, err)
 	}
-	return NewClientWithConnection(conn, at), nil
+	return newClientWithConnection(conn, at), nil
 }
 
-// NewClientWithConnection instantiates Dapr client using specific connection.
-func NewClientWithConnection(conn *grpc.ClientConn, authToken *authToken) Client {
+func newClientWithConnection(conn *grpc.ClientConn, authToken *authToken) Client {
 	apiToken := os.Getenv(apiTokenEnvVarName)
 	if apiToken != "" {
 		logger.Println("client uses API token")
@@ -363,6 +362,11 @@ func NewClientWithConnection(conn *grpc.ClientConn, authToken *authToken) Client
 		protoClient: pb.NewDaprClient(conn),
 		authToken:   authToken,
 	}
+}
+
+// NewClientWithConnection instantiates Dapr client using specific connection.
+func NewClientWithConnection(conn *grpc.ClientConn) Client {
+	return newClientWithConnection(conn, &authToken{})
 }
 
 type authToken struct {
