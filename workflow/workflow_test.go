@@ -32,6 +32,11 @@ func TestCallChildWorkflowOptions(t *testing.T) {
 		opts := returnCallChildWorkflowOptions(ChildWorkflowInstanceID("test"))
 		assert.Equal(t, "test", opts.instanceID)
 	})
+
+	t.Run("child workflow input - invalid", func(t *testing.T) {
+		opts := returnCallChildWorkflowOptions(ChildWorkflowInput(make(chan int)))
+		assert.Empty(t, opts.rawInput.GetValue())
+	})
 }
 
 func returnCallChildWorkflowOptions(opts ...callChildWorkflowOption) callChildWorkflowOptions {

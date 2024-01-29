@@ -60,6 +60,11 @@ func TestCallActivityOptions(t *testing.T) {
 		assert.Equal(t, "\"test\"", opts.rawInput.GetValue())
 	})
 
+	t.Run("activity input - invalid", func(t *testing.T) {
+		opts := returnCallActivityOptions(ActivityInput(make(chan int)))
+		assert.Empty(t, opts.rawInput.GetValue())
+	})
+
 	t.Run("activity raw input - valid", func(t *testing.T) {
 		opts := returnCallActivityOptions(ActivityRawInput("test"))
 		assert.Equal(t, "test", opts.rawInput.GetValue())
