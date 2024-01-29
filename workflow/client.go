@@ -27,18 +27,6 @@ import (
 	dapr "github.com/dapr/go-sdk/client"
 )
 
-type Client interface {
-	ScheduleNewWorkflow(ctx context.Context) (string, error)
-	FetchWorkflowMetadata(ctx context.Context) (string, error)
-	WaitForWorkflowStart(ctx context.Context) (string, error)
-	WaitForWorkflowCompletion(ctx context.Context) (string, error)
-	TerminateWorkflow(ctx context.Context) error
-	RaiseEvent(ctx context.Context) error
-	SuspendWorkflow(ctx context.Context) error
-	ResumeWorkflow(ctx context.Context) error
-	PurgeWorkflow(ctx context.Context) error
-}
-
 type client struct {
 	taskHubClient *durabletaskclient.TaskHubGrpcClient
 }
