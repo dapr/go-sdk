@@ -120,6 +120,8 @@ func TestWorkflowBeta1(t *testing.T) {
 		})
 		require.NoError(t, err)
 		assert.NotNil(t, resp)
+    assert.NotNil(t, resp.CreatedAt)
+    assert.NotNil(t, resp.LastUpdatedAt)
 	})
 
 	t.Run("get workflow - valid", func(t *testing.T) {
