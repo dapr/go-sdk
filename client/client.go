@@ -291,8 +291,8 @@ func NewClientWithAddressContext(ctx context.Context, address string) (client Cl
 	opts := []grpc.DialOption{
 		grpc.WithUserAgent(userAgent()),
 		grpc.WithBlock(),
-		authTokenUnaryIterceptor(at),
-		authTokenStreamIterceptor(at),
+		authTokenUnaryInterceptor(at),
+		authTokenStreamInterceptor(at),
 	}
 
 	if parsedAddress.TLS {
@@ -342,8 +342,8 @@ func NewClientWithSocket(socket string) (client Client, err error) {
 		addr,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithUserAgent(userAgent()),
-		authTokenUnaryIterceptor(at),
-		authTokenStreamIterceptor(at),
+		authTokenUnaryInterceptor(at),
+		authTokenStreamInterceptor(at),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("error creating connection to '%s': %w", addr, err)
@@ -386,7 +386,7 @@ func (a *authToken) set(token string) {
 	a.authToken = token
 }
 
-func authTokenUnaryIterceptor(authToken *authToken) grpc.DialOption {
+func authTokenUnaryInterceptor(authToken *authToken) grpc.DialOption {
 	return grpc.WithUnaryInterceptor(func(ctx context.Context, method string, req, reply interface{}, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
 		token := authToken.get()
 		if token != "" {
@@ -396,7 +396,7 @@ func authTokenUnaryIterceptor(authToken *authToken) grpc.DialOption {
 	})
 }
 
-func authTokenStreamIterceptor(authToken *authToken) grpc.DialOption {
+func authTokenStreamInterceptor(authToken *authToken) grpc.DialOption {
 	return grpc.WithStreamInterceptor(func(ctx context.Context, desc *grpc.StreamDesc, cc *grpc.ClientConn, method string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
 		token := authToken.get()
 		if token != "" {
