@@ -25,8 +25,6 @@ import (
 	"testing"
 	"time"
 
-	"google.golang.org/protobuf/types/known/timestamppb"
-
 	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -519,8 +517,6 @@ func (s *testDaprServer) GetWorkflowBeta1(ctx context.Context, in *pb.GetWorkflo
 	return &pb.GetWorkflowResponse{
 		InstanceId:    in.GetInstanceId(),
 		WorkflowName:  "TestWorkflowName",
-		CreatedAt:     timestamppb.Now(),
-		LastUpdatedAt: timestamppb.Now(),
 		RuntimeStatus: "Running",
 		Properties:    make(map[string]string),
 	}, nil

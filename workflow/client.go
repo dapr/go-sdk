@@ -114,10 +114,7 @@ func (c *client) ScheduleNewWorkflow(ctx context.Context, workflow string, opts 
 		return "", errors.New("no workflow specified")
 	}
 	workflowID, err := c.taskHubClient.ScheduleNewOrchestration(ctx, workflow, opts...)
-	if err != nil {
-		return "", err
-	}
-	return string(workflowID), nil
+	return string(workflowID), err
 }
 
 func (c *client) FetchWorkflowMetadata(ctx context.Context, id string, opts ...api.FetchOrchestrationMetadataOptions) (*Metadata, error) {
