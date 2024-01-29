@@ -112,7 +112,7 @@ func createNonBlockingClient(ctx context.Context, serverAddr string) (client Cli
 		logger.Fatal(err)
 		return nil, err
 	}
-	return NewClientWithConnection(conn), nil
+	return NewClientWithConnection(conn, &authToken{}), nil
 }
 
 func TestGrpcWaitHappyCase(t *testing.T) {

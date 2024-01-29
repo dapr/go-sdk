@@ -281,7 +281,7 @@ func (c *GRPCClient) ExecuteStateTransaction(ctx context.Context, storeName stri
 		StoreName:  storeName,
 		Operations: items,
 	}
-	_, err := c.protoClient.ExecuteStateTransaction(c.withAuthToken(ctx), req)
+	_, err := c.protoClient.ExecuteStateTransaction(ctx, req)
 	if err != nil {
 		return fmt.Errorf("error executing state transaction: %w", err)
 	}
@@ -333,7 +333,7 @@ func (c *GRPCClient) SaveBulkState(ctx context.Context, storeName string, items 
 		req.States = append(req.GetStates(), item)
 	}
 
-	_, err := c.protoClient.SaveState(c.withAuthToken(ctx), req)
+	_, err := c.protoClient.SaveState(ctx, req)
 	if err != nil {
 		return fmt.Errorf("error saving state: %w", err)
 	}
@@ -357,7 +357,7 @@ func (c *GRPCClient) GetBulkState(ctx context.Context, storeName string, keys []
 		Parallelism: parallelism,
 	}
 
-	results, err := c.protoClient.GetBulkState(c.withAuthToken(ctx), req)
+	results, err := c.protoClient.GetBulkState(ctx, req)
 	if err != nil {
 		return nil, fmt.Errorf("error getting state: %w", err)
 	}
@@ -398,7 +398,7 @@ func (c *GRPCClient) GetStateWithConsistency(ctx context.Context, storeName, key
 		Metadata:    meta,
 	}
 
-	result, err := c.protoClient.GetState(c.withAuthToken(ctx), req)
+	result, err := c.protoClient.GetState(ctx, req)
 	if err != nil {
 		return nil, fmt.Errorf("error getting state: %w", err)
 	}
@@ -424,7 +424,7 @@ func (c *GRPCClient) QueryStateAlpha1(ctx context.Context, storeName, query stri
 		Query:     query,
 		Metadata:  meta,
 	}
-	resp, err := c.protoClient.QueryStateAlpha1(c.withAuthToken(ctx), req)
+	resp, err := c.protoClient.QueryStateAlpha1(ctx, req)
 	if err != nil {
 		return nil, fmt.Errorf("error querying state: %w", err)
 	}
@@ -468,7 +468,7 @@ func (c *GRPCClient) DeleteStateWithETag(ctx context.Context, storeName, key str
 		}
 	}
 
-	_, err := c.protoClient.DeleteState(c.withAuthToken(ctx), req)
+	_, err := c.protoClient.DeleteState(ctx, req)
 	if err != nil {
 		return fmt.Errorf("error deleting state: %w", err)
 	}
@@ -524,7 +524,7 @@ func (c *GRPCClient) DeleteBulkStateItems(ctx context.Context, storeName string,
 		StoreName: storeName,
 		States:    states,
 	}
-	_, err := c.protoClient.DeleteBulkState(c.withAuthToken(ctx), req)
+	_, err := c.protoClient.DeleteBulkState(ctx, req)
 
 	return err
 }

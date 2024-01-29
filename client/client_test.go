@@ -161,7 +161,7 @@ func getTestClient(ctx context.Context) (client Client, closer func()) {
 		s.Stop()
 	}
 
-	client = NewClientWithConnection(c)
+	client = NewClientWithConnection(c, &authToken{})
 	return
 }
 

@@ -66,7 +66,7 @@ func (c *GRPCClient) PublishEvent(ctx context.Context, pubsubName, topicName str
 		}
 	}
 
-	_, err := c.protoClient.PublishEvent(c.withAuthToken(ctx), request)
+	_, err := c.protoClient.PublishEvent(ctx, request)
 	if err != nil {
 		return fmt.Errorf("error publishing event unto %s topic: %w", topicName, err)
 	}
@@ -169,7 +169,7 @@ func (c *GRPCClient) PublishEvents(ctx context.Context, pubsubName, topicName st
 		o(request)
 	}
 
-	res, err := c.protoClient.BulkPublishEventAlpha1(c.withAuthToken(ctx), request)
+	res, err := c.protoClient.BulkPublishEventAlpha1(ctx, request)
 	// If there is an error, all events failed to publish.
 	if err != nil {
 		return PublishEventsResponse{
