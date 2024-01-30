@@ -60,10 +60,11 @@ func convertMetadata(orchestrationMetadata *api.OrchestrationMetadata) *Metadata
 			StackTrace:     orchestrationMetadata.FailureDetails.GetStackTrace().GetValue(),
 			IsNonRetriable: orchestrationMetadata.FailureDetails.GetIsNonRetriable(),
 		}
+
 		if orchestrationMetadata.FailureDetails.GetInnerFailure() != nil {
-			var root FailureDetails
+			var root *FailureDetails
 			current := root
-			failure := orchestrationMetadata.FailureDetails
+			failure := orchestrationMetadata.FailureDetails.GetInnerFailure()
 			for {
 				current.Type = failure.GetErrorType()
 				current.Message = failure.GetErrorMessage()
@@ -74,11 +75,12 @@ func convertMetadata(orchestrationMetadata *api.OrchestrationMetadata) *Metadata
 					break
 				}
 				failure = failure.GetInnerFailure()
-				var inner FailureDetails
-				current.InnerFailure = &inner
+				var inner *FailureDetails
+				current.InnerFailure = inner
 				current = inner
 			}
-			metadata.FailureDetails = &root
+			metadata.FailureDetails.InnerFailure = root
+
 		}
 	}
 	return &metadata
