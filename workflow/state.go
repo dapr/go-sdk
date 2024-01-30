@@ -30,6 +30,7 @@ const (
 	StatusUnknown
 )
 
+// String returns the runtime status as a string.
 func (s Status) String() string {
 	status := [...]string{
 		"RUNNING",
@@ -51,6 +52,7 @@ type WorkflowState struct {
 	Metadata api.OrchestrationMetadata
 }
 
+// RuntimeStatus returns the status from a workflow state.
 func (wfs *WorkflowState) RuntimeStatus() Status {
 	s := Status(wfs.Metadata.RuntimeStatus.Number())
 	return s

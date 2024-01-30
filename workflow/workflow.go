@@ -80,7 +80,6 @@ func convertMetadata(orchestrationMetadata *api.OrchestrationMetadata) *Metadata
 				current = inner
 			}
 			metadata.FailureDetails.InnerFailure = root
-
 		}
 	}
 	return &metadata
@@ -93,6 +92,7 @@ type callChildWorkflowOptions struct {
 
 type callChildWorkflowOption func(*callChildWorkflowOptions) error
 
+// ChildWorkflowInput is an option to provide a JSON-serializable input when calling a child workflow.
 func ChildWorkflowInput(input any) callChildWorkflowOption {
 	return func(opts *callChildWorkflowOptions) error {
 		bytes, err := marshalData(input)
@@ -104,6 +104,7 @@ func ChildWorkflowInput(input any) callChildWorkflowOption {
 	}
 }
 
+// ChildWorkflowRawInput is an option to provide a byte slice input when calling a child workflow.
 func ChildWorkflowRawInput(input string) callChildWorkflowOption {
 	return func(opts *callChildWorkflowOptions) error {
 		opts.rawInput = wrapperspb.String(input)
@@ -111,6 +112,7 @@ func ChildWorkflowRawInput(input string) callChildWorkflowOption {
 	}
 }
 
+// ChildWorkflowInstanceID is an option to provide an instance id when calling a child workflow.
 func ChildWorkflowInstanceID(instanceID string) callChildWorkflowOption {
 	return func(opts *callChildWorkflowOptions) error {
 		opts.instanceID = instanceID

@@ -25,10 +25,12 @@ type WorkflowContext struct {
 	orchestrationContext *task.OrchestrationContext
 }
 
+// GetInput casts the input from the context to a specified interface.
 func (wfc *WorkflowContext) GetInput(v interface{}) error {
 	return wfc.orchestrationContext.GetInput(&v)
 }
 
+// Name returns the name string from the workflow context.
 func (wfc *WorkflowContext) Name() string {
 	return wfc.orchestrationContext.Name
 }
@@ -43,10 +45,13 @@ func (wfc *WorkflowContext) CurrentUTCDateTime() time.Time {
 	return wfc.orchestrationContext.CurrentTimeUtc
 }
 
+// IsReplaying returns whether the workflow is replaying.
 func (wfc *WorkflowContext) IsReplaying() bool {
 	return wfc.orchestrationContext.IsReplaying
 }
 
+// CallActivity returns a completable task for a given activity.
+// NOTE: The task must be invoked with the .Await(output interface{}) method.
 func (wfc *WorkflowContext) CallActivity(activity interface{}, opts ...callActivityOption) task.Task {
 	options := new(callActivityOptions)
 	for _, configure := range opts {
@@ -58,6 +63,8 @@ func (wfc *WorkflowContext) CallActivity(activity interface{}, opts ...callActiv
 	return wfc.orchestrationContext.CallActivity(activity, task.WithRawActivityInput(options.rawInput.GetValue()))
 }
 
+// CallChildWorkflow returns a completable task for a given workflow.
+// NOTE: The task must be invoked with the .Await(output interface{}) method.
 func (wfc *WorkflowContext) CallChildWorkflow(workflow interface{}, opts ...callChildWorkflowOption) task.Task {
 	options := new(callChildWorkflowOptions)
 	for _, configure := range opts {
@@ -71,10 +78,14 @@ func (wfc *WorkflowContext) CallChildWorkflow(workflow interface{}, opts ...call
 	return wfc.orchestrationContext.CallSubOrchestrator(workflow, task.WithRawSubOrchestratorInput(options.rawInput.GetValue()))
 }
 
+// CreateTimer returns a completable task that blocks for a given duration.
+// NOTE: The task must be invoked with the .Await(output interface{}) method.
 func (wfc *WorkflowContext) CreateTimer(duration time.Duration) task.Task {
 	return wfc.orchestrationContext.CreateTimer(duration)
 }
 
+// WaitForExternalEvent returns a completabel task that waits for a given event to be received.
+// NOTE: The task must be invoked with the .Await(output interface{}) method.
 func (wfc *WorkflowContext) WaitForExternalEvent(eventName string, timeout time.Duration) task.Task {
 	if eventName == "" {
 		return nil
@@ -82,6 +93,7 @@ func (wfc *WorkflowContext) WaitForExternalEvent(eventName string, timeout time.
 	return wfc.orchestrationContext.WaitForSingleEvent(eventName, timeout)
 }
 
+// ContinueAsNew configures the workflow.
 func (wfc *WorkflowContext) ContinueAsNew(newInput any, keepEvents bool) {
 	if !keepEvents {
 		wfc.orchestrationContext.ContinueAsNew(newInput)

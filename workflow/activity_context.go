@@ -41,6 +41,7 @@ type callActivityOptions struct {
 	rawInput *wrapperspb.StringValue
 }
 
+// ActivityInput is an option to pass a JSON-serializable input
 func ActivityInput(input any) callActivityOption {
 	return func(opts *callActivityOptions) error {
 		data, err := marshalData(input)
@@ -52,6 +53,7 @@ func ActivityInput(input any) callActivityOption {
 	}
 }
 
+// ActivityRawInput is an option to pass a byte slice as an input
 func ActivityRawInput(input string) callActivityOption {
 	return func(opts *callActivityOptions) error {
 		opts.rawInput = wrapperspb.String(input)
