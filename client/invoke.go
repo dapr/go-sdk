@@ -39,7 +39,7 @@ func (c *GRPCClient) invokeServiceWithRequest(ctx context.Context, req *pb.Invok
 		return nil, errors.New("nil request")
 	}
 
-	resp, err := c.protoClient.InvokeService(c.withAuthToken(ctx), req)
+	resp, err := c.protoClient.InvokeService(ctx, req)
 	if err != nil {
 		return nil, err
 	}

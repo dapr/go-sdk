@@ -286,9 +286,13 @@ func NewClientWithAddressContext(ctx context.Context, address string) (client Cl
 		return nil, fmt.Errorf("error parsing address '%s': %w", address, err)
 	}
 
+	at := &authToken{}
+
 	opts := []grpc.DialOption{
 		grpc.WithUserAgent(userAgent()),
 		grpc.WithBlock(),
+		authTokenUnaryInterceptor(at),
+		authTokenStreamInterceptor(at),
 	}
 
 	if parsedAddress.TLS {
@@ -307,11 +311,8 @@ func NewClientWithAddressContext(ctx context.Context, address string) (client Cl
 	if err != nil {
 		return nil, fmt.Errorf("error creating connection to '%s': %w", address, err)
 	}
-	if hasToken := os.Getenv(apiTokenEnvVarName); hasToken != "" {
-		logger.Println("client uses API token")
-	}
 
-	return NewClientWithConnection(conn), nil
+	return newClientWithConnection(conn, at), nil
 }
 
 func getClientTimeoutSeconds() (int, error) {
@@ -334,36 +335,82 @@ func NewClientWithSocket(socket string) (client Client, err error) {
 	if socket == "" {
 		return nil, errors.New("nil socket")
 	}
+	at := &authToken{}
 	logger.Printf("dapr client initializing for: %s", socket)
 	addr := "unix://" + socket
 	conn, err := grpc.Dial(
 		addr,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithUserAgent(userAgent()),
+		authTokenUnaryInterceptor(at),
+		authTokenStreamInterceptor(at),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("error creating connection to '%s': %w", addr, err)
 	}
-	if hasToken := os.Getenv(apiTokenEnvVarName); hasToken != "" {
+	return newClientWithConnection(conn, at), nil
+}
+
+func newClientWithConnection(conn *grpc.ClientConn, authToken *authToken) Client {
+	apiToken := os.Getenv(apiTokenEnvVarName)
+	if apiToken != "" {
 		logger.Println("client uses API token")
+		authToken.set(apiToken)
 	}
-	return NewClientWithConnection(conn), nil
+	return &GRPCClient{
+		connection:  conn,
+		protoClient: pb.NewDaprClient(conn),
+		authToken:   authToken,
+	}
 }
 
 // NewClientWithConnection instantiates Dapr client using specific connection.
 func NewClientWithConnection(conn *grpc.ClientConn) Client {
-	return &GRPCClient{
-		connection:  conn,
-		protoClient: pb.NewDaprClient(conn),
-		authToken:   os.Getenv(apiTokenEnvVarName),
-	}
+	return newClientWithConnection(conn, &authToken{})
+}
+
+type authToken struct {
+	mu        sync.RWMutex
+	authToken string
+}
+
+func (a *authToken) get() string {
+	a.mu.RLock()
+	defer a.mu.RUnlock()
+	return a.authToken
+}
+
+func (a *authToken) set(token string) {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	a.authToken = token
+}
+
+func authTokenUnaryInterceptor(authToken *authToken) grpc.DialOption {
+	return grpc.WithUnaryInterceptor(func(ctx context.Context, method string, req, reply interface{}, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
+		token := authToken.get()
+		if token != "" {
+			ctx = metadata.NewOutgoingContext(ctx, metadata.Pairs(apiTokenKey, token))
+		}
+		return invoker(ctx, method, req, reply, cc, opts...)
+	})
+}
+
+func authTokenStreamInterceptor(authToken *authToken) grpc.DialOption {
+	return grpc.WithStreamInterceptor(func(ctx context.Context, desc *grpc.StreamDesc, cc *grpc.ClientConn, method string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
+		token := authToken.get()
+		if token != "" {
+			ctx = metadata.NewOutgoingContext(ctx, metadata.Pairs(apiTokenKey, token))
+		}
+		return streamer(ctx, desc, cc, method, opts...)
+	})
 }
 
 // GRPCClient is the gRPC implementation of Dapr client.
 type GRPCClient struct {
 	connection  *grpc.ClientConn
 	protoClient pb.DaprClient
-	authToken   string
+	authToken   *authToken
 }
 
 // Close cleans up all resources created by the client.
@@ -377,7 +424,7 @@ func (c *GRPCClient) Close() {
 // WithAuthToken sets Dapr API token on the instantiated client.
 // Allows empty string to reset token on existing client.
 func (c *GRPCClient) WithAuthToken(token string) {
-	c.authToken = token
+	c.authToken.set(token)
 }
 
 // WithTraceID adds existing trace ID to the outgoing context.
@@ -390,16 +437,9 @@ func (c *GRPCClient) WithTraceID(ctx context.Context, id string) context.Context
 	return metadata.NewOutgoingContext(ctx, md)
 }
 
-func (c *GRPCClient) withAuthToken(ctx context.Context) context.Context {
-	if c.authToken == "" {
-		return ctx
-	}
-	return metadata.NewOutgoingContext(ctx, metadata.Pairs(apiTokenKey, c.authToken))
-}
-
 // Shutdown the sidecar.
 func (c *GRPCClient) Shutdown(ctx context.Context) error {
-	_, err := c.protoClient.Shutdown(c.withAuthToken(ctx), &pb.ShutdownRequest{})
+	_, err := c.protoClient.Shutdown(ctx, &pb.ShutdownRequest{})
 	if err != nil {
 		return fmt.Errorf("error shutting down the sidecar: %w", err)
 	}
