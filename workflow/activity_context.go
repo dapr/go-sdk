@@ -63,8 +63,5 @@ func marshalData(input any) ([]byte, error) {
 	if input == nil {
 		return nil, nil
 	}
-	if _, typeByteArray := input.([]byte); typeByteArray {
-		return input.([]byte), nil
-	}
 	return json.Marshal(input)
 }

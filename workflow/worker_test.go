@@ -15,7 +15,6 @@ limitations under the License.
 package workflow
 
 import (
-	"sync"
 	"testing"
 
 	daprClient "github.com/dapr/go-sdk/client"
@@ -38,8 +37,6 @@ func TestWorkflowRuntime(t *testing.T) {
 	testWorker := WorkflowWorker{
 		tasks:  task.NewTaskRegistry(),
 		client: nil,
-		mutex:  sync.Mutex{},
-		quit:   nil,
 	}
 
 	// TODO: Mock grpc conn - currently requires dapr to be available

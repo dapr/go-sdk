@@ -32,12 +32,6 @@ func TestMarshalInput(t *testing.T) {
 		require.NoError(t, err)
 		assert.Equal(t, []byte{0x22, 0x74, 0x65, 0x73, 0x74, 0x53, 0x74, 0x72, 0x69, 0x6e, 0x67, 0x22}, data)
 	})
-	t.Run("bytearray", func(t *testing.T) {
-		input = []byte("testByteArray")
-		data, err := marshalInput(input)
-		require.NoError(t, err)
-		assert.Equal(t, []byte("testByteArray"), data)
-	})
 }
 
 func TestWorkflowBeta1(t *testing.T) {
@@ -112,6 +106,18 @@ func TestWorkflowBeta1(t *testing.T) {
 		assert.NotNil(t, resp)
 	})
 
+	t.Run("start workflow - raw input (invalid)", func(t *testing.T) {
+		resp, err := testClient.StartWorkflowBeta1(ctx, &StartWorkflowRequest{
+			InstanceID:        "",
+			WorkflowComponent: "dapr",
+			WorkflowName:      "TestWorkflow",
+			Input:             "test string",
+			SendRawInput:      true,
+		})
+		require.Error(t, err)
+		assert.Nil(t, resp)
+	})
+
 	// 2: GetWorkflow
 	t.Run("get workflow", func(t *testing.T) {
 		resp, err := testClient.GetWorkflowBeta1(ctx, &GetWorkflowRequest{
@@ -120,8 +126,6 @@ func TestWorkflowBeta1(t *testing.T) {
 		})
 		require.NoError(t, err)
 		assert.NotNil(t, resp)
-		assert.NotNil(t, resp.CreatedAt)
-		assert.NotNil(t, resp.LastUpdatedAt)
 	})
 
 	t.Run("get workflow - valid", func(t *testing.T) {
@@ -316,10 +320,21 @@ func TestWorkflowBeta1(t *testing.T) {
 	})
 	t.Run("raise event workflow - raw input", func(t *testing.T) {
 		err := testClient.RaiseEventWorkflowBeta1(ctx, &RaiseEventWorkflowRequest{
-			InstanceID:        testWorkflowFailureID,
+			InstanceID:        "TestID",
 			WorkflowComponent: "dapr",
 			EventName:         "TestEvent",
 			EventData:         []byte("teststring"),
+			SendRawData:       true,
+		})
+		require.NoError(t, err)
+	})
+
+	t.Run("raise event workflow - raw input (invalid)", func(t *testing.T) {
+		err := testClient.RaiseEventWorkflowBeta1(ctx, &RaiseEventWorkflowRequest{
+			InstanceID:        testWorkflowFailureID,
+			WorkflowComponent: "dapr",
+			EventName:         "TestEvent",
+			EventData:         "test string",
 			SendRawData:       true,
 		})
 		require.Error(t, err)

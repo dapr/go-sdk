@@ -19,10 +19,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"reflect"
 	"time"
 
 	"github.com/google/uuid"
-	"google.golang.org/protobuf/types/known/timestamppb"
 
 	pb "github.com/dapr/dapr/pkg/proto/runtime/v1"
 )
@@ -30,6 +30,8 @@ import (
 const (
 	DefaultWorkflowComponent = "dapr"
 )
+
+var typeBytes = reflect.TypeOf([]byte(nil))
 
 type StartWorkflowRequest struct {
 	InstanceID        string // Optional instance identifier
@@ -101,6 +103,9 @@ func (c *GRPCClient) StartWorkflowBeta1(ctx context.Context, req *StartWorkflowR
 	var input []byte
 	var err error
 	if req.SendRawInput {
+		if reflect.ValueOf(req.Input).Type() != typeBytes {
+			return nil, errors.New("failed to start workflow: sendrawinput is true however, input is not a byte slice")
+		}
 		input = req.Input.([]byte)
 	} else {
 		input, err = marshalInput(req.Input)
@@ -138,12 +143,6 @@ func (c *GRPCClient) GetWorkflowBeta1(ctx context.Context, req *GetWorkflowReque
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to get workflow status: %v", err)
-	}
-	if resp.GetCreatedAt() == nil {
-		resp.CreatedAt = timestamppb.Now()
-	}
-	if resp.GetLastUpdatedAt() == nil {
-		resp.LastUpdatedAt = timestamppb.Now()
 	}
 	return &GetWorkflowResponse{
 		InstanceID:    resp.GetInstanceId(),
@@ -241,6 +240,9 @@ func (c *GRPCClient) RaiseEventWorkflowBeta1(ctx context.Context, req *RaiseEven
 	var eventData []byte
 	var err error
 	if req.SendRawData {
+		if reflect.ValueOf(req.EventData).Type() != typeBytes {
+			return errors.New("failed to raise event on workflow: sendrawinput is true however, eventData is not a byte slice")
+		}
 		eventData = req.EventData.([]byte)
 	} else {
 		eventData, err = marshalInput(req.EventData)
@@ -264,9 +266,6 @@ func (c *GRPCClient) RaiseEventWorkflowBeta1(ctx context.Context, req *RaiseEven
 func marshalInput(input any) (data []byte, err error) {
 	if input == nil {
 		return nil, nil
-	}
-	if _, typeByteArray := input.([]byte); typeByteArray {
-		return input.([]byte), nil
 	}
 	return json.Marshal(input)
 }

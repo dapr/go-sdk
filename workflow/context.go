@@ -79,10 +79,6 @@ func (wfc *WorkflowContext) WaitForExternalEvent(eventName string, timeout time.
 	if eventName == "" {
 		return nil
 	}
-	if timeout == 0 {
-		// default to 10 seconds
-		timeout = time.Second * 10
-	}
 	return wfc.orchestrationContext.WaitForSingleEvent(eventName, timeout)
 }
 

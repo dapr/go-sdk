@@ -22,7 +22,6 @@ import (
 	"reflect"
 	"runtime"
 	"strings"
-	"sync"
 
 	dapr "github.com/dapr/go-sdk/client"
 
@@ -35,8 +34,6 @@ type WorkflowWorker struct {
 	tasks  *task.TaskRegistry
 	client *durabletaskclient.TaskHubGrpcClient
 
-	mutex  sync.Mutex // TODO: implement
-	quit   chan bool
 	close  func()
 	cancel context.CancelFunc
 }
@@ -51,6 +48,7 @@ type workerOptions struct {
 	daprClient dapr.Client
 }
 
+// WorkerWithDaprClient allows you to specify a custom dapr.Client for the worker.
 func WorkerWithDaprClient(input dapr.Client) workerOption {
 	return func(opts *workerOptions) error {
 		opts.daprClient = input
@@ -58,6 +56,7 @@ func WorkerWithDaprClient(input dapr.Client) workerOption {
 	}
 }
 
+// NewWorker returns a worker that can interface with the workflow engine
 func NewWorker(opts ...workerOption) (*WorkflowWorker, error) {
 	options := new(workerOptions)
 	for _, configure := range opts {
@@ -80,7 +79,6 @@ func NewWorker(opts ...workerOption) (*WorkflowWorker, error) {
 	return &WorkflowWorker{
 		tasks:  task.NewTaskRegistry(),
 		client: durabletaskclient.NewTaskHubGrpcClient(grpcConn, backend.DefaultLogger()),
-		quit:   make(chan bool),
 		close:  daprClient.Close,
 	}, nil
 }
@@ -109,6 +107,7 @@ func wrapWorkflow(w Workflow) task.Orchestrator {
 	}
 }
 
+// RegisterWorkflow adds a workflow function to the registry
 func (ww *WorkflowWorker) RegisterWorkflow(w Workflow) error {
 	wrappedOrchestration := wrapWorkflow(w)
 
@@ -130,6 +129,7 @@ func wrapActivity(a Activity) task.Activity {
 	}
 }
 
+// RegisterActivity adds an activity function to the registry
 func (ww *WorkflowWorker) RegisterActivity(a Activity) error {
 	wrappedActivity := wrapActivity(a)
 
@@ -143,32 +143,22 @@ func (ww *WorkflowWorker) RegisterActivity(a Activity) error {
 	return err
 }
 
+// Start initialises a non-blocking worker to handle workflows and activities registered
+// prior to this being called.
 func (ww *WorkflowWorker) Start() error {
-	// go func start
-	errChan := make(chan error)
-	go func() {
-		defer ww.close()
-		ctx, cancel := context.WithCancel(context.Background())
-		err := ww.client.StartWorkItemListener(ctx, ww.tasks)
-		if err != nil {
-			cancel()
-			errChan <- fmt.Errorf("failed to start work stream: %v", err)
-			return
-		}
-		ww.cancel = cancel
-		log.Println("work item listener started")
-		errChan <- nil
-		<-ww.quit
-		log.Println("work item listener shutdown")
-	}()
-	err := <-errChan
-	return err
+	ctx, cancel := context.WithCancel(context.Background())
+	ww.cancel = cancel
+	if err := ww.client.StartWorkItemListener(ctx, ww.tasks); err != nil {
+		return fmt.Errorf("failed to start work stream: %v", err)
+	}
+	log.Println("work item listener started")
+	return nil
 }
 
+// Shutdown stops the worker
 func (ww *WorkflowWorker) Shutdown() error {
 	ww.cancel()
-	// send close signal
-	ww.quit <- true
-	log.Println("work item listener shutdown signal sent")
+	ww.close()
+	log.Println("work item listener shutdown")
 	return nil
 }

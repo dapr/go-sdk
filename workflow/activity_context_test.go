@@ -88,12 +88,6 @@ func TestMarshalData(t *testing.T) {
 		assert.Nil(t, out)
 	})
 
-	t.Run("test bytearray input", func(t *testing.T) {
-		out, err := marshalData([]byte("testString"))
-		require.NoError(t, err)
-		assert.Equal(t, []byte("testString"), out)
-	})
-
 	t.Run("test string input", func(t *testing.T) {
 		out, err := marshalData("testString")
 		require.NoError(t, err)
