@@ -114,7 +114,7 @@ func (c *GRPCClient) StartWorkflowBeta1(ctx context.Context, req *StartWorkflowR
 		}
 	}
 
-	resp, err := c.protoClient.StartWorkflowBeta1(c.withAuthToken(ctx), &pb.StartWorkflowRequest{
+	resp, err := c.protoClient.StartWorkflowBeta1(ctx, &pb.StartWorkflowRequest{
 		InstanceId:        req.InstanceID,
 		WorkflowComponent: req.WorkflowComponent,
 		WorkflowName:      req.WorkflowName,
@@ -137,7 +137,7 @@ func (c *GRPCClient) GetWorkflowBeta1(ctx context.Context, req *GetWorkflowReque
 	if req.WorkflowComponent == "" {
 		req.WorkflowComponent = DefaultWorkflowComponent
 	}
-	resp, err := c.protoClient.GetWorkflowBeta1(c.withAuthToken(ctx), &pb.GetWorkflowRequest{
+	resp, err := c.protoClient.GetWorkflowBeta1(ctx, &pb.GetWorkflowRequest{
 		InstanceId:        req.InstanceID,
 		WorkflowComponent: req.WorkflowComponent,
 	})
@@ -162,7 +162,7 @@ func (c *GRPCClient) PurgeWorkflowBeta1(ctx context.Context, req *PurgeWorkflowR
 	if req.WorkflowComponent == "" {
 		req.WorkflowComponent = DefaultWorkflowComponent
 	}
-	_, err := c.protoClient.PurgeWorkflowBeta1(c.withAuthToken(ctx), &pb.PurgeWorkflowRequest{
+	_, err := c.protoClient.PurgeWorkflowBeta1(ctx, &pb.PurgeWorkflowRequest{
 		InstanceId:        req.InstanceID,
 		WorkflowComponent: req.WorkflowComponent,
 	})
@@ -216,7 +216,7 @@ func (c *GRPCClient) ResumeWorkflowBeta1(ctx context.Context, req *ResumeWorkflo
 	if req.WorkflowComponent == "" {
 		req.WorkflowComponent = DefaultWorkflowComponent
 	}
-	_, err := c.protoClient.ResumeWorkflowBeta1(c.withAuthToken(ctx), &pb.ResumeWorkflowRequest{
+	_, err := c.protoClient.ResumeWorkflowBeta1(ctx, &pb.ResumeWorkflowRequest{
 		InstanceId:        req.InstanceID,
 		WorkflowComponent: req.WorkflowComponent,
 	})
@@ -251,7 +251,7 @@ func (c *GRPCClient) RaiseEventWorkflowBeta1(ctx context.Context, req *RaiseEven
 		}
 	}
 
-	_, err = c.protoClient.RaiseEventWorkflowBeta1(c.withAuthToken(ctx), &pb.RaiseEventWorkflowRequest{
+	_, err = c.protoClient.RaiseEventWorkflowBeta1(ctx, &pb.RaiseEventWorkflowRequest{
 		InstanceId:        req.InstanceID,
 		WorkflowComponent: req.WorkflowComponent,
 		EventName:         req.EventName,
