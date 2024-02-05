@@ -13,12 +13,12 @@ import (
 	"time"
 
 	dapr "github.com/dapr/go-sdk/client"
+	"github.com/dapr/go-sdk/examples/sagaexecutor/database"
+	"github.com/dapr/go-sdk/examples/sagaexecutor/encodedecode"
+	service "github.com/dapr/go-sdk/examples/sagaexecutor/service"
+	"github.com/dapr/go-sdk/examples/sagaexecutor/utility"
 	common "github.com/dapr/go-sdk/service/common"
 	daprd "github.com/dapr/go-sdk/service/http"
-	"github.com/stevef1uk/sagaexecutor/database"
-	"github.com/stevef1uk/sagaexecutor/encodedecode"
-	service "github.com/stevef1uk/sagaexecutor/service"
-	"github.com/stevef1uk/sagaexecutor/utility"
 )
 
 const stateStoreComponentName = "sagalogs"

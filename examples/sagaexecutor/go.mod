@@ -59,3 +59,4 @@ require (
 	k8s.io/apimachinery v0.26.3 // indirect
 )
 
+replace github.com/dapr/go-sdk/examples/sagaexecutor => /Users/stevef/dev/go-sdk-dapr/examples/sagaexecutor
