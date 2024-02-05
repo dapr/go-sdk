@@ -8,7 +8,7 @@ APP_OUTPUT := build/$(APP_NAME)
 # Docker details
 DOCKERFILE_PATH := deployments
 # CHANGE THIS to your Repo Name & in the corresponding kubernetes.yaml
-DOCKER_ID := seahope
+DOCKER_ID ?= seahope
 DOCKER_REPO := $(DOCKER_ID)/mock-client-go-image
 DOCKER_TAG := latest
 

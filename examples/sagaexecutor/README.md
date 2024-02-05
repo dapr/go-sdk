@@ -189,7 +189,7 @@ kubectl create -f components/.
 
 First deploy & run the Subscribers & Poller components (tilt up and tilt down to undeploy)
 
-Whilst I used Tilt for rapid development cycles, standard Makefiles have been provided. As before, the name of the container registry will need to be updated to your own in these, please edit the DOCKER_ID variable in all the Makefiles before running the required build & push commands. There are separate ones for both amd64 & arm64 e.g. 
+Whilst I used Tilt for rapid development cycles, standard Makefiles have been provided. As before, the name of the container registry will need to be updated to your own in these, please export DOCKER_ID=<your DockerHub name> variable before running the required build & push commands. There are separate ones for both amd64 & arm64 e.g. in the poller directory and the the subscriber directory run:
 ```
 make build-arm64-and-push 
 or
