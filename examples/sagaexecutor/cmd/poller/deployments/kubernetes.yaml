@@ -24,7 +24,7 @@ spec:
     spec:
       containers:
       - name: sagapoller
-        image: seahope/saga-poller-go-image
+        image: DOCKER_ID/saga-poller-go-image
         ports:
         - containerPort: 8080
         env:

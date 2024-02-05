@@ -8,7 +8,8 @@ APP_OUTPUT := build/$(APP_NAME)
 # Docker details
 DOCKERFILE_PATH := deployments
 # CHANGE THIS to your Repo Name & in the corresponding kubernetes.yaml
-DOCKER_REPO := seahope/mock-client-go-image
+DOCKER_ID := seahope
+DOCKER_REPO := $(DOCKER_ID)/mock-client-go-image
 DOCKER_TAG := latest
 
 # Kubernetes details
@@ -38,6 +39,8 @@ docker-push:
 
 # Deploy the application to Kubernetes
 deploy:
+	-sed s/DOCKER_ID/$(DOCKER_ID)/ $(K8S_DEPLOYMENT_FILE) > deployments/t 
+	-mv  deployments/t  $(K8S_DEPLOYMENT_FILE)
 	kubectl create -f $(K8S_DEPLOYMENT_FILE)
 
 # Undeploy the application from Kubernetes

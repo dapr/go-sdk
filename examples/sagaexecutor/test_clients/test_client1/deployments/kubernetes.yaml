@@ -24,7 +24,7 @@ spec:
     spec:
       containers:
       - name: server-test
-        image: seahope/saga-server-test-go-image
+        image: DOCKER_ID/saga-server-test-go-image
         env:
         - name: APP_ID
           value: server-test

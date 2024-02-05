@@ -169,13 +169,13 @@ test_clients
     mock_client3
 ```
 
-Sadly, there is a need to find the IP Address of the Master Redis Pod (my-release-redis-master-0) and update the pubsub.yaml file in Components with this.
+Sadly, there is a need to find the IP Address of the Master Redis Pod (my-release-redis-master-0) and update the pubsub.yaml file in the Components directory with this value.
 
 ```
 kubectl get pod my-release-redis-master-0  --template '{{.status.podIP}}'
 ```
 
-Also in the pubsub.yaml file it is necessary for kubernetest to delete these two lines so that publishing error's don't occur
+Also in the pubsub.yaml file it is necessary for kubernetes to delete these two lines so that publishing error's don't occur
 ```
 auth:
   secretStore: local-secret-store
@@ -189,9 +189,9 @@ kubectl create -f components/.
 
 First deploy & run the Subscribers & Poller components (tilt up and tilt down to undeploy)
 
-Whilst I used Tilt for rapid development cycles, standard Makefiles have been provided. As before, the name of the container registry will need to be updated to your own in these. There are build & push commands for both amd64 & arm64 e.g.
+Whilst I used Tilt for rapid development cycles, standard Makefiles have been provided. As before, the name of the container registry will need to be updated to your own in these, please edit the DOCKER_ID variable in all the Makefiles before running the required build & push commands. There are separate ones for both amd64 & arm64 e.g. 
 ```
-make build-amd64-and-push 
+make build-arm64-and-push 
 or
 make build-amd64-and-push
 

@@ -8,7 +8,8 @@ APP_OUTPUT := build/$(APP_NAME)
 # Docker details
 DOCKERFILE_PATH := deployments
 # CHANGE THIS to your Repo Name & in the corresponding kubernetes.yaml
-DOCKER_REPO := seahope/saga-poller-go-image
+DOCKER_ID := seahope
+DOCKER_REPO := $(DOCKER_ID)/saga-poller-go-image
 DOCKER_TAG := latest
 
 # Kubernetes details
@@ -41,6 +42,8 @@ deploy:
 	-kubectl create -f ../../components/appconfig.yaml
 	-kubectl create -f ../../components/cron.yaml
 	-kubectl create -f ../../components/statestore.yaml
+	-sed s/DOCKER_ID/$(DOCKER_ID)/ $(K8S_DEPLOYMENT_FILE) > deployments/t 
+	-mv  deployments/t  $(K8S_DEPLOYMENT_FILE)
 	kubectl create -f $(K8S_DEPLOYMENT_FILE)
 
 # Undeploy the application from Kubernetes

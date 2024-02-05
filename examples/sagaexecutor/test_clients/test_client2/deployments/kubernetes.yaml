@@ -24,7 +24,7 @@ spec:
     spec:
       containers:
       - name: mock-client
-        image: seahope/mock-client-go-image
+        image: DOCKER_ID/mock-client-go-image
         env:
         - name: APP_ID
           value: server-test

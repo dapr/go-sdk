@@ -8,7 +8,8 @@ APP_OUTPUT := build/$(APP_NAME)
 # Docker details
 DOCKERFILE_PATH := deployments
 # CHANGE THIS to your Repo Name & in the corresponding kubernetes.yaml
-DOCKER_REPO := seahope/saga-subscriber-go-image
+DOCKER_ID := seahope
+DOCKER_REPO := $(DOCKER_ID)/saga-subscriber-go-image
 DOCKER_TAG := latest
 
 # Kubernetes details
@@ -40,14 +41,16 @@ docker-push:
 # Deploy the application to Kubernetes
 deploy:
 	-kubectl create -f ../../components/pubsub.yaml 
-	kubectl create -f $(DOCKERFILE_PATH)/$(K8S_DEPLOYMENT_FILE)
+	for i in $(K8S_DEPLOYMENT_DIR)/kubernetes*.yaml ; do \
+	  sed s/DOCKER_ID/$(DOCKER_ID)/ $$i > $(K8S_DEPLOYMENT_DIR)/t  ; \
+	  mv  $(K8S_DEPLOYMENT_DIR)/t  $$i ;\
+	done
+	kubectl create -f $(K8S_DEPLOYMENT_DIR)/$(K8S_DEPLOYMENT_FILE)
 	
 
 # Undeploy the application from Kubernetes
 undeploy:
-	kubectl delete -f $(DOCKERFILE_PATH)/$(K8S_DEPLOYMENT_FILE)
-
-
+	kubectl delete -f $(K8S_DEPLOYMENT_DIR)/$(K8S_DEPLOYMENT_FILE)
 
 # Build for amd64 and push to DockerHub
 build-amd64-and-push: build-amd64 docker-build-amd docker-push

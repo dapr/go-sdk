@@ -24,7 +24,7 @@ spec:
     spec:
       containers:
       - name: sagasubscriber
-        image: seahope/saga-subscriber-go-image
+        image: DOCKER_ID/saga-subscriber-go-image
         env:
         - name: APP_ID
           value: sagasubscriber
