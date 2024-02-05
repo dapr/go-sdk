@@ -25,3 +25,27 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public to postgres;
 EOF
 echo "psql -h localhost -p $LOCAL_PORT -U postgres -d hasura"
 echo "password = $PASSWORD"
+
+# Get the current directory
+current_directory=$(pwd)
+
+# Check if the current directory ends with '/test_clients'
+if [[ $current_directory == */test_clients ]]; then
+    # Remove '/test_clients' from the end and append '/components/secrets.json'
+    new_directory="${current_directory%/test_clients}/components/secrets.json"
+
+    # File to be modified
+    yaml_file="../components/secrets.yaml"
+
+    # Check if the file exists
+    if [[ -f $yaml_file ]]; then
+        # Update the specified line in the file
+        sed -i '' "s|/Users/stevef/dev/sagaexecutor/components/secrets.json|$new_directory|" "$yaml_file"
+        
+        echo "Updated $yaml_file with the new directory path $new_directory"
+    else
+        echo "File $yaml_file does not exist."
+    fi
+else
+    echo "Current directory does not end with '/test_clients'"
+fi
