@@ -1,4 +1,4 @@
-module github.com/stevef1uk/sagaexecutor
+module github.com/dapr/go-sdk/examples/sagaexecutor
 
 go 1.21.5
 

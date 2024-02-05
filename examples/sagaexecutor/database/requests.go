@@ -8,7 +8,7 @@ import (
 
 	"github.com/dapr/components-contrib/bindings"
 	"github.com/dapr/components-contrib/bindings/postgres"
-	"github.com/stevef1uk/sagaexecutor/encodedecode"
+	"github.com/dapr/go-sdk/examples/sagaexecutor/encodedecode"
 )
 
 const (

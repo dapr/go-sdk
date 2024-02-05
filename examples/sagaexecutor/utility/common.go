@@ -5,7 +5,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/stevef1uk/sagaexecutor/database"
+	"github.com/dapr/go-sdk/examples/sagaexecutor/database"
 )
 
 type Start_stop struct {

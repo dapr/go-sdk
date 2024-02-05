@@ -14,9 +14,9 @@ import (
 
 	dapr "github.com/dapr/go-sdk/client"
 
-	"github.com/stevef1uk/sagaexecutor/database"
-	"github.com/stevef1uk/sagaexecutor/encodedecode"
-	"github.com/stevef1uk/sagaexecutor/utility"
+	"github.com/dapr/go-sdk/examples/sagaexecutor/database"
+	"github.com/dapr/go-sdk/examples/sagaexecutor/encodedecode"
+	"github.com/dapr/go-sdk/examples/sagaexecutor/utility"
 )
 
 const (

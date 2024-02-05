@@ -9,7 +9,7 @@ There are 3 logical components of this solution:
 2. The Saga Subscriber 
 3. The Saga Poller
 
-The Saga components are shown in Green and the Dapr building blockes in Blue.
+The Saga components are shown in Green and the Dapr building blocks in Blue.
 
 The client Go service code is linked with the Saga Service code. 
 
@@ -104,7 +104,7 @@ This should start the two core Saga components, the Poller and the Subscriber pl
 == APP - sagapoller == 2024/01/01 09:14:26 Returned 0 records
 ```
 
-You will need to manally delete the postgres container for a full clean-up.
+You will need to manually delete the postgres container for a full clean-up.
 
 ## Run in Kubernetes
 
@@ -113,7 +113,7 @@ To get started with running this proejct, there are some prerequisites:
 ### Prerequisites
 1. A kubernetes cluster is required with dapr installed (dapr init -k)
 2. Redis & Postgres must be installed on the cluster
-3. Tilt is is used to deply the components (see: https://tilt.dev). However, Makefiles are provided as well. Please note that these files
+3. Tilt is is used to deploy the components (see: https://tilt.dev). However, Makefiles are provided as well. Please note that these files
    build images for my DockerHub repo, so you will need to change these images to suitable names and then update the           deployment/kubernetes.yaml files to reference the revised image names. Also, unless your cluster is running on arm64 hardware (Mx Macs or     RPIs etc, you will need to change the GOARCH value from arm64 to say amd64 for 64-bit X86 platforms.
 4. Go installed (latest version)
 

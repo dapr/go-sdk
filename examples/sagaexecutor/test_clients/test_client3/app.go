@@ -13,7 +13,7 @@ import (
 	"github.com/gorilla/mux"
 
 	dapr "github.com/dapr/go-sdk/client"
-	service "github.com/stevef1uk/sagaexecutor/service"
+	service "github.com/dapr/go-sdk/examples/sagaexecutor/service"
 )
 
 const myTopic = "test-client2"
@@ -36,15 +36,6 @@ func callback(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	var err error
-
-	/*pp_id       string    `json:"app_id"`
-	  Service      string    `json:"service"`
-	  Token        string    `json:"token"`
-	  callback_service string    `json:"callback_service"`
-	  Params       string    `json:"params"`
-	  Timeout      int       `json:"timeout"`
-	  Event        bool      `json:"event"`
-	  LogTime      time.Time `json:"logtime"`*/
 
 	appPort := "6000"
 	if value, ok := os.LookupEnv("APP_PORT"); ok {

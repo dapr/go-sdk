@@ -13,7 +13,7 @@ import (
 	"github.com/gorilla/mux"
 
 	dapr "github.com/dapr/go-sdk/client"
-	service "github.com/stevef1uk/sagaexecutor/service"
+	service "github.com/dapr/go-sdk/examples/sagaexecutor/service"
 )
 
 const myTopic = "test-client"
