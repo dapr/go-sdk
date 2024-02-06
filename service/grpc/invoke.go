@@ -18,8 +18,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/golang/protobuf/ptypes/any"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/protobuf/types/known/anypb"
 
 	cpb "github.com/dapr/dapr/pkg/proto/common/v1"
 	cc "github.com/dapr/go-sdk/service/common"
@@ -83,7 +83,7 @@ func (s *Server) OnInvoke(ctx context.Context, in *cpb.InvokeRequest) (*cpb.Invo
 
 		return &cpb.InvokeResponse{
 			ContentType: ct.ContentType,
-			Data: &any.Any{
+			Data: &anypb.Any{
 				Value:   ct.Data,
 				TypeUrl: ct.DataTypeURL,
 			},
