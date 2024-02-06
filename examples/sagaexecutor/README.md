@@ -22,18 +22,18 @@ The Saga Poll queries the State store for Start messages that exist and for whic
 These components use Darp capabilities to reduce the amount of code required:
 ```
 gocloc .
--------------------------------------------------------------------------
-Language               files          blank        comment           code
--------------------------------------------------------------------------
-Go                        11            187             76            733
-YAML                      22             11              2            569
-Markdown                   1             46              0            284
-Makefile                   5             91             80            135
-JSON                       3              0              0             50
-BASH                       1              4              3             20
--------------------------------------------------------------------------
-TOTAL                     43            339            161           1791
--------------------------------------------------------------------------
+-------------------------------------------------------------------------------
+Language                     files          blank        comment           code
+-------------------------------------------------------------------------------
+Go                              11            184             61            733
+YAML                            19              7              2            470
+Markdown                         1             46              0            284
+Makefile                         5             89             80            162
+BASH                             1              9              9             33
+JSON                             1              0              0              8
+-------------------------------------------------------------------------------
+TOTAL                           38            335            152           1690
+-------------------------------------------------------------------------------
 ```
 
 Dapr allows you to deploy the same microservices from your local machines to the cloud. Correspondingly, this project has instructions for deploying [locally](#Run-Locally) or in [Kubernetes](#Run-in-Kubernetes). 

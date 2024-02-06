@@ -1,4 +1,4 @@
-// Componnet to scan for timedout uncompleted transactions and  invoke call-backs
+// Application that scans for timeouts and uncompleted transactions and invoke callbacks.
 package main
 
 import (
