@@ -21,8 +21,8 @@ import (
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc/metadata"
 
-	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/stretchr/testify/assert"
+	"google.golang.org/protobuf/types/known/emptypb"
 
 	"github.com/dapr/dapr/pkg/proto/runtime/v1"
 	"github.com/dapr/go-sdk/service/common"
@@ -57,7 +57,7 @@ func TestTopicSubscriptionList(t *testing.T) {
 	}
 	err := server.AddTopicEventHandler(sub1, eventHandler)
 	require.NoError(t, err)
-	resp, err := server.ListTopicSubscriptions(context.Background(), &empty.Empty{})
+	resp, err := server.ListTopicSubscriptions(context.Background(), &emptypb.Empty{})
 	require.NoError(t, err)
 	assert.NotNil(t, resp)
 	if assert.Lenf(t, resp.GetSubscriptions(), 1, "expected 1 handlers") {
@@ -76,7 +76,7 @@ func TestTopicSubscriptionList(t *testing.T) {
 	}
 	err = server.AddTopicEventHandler(sub2, eventHandler)
 	require.NoError(t, err)
-	resp, err = server.ListTopicSubscriptions(context.Background(), &empty.Empty{})
+	resp, err = server.ListTopicSubscriptions(context.Background(), &emptypb.Empty{})
 	require.NoError(t, err)
 	assert.NotNil(t, resp)
 	if assert.Lenf(t, resp.GetSubscriptions(), 1, "expected 1 handlers") {

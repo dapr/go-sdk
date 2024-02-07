@@ -20,8 +20,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/stretchr/testify/assert"
+	"google.golang.org/protobuf/types/known/emptypb"
 
 	"github.com/dapr/dapr/pkg/proto/runtime/v1"
 	"github.com/dapr/go-sdk/service/common"
@@ -40,7 +40,7 @@ func TestListInputBindings(t *testing.T) {
 	require.NoError(t, err)
 	err = server.AddBindingInvocationHandler("test2", testBindingHandler)
 	require.NoError(t, err)
-	resp, err := server.ListInputBindings(context.Background(), &empty.Empty{})
+	resp, err := server.ListInputBindings(context.Background(), &emptypb.Empty{})
 	require.NoError(t, err)
 	assert.NotNil(t, resp)
 	assert.Lenf(t, resp.GetBindings(), 2, "expected 2 handlers")

@@ -21,8 +21,8 @@ import (
 	"mime"
 	"strings"
 
-	"github.com/golang/protobuf/ptypes/empty"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/protobuf/types/known/emptypb"
 
 	runtimev1pb "github.com/dapr/dapr/pkg/proto/runtime/v1"
 	"github.com/dapr/go-sdk/service/common"
@@ -39,7 +39,7 @@ func (s *Server) AddTopicEventHandler(sub *common.Subscription, fn common.TopicE
 }
 
 // ListTopicSubscriptions is called by Dapr to get the list of topics in a pubsub component the app wants to subscribe to.
-func (s *Server) ListTopicSubscriptions(ctx context.Context, in *empty.Empty) (*runtimev1pb.ListTopicSubscriptionsResponse, error) {
+func (s *Server) ListTopicSubscriptions(ctx context.Context, in *emptypb.Empty) (*runtimev1pb.ListTopicSubscriptionsResponse, error) {
 	subs := make([]*runtimev1pb.TopicSubscription, 0)
 	for _, v := range s.topicRegistrar {
 		s := v.Subscription
