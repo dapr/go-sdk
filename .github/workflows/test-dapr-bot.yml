@@ -14,7 +14,7 @@ on:
 
 jobs:
   build:
-    name: Test on ${{ matrix.gover }}
+    name: Test
     runs-on: ubuntu-latest
     env:
       GOVER: ${{ matrix.gover }}
@@ -25,9 +25,9 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v5
         with:
-          go-version: ${{ env.GOVER }}
+          go-version-file: ./.github/workflows/dapr-bot/go.mod
 
       - name: Tidy
         working-directory: ./.github/workflows/dapr-bot
