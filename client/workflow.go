@@ -19,7 +19,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"reflect"
 	"time"
 
 	"github.com/google/uuid"
@@ -30,8 +29,6 @@ import (
 const (
 	DefaultWorkflowComponent = "dapr"
 )
-
-var typeBytes = reflect.TypeOf([]byte(nil))
 
 type StartWorkflowRequest struct {
 	InstanceID        string // Optional instance identifier
