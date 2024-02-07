@@ -103,10 +103,10 @@ func (c *GRPCClient) StartWorkflowBeta1(ctx context.Context, req *StartWorkflowR
 	var input []byte
 	var err error
 	if req.SendRawInput {
-		if reflect.ValueOf(req.Input).Type() != typeBytes {
+		var ok bool
+		if input, ok = req.Input.([]byte); !ok {
 			return nil, errors.New("failed to start workflow: sendrawinput is true however, input is not a byte slice")
 		}
-		input = req.Input.([]byte)
 	} else {
 		input, err = marshalInput(req.Input)
 		if err != nil {

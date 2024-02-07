@@ -522,39 +522,39 @@ func (s *testDaprServer) GetWorkflowBeta1(ctx context.Context, in *pb.GetWorkflo
 	}, nil
 }
 
-func (s *testDaprServer) PurgeWorkflowBeta1(ctx context.Context, in *pb.PurgeWorkflowRequest) (*empty.Empty, error) {
+func (s *testDaprServer) PurgeWorkflowBeta1(ctx context.Context, in *pb.PurgeWorkflowRequest) (*emptypb.Empty, error) {
 	if in.GetInstanceId() == testWorkflowFailureID {
 		return nil, errors.New("test failure")
 	}
-	return &empty.Empty{}, nil
+	return &emptypb.Empty{}, nil
 }
 
-func (s *testDaprServer) TerminateWorkflowBeta1(ctx context.Context, in *pb.TerminateWorkflowRequest) (*empty.Empty, error) {
+func (s *testDaprServer) TerminateWorkflowBeta1(ctx context.Context, in *pb.TerminateWorkflowRequest) (*emptypb.Empty, error) {
 	if in.GetInstanceId() == testWorkflowFailureID {
 		return nil, errors.New("test failure")
 	}
-	return &empty.Empty{}, nil
+	return &emptypb.Empty{}, nil
 }
 
-func (s *testDaprServer) PauseWorkflowBeta1(ctx context.Context, in *pb.PauseWorkflowRequest) (*empty.Empty, error) {
+func (s *testDaprServer) PauseWorkflowBeta1(ctx context.Context, in *pb.PauseWorkflowRequest) (*emptypb.Empty, error) {
 	if in.GetInstanceId() == testWorkflowFailureID {
 		return nil, errors.New("test failure")
 	}
-	return &empty.Empty{}, nil
+	return &emptypb.Empty{}, nil
 }
 
-func (s *testDaprServer) ResumeWorkflowBeta1(ctx context.Context, in *pb.ResumeWorkflowRequest) (*empty.Empty, error) {
+func (s *testDaprServer) ResumeWorkflowBeta1(ctx context.Context, in *pb.ResumeWorkflowRequest) (*emptypb.Empty, error) {
 	if in.GetInstanceId() == testWorkflowFailureID {
 		return nil, errors.New("test failure")
 	}
-	return &empty.Empty{}, nil
+	return &emptypb.Empty{}, nil
 }
 
-func (s *testDaprServer) RaiseEventWorkflowBeta1(ctx context.Context, in *pb.RaiseEventWorkflowRequest) (*empty.Empty, error) {
+func (s *testDaprServer) RaiseEventWorkflowBeta1(ctx context.Context, in *pb.RaiseEventWorkflowRequest) (*emptypb.Empty, error) {
 	if in.GetInstanceId() == testWorkflowFailureID {
 		return nil, errors.New("test failure")
 	}
-	return &empty.Empty{}, nil
+	return &emptypb.Empty{}, nil
 }
 
 func TestGrpcClient(t *testing.T) {
