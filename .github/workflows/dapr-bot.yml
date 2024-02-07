@@ -21,14 +21,14 @@ jobs:
       - name: Setup Golang
         uses: actions/setup-go@v4
         with:
-          go-version: ~1.22
+          go-version-file: "./.github/workflows/dapr-bot/go.mod"
           cache-dependency-path: |
             ./.github/workflows/dapr-bot/
 
       - name: go-bot-mod
         working-directory: ./.github/workflows/dapr-bot/
-        run: go get ./...
-      - name: go-bot-run
+        run: go mod tidy
 
+      - name: go-bot-run
         working-directory: ./.github/workflows/dapr-bot/
         run: go run .
