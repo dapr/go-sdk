@@ -1,8 +1,6 @@
 module github.com/dapr/go-sdk
 
-go 1.21
-
-toolchain go1.21.6
+go 1.20
 
 require (
 	github.com/dapr/dapr v1.13.0-rc.1
