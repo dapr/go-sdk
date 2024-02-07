@@ -51,7 +51,8 @@ func (wfc *WorkflowContext) IsReplaying() bool {
 }
 
 // CallActivity returns a completable task for a given activity.
-// NOTE: The task must be invoked with the .Await(output interface{}) method.
+// NOTE: The task must be invoked with the .Await(output interface{}) method, this does not need to
+// be done at call time for example when using the fan-out/fan-in pattern.
 func (wfc *WorkflowContext) CallActivity(activity interface{}, opts ...callActivityOption) task.Task {
 	options := new(callActivityOptions)
 	for _, configure := range opts {
@@ -64,7 +65,8 @@ func (wfc *WorkflowContext) CallActivity(activity interface{}, opts ...callActiv
 }
 
 // CallChildWorkflow returns a completable task for a given workflow.
-// NOTE: The task must be invoked with the .Await(output interface{}) method.
+// NOTE: The task must be invoked with the .Await(output interface{}) method, this does not need to
+// be done at call time for example when using the fan-out/fan-in pattern.
 func (wfc *WorkflowContext) CallChildWorkflow(workflow interface{}, opts ...callChildWorkflowOption) task.Task {
 	options := new(callChildWorkflowOptions)
 	for _, configure := range opts {
@@ -79,13 +81,15 @@ func (wfc *WorkflowContext) CallChildWorkflow(workflow interface{}, opts ...call
 }
 
 // CreateTimer returns a completable task that blocks for a given duration.
-// NOTE: The task must be invoked with the .Await(output interface{}) method.
+// NOTE: The task must be invoked with the .Await(output interface{}) method, this does not need to
+// be done at call time for example when using the fan-out/fan-in pattern.
 func (wfc *WorkflowContext) CreateTimer(duration time.Duration) task.Task {
 	return wfc.orchestrationContext.CreateTimer(duration)
 }
 
 // WaitForExternalEvent returns a completabel task that waits for a given event to be received.
-// NOTE: The task must be invoked with the .Await(output interface{}) method.
+// NOTE: The task must be invoked with the .Await(output interface{}) method, this does not need to
+// be done at call time for example when using the fan-out/fan-in pattern.
 func (wfc *WorkflowContext) WaitForExternalEvent(eventName string, timeout time.Duration) task.Task {
 	if eventName == "" {
 		return nil
