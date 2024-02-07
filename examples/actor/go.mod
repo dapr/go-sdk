@@ -13,7 +13,7 @@ require (
 require (
 	github.com/dapr/dapr v1.12.0-rc.4 // indirect
 	github.com/go-chi/chi/v5 v5.0.10 // indirect
-	github.com/golang/protobuf v1.5.3 // indirect
+	google.golang.org/protobuf v1.5.3 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
 	golang.org/x/net v0.15.0 // indirect
 	golang.org/x/sys v0.12.0 // indirect

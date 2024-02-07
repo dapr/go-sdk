@@ -19,7 +19,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/golang/protobuf/ptypes/duration"
+	"google.golang.org/protobuf/types/known/durationpb"
 
 	v1 "github.com/dapr/dapr/pkg/proto/common/v1"
 	pb "github.com/dapr/dapr/pkg/proto/runtime/v1"
@@ -248,11 +248,11 @@ func copyStateOptionDefault() *StateOptions {
 	}
 }
 
-func toProtoDuration(d time.Duration) *duration.Duration {
+func toProtoDuration(d time.Duration) *durationpb.Duration {
 	nanos := d.Nanoseconds()
 	secs := nanos / 1e9
 	nanos -= secs * 1e9
-	return &duration.Duration{
+	return &durationpb.Duration{
 		Seconds: secs,
 		Nanos:   int32(nanos),
 	}
