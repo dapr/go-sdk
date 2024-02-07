@@ -240,10 +240,10 @@ func (c *GRPCClient) RaiseEventWorkflowBeta1(ctx context.Context, req *RaiseEven
 	var eventData []byte
 	var err error
 	if req.SendRawData {
-		if reflect.ValueOf(req.EventData).Type() != typeBytes {
+		var ok bool
+		if eventData, ok = req.EventData.([]byte); !ok {
 			return errors.New("failed to raise event on workflow: SendRawData is true however, eventData is not a byte slice")
 		}
-		eventData = req.EventData.([]byte)
 	} else {
 		eventData, err = marshalInput(req.EventData)
 		if err != nil {
