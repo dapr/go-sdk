@@ -14,25 +14,20 @@ on:
 
 jobs:
   build:
-    name: Test on ${{ matrix.gover }}
+    name: Test
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        gover:
-          - "1.20"
     env:
       GOVER: ${{ matrix.gover }}
       GOLANGCILINT_VER: v1.55.2
 
     steps:
-      - name: Setup
-        uses: actions/setup-go@v4
-        with:
-          go-version: ${{ env.GOVER }}
-
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Setup
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: ./.github/workflows/dapr-bot/go.mod
 
       - name: Tidy
         working-directory: ./.github/workflows/dapr-bot
