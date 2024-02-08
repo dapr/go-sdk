@@ -46,4 +46,8 @@ jobs:
           args: --timeout=10m0s
 
       - name: Run go mod tidy check diff
+        if: strategy.job-index == 0
         run: make modtidy check-diff
+      - name: Run go mod tidy
+        if: strategy.job-index != 0
+        run: make modtidy
