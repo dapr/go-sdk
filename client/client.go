@@ -209,8 +209,31 @@ type Client interface {
 	// ImplActorClientStub is to impl user defined actor client stub
 	ImplActorClientStub(actorClientStub actor.Client, opt ...config.Option)
 
+	// StartWorkflowBeta1 starts a workflow.
+	StartWorkflowBeta1(ctx context.Context, req *StartWorkflowRequest) (*StartWorkflowResponse, error)
+
+	// GetWorkflowBeta1 gets a workflow.
+	GetWorkflowBeta1(ctx context.Context, req *GetWorkflowRequest) (*GetWorkflowResponse, error)
+
+	// PurgeWorkflowBeta1 purges a workflow.
+	PurgeWorkflowBeta1(ctx context.Context, req *PurgeWorkflowRequest) error
+
+	// TerminateWorkflowBeta1 terminates a workflow.
+	TerminateWorkflowBeta1(ctx context.Context, req *TerminateWorkflowRequest) error
+
+	// PauseWorkflowBeta1 pauses a workflow.
+	PauseWorkflowBeta1(ctx context.Context, req *PauseWorkflowRequest) error
+
+	// ResumeWorkflowBeta1 resumes a workflow.
+	ResumeWorkflowBeta1(ctx context.Context, req *ResumeWorkflowRequest) error
+
+	// RaiseEventWorkflowBeta1 raises an event for a workflow.
+	RaiseEventWorkflowBeta1(ctx context.Context, req *RaiseEventWorkflowRequest) error
+
 	// GrpcClient returns the base grpc client if grpc is used and nil otherwise
 	GrpcClient() pb.DaprClient
+
+	GrpcClientConn() *grpc.ClientConn
 }
 
 // NewClient instantiates Dapr client using DAPR_GRPC_PORT environment variable as port.
