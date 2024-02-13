@@ -61,6 +61,18 @@ var (
 	defaultClient Client
 )
 
+// SetLogger sets the global logger for the Dapr client.
+// The default logger has a destination of os.Stdout, SetLogger allows you to
+// optionally specify a custom logger (with a custom destination).
+// To disable client logging entirely, use a nil argument e.g.: client.SetLogger(nil)
+func SetLogger(l *log.Logger) {
+	if l == nil {
+		l = log.New(io.Discard, "", 0)
+	}
+
+	logger = l
+}
+
 // Client is the interface for Dapr client implementation.
 //
 //nolint:interfacebloat
