@@ -164,6 +164,7 @@ jobs:
             "service",
             "socket",
             "workflow",
+            "workflow-parallel",
           ]
     steps:
       - name: Check out code onto GOPATH
