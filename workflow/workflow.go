@@ -19,6 +19,7 @@ import (
 	"time"
 
 	"github.com/microsoft/durabletask-go/api"
+	"github.com/microsoft/durabletask-go/task"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 )
 
@@ -118,4 +119,10 @@ func ChildWorkflowInstanceID(instanceID string) callChildWorkflowOption {
 		opts.instanceID = instanceID
 		return nil
 	}
+}
+
+// NewTaskSlice returns a slice of tasks which can be executed in parallel
+func NewTaskSlice(length int) []task.Task {
+	taskSlice := make([]task.Task, length)
+	return taskSlice
 }

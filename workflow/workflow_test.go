@@ -48,3 +48,8 @@ func returnCallChildWorkflowOptions(opts ...callChildWorkflowOption) callChildWo
 	}
 	return *options
 }
+
+func TestNewTaskSlice(t *testing.T) {
+	tasks := NewTaskSlice(10)
+	assert.Len(t, tasks, 10)
+}
