@@ -5,7 +5,7 @@ go 1.21
 toolchain go1.21.6
 
 require (
-	github.com/dapr/dapr v1.13.0-rc.2
+	github.com/dapr/dapr v1.13.0-rc.6
 	github.com/go-chi/chi/v5 v5.0.11
 	github.com/golang/mock v1.6.0
 	github.com/google/uuid v1.6.0
