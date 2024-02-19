@@ -68,6 +68,10 @@ type ServerContext interface {
 	// SaveState is impl by ServerImplBase, It saves the state cache of this actor instance to state store component by calling api of daprd.
 	// Save state is called at two places: 1. On invocation of this actor instance. 2. When new actor starts.
 	SaveState(context.Context) error
+	// Activate called when actor created by actor manager
+	Activate() error
+	// Deactivate called before actor removed by actor manager
+	Deactivate() error
 }
 
 type ReminderCallee interface {
