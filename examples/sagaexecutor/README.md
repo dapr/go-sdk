@@ -181,7 +181,7 @@ auth:
   secretStore: local-secret-store
 ```
 
-Before running the core Subscriber & Postgres componnets the config files in components need to be applied to the cluster e.g
+Before running the core Subscriber & Postgres components the config files in components need to be applied to the cluster e.g
 ```
 kubectl create -f components/.
 ```
@@ -238,13 +238,13 @@ spec:
   version: v1
   metadata:
   - name: topic
-    value: "saxalogs"
+    value: "sagalogs"
   - name: subscription
     value: "subscription1"
   - name: type
     value: service_account
   - name: projectId
-    value: <YOur GCP Project ID> 
+    value: <Your GCP Project ID> 
   - name: identityProjectId
   - name: privateKeyId
     value: <Service Account Provate Key Id>
@@ -306,7 +306,7 @@ scopes:
 
 The relevant items need to align to the names in the other yaml files for the auto-wiring to work.
 
-Of course one done't need to have separate Subscribers per service client, it is possible to configure the Subscription to point to whatever Subscriber is required to be run.
+Of course one doesn't need to have separate Subscribers per service client, it is possible to configure the Subscription to point to whatever Subscriber is required to be run.
 
 I left a line in the Subscriber app's eventHander method wich can be uncommented to flush-out any queued messages, which is useful during debugging to avoid duplicate primary key insert errors.
 ```
