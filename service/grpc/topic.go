@@ -16,14 +16,15 @@ package grpc
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"mime"
 	"strings"
 
-	"github.com/golang/protobuf/ptypes/empty"
-	"github.com/pkg/errors"
+	"google.golang.org/grpc/metadata"
+	"google.golang.org/protobuf/types/known/emptypb"
 
-	runtimev1pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
+	runtimev1pb "github.com/dapr/dapr/pkg/proto/runtime/v1"
 	"github.com/dapr/go-sdk/service/common"
 	"github.com/dapr/go-sdk/service/internal"
 )
@@ -33,15 +34,12 @@ func (s *Server) AddTopicEventHandler(sub *common.Subscription, fn common.TopicE
 	if sub == nil {
 		return errors.New("subscription required")
 	}
-	if err := s.topicRegistrar.AddSubscription(sub, fn); err != nil {
-		return err
-	}
 
-	return nil
+	return s.topicRegistrar.AddSubscription(sub, fn)
 }
 
 // ListTopicSubscriptions is called by Dapr to get the list of topics in a pubsub component the app wants to subscribe to.
-func (s *Server) ListTopicSubscriptions(ctx context.Context, in *empty.Empty) (*runtimev1pb.ListTopicSubscriptionsResponse, error) {
+func (s *Server) ListTopicSubscriptions(ctx context.Context, in *emptypb.Empty) (*runtimev1pb.ListTopicSubscriptionsResponse, error) {
 	subs := make([]*runtimev1pb.TopicSubscription, 0)
 	for _, v := range s.topicRegistrar {
 		s := v.Subscription
@@ -79,13 +77,13 @@ func convertRoutes(routes *internal.TopicRoutes) *runtimev1pb.TopicRoutes {
 // OnTopicEvent fired whenever a message has been published to a topic that has been subscribed.
 // Dapr sends published messages in a CloudEvents v1.0 envelope.
 func (s *Server) OnTopicEvent(ctx context.Context, in *runtimev1pb.TopicEventRequest) (*runtimev1pb.TopicEventResponse, error) {
-	if in == nil || in.Topic == "" || in.PubsubName == "" {
+	if in == nil || in.GetTopic() == "" || in.GetPubsubName() == "" {
 		// this is really Dapr issue more than the event request format.
 		// since Dapr will not get updated until long after this event expires, just drop it
 		return &runtimev1pb.TopicEventResponse{Status: runtimev1pb.TopicEventResponse_DROP}, errors.New("pub/sub and topic names required")
 	}
-	key := in.PubsubName + "-" + in.Topic
-	noValidationKey := in.PubsubName
+	key := in.GetPubsubName() + "-" + in.GetTopic()
+	noValidationKey := in.GetPubsubName()
 
 	var sub *internal.TopicRegistration
 	var ok bool
@@ -96,23 +94,23 @@ func (s *Server) OnTopicEvent(ctx context.Context, in *runtimev1pb.TopicEventReq
 	}
 
 	if ok {
-		data := interface{}(in.Data)
-		if len(in.Data) > 0 {
-			mediaType, _, err := mime.ParseMediaType(in.DataContentType)
+		data := interface{}(in.GetData())
+		if len(in.GetData()) > 0 {
+			mediaType, _, err := mime.ParseMediaType(in.GetDataContentType())
 			if err == nil {
 				var v interface{}
 				switch mediaType {
 				case "application/json":
-					if err := json.Unmarshal(in.Data, &v); err == nil {
+					if err := json.Unmarshal(in.GetData(), &v); err == nil {
 						data = v
 					}
 				case "text/plain":
 					// Assume UTF-8 encoded string.
-					data = string(in.Data)
+					data = string(in.GetData())
 				default:
 					if strings.HasPrefix(mediaType, "application/") &&
 						strings.HasSuffix(mediaType, "+json") {
-						if err := json.Unmarshal(in.Data, &v); err == nil {
+						if err := json.Unmarshal(in.GetData(), &v); err == nil {
 							data = v
 						}
 					}
@@ -121,26 +119,27 @@ func (s *Server) OnTopicEvent(ctx context.Context, in *runtimev1pb.TopicEventReq
 		}
 
 		e := &common.TopicEvent{
-			ID:              in.Id,
-			Source:          in.Source,
-			Type:            in.Type,
-			SpecVersion:     in.SpecVersion,
-			DataContentType: in.DataContentType,
+			ID:              in.GetId(),
+			Source:          in.GetSource(),
+			Type:            in.GetType(),
+			SpecVersion:     in.GetSpecVersion(),
+			DataContentType: in.GetDataContentType(),
 			Data:            data,
-			RawData:         in.Data,
-			Topic:           in.Topic,
-			PubsubName:      in.PubsubName,
+			RawData:         in.GetData(),
+			Topic:           in.GetTopic(),
+			PubsubName:      in.GetPubsubName(),
+			Metadata:        getCustomMetadataFromContext(ctx),
 		}
 		h := sub.DefaultHandler
-		if in.Path != "" {
-			if pathHandler, ok := sub.RouteHandlers[in.Path]; ok {
+		if in.GetPath() != "" {
+			if pathHandler, ok := sub.RouteHandlers[in.GetPath()]; ok {
 				h = pathHandler
 			}
 		}
 		if h == nil {
 			return &runtimev1pb.TopicEventResponse{Status: runtimev1pb.TopicEventResponse_RETRY}, fmt.Errorf(
 				"route %s for pub/sub and topic combination not configured: %s/%s",
-				in.Path, in.PubsubName, in.Topic,
+				in.GetPath(), in.GetPubsubName(), in.GetTopic(),
 			)
 		}
 		retry, err := h(ctx, e)
@@ -150,10 +149,23 @@ func (s *Server) OnTopicEvent(ctx context.Context, in *runtimev1pb.TopicEventReq
 		if retry {
 			return &runtimev1pb.TopicEventResponse{Status: runtimev1pb.TopicEventResponse_RETRY}, err
 		}
-		return &runtimev1pb.TopicEventResponse{Status: runtimev1pb.TopicEventResponse_DROP}, err
+		return &runtimev1pb.TopicEventResponse{Status: runtimev1pb.TopicEventResponse_DROP}, nil
 	}
 	return &runtimev1pb.TopicEventResponse{Status: runtimev1pb.TopicEventResponse_RETRY}, fmt.Errorf(
 		"pub/sub and topic combination not configured: %s/%s",
-		in.PubsubName, in.Topic,
+		in.GetPubsubName(), in.GetTopic(),
 	)
+}
+
+func getCustomMetadataFromContext(ctx context.Context) map[string]string {
+	md := make(map[string]string)
+	meta, ok := metadata.FromIncomingContext(ctx)
+	if ok {
+		for k, v := range meta {
+			if strings.HasPrefix(strings.ToLower(k), "metadata.") {
+				md[k[9:]] = v[0]
+			}
+		}
+	}
+	return md
 }

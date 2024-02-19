@@ -1,5 +1,5 @@
 /*
-Copyright 2021 The Dapr Authors
+Copyright 2023 The Dapr Authors
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
@@ -15,47 +15,67 @@ package client
 
 import (
 	"context"
+	"crypto/tls"
+	"errors"
 	"fmt"
+	"io"
 	"log"
 	"net"
 	"os"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
 	"github.com/dapr/go-sdk/actor"
 	"github.com/dapr/go-sdk/actor/config"
+	"github.com/dapr/go-sdk/client/internal"
+	"github.com/dapr/go-sdk/version"
 
-	"github.com/pkg/errors"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
-	"google.golang.org/protobuf/types/known/emptypb"
 
-	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
+	pb "github.com/dapr/dapr/pkg/proto/runtime/v1"
 
 	// used to import codec implements.
 	_ "github.com/dapr/go-sdk/actor/codec/impl"
 )
 
 const (
-	daprPortDefault               = "50001"
-	daprPortEnvVarName            = "DAPR_GRPC_PORT" /* #nosec */
-	traceparentKey                = "traceparent"
-	apiTokenKey                   = "dapr-api-token" /* #nosec */
-	apiTokenEnvVarName            = "DAPR_API_TOKEN" /* #nosec */
-	clientDefaultTimoutSeconds    = 5
-	clientTimoutSecondsEnvVarName = "DAPR_CLIENT_TIMEOUT_SECONDS"
+	daprPortDefault                = "50001"
+	daprPortEnvVarName             = "DAPR_GRPC_PORT" /* #nosec */
+	daprGRPCEndpointEnvVarName     = "DAPR_GRPC_ENDPOINT"
+	traceparentKey                 = "traceparent"
+	apiTokenKey                    = "dapr-api-token" /* #nosec */
+	apiTokenEnvVarName             = "DAPR_API_TOKEN" /* #nosec */
+	clientDefaultTimeoutSeconds    = 5
+	clientTimeoutSecondsEnvVarName = "DAPR_CLIENT_TIMEOUT_SECONDS"
 )
 
 var (
 	logger               = log.New(os.Stdout, "", 0)
+	lock                 = &sync.Mutex{}
 	_             Client = (*GRPCClient)(nil)
 	defaultClient Client
-	doOnce        sync.Once
 )
 
+// SetLogger sets the global logger for the Dapr client.
+// The default logger has a destination of os.Stdout, SetLogger allows you to
+// optionally specify a custom logger (with a custom destination).
+// To disable client logging entirely, use a nil argument e.g.: client.SetLogger(nil)
+func SetLogger(l *log.Logger) {
+	if l == nil {
+		l = log.New(io.Discard, "", 0)
+	}
+
+	logger = l
+}
+
 // Client is the interface for Dapr client implementation.
+//
+//nolint:interfacebloat
 type Client interface {
 	// InvokeBinding invokes specific operation on the configured Dapr binding.
 	// This method covers input, output, and bi-directional bindings.
@@ -74,12 +94,23 @@ type Client interface {
 	// InvokeMethodWithCustomContent invokes app with custom content (struct + content type).
 	InvokeMethodWithCustomContent(ctx context.Context, appID, methodName, verb string, contentType string, content interface{}) (out []byte, err error)
 
+	// GetMetadata returns metadata from the sidecar.
+	GetMetadata(ctx context.Context) (metadata *GetMetadataResponse, err error)
+
+	// SetMetadata sets a key-value pair in the sidecar.
+	SetMetadata(ctx context.Context, key, value string) error
+
 	// PublishEvent publishes data onto topic in specific pubsub component.
 	PublishEvent(ctx context.Context, pubsubName, topicName string, data interface{}, opts ...PublishEventOption) error
 
 	// PublishEventfromCustomContent serializes an struct and publishes its contents as data (JSON) onto topic in specific pubsub component.
 	// Deprecated: This method is deprecated and will be removed in a future version of the SDK. Please use `PublishEvent` instead.
 	PublishEventfromCustomContent(ctx context.Context, pubsubName, topicName string, data interface{}) error
+
+	// PublishEvents publishes multiple events onto topic in specific pubsub component.
+	// If all events are successfully published, response Error will be nil.
+	// The FailedEvents field will contain all events that failed to publish.
+	PublishEvents(ctx context.Context, pubsubName, topicName string, events []interface{}, opts ...PublishEventsOption) PublishEventsResponse
 
 	// GetSecret retrieves preconfigured secret from specified store using key.
 	GetSecret(ctx context.Context, storeName, key string, meta map[string]string) (data map[string]string, err error)
@@ -124,8 +155,10 @@ type Client interface {
 	GetConfigurationItems(ctx context.Context, storeName string, keys []string, opts ...ConfigurationOpt) (map[string]*ConfigurationItem, error)
 
 	// SubscribeConfigurationItems can subscribe the change of configuration items by storeName and keys, and return subscription id
-	SubscribeConfigurationItems(ctx context.Context, storeName string, keys []string, handler ConfigurationHandleFunction, opts ...ConfigurationOpt) error
+	SubscribeConfigurationItems(ctx context.Context, storeName string, keys []string, handler ConfigurationHandleFunction, opts ...ConfigurationOpt) (string, error)
 
+	// UnsubscribeConfigurationItems stops the subscription with target store's and ID.
+	// Deprecated: Closing the `SubscribeConfigurationItems` stream (closing the given context) will unsubscribe the client and should be used in favor of `UnsubscribeConfigurationItems`.
 	// UnsubscribeConfigurationItems can stop the subscription with target store's and id
 	UnsubscribeConfigurationItems(ctx context.Context, storeName string, id string, opts ...ConfigurationOpt) error
 
@@ -140,6 +173,14 @@ type Client interface {
 
 	// UnlockAlpha1 deletes unlocks a lock from a lock store.
 	UnlockAlpha1(ctx context.Context, storeName string, request *UnlockRequest) (*UnlockResponse, error)
+
+	// Encrypt data read from a stream, returning a readable stream that receives the encrypted data.
+	// This method returns an error if the initial call fails. Errors performed during the encryption are received by the out stream.
+	Encrypt(ctx context.Context, in io.Reader, opts EncryptOptions) (io.Reader, error)
+
+	// Decrypt data read from a stream, returning a readable stream that receives the decrypted data.
+	// This method returns an error if the initial call fails. Errors performed during the encryption are received by the out stream.
+	Decrypt(ctx context.Context, in io.Reader, opts DecryptOptions) (io.Reader, error)
 
 	// Shutdown the sidecar.
 	Shutdown(ctx context.Context) error
@@ -168,9 +209,6 @@ type Client interface {
 	// UnregisterActorReminder unregisters an actor reminder.
 	UnregisterActorReminder(ctx context.Context, req *UnregisterActorReminderRequest) error
 
-	// RenameActorReminder rename an actor reminder.
-	RenameActorReminder(ctx context.Context, req *RenameActorReminderRequest) error
-
 	// InvokeActor calls a method on an actor.
 	InvokeActor(ctx context.Context, req *InvokeActorRequest) (*InvokeActorResponse, error)
 
@@ -183,8 +221,31 @@ type Client interface {
 	// ImplActorClientStub is to impl user defined actor client stub
 	ImplActorClientStub(actorClientStub actor.Client, opt ...config.Option)
 
+	// StartWorkflowBeta1 starts a workflow.
+	StartWorkflowBeta1(ctx context.Context, req *StartWorkflowRequest) (*StartWorkflowResponse, error)
+
+	// GetWorkflowBeta1 gets a workflow.
+	GetWorkflowBeta1(ctx context.Context, req *GetWorkflowRequest) (*GetWorkflowResponse, error)
+
+	// PurgeWorkflowBeta1 purges a workflow.
+	PurgeWorkflowBeta1(ctx context.Context, req *PurgeWorkflowRequest) error
+
+	// TerminateWorkflowBeta1 terminates a workflow.
+	TerminateWorkflowBeta1(ctx context.Context, req *TerminateWorkflowRequest) error
+
+	// PauseWorkflowBeta1 pauses a workflow.
+	PauseWorkflowBeta1(ctx context.Context, req *PauseWorkflowRequest) error
+
+	// ResumeWorkflowBeta1 resumes a workflow.
+	ResumeWorkflowBeta1(ctx context.Context, req *ResumeWorkflowRequest) error
+
+	// RaiseEventWorkflowBeta1 raises an event for a workflow.
+	RaiseEventWorkflowBeta1(ctx context.Context, req *RaiseEventWorkflowRequest) error
+
 	// GrpcClient returns the base grpc client if grpc is used and nil otherwise
 	GrpcClient() pb.DaprClient
+
+	GrpcClientConn() *grpc.ClientConn
 }
 
 // NewClient instantiates Dapr client using DAPR_GRPC_PORT environment variable as port.
@@ -197,18 +258,35 @@ type Client interface {
 //	NewClientWithConnection(conn *grpc.ClientConn) Client
 //	NewClientWithSocket(socket string) (client Client, err error)
 func NewClient() (client Client, err error) {
-	port := os.Getenv(daprPortEnvVarName)
-	if port == "" {
+	lock.Lock()
+	defer lock.Unlock()
+
+	if defaultClient != nil {
+		return defaultClient, nil
+	}
+
+	addr, ok := os.LookupEnv(daprGRPCEndpointEnvVarName)
+	if ok {
+		client, err = NewClientWithAddress(addr)
+		if err != nil {
+			return nil, fmt.Errorf("error creating %q client: %w", daprGRPCEndpointEnvVarName, err)
+		}
+		defaultClient = client
+		return defaultClient, nil
+	}
+
+	port, ok := os.LookupEnv(daprPortEnvVarName)
+	if !ok {
 		port = daprPortDefault
 	}
-	var onceErr error
-	doOnce.Do(func() {
-		c, err := NewClientWithPort(port)
-		onceErr = errors.Wrap(err, "error creating default client")
-		defaultClient = c
-	})
 
-	return defaultClient, onceErr
+	c, err := NewClientWithPort(port)
+	if err != nil {
+		return nil, fmt.Errorf("error creating default client: %w", err)
+	}
+	defaultClient = c
+
+	return defaultClient, nil
 }
 
 // NewClientWithPort instantiates Dapr using specific gRPC port.
@@ -220,9 +298,16 @@ func NewClientWithPort(port string) (client Client, err error) {
 }
 
 // NewClientWithAddress instantiates Dapr using specific address (including port).
+// Deprecated: use NewClientWithAddressContext instead.
 func NewClientWithAddress(address string) (client Client, err error) {
+	return NewClientWithAddressContext(context.Background(), address)
+}
+
+// NewClientWithAddressContext instantiates Dapr using specific address (including port).
+// Uses the provided context to create the connection.
+func NewClientWithAddressContext(ctx context.Context, address string) (client Client, err error) {
 	if address == "" {
-		return nil, errors.New("nil address")
+		return nil, errors.New("empty address")
 	}
 	logger.Printf("dapr client initializing for: %s", address)
 
@@ -230,28 +315,45 @@ func NewClientWithAddress(address string) (client Client, err error) {
 	if err != nil {
 		return nil, err
 	}
-	ctx, ctxCancel := context.WithTimeout(context.Background(), time.Duration(timeoutSeconds)*time.Second)
-	conn, err := grpc.DialContext(
-		ctx,
-		address,
-		grpc.WithTransportCredentials(insecure.NewCredentials()),
-		grpc.WithBlock(),
-	)
+
+	parsedAddress, err := internal.ParseGRPCEndpoint(address)
 	if err != nil {
-		ctxCancel()
-		return nil, errors.Wrapf(err, "error creating connection to '%s': %v", address, err)
-	}
-	if hasToken := os.Getenv(apiTokenEnvVarName); hasToken != "" {
-		logger.Println("client uses API token")
+		return nil, fmt.Errorf("error parsing address '%s': %w", address, err)
 	}
 
-	return newClientWithConnectionAndCancelFunc(conn, ctxCancel), nil
+	at := &authToken{}
+
+	opts := []grpc.DialOption{
+		grpc.WithUserAgent(userAgent()),
+		grpc.WithBlock(),
+		authTokenUnaryInterceptor(at),
+		authTokenStreamInterceptor(at),
+	}
+
+	if parsedAddress.TLS {
+		opts = append(opts, grpc.WithTransportCredentials(credentials.NewTLS(new(tls.Config))))
+	} else {
+		opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, time.Duration(timeoutSeconds)*time.Second)
+	conn, err := grpc.DialContext(
+		ctx,
+		parsedAddress.Target,
+		opts...,
+	)
+	cancel()
+	if err != nil {
+		return nil, fmt.Errorf("error creating connection to '%s': %w", address, err)
+	}
+
+	return newClientWithConnection(conn, at), nil
 }
 
 func getClientTimeoutSeconds() (int, error) {
-	timeoutStr := os.Getenv(clientTimoutSecondsEnvVarName)
+	timeoutStr := os.Getenv(clientTimeoutSecondsEnvVarName)
 	if len(timeoutStr) == 0 {
-		return clientDefaultTimoutSeconds, nil
+		return clientDefaultTimeoutSeconds, nil
 	}
 	timeoutVar, err := strconv.Atoi(timeoutStr)
 	if err != nil {
@@ -268,46 +370,86 @@ func NewClientWithSocket(socket string) (client Client, err error) {
 	if socket == "" {
 		return nil, errors.New("nil socket")
 	}
+	at := &authToken{}
 	logger.Printf("dapr client initializing for: %s", socket)
-	addr := fmt.Sprintf("unix://%s", socket)
-	conn, err := grpc.Dial(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	addr := "unix://" + socket
+	conn, err := grpc.Dial(
+		addr,
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithUserAgent(userAgent()),
+		authTokenUnaryInterceptor(at),
+		authTokenStreamInterceptor(at),
+	)
 	if err != nil {
-		return nil, errors.Wrapf(err, "error creating connection to '%s': %v", addr, err)
+		return nil, fmt.Errorf("error creating connection to '%s': %w", addr, err)
 	}
-	if hasToken := os.Getenv(apiTokenEnvVarName); hasToken != "" {
+	return newClientWithConnection(conn, at), nil
+}
+
+func newClientWithConnection(conn *grpc.ClientConn, authToken *authToken) Client {
+	apiToken := os.Getenv(apiTokenEnvVarName)
+	if apiToken != "" {
 		logger.Println("client uses API token")
+		authToken.set(apiToken)
 	}
-	return NewClientWithConnection(conn), nil
+	return &GRPCClient{
+		connection:  conn,
+		protoClient: pb.NewDaprClient(conn),
+		authToken:   authToken,
+	}
 }
 
 // NewClientWithConnection instantiates Dapr client using specific connection.
 func NewClientWithConnection(conn *grpc.ClientConn) Client {
-	return newClientWithConnectionAndCancelFunc(conn, func() {})
+	return newClientWithConnection(conn, &authToken{})
 }
 
-func newClientWithConnectionAndCancelFunc(
-	conn *grpc.ClientConn,
-	cancelFunc context.CancelFunc,
-) Client {
-	return &GRPCClient{
-		connection:    conn,
-		ctxCancelFunc: cancelFunc,
-		protoClient:   pb.NewDaprClient(conn),
-		authToken:     os.Getenv(apiTokenEnvVarName),
-	}
+type authToken struct {
+	mu        sync.RWMutex
+	authToken string
+}
+
+func (a *authToken) get() string {
+	a.mu.RLock()
+	defer a.mu.RUnlock()
+	return a.authToken
+}
+
+func (a *authToken) set(token string) {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	a.authToken = token
+}
+
+func authTokenUnaryInterceptor(authToken *authToken) grpc.DialOption {
+	return grpc.WithUnaryInterceptor(func(ctx context.Context, method string, req, reply interface{}, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
+		token := authToken.get()
+		if token != "" {
+			ctx = metadata.NewOutgoingContext(ctx, metadata.Pairs(apiTokenKey, token))
+		}
+		return invoker(ctx, method, req, reply, cc, opts...)
+	})
+}
+
+func authTokenStreamInterceptor(authToken *authToken) grpc.DialOption {
+	return grpc.WithStreamInterceptor(func(ctx context.Context, desc *grpc.StreamDesc, cc *grpc.ClientConn, method string, streamer grpc.Streamer, opts ...grpc.CallOption) (grpc.ClientStream, error) {
+		token := authToken.get()
+		if token != "" {
+			ctx = metadata.NewOutgoingContext(ctx, metadata.Pairs(apiTokenKey, token))
+		}
+		return streamer(ctx, desc, cc, method, opts...)
+	})
 }
 
 // GRPCClient is the gRPC implementation of Dapr client.
 type GRPCClient struct {
-	connection    *grpc.ClientConn
-	ctxCancelFunc context.CancelFunc
-	protoClient   pb.DaprClient
-	authToken     string
+	connection  *grpc.ClientConn
+	protoClient pb.DaprClient
+	authToken   *authToken
 }
 
 // Close cleans up all resources created by the client.
 func (c *GRPCClient) Close() {
-	c.ctxCancelFunc()
 	if c.connection != nil {
 		c.connection.Close()
 		c.connection = nil
@@ -317,7 +459,7 @@ func (c *GRPCClient) Close() {
 // WithAuthToken sets Dapr API token on the instantiated client.
 // Allows empty string to reset token on existing client.
 func (c *GRPCClient) WithAuthToken(token string) {
-	c.authToken = token
+	c.authToken.set(token)
 }
 
 // WithTraceID adds existing trace ID to the outgoing context.
@@ -330,18 +472,11 @@ func (c *GRPCClient) WithTraceID(ctx context.Context, id string) context.Context
 	return metadata.NewOutgoingContext(ctx, md)
 }
 
-func (c *GRPCClient) withAuthToken(ctx context.Context) context.Context {
-	if c.authToken == "" {
-		return ctx
-	}
-	return metadata.NewOutgoingContext(ctx, metadata.Pairs(apiTokenKey, c.authToken))
-}
-
 // Shutdown the sidecar.
 func (c *GRPCClient) Shutdown(ctx context.Context) error {
-	_, err := c.protoClient.Shutdown(c.withAuthToken(ctx), &emptypb.Empty{})
+	_, err := c.protoClient.Shutdown(ctx, &pb.ShutdownRequest{})
 	if err != nil {
-		return errors.Wrap(err, "error shutting down the sidecar")
+		return fmt.Errorf("error shutting down the sidecar: %w", err)
 	}
 	return nil
 }
@@ -354,4 +489,8 @@ func (c *GRPCClient) GrpcClient() pb.DaprClient {
 // GrpcClientConn returns the grpc.ClientConn object used by this client.
 func (c *GRPCClient) GrpcClientConn() *grpc.ClientConn {
 	return c.connection
+}
+
+func userAgent() string {
+	return "dapr-sdk-go/" + strings.TrimSpace(version.SDKVersion)
 }

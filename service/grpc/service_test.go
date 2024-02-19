@@ -16,7 +16,10 @@ package grpc
 import (
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/stretchr/testify/assert"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/test/bufconn"
 )
 
@@ -31,13 +34,19 @@ func TestServerWithListener(t *testing.T) {
 	assert.NotNil(t, server)
 }
 
+func TestServerWithGrpcServer(t *testing.T) {
+	grpcServer := grpc.NewServer()
+	server := NewServiceWithGrpcServer(bufconn.Listen(1024*1024), grpcServer)
+	assert.NotNil(t, server)
+}
+
 func TestService(t *testing.T) {
 	_, err := NewService("")
-	assert.Errorf(t, err, "expected error from lack of address")
+	require.Errorf(t, err, "expected error from lack of address")
 }
 
 func getTestServer() *Server {
-	return newService(bufconn.Listen(1024 * 1024))
+	return newService(bufconn.Listen(1024*1024), nil)
 }
 
 func startTestServer(server *Server) {
@@ -49,7 +58,9 @@ func startTestServer(server *Server) {
 }
 
 func stopTestServer(t *testing.T, server *Server) {
+	t.Helper()
+
 	assert.NotNil(t, server)
 	err := server.Stop()
-	assert.Nilf(t, err, "error stopping server")
+	require.NoErrorf(t, err, "error stopping server")
 }

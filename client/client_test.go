@@ -14,8 +14,10 @@ limitations under the License.
 package client
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net"
 	"os"
@@ -23,22 +25,23 @@ import (
 	"testing"
 	"time"
 
-	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/google/uuid"
-	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/test/bufconn"
 	"google.golang.org/protobuf/types/known/anypb"
+	"google.golang.org/protobuf/types/known/emptypb"
 
-	commonv1pb "github.com/dapr/go-sdk/dapr/proto/common/v1"
-	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
+	commonv1pb "github.com/dapr/dapr/pkg/proto/common/v1"
+	pb "github.com/dapr/dapr/pkg/proto/runtime/v1"
 )
 
 const (
-	testBufSize = 1024 * 1024
-	testSocket  = "/tmp/dapr.socket"
+	testBufSize           = 1024 * 1024
+	testSocket            = "/tmp/dapr.socket"
+	testWorkflowFailureID = "test_failure_id"
 )
 
 var testClient Client
@@ -64,28 +67,28 @@ func TestMain(m *testing.M) {
 func TestNewClient(t *testing.T) {
 	t.Run("return error when unable to reach server", func(t *testing.T) {
 		_, err := NewClientWithPort("1")
-		assert.Error(t, err)
+		require.Error(t, err)
 	})
 
 	t.Run("no arg for with port", func(t *testing.T) {
 		_, err := NewClientWithPort("")
-		assert.Error(t, err)
+		require.Error(t, err)
 	})
 
 	t.Run("no arg for with address", func(t *testing.T) {
 		_, err := NewClientWithAddress("")
-		assert.Error(t, err)
+		require.Error(t, err)
 	})
 
 	t.Run("no arg with socket", func(t *testing.T) {
 		_, err := NewClientWithSocket("")
-		assert.Error(t, err)
+		require.Error(t, err)
 	})
 
 	t.Run("new client closed with token", func(t *testing.T) {
 		t.Setenv(apiTokenEnvVarName, "test")
 		c, err := NewClientWithSocket(testSocket)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		defer c.Close()
 		c.WithAuthToken("")
 	})
@@ -101,21 +104,21 @@ func TestNewClient(t *testing.T) {
 	t.Run("new socket client closed with token", func(t *testing.T) {
 		t.Setenv(apiTokenEnvVarName, "test")
 		c, err := NewClientWithSocket(testSocket)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		defer c.Close()
 		c.WithAuthToken("")
 	})
 
 	t.Run("new socket client closed with empty token", func(t *testing.T) {
 		c, err := NewClientWithSocket(testSocket)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		defer c.Close()
 		c.WithAuthToken("")
 	})
 
 	t.Run("new socket client with trace ID", func(t *testing.T) {
 		c, err := NewClientWithSocket(testSocket)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		defer c.Close()
 		ctx := c.WithTraceID(context.Background(), "")
 		_ = c.WithTraceID(ctx, "test")
@@ -127,7 +130,7 @@ func TestShutdown(t *testing.T) {
 
 	t.Run("shutdown", func(t *testing.T) {
 		err := testClient.Shutdown(ctx)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 	})
 }
 
@@ -197,35 +200,35 @@ func getTestClientWithSocket(ctx context.Context) (client Client, closer func())
 
 func Test_getClientTimeoutSeconds(t *testing.T) {
 	t.Run("empty env var", func(t *testing.T) {
-		os.Setenv(clientTimoutSecondsEnvVarName, "")
+		t.Setenv(clientTimeoutSecondsEnvVarName, "")
 		got, err := getClientTimeoutSeconds()
-		assert.NoError(t, err)
-		assert.Equal(t, clientDefaultTimoutSeconds, got)
+		require.NoError(t, err)
+		assert.Equal(t, clientDefaultTimeoutSeconds, got)
 	})
 
 	t.Run("invalid env var", func(t *testing.T) {
-		os.Setenv(clientTimoutSecondsEnvVarName, "invalid")
+		t.Setenv(clientTimeoutSecondsEnvVarName, "invalid")
 		_, err := getClientTimeoutSeconds()
-		assert.Error(t, err)
+		require.Error(t, err)
 	})
 
 	t.Run("normal env var", func(t *testing.T) {
-		os.Setenv(clientTimoutSecondsEnvVarName, "7")
+		t.Setenv(clientTimeoutSecondsEnvVarName, "7")
 		got, err := getClientTimeoutSeconds()
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.Equal(t, 7, got)
 	})
 
 	t.Run("zero env var", func(t *testing.T) {
-		os.Setenv(clientTimoutSecondsEnvVarName, "0")
+		t.Setenv(clientTimeoutSecondsEnvVarName, "0")
 		_, err := getClientTimeoutSeconds()
-		assert.Error(t, err)
+		require.Error(t, err)
 	})
 
 	t.Run("negative env var", func(t *testing.T) {
-		os.Setenv(clientTimoutSecondsEnvVarName, "-3")
+		t.Setenv(clientTimeoutSecondsEnvVarName, "-3")
 		_, err := getClientTimeoutSeconds()
-		assert.Error(t, err)
+		require.Error(t, err)
 	})
 }
 
@@ -249,7 +252,7 @@ func (s *testDaprServer) UnlockAlpha1(ctx context.Context, req *pb.UnlockRequest
 }
 
 func (s *testDaprServer) InvokeService(ctx context.Context, req *pb.InvokeServiceRequest) (*commonv1pb.InvokeResponse, error) {
-	if req.Message == nil {
+	if req.GetMessage() == nil {
 		return &commonv1pb.InvokeResponse{
 			ContentType: "text/plain",
 			Data: &anypb.Any{
@@ -258,14 +261,14 @@ func (s *testDaprServer) InvokeService(ctx context.Context, req *pb.InvokeServic
 		}, nil
 	}
 	return &commonv1pb.InvokeResponse{
-		ContentType: req.Message.ContentType,
-		Data:        req.Message.Data,
+		ContentType: req.GetMessage().GetContentType(),
+		Data:        req.GetMessage().GetData(),
 	}, nil
 }
 
 func (s *testDaprServer) GetState(ctx context.Context, req *pb.GetStateRequest) (*pb.GetStateResponse, error) {
 	return &pb.GetStateResponse{
-		Data: s.state[req.Key],
+		Data: s.state[req.GetKey()],
 		Etag: "1",
 	}, nil
 }
@@ -287,16 +290,16 @@ func (s *testDaprServer) GetBulkState(ctx context.Context, in *pb.GetBulkStateRe
 	}, nil
 }
 
-func (s *testDaprServer) SaveState(ctx context.Context, req *pb.SaveStateRequest) (*empty.Empty, error) {
-	for _, item := range req.States {
-		s.state[item.Key] = item.Value
+func (s *testDaprServer) SaveState(ctx context.Context, req *pb.SaveStateRequest) (*emptypb.Empty, error) {
+	for _, item := range req.GetStates() {
+		s.state[item.GetKey()] = item.GetValue()
 	}
-	return &empty.Empty{}, nil
+	return &emptypb.Empty{}, nil
 }
 
 func (s *testDaprServer) QueryStateAlpha1(ctx context.Context, req *pb.QueryStateRequest) (*pb.QueryStateResponse, error) {
 	var v map[string]interface{}
-	if err := json.Unmarshal([]byte(req.Query), &v); err != nil {
+	if err := json.Unmarshal([]byte(req.GetQuery()), &v); err != nil {
 		return nil, err
 	}
 
@@ -304,52 +307,87 @@ func (s *testDaprServer) QueryStateAlpha1(ctx context.Context, req *pb.QueryStat
 		Results: make([]*pb.QueryStateItem, 0, len(s.state)),
 	}
 	for key, value := range s.state {
-		ret.Results = append(ret.Results, &pb.QueryStateItem{Key: key, Data: value})
+		ret.Results = append(ret.GetResults(), &pb.QueryStateItem{Key: key, Data: value})
 	}
 	return ret, nil
 }
 
-func (s *testDaprServer) DeleteState(ctx context.Context, req *pb.DeleteStateRequest) (*empty.Empty, error) {
-	delete(s.state, req.Key)
-	return &empty.Empty{}, nil
+func (s *testDaprServer) DeleteState(ctx context.Context, req *pb.DeleteStateRequest) (*emptypb.Empty, error) {
+	delete(s.state, req.GetKey())
+	return &emptypb.Empty{}, nil
 }
 
-func (s *testDaprServer) DeleteBulkState(ctx context.Context, req *pb.DeleteBulkStateRequest) (*empty.Empty, error) {
-	for _, item := range req.States {
-		delete(s.state, item.Key)
+func (s *testDaprServer) DeleteBulkState(ctx context.Context, req *pb.DeleteBulkStateRequest) (*emptypb.Empty, error) {
+	for _, item := range req.GetStates() {
+		delete(s.state, item.GetKey())
 	}
-	return &empty.Empty{}, nil
+	return &emptypb.Empty{}, nil
 }
 
-func (s *testDaprServer) ExecuteStateTransaction(ctx context.Context, in *pb.ExecuteStateTransactionRequest) (*empty.Empty, error) {
+func (s *testDaprServer) ExecuteStateTransaction(ctx context.Context, in *pb.ExecuteStateTransactionRequest) (*emptypb.Empty, error) {
 	for _, op := range in.GetOperations() {
 		item := op.GetRequest()
 		switch opType := op.GetOperationType(); opType {
 		case "upsert":
-			s.state[item.Key] = item.Value
+			s.state[item.GetKey()] = item.GetValue()
 		case "delete":
-			delete(s.state, item.Key)
+			delete(s.state, item.GetKey())
 		default:
-			return &empty.Empty{}, fmt.Errorf("invalid operation type: %s", opType)
+			return &emptypb.Empty{}, fmt.Errorf("invalid operation type: %s", opType)
 		}
 	}
-	return &empty.Empty{}, nil
+	return &emptypb.Empty{}, nil
 }
 
-func (s *testDaprServer) PublishEvent(ctx context.Context, req *pb.PublishEventRequest) (*empty.Empty, error) {
-	return &empty.Empty{}, nil
+func (s *testDaprServer) GetMetadata(ctx context.Context, req *pb.GetMetadataRequest) (metadata *pb.GetMetadataResponse, err error) {
+	resp := &pb.GetMetadataResponse{
+		Id:                uuid.NewString(),
+		ActiveActorsCount: []*pb.ActiveActorsCount{},
+		ExtendedMetadata:  map[string]string{"test_key": "test_value"},
+		Subscriptions:     []*pb.PubsubSubscription{},
+		HttpEndpoints:     []*pb.MetadataHTTPEndpoint{},
+	}
+	return resp, nil
+}
+
+func (s *testDaprServer) SetMetadata(ctx context.Context, req *pb.SetMetadataRequest) (*emptypb.Empty, error) {
+	return &emptypb.Empty{}, nil
+}
+
+func (s *testDaprServer) PublishEvent(ctx context.Context, req *pb.PublishEventRequest) (*emptypb.Empty, error) {
+	return &emptypb.Empty{}, nil
+}
+
+// BulkPublishEventAlpha1 mocks the BulkPublishEventAlpha1 API.
+// It will fail to publish events that start with "fail".
+// It will fail the entire request if an event starts with "failall".
+func (s *testDaprServer) BulkPublishEventAlpha1(ctx context.Context, req *pb.BulkPublishRequest) (*pb.BulkPublishResponse, error) {
+	failedEntries := make([]*pb.BulkPublishResponseFailedEntry, 0)
+	for _, entry := range req.GetEntries() {
+		if bytes.HasPrefix(entry.GetEvent(), []byte("failall")) {
+			// fail the entire request
+			return nil, errors.New("failed to publish events")
+		} else if bytes.HasPrefix(entry.GetEvent(), []byte("fail")) {
+			// fail this entry
+			failedEntries = append(failedEntries, &pb.BulkPublishResponseFailedEntry{
+				EntryId: entry.GetEntryId(),
+				Error:   "failed to publish events",
+			})
+		}
+	}
+	return &pb.BulkPublishResponse{FailedEntries: failedEntries}, nil
 }
 
 func (s *testDaprServer) InvokeBinding(ctx context.Context, req *pb.InvokeBindingRequest) (*pb.InvokeBindingResponse, error) {
-	if req.Data == nil {
+	if req.GetData() == nil {
 		return &pb.InvokeBindingResponse{
 			Data:     []byte("test"),
 			Metadata: map[string]string{"k1": "v1", "k2": "v2"},
 		}, nil
 	}
 	return &pb.InvokeBindingResponse{
-		Data:     req.Data,
-		Metadata: req.Metadata,
+		Data:     req.GetData(),
+		Metadata: req.GetMetadata(),
 	}, nil
 }
 
@@ -373,16 +411,12 @@ func (s *testDaprServer) GetBulkSecret(ctx context.Context, req *pb.GetBulkSecre
 	}, nil
 }
 
-func (s *testDaprServer) RegisterActorReminder(ctx context.Context, req *pb.RegisterActorReminderRequest) (*empty.Empty, error) {
-	return &empty.Empty{}, nil
+func (s *testDaprServer) RegisterActorReminder(ctx context.Context, req *pb.RegisterActorReminderRequest) (*emptypb.Empty, error) {
+	return &emptypb.Empty{}, nil
 }
 
-func (s *testDaprServer) UnregisterActorReminder(ctx context.Context, req *pb.UnregisterActorReminderRequest) (*empty.Empty, error) {
-	return &empty.Empty{}, nil
-}
-
-func (s *testDaprServer) RenameActorReminder(ctx context.Context, req *pb.RenameActorReminderRequest) (*empty.Empty, error) {
-	return &empty.Empty{}, nil
+func (s *testDaprServer) UnregisterActorReminder(ctx context.Context, req *pb.UnregisterActorReminderRequest) (*emptypb.Empty, error) {
+	return &emptypb.Empty{}, nil
 }
 
 func (s *testDaprServer) InvokeActor(context.Context, *pb.InvokeActorRequest) (*pb.InvokeActorResponse, error) {
@@ -391,19 +425,19 @@ func (s *testDaprServer) InvokeActor(context.Context, *pb.InvokeActorRequest) (*
 	}, nil
 }
 
-func (s *testDaprServer) RegisterActorTimer(context.Context, *pb.RegisterActorTimerRequest) (*empty.Empty, error) {
-	return &empty.Empty{}, nil
+func (s *testDaprServer) RegisterActorTimer(context.Context, *pb.RegisterActorTimerRequest) (*emptypb.Empty, error) {
+	return &emptypb.Empty{}, nil
 }
 
-func (s *testDaprServer) UnregisterActorTimer(context.Context, *pb.UnregisterActorTimerRequest) (*empty.Empty, error) {
-	return &empty.Empty{}, nil
+func (s *testDaprServer) UnregisterActorTimer(context.Context, *pb.UnregisterActorTimerRequest) (*emptypb.Empty, error) {
+	return &emptypb.Empty{}, nil
 }
 
-func (s *testDaprServer) Shutdown(ctx context.Context, req *empty.Empty) (*empty.Empty, error) {
-	return &empty.Empty{}, nil
+func (s *testDaprServer) Shutdown(ctx context.Context, req *pb.ShutdownRequest) (*emptypb.Empty, error) {
+	return &emptypb.Empty{}, nil
 }
 
-func (s *testDaprServer) GetConfigurationAlpha1(ctx context.Context, in *pb.GetConfigurationRequest) (*pb.GetConfigurationResponse, error) {
+func (s *testDaprServer) GetConfiguration(ctx context.Context, in *pb.GetConfigurationRequest) (*pb.GetConfigurationResponse, error) {
 	if in.GetStoreName() == "" {
 		return &pb.GetConfigurationResponse{}, errors.New("store name notfound")
 	}
@@ -418,12 +452,20 @@ func (s *testDaprServer) GetConfigurationAlpha1(ctx context.Context, in *pb.GetC
 	}, nil
 }
 
-func (s *testDaprServer) SubscribeConfigurationAlpha1(in *pb.SubscribeConfigurationRequest, server pb.Dapr_SubscribeConfigurationAlpha1Server) error {
+func (s *testDaprServer) SubscribeConfiguration(in *pb.SubscribeConfigurationRequest, server pb.Dapr_SubscribeConfigurationServer) error {
 	stopCh := make(chan struct{})
 	id, _ := uuid.NewUUID()
 	s.configurationSubscriptionIDMapLoc.Lock()
 	s.configurationSubscriptionID[id.String()] = stopCh
 	s.configurationSubscriptionIDMapLoc.Unlock()
+
+	// Send subscription ID in the first response.
+	if err := server.Send(&pb.SubscribeConfigurationResponse{
+		Id: id.String(),
+	}); err != nil {
+		return err
+	}
+
 	for i := 0; i < 5; i++ {
 		select {
 		case <-stopCh:
@@ -447,16 +489,72 @@ func (s *testDaprServer) SubscribeConfigurationAlpha1(in *pb.SubscribeConfigurat
 	return nil
 }
 
-func (s *testDaprServer) UnsubscribeConfigurationAlpha1(ctx context.Context, in *pb.UnsubscribeConfigurationRequest) (*pb.UnsubscribeConfigurationResponse, error) {
+func (s *testDaprServer) UnsubscribeConfiguration(ctx context.Context, in *pb.UnsubscribeConfigurationRequest) (*pb.UnsubscribeConfigurationResponse, error) {
 	s.configurationSubscriptionIDMapLoc.Lock()
 	defer s.configurationSubscriptionIDMapLoc.Unlock()
-	ch, ok := s.configurationSubscriptionID[in.Id]
+	ch, ok := s.configurationSubscriptionID[in.GetId()]
 	if !ok {
 		return &pb.UnsubscribeConfigurationResponse{Ok: true}, nil
 	}
 	close(ch)
-	delete(s.configurationSubscriptionID, in.Id)
+	delete(s.configurationSubscriptionID, in.GetId())
 	return &pb.UnsubscribeConfigurationResponse{Ok: true}, nil
+}
+
+func (s *testDaprServer) StartWorkflowBeta1(ctx context.Context, in *pb.StartWorkflowRequest) (*pb.StartWorkflowResponse, error) {
+	if in.GetInstanceId() == testWorkflowFailureID {
+		return nil, errors.New("test failure")
+	}
+	return &pb.StartWorkflowResponse{
+		InstanceId: in.GetInstanceId(),
+	}, nil
+}
+
+func (s *testDaprServer) GetWorkflowBeta1(ctx context.Context, in *pb.GetWorkflowRequest) (*pb.GetWorkflowResponse, error) {
+	if in.GetInstanceId() == testWorkflowFailureID {
+		return nil, errors.New("test failure")
+	}
+	return &pb.GetWorkflowResponse{
+		InstanceId:    in.GetInstanceId(),
+		WorkflowName:  "TestWorkflowName",
+		RuntimeStatus: "Running",
+		Properties:    make(map[string]string),
+	}, nil
+}
+
+func (s *testDaprServer) PurgeWorkflowBeta1(ctx context.Context, in *pb.PurgeWorkflowRequest) (*emptypb.Empty, error) {
+	if in.GetInstanceId() == testWorkflowFailureID {
+		return nil, errors.New("test failure")
+	}
+	return &emptypb.Empty{}, nil
+}
+
+func (s *testDaprServer) TerminateWorkflowBeta1(ctx context.Context, in *pb.TerminateWorkflowRequest) (*emptypb.Empty, error) {
+	if in.GetInstanceId() == testWorkflowFailureID {
+		return nil, errors.New("test failure")
+	}
+	return &emptypb.Empty{}, nil
+}
+
+func (s *testDaprServer) PauseWorkflowBeta1(ctx context.Context, in *pb.PauseWorkflowRequest) (*emptypb.Empty, error) {
+	if in.GetInstanceId() == testWorkflowFailureID {
+		return nil, errors.New("test failure")
+	}
+	return &emptypb.Empty{}, nil
+}
+
+func (s *testDaprServer) ResumeWorkflowBeta1(ctx context.Context, in *pb.ResumeWorkflowRequest) (*emptypb.Empty, error) {
+	if in.GetInstanceId() == testWorkflowFailureID {
+		return nil, errors.New("test failure")
+	}
+	return &emptypb.Empty{}, nil
+}
+
+func (s *testDaprServer) RaiseEventWorkflowBeta1(ctx context.Context, in *pb.RaiseEventWorkflowRequest) (*emptypb.Empty, error) {
+	if in.GetInstanceId() == testWorkflowFailureID {
+		return nil, errors.New("test failure")
+	}
+	return &emptypb.Empty{}, nil
 }
 
 func TestGrpcClient(t *testing.T) {

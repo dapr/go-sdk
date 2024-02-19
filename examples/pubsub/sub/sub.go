@@ -23,12 +23,12 @@ import (
 )
 
 // Subscription to tell the dapr what topic to subscribe.
-// - PubsubName: is the name of the component configured in the metadata of pubsub.yaml.
-// - Topic: is the name of the topic to subscribe.
-// - Route: tell dapr where to request the API to publish the message to the subscriber when get a message from topic.
-// - Match: (Optional) The CEL expression to match on the CloudEvent to select this route.
-// - Priority: (Optional) The priority order of the route when Match is specificed.
-//             If not specified, the matches are evaluated in the order in which they are added.
+//   - PubsubName: is the name of the component configured in the metadata of pubsub.yaml.
+//   - Topic: is the name of the topic to subscribe.
+//   - Route: tell dapr where to request the API to publish the message to the subscriber when get a message from topic.
+//   - Match: (Optional) The CEL expression to match on the CloudEvent to select this route.
+//   - Priority: (Optional) The priority order of the route when Match is specificed.
+//     If not specified, the matches are evaluated in the order in which they are added.
 var defaultSubscription = &common.Subscription{
 	PubsubName: "messages",
 	Topic:      "neworder",

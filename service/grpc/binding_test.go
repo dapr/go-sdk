@@ -18,10 +18,12 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/golang/protobuf/ptypes/empty"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
-	runtime "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
+	"github.com/stretchr/testify/assert"
+	"google.golang.org/protobuf/types/known/emptypb"
+
+	"github.com/dapr/dapr/pkg/proto/runtime/v1"
 	"github.com/dapr/go-sdk/service/common"
 )
 
@@ -35,22 +37,22 @@ func testBindingHandler(ctx context.Context, in *common.BindingEvent) (out []byt
 func TestListInputBindings(t *testing.T) {
 	server := getTestServer()
 	err := server.AddBindingInvocationHandler("test1", testBindingHandler)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	err = server.AddBindingInvocationHandler("test2", testBindingHandler)
-	assert.NoError(t, err)
-	resp, err := server.ListInputBindings(context.Background(), &empty.Empty{})
-	assert.NoError(t, err)
+	require.NoError(t, err)
+	resp, err := server.ListInputBindings(context.Background(), &emptypb.Empty{})
+	require.NoError(t, err)
 	assert.NotNil(t, resp)
-	assert.Lenf(t, resp.Bindings, 2, "expected 2 handlers")
+	assert.Lenf(t, resp.GetBindings(), 2, "expected 2 handlers")
 }
 
 func TestBindingForErrors(t *testing.T) {
 	server := getTestServer()
 	err := server.AddBindingInvocationHandler("", nil)
-	assert.Errorf(t, err, "expected error on nil method name")
+	require.Errorf(t, err, "expected error on nil method name")
 
 	err = server.AddBindingInvocationHandler("test", nil)
-	assert.Errorf(t, err, "expected error on nil method handler")
+	require.Errorf(t, err, "expected error on nil method handler")
 }
 
 // go test -timeout 30s ./service/grpc -count 1 -run ^TestBinding$
@@ -60,24 +62,24 @@ func TestBinding(t *testing.T) {
 
 	server := getTestServer()
 	err := server.AddBindingInvocationHandler(methodName, testBindingHandler)
-	assert.Nil(t, err)
+	require.NoError(t, err)
 	startTestServer(server)
 
 	t.Run("binding without event", func(t *testing.T) {
 		_, err := server.OnBindingEvent(ctx, nil)
-		assert.Error(t, err)
+		require.Error(t, err)
 	})
 
 	t.Run("binding event for wrong method", func(t *testing.T) {
 		in := &runtime.BindingEventRequest{Name: "invalid"}
 		_, err := server.OnBindingEvent(ctx, in)
-		assert.Error(t, err)
+		require.Error(t, err)
 	})
 
 	t.Run("binding event without data", func(t *testing.T) {
 		in := &runtime.BindingEventRequest{Name: methodName}
 		out, err := server.OnBindingEvent(ctx, in)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.NotNil(t, out)
 	})
 
@@ -88,9 +90,9 @@ func TestBinding(t *testing.T) {
 			Data: []byte(data),
 		}
 		out, err := server.OnBindingEvent(ctx, in)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.NotNil(t, out)
-		assert.Equal(t, data, string(out.Data))
+		assert.Equal(t, data, string(out.GetData()))
 	})
 
 	t.Run("binding event with metadata", func(t *testing.T) {
@@ -99,7 +101,7 @@ func TestBinding(t *testing.T) {
 			Metadata: map[string]string{"k1": "v1", "k2": "v2"},
 		}
 		out, err := server.OnBindingEvent(ctx, in)
-		assert.NoError(t, err)
+		require.NoError(t, err)
 		assert.NotNil(t, out)
 	})
 

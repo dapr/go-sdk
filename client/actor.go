@@ -15,17 +15,21 @@ package client
 
 import (
 	"context"
-	"encoding/json"
+	"errors"
 	"fmt"
 	"reflect"
+	"strconv"
 
-	anypb "github.com/golang/protobuf/ptypes/any"
-	"github.com/pkg/errors"
+	"google.golang.org/protobuf/types/known/anypb"
 
+	pb "github.com/dapr/dapr/pkg/proto/runtime/v1"
 	"github.com/dapr/go-sdk/actor"
 	"github.com/dapr/go-sdk/actor/codec"
 	"github.com/dapr/go-sdk/actor/config"
-	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
+)
+
+const (
+	metadataKeyTTLInSeconds = "ttlInSeconds"
 )
 
 type InvokeActorRequest struct {
@@ -62,15 +66,15 @@ func (c *GRPCClient) InvokeActor(ctx context.Context, in *InvokeActorRequest) (o
 		Data:      in.Data,
 	}
 
-	resp, err := c.protoClient.InvokeActor(c.withAuthToken(ctx), req)
+	resp, err := c.protoClient.InvokeActor(ctx, req)
 	if err != nil {
-		return nil, errors.Wrapf(err, "error invoking binding %s/%s", in.ActorType, in.ActorID)
+		return nil, fmt.Errorf("error invoking binding %s/%s: %w", in.ActorType, in.ActorID, err)
 	}
 
 	out = &InvokeActorResponse{}
 
 	if resp != nil {
-		out.Data = resp.Data
+		out.Data = resp.GetData()
 	}
 
 	return out, nil
@@ -149,9 +153,9 @@ func (c *GRPCClient) RegisterActorReminder(ctx context.Context, in *RegisterActo
 		Data:      in.Data,
 	}
 
-	_, err = c.protoClient.RegisterActorReminder(c.withAuthToken(ctx), req)
+	_, err = c.protoClient.RegisterActorReminder(ctx, req)
 	if err != nil {
-		return errors.Wrapf(err, "error invoking register actor reminder %s/%s", in.ActorType, in.ActorID)
+		return fmt.Errorf("error invoking register actor reminder %s/%s: %w", in.ActorType, in.ActorID, err)
 	}
 	return nil
 }
@@ -183,48 +187,9 @@ func (c *GRPCClient) UnregisterActorReminder(ctx context.Context, in *Unregister
 		Name:      in.Name,
 	}
 
-	_, err := c.protoClient.UnregisterActorReminder(c.withAuthToken(ctx), req)
+	_, err := c.protoClient.UnregisterActorReminder(ctx, req)
 	if err != nil {
-		return errors.Wrapf(err, "error invoking unregister actor reminder %s/%s", in.ActorType, in.ActorID)
-	}
-	return nil
-}
-
-type RenameActorReminderRequest struct {
-	OldName   string
-	ActorType string
-	ActorID   string
-	NewName   string
-}
-
-// RenameActorReminder would rename the actor reminder.
-func (c *GRPCClient) RenameActorReminder(ctx context.Context, in *RenameActorReminderRequest) error {
-	if in == nil {
-		return errors.New("actor rename reminder invocation request param required")
-	}
-	if in.ActorType == "" {
-		return errors.New("actor rename reminder invocation actorType required")
-	}
-	if in.ActorID == "" {
-		return errors.New("actor rename reminder invocation actorID required")
-	}
-	if in.OldName == "" {
-		return errors.New("actor rename reminder invocation oldName required")
-	}
-	if in.NewName == "" {
-		return errors.New("actor rename reminder invocation newName required")
-	}
-
-	req := &pb.RenameActorReminderRequest{
-		ActorType: in.ActorType,
-		ActorId:   in.ActorID,
-		OldName:   in.OldName,
-		NewName:   in.NewName,
-	}
-
-	_, err := c.protoClient.RenameActorReminder(c.withAuthToken(ctx), req)
-	if err != nil {
-		return errors.Wrapf(err, "error invoking rename actor reminder %s/%s", in.ActorType, in.ActorID)
+		return fmt.Errorf("error invoking unregister actor reminder %s/%s: %w", in.ActorType, in.ActorID, err)
 	}
 	return nil
 }
@@ -270,9 +235,9 @@ func (c *GRPCClient) RegisterActorTimer(ctx context.Context, in *RegisterActorTi
 		Callback:  in.CallBack,
 	}
 
-	_, err = c.protoClient.RegisterActorTimer(c.withAuthToken(ctx), req)
+	_, err = c.protoClient.RegisterActorTimer(ctx, req)
 	if err != nil {
-		return errors.Wrapf(err, "error invoking actor register timer %s/%s", in.ActorType, in.ActorID)
+		return fmt.Errorf("error invoking actor register timer %s/%s: %w", in.ActorType, in.ActorID, err)
 	}
 
 	return nil
@@ -304,9 +269,9 @@ func (c *GRPCClient) UnregisterActorTimer(ctx context.Context, in *UnregisterAct
 		Name:      in.Name,
 	}
 
-	_, err := c.protoClient.UnregisterActorTimer(c.withAuthToken(ctx), req)
+	_, err := c.protoClient.UnregisterActorTimer(ctx, req)
 	if err != nil {
-		return errors.Wrapf(err, "error invoking binding %s/%s", in.ActorType, in.ActorID)
+		return fmt.Errorf("error invoking binding %s/%s: %w", in.ActorType, in.ActorID, err)
 	}
 
 	return nil
@@ -395,7 +360,7 @@ func (c *GRPCClient) makeCallProxyFunction(actor actor.Client, methodName string
 
 		var data []byte
 		if len(inIArr) > 0 {
-			data, err = json.Marshal(inIArr[0])
+			data, err = serializer.Marshal(inIArr[0])
 		}
 		if err != nil {
 			panic(err)
@@ -448,21 +413,22 @@ func (c *GRPCClient) GetActorState(ctx context.Context, in *GetActorStateRequest
 	if in.KeyName == "" {
 		return nil, errors.New("actor get state invocation keyName required")
 	}
-	rsp, err := c.protoClient.GetActorState(c.withAuthToken(ctx), &pb.GetActorStateRequest{
+	rsp, err := c.protoClient.GetActorState(ctx, &pb.GetActorStateRequest{
 		ActorId:   in.ActorID,
 		ActorType: in.ActorType,
 		Key:       in.KeyName,
 	})
 	if err != nil {
-		return nil, errors.Wrapf(err, "error invoking actor get state %s/%s", in.ActorType, in.ActorID)
+		return nil, fmt.Errorf("error invoking actor get state %s/%s: %w", in.ActorType, in.ActorID, err)
 	}
-	return &GetActorStateResponse{Data: rsp.Data}, nil
+	return &GetActorStateResponse{Data: rsp.GetData()}, nil
 }
 
 type ActorStateOperation struct {
 	OperationType string
 	Key           string
 	Value         []byte
+	TTLInSeconds  *int64
 }
 
 func (c *GRPCClient) SaveStateTransactionally(ctx context.Context, actorType, actorID string, operations []*ActorStateOperation) error {
@@ -477,15 +443,21 @@ func (c *GRPCClient) SaveStateTransactionally(ctx context.Context, actorType, ac
 	}
 	grpcOperations := make([]*pb.TransactionalActorStateOperation, 0)
 	for _, op := range operations {
+		var metadata map[string]string
+		if op.TTLInSeconds != nil {
+			metadata = make(map[string]string)
+			metadata[metadataKeyTTLInSeconds] = strconv.FormatInt(*op.TTLInSeconds, 10)
+		}
 		grpcOperations = append(grpcOperations, &pb.TransactionalActorStateOperation{
 			OperationType: op.OperationType,
 			Key:           op.Key,
 			Value: &anypb.Any{
 				Value: op.Value,
 			},
+			Metadata: metadata,
 		})
 	}
-	_, err := c.protoClient.ExecuteActorStateTransaction(c.withAuthToken(ctx), &pb.ExecuteActorStateTransactionRequest{
+	_, err := c.protoClient.ExecuteActorStateTransaction(ctx, &pb.ExecuteActorStateTransactionRequest{
 		ActorType:  actorType,
 		ActorId:    actorID,
 		Operations: grpcOperations,
