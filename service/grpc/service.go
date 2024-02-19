@@ -14,15 +14,15 @@ limitations under the License.
 package grpc
 
 import (
+	"errors"
+	"fmt"
 	"net"
 	"os"
 	"sync/atomic"
 
-	"github.com/pkg/errors"
 	"google.golang.org/grpc"
 
-	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
-
+	pb "github.com/dapr/dapr/pkg/proto/runtime/v1"
 	"github.com/dapr/go-sdk/actor"
 	"github.com/dapr/go-sdk/actor/config"
 	"github.com/dapr/go-sdk/service/common"
@@ -32,23 +32,28 @@ import (
 // NewService creates new Service.
 func NewService(address string) (s common.Service, err error) {
 	if address == "" {
-		return nil, errors.New("nil address")
+		return nil, errors.New("empty address")
 	}
 	lis, err := net.Listen("tcp", address)
 	if err != nil {
-		err = errors.Wrapf(err, "failed to TCP listen on: %s", address)
+		err = fmt.Errorf("failed to TCP listen on %s: %w", address, err)
 		return
 	}
-	s = newService(lis)
+	s = newService(lis, nil)
 	return
 }
 
 // NewServiceWithListener creates new Service with specific listener.
-func NewServiceWithListener(lis net.Listener) common.Service {
-	return newService(lis)
+func NewServiceWithListener(lis net.Listener, opts ...grpc.ServerOption) common.Service {
+	return newService(lis, nil, opts...)
 }
 
-func newService(lis net.Listener) *Server {
+// NewServiceWithGrpcServer creates a new Service with specific listener and grpcServer
+func NewServiceWithGrpcServer(lis net.Listener, server *grpc.Server) common.Service {
+	return newService(lis, server)
+}
+
+func newService(lis net.Listener, grpcServer *grpc.Server, opts ...grpc.ServerOption) *Server {
 	s := &Server{
 		listener:        lis,
 		invokeHandlers:  make(map[string]common.ServiceInvocationHandler),
@@ -57,10 +62,13 @@ func newService(lis net.Listener) *Server {
 		authToken:       os.Getenv(common.AppAPITokenEnvVar),
 	}
 
-	gs := grpc.NewServer()
-	pb.RegisterAppCallbackServer(gs, s)
-	pb.RegisterAppCallbackHealthCheckServer(gs, s)
-	s.grpcServer = gs
+	if grpcServer == nil {
+		grpcServer = grpc.NewServer(opts...)
+	}
+
+	pb.RegisterAppCallbackServer(grpcServer, s)
+	pb.RegisterAppCallbackHealthCheckServer(grpcServer, s)
+	s.grpcServer = grpcServer
 
 	return s
 }
@@ -79,7 +87,12 @@ type Server struct {
 	started            uint32
 }
 
+// Deprecated: Use RegisterActorImplFactoryContext instead.
 func (s *Server) RegisterActorImplFactory(f actor.Factory, opts ...config.Option) {
+	panic("Actor is not supported by gRPC API")
+}
+
+func (s *Server) RegisterActorImplFactoryContext(f actor.FactoryContext, opts ...config.Option) {
 	panic("Actor is not supported by gRPC API")
 }
 

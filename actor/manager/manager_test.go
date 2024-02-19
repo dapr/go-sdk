@@ -18,6 +18,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/dapr/go-sdk/actor/api"
 	actorErr "github.com/dapr/go-sdk/actor/error"
@@ -30,31 +31,32 @@ func TestNewDefaultActorManager(t *testing.T) {
 	assert.Equal(t, actorErr.Success, err)
 
 	mng, err = NewDefaultActorManager("badSerializerType")
-	assert.Nil(t, mng)
+	require.NotNil(t, mng)
+	require.Nil(t, mng.(*DefaultActorManager).ctx)
 	assert.Equal(t, actorErr.ErrActorSerializeNoFound, err)
 }
 
 func TestRegisterActorImplFactory(t *testing.T) {
 	mng, err := NewDefaultActorManager("json")
-	assert.NotNil(t, mng)
+	require.NotNil(t, mng)
+	require.Nil(t, mng.(*DefaultActorManager).ctx.(*DefaultActorManagerContext).factory)
 	assert.Equal(t, actorErr.Success, err)
-	assert.Nil(t, mng.(*DefaultActorManager).factory)
 	mng.RegisterActorImplFactory(mock.ActorImplFactory)
-	assert.NotNil(t, mng.(*DefaultActorManager).factory)
+	assert.NotNil(t, mng.(*DefaultActorManager).ctx.(*DefaultActorManagerContext).factory)
 }
 
 func TestInvokeMethod(t *testing.T) {
 	mng, err := NewDefaultActorManager("json")
 	assert.NotNil(t, mng)
 	assert.Equal(t, actorErr.Success, err)
-	assert.Nil(t, mng.(*DefaultActorManager).factory)
+	assert.Nil(t, mng.(*DefaultActorManager).ctx.(*DefaultActorManagerContext).factory)
 
 	data, err := mng.InvokeMethod("testActorID", "testMethodName", []byte(`"hello"`))
 	assert.Nil(t, data)
 	assert.Equal(t, actorErr.ErrActorFactoryNotSet, err)
 
 	mng.RegisterActorImplFactory(mock.ActorImplFactory)
-	assert.NotNil(t, mng.(*DefaultActorManager).factory)
+	assert.NotNil(t, mng.(*DefaultActorManager).ctx.(*DefaultActorManagerContext).factory)
 	data, err = mng.InvokeMethod("testActorID", "mockMethod", []byte(`"hello"`))
 	assert.Nil(t, data)
 	assert.Equal(t, actorErr.ErrActorMethodNoFound, err)
@@ -68,13 +70,13 @@ func TestDeactivateActor(t *testing.T) {
 	mng, err := NewDefaultActorManager("json")
 	assert.NotNil(t, mng)
 	assert.Equal(t, actorErr.Success, err)
-	assert.Nil(t, mng.(*DefaultActorManager).factory)
+	assert.Nil(t, mng.(*DefaultActorManager).ctx.(*DefaultActorManagerContext).factory)
 
 	err = mng.DeactivateActor("testActorID")
 	assert.Equal(t, actorErr.ErrActorIDNotFound, err)
 
 	mng.RegisterActorImplFactory(mock.ActorImplFactory)
-	assert.NotNil(t, mng.(*DefaultActorManager).factory)
+	assert.NotNil(t, mng.(*DefaultActorManager).ctx.(*DefaultActorManagerContext).factory)
 	mng.InvokeMethod("testActorID", "Invoke", []byte(`"hello"`))
 
 	err = mng.DeactivateActor("testActorID")
@@ -85,13 +87,13 @@ func TestInvokeReminder(t *testing.T) {
 	mng, err := NewDefaultActorManager("json")
 	assert.NotNil(t, mng)
 	assert.Equal(t, actorErr.Success, err)
-	assert.Nil(t, mng.(*DefaultActorManager).factory)
+	assert.Nil(t, mng.(*DefaultActorManager).ctx.(*DefaultActorManagerContext).factory)
 
 	err = mng.InvokeReminder("testActorID", "testReminderName", []byte(`"hello"`))
 	assert.Equal(t, actorErr.ErrActorFactoryNotSet, err)
 
 	mng.RegisterActorImplFactory(mock.ActorImplFactory)
-	assert.NotNil(t, mng.(*DefaultActorManager).factory)
+	assert.NotNil(t, mng.(*DefaultActorManager).ctx.(*DefaultActorManagerContext).factory)
 	err = mng.InvokeReminder("testActorID", "testReminderName", []byte(`"hello"`))
 	assert.Equal(t, actorErr.ErrRemindersParamsInvalid, err)
 
@@ -108,13 +110,13 @@ func TestInvokeTimer(t *testing.T) {
 	mng, err := NewDefaultActorManager("json")
 	assert.NotNil(t, mng)
 	assert.Equal(t, actorErr.Success, err)
-	assert.Nil(t, mng.(*DefaultActorManager).factory)
+	assert.Nil(t, mng.(*DefaultActorManager).ctx.(*DefaultActorManagerContext).factory)
 
 	err = mng.InvokeTimer("testActorID", "testTimerName", []byte(`"hello"`))
 	assert.Equal(t, actorErr.ErrActorFactoryNotSet, err)
 
 	mng.RegisterActorImplFactory(mock.ActorImplFactory)
-	assert.NotNil(t, mng.(*DefaultActorManager).factory)
+	assert.NotNil(t, mng.(*DefaultActorManager).ctx.(*DefaultActorManagerContext).factory)
 	err = mng.InvokeTimer("testActorID", "testTimerName", []byte(`"hello"`))
 	assert.Equal(t, actorErr.ErrTimerParamsInvalid, err)
 

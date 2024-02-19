@@ -1,22 +1,29 @@
 module github.com/dapr/go-sdk/examples/actor
 
-go 1.17
+go 1.21
 
-require github.com/dapr/go-sdk v0.0.0-00010101000000-000000000000
-
-require (
-	github.com/dapr/dapr v1.8.0 // indirect
-	github.com/golang/protobuf v1.5.2 // indirect
-	github.com/gorilla/mux v1.8.0 // indirect
-	github.com/pkg/errors v0.9.1 // indirect
-	golang.org/x/net v0.0.0-20220621193019-9d032be2e588 // indirect
-	golang.org/x/sys v0.0.0-20220520151302-bc2c85ada10a // indirect
-	golang.org/x/text v0.3.7 // indirect
-	google.golang.org/genproto v0.0.0-20220622171453-ea41d75dfa0f // indirect
-	google.golang.org/grpc v1.47.0 // indirect
-	google.golang.org/protobuf v1.28.0 // indirect
-	gopkg.in/yaml.v3 v3.0.1 // indirect
-)
+toolchain go1.21.6
 
 // Needed to validate SDK changes in CI/CD
 replace github.com/dapr/go-sdk => ../../
+
+require (
+	github.com/dapr/go-sdk v0.0.0-00010101000000-000000000000
+	github.com/google/uuid v1.6.0
+)
+
+require (
+	github.com/dapr/dapr v1.13.0-rc.2 // indirect
+	github.com/go-chi/chi/v5 v5.0.11 // indirect
+	github.com/golang/protobuf v1.5.3 // indirect
+	github.com/kr/pretty v0.3.1 // indirect
+	go.opentelemetry.io/otel v1.23.1 // indirect
+	go.opentelemetry.io/otel/trace v1.23.1 // indirect
+	golang.org/x/net v0.21.0 // indirect
+	golang.org/x/sys v0.17.0 // indirect
+	golang.org/x/text v0.14.0 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20240205150955-31a09d347014 // indirect
+	google.golang.org/grpc v1.61.0 // indirect
+	google.golang.org/protobuf v1.32.0 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
+)

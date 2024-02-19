@@ -15,13 +15,14 @@ package client
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"time"
 
-	"github.com/golang/protobuf/ptypes/duration"
-	"github.com/pkg/errors"
+	"google.golang.org/protobuf/types/known/durationpb"
 
-	v1 "github.com/dapr/go-sdk/dapr/proto/common/v1"
-	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
+	v1 "github.com/dapr/dapr/pkg/proto/common/v1"
+	pb "github.com/dapr/dapr/pkg/proto/runtime/v1"
 )
 
 const (
@@ -45,6 +46,19 @@ const (
 	StateOperationTypeUpsert OperationType = 1
 	// StateOperationTypeDelete represents delete operation type value.
 	StateOperationTypeDelete OperationType = 2
+
+	// EventualType represents the eventual type value.
+	EventualType = "eventual"
+	// StrongType represents the strong type value.
+	StrongType = "strong"
+	// FirstWriteType represents the first write type value.
+	FirstWriteType = "first-write"
+	// LastWriteType represents the last write type value.
+	LastWriteType = "last-write"
+	// UpsertType represents the upsert type value.
+	UpsertType = "upsert"
+	// DeleteType represents the delete type value.
+	DeleteType = "delete"
 	// UndefinedType represents undefined type value.
 	UndefinedType = "undefined"
 )
@@ -72,8 +86,8 @@ func (s StateConcurrency) GetPBConcurrency() v1.StateOptions_StateConcurrency {
 func (o OperationType) String() string {
 	names := [...]string{
 		UndefinedType,
-		"upsert",
-		"delete",
+		UpsertType,
+		DeleteType,
 	}
 	if o < StateOperationTypeUpsert || o > StateOperationTypeDelete {
 		return UndefinedType
@@ -86,10 +100,10 @@ func (o OperationType) String() string {
 func (s StateConsistency) String() string {
 	names := [...]string{
 		UndefinedType,
-		"strong",
-		"eventual",
+		EventualType,
+		StrongType,
 	}
-	if s < StateConsistencyStrong || s > StateConsistencyEventual {
+	if s < StateConsistencyEventual || s > StateConsistencyStrong {
 		return UndefinedType
 	}
 
@@ -100,8 +114,8 @@ func (s StateConsistency) String() string {
 func (s StateConcurrency) String() string {
 	names := [...]string{
 		UndefinedType,
-		"first-write",
-		"last-write",
+		FirstWriteType,
+		LastWriteType,
 	}
 	if s < StateConcurrencyFirstWrite || s > StateConcurrencyLastWrite {
 		return UndefinedType
@@ -234,11 +248,11 @@ func copyStateOptionDefault() *StateOptions {
 	}
 }
 
-func toProtoDuration(d time.Duration) *duration.Duration {
+func toProtoDuration(d time.Duration) *durationpb.Duration {
 	nanos := d.Nanoseconds()
 	secs := nanos / 1e9
 	nanos -= secs * 1e9
-	return &duration.Duration{
+	return &durationpb.Duration{
 		Seconds: secs,
 		Nanos:   int32(nanos),
 	}
@@ -267,9 +281,9 @@ func (c *GRPCClient) ExecuteStateTransaction(ctx context.Context, storeName stri
 		StoreName:  storeName,
 		Operations: items,
 	}
-	_, err := c.protoClient.ExecuteStateTransaction(c.withAuthToken(ctx), req)
+	_, err := c.protoClient.ExecuteStateTransaction(ctx, req)
 	if err != nil {
-		return errors.Wrap(err, "error executing state transaction")
+		return fmt.Errorf("error executing state transaction: %w", err)
 	}
 	return nil
 }
@@ -316,12 +330,12 @@ func (c *GRPCClient) SaveBulkState(ctx context.Context, storeName string, items 
 
 	for _, si := range items {
 		item := toProtoSaveStateItem(si)
-		req.States = append(req.States, item)
+		req.States = append(req.GetStates(), item)
 	}
 
-	_, err := c.protoClient.SaveState(c.withAuthToken(ctx), req)
+	_, err := c.protoClient.SaveState(ctx, req)
 	if err != nil {
-		return errors.Wrap(err, "error saving state")
+		return fmt.Errorf("error saving state: %w", err)
 	}
 	return nil
 }
@@ -343,22 +357,22 @@ func (c *GRPCClient) GetBulkState(ctx context.Context, storeName string, keys []
 		Parallelism: parallelism,
 	}
 
-	results, err := c.protoClient.GetBulkState(c.withAuthToken(ctx), req)
+	results, err := c.protoClient.GetBulkState(ctx, req)
 	if err != nil {
-		return nil, errors.Wrap(err, "error getting state")
+		return nil, fmt.Errorf("error getting state: %w", err)
 	}
 
-	if results == nil || results.Items == nil {
+	if results == nil || results.GetItems() == nil {
 		return items, nil
 	}
 
-	for _, r := range results.Items {
+	for _, r := range results.GetItems() {
 		item := &BulkStateItem{
-			Key:      r.Key,
-			Etag:     r.Etag,
-			Value:    r.Data,
-			Metadata: r.Metadata,
-			Error:    r.Error,
+			Key:      r.GetKey(),
+			Etag:     r.GetEtag(),
+			Value:    r.GetData(),
+			Metadata: r.GetMetadata(),
+			Error:    r.GetError(),
 		}
 		items = append(items, item)
 	}
@@ -374,7 +388,7 @@ func (c *GRPCClient) GetState(ctx context.Context, storeName, key string, meta m
 // GetStateWithConsistency retrieves state from specific store using provided state consistency.
 func (c *GRPCClient) GetStateWithConsistency(ctx context.Context, storeName, key string, meta map[string]string, sc StateConsistency) (*StateItem, error) {
 	if err := hasRequiredStateArgs(storeName, key); err != nil {
-		return nil, errors.Wrap(err, "missing required arguments")
+		return nil, fmt.Errorf("missing required arguments: %w", err)
 	}
 
 	req := &pb.GetStateRequest{
@@ -384,16 +398,16 @@ func (c *GRPCClient) GetStateWithConsistency(ctx context.Context, storeName, key
 		Metadata:    meta,
 	}
 
-	result, err := c.protoClient.GetState(c.withAuthToken(ctx), req)
+	result, err := c.protoClient.GetState(ctx, req)
 	if err != nil {
-		return nil, errors.Wrap(err, "error getting state")
+		return nil, fmt.Errorf("error getting state: %w", err)
 	}
 
 	return &StateItem{
-		Etag:     result.Etag,
+		Etag:     result.GetEtag(),
 		Key:      key,
-		Value:    result.Data,
-		Metadata: result.Metadata,
+		Value:    result.GetData(),
+		Metadata: result.GetMetadata(),
 	}, nil
 }
 
@@ -410,21 +424,21 @@ func (c *GRPCClient) QueryStateAlpha1(ctx context.Context, storeName, query stri
 		Query:     query,
 		Metadata:  meta,
 	}
-	resp, err := c.protoClient.QueryStateAlpha1(c.withAuthToken(ctx), req)
+	resp, err := c.protoClient.QueryStateAlpha1(ctx, req)
 	if err != nil {
-		return nil, errors.Wrap(err, "error querying state")
+		return nil, fmt.Errorf("error querying state: %w", err)
 	}
 
 	ret := &QueryResponse{
-		Results:  make([]QueryItem, len(resp.Results)),
-		Token:    resp.Token,
-		Metadata: resp.Metadata,
+		Results:  make([]QueryItem, len(resp.GetResults())),
+		Token:    resp.GetToken(),
+		Metadata: resp.GetMetadata(),
 	}
-	for i, item := range resp.Results {
-		ret.Results[i].Key = item.Key
-		ret.Results[i].Value = item.Data
-		ret.Results[i].Etag = item.Etag
-		ret.Results[i].Error = item.Error
+	for i, item := range resp.GetResults() {
+		ret.Results[i].Key = item.GetKey()
+		ret.Results[i].Value = item.GetData()
+		ret.Results[i].Etag = item.GetEtag()
+		ret.Results[i].Error = item.GetError()
 	}
 
 	return ret, nil
@@ -438,7 +452,7 @@ func (c *GRPCClient) DeleteState(ctx context.Context, storeName, key string, met
 // DeleteStateWithETag deletes content from store using provided state options and etag.
 func (c *GRPCClient) DeleteStateWithETag(ctx context.Context, storeName, key string, etag *ETag, meta map[string]string, opts *StateOptions) error {
 	if err := hasRequiredStateArgs(storeName, key); err != nil {
-		return errors.Wrap(err, "missing required arguments")
+		return fmt.Errorf("missing required arguments: %w", err)
 	}
 
 	req := &pb.DeleteStateRequest{
@@ -454,9 +468,9 @@ func (c *GRPCClient) DeleteStateWithETag(ctx context.Context, storeName, key str
 		}
 	}
 
-	_, err := c.protoClient.DeleteState(c.withAuthToken(ctx), req)
+	_, err := c.protoClient.DeleteState(ctx, req)
 	if err != nil {
-		return errors.Wrap(err, "error deleting state")
+		return fmt.Errorf("error deleting state: %w", err)
 	}
 
 	return nil
@@ -490,7 +504,7 @@ func (c *GRPCClient) DeleteBulkStateItems(ctx context.Context, storeName string,
 	for i := 0; i < len(items); i++ {
 		item := items[i]
 		if err := hasRequiredStateArgs(storeName, item.Key); err != nil {
-			return errors.Wrap(err, "missing required arguments")
+			return fmt.Errorf("missing required arguments: %w", err)
 		}
 
 		state := &v1.StateItem{
@@ -510,7 +524,7 @@ func (c *GRPCClient) DeleteBulkStateItems(ctx context.Context, storeName string,
 		StoreName: storeName,
 		States:    states,
 	}
-	_, err := c.protoClient.DeleteBulkState(c.withAuthToken(ctx), req)
+	_, err := c.protoClient.DeleteBulkState(ctx, req)
 
 	return err
 }

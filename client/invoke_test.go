@@ -17,9 +17,11 @@ import (
 	"context"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/stretchr/testify/assert"
 
-	v1 "github.com/dapr/go-sdk/dapr/proto/common/v1"
+	v1 "github.com/dapr/dapr/pkg/proto/common/v1"
 )
 
 type _testStructwithText struct {
@@ -46,7 +48,7 @@ func TestInvokeMethodWithContent(t *testing.T) {
 			Data:        []byte(data),
 		}
 		resp, err := testClient.InvokeMethodWithContent(ctx, "test", "fn", "post", content)
-		assert.Nil(t, err)
+		require.NoError(t, err)
 		assert.NotNil(t, resp)
 		assert.Equal(t, string(resp), data)
 	})
@@ -57,28 +59,28 @@ func TestInvokeMethodWithContent(t *testing.T) {
 			Data:        []byte(data),
 		}
 		resp, err := testClient.InvokeMethodWithContent(ctx, "test", "fn?foo=bar&url=http://dapr.io", "get", content)
-		assert.Nil(t, err)
+		require.NoError(t, err)
 		assert.NotNil(t, resp)
 		assert.Equal(t, string(resp), data)
 	})
 
 	t.Run("without content", func(t *testing.T) {
 		resp, err := testClient.InvokeMethod(ctx, "test", "fn", "get")
-		assert.Nil(t, err)
+		require.NoError(t, err)
 		assert.Nil(t, resp)
 	})
 
 	t.Run("without service ID", func(t *testing.T) {
 		_, err := testClient.InvokeMethod(ctx, "", "fn", "get")
-		assert.NotNil(t, err)
+		require.Error(t, err)
 	})
 	t.Run("without method", func(t *testing.T) {
 		_, err := testClient.InvokeMethod(ctx, "test", "", "get")
-		assert.NotNil(t, err)
+		require.Error(t, err)
 	})
 	t.Run("without verb", func(t *testing.T) {
 		_, err := testClient.InvokeMethod(ctx, "test", "fn", "")
-		assert.NotNil(t, err)
+		require.Error(t, err)
 	})
 	t.Run("from struct with text", func(t *testing.T) {
 		testdata := _testCustomContentwithText{
@@ -86,7 +88,7 @@ func TestInvokeMethodWithContent(t *testing.T) {
 			Key2: "value2",
 		}
 		_, err := testClient.InvokeMethodWithCustomContent(ctx, "test", "fn", "post", "text/plain", testdata)
-		assert.Nil(t, err)
+		require.NoError(t, err)
 	})
 
 	t.Run("from struct with text and numbers", func(t *testing.T) {
@@ -95,7 +97,7 @@ func TestInvokeMethodWithContent(t *testing.T) {
 			Key2: 2500,
 		}
 		_, err := testClient.InvokeMethodWithCustomContent(ctx, "test", "fn", "post", "text/plain", testdata)
-		assert.Nil(t, err)
+		require.NoError(t, err)
 	})
 
 	t.Run("from struct with slices", func(t *testing.T) {
@@ -104,7 +106,7 @@ func TestInvokeMethodWithContent(t *testing.T) {
 			Key2: []int{25, 40, 600},
 		}
 		_, err := testClient.InvokeMethodWithCustomContent(ctx, "test", "fn", "post", "text/plain", testdata)
-		assert.Nil(t, err)
+		require.NoError(t, err)
 	})
 }
 
@@ -112,27 +114,27 @@ func TestVerbParsing(t *testing.T) {
 	t.Run("valid lower case", func(t *testing.T) {
 		v := queryAndVerbToHTTPExtension("", "post")
 		assert.NotNil(t, v)
-		assert.Equal(t, v1.HTTPExtension_POST, v.Verb)
-		assert.Len(t, v.Querystring, 0)
+		assert.Equal(t, v1.HTTPExtension_POST, v.GetVerb())
+		assert.Empty(t, v.GetQuerystring())
 	})
 
 	t.Run("valid upper case", func(t *testing.T) {
 		v := queryAndVerbToHTTPExtension("", "GET")
 		assert.NotNil(t, v)
-		assert.Equal(t, v1.HTTPExtension_GET, v.Verb)
+		assert.Equal(t, v1.HTTPExtension_GET, v.GetVerb())
 	})
 
 	t.Run("invalid verb", func(t *testing.T) {
 		v := queryAndVerbToHTTPExtension("", "BAD")
 		assert.NotNil(t, v)
-		assert.Equal(t, v1.HTTPExtension_NONE, v.Verb)
+		assert.Equal(t, v1.HTTPExtension_NONE, v.GetVerb())
 	})
 
 	t.Run("valid query", func(t *testing.T) {
 		v := queryAndVerbToHTTPExtension("foo=bar&url=http://dapr.io", "post")
 		assert.NotNil(t, v)
-		assert.Equal(t, v1.HTTPExtension_POST, v.Verb)
-		assert.Equal(t, "foo=bar&url=http://dapr.io", v.Querystring)
+		assert.Equal(t, v1.HTTPExtension_POST, v.GetVerb())
+		assert.Equal(t, "foo=bar&url=http://dapr.io", v.GetQuerystring())
 	})
 }
 

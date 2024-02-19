@@ -19,6 +19,7 @@ import (
 	"github.com/dapr/go-sdk/actor"
 )
 
+//nolint:staticcheck
 func ActorImplFactory() actor.Server {
 	return &ActorImpl{}
 }
@@ -39,19 +40,42 @@ func (t *ActorImpl) Type() string {
 	return "testActorType"
 }
 
-func (t *ActorImpl) Invoke(ctx context.Context, req string) (string, error) {
+func (t *ActorImpl) Invoke(_ context.Context, req string) (string, error) {
 	return req, nil
 }
 
-func (t *ActorImpl) ReminderCall(reminderName string, state []byte, dueTime string, period string) {
+func (t *ActorImpl) ReminderCall(_ string, state []byte, dueTime string, period string) {
 }
 
-func NotReminderCalleeActorFactory() actor.Server {
+func (t *ActorImpl) WithContext() actor.ServerContext {
+	return &ActorImplContext{}
+}
+
+func ActorImplFactoryCtx() actor.ServerContext {
+	return &ActorImplContext{}
+}
+
+type ActorImplContext struct {
+	actor.ServerImplBaseCtx
+}
+
+func (t *ActorImplContext) Type() string {
+	return "testActorType"
+}
+
+func (t *ActorImplContext) Invoke(_ context.Context, req string) (string, error) {
+	return req, nil
+}
+
+func (t *ActorImplContext) ReminderCall(reminderName string, state []byte, dueTime string, period string) {
+}
+
+func NotReminderCalleeActorFactory() actor.ServerContext {
 	return &NotReminderCalleeActor{}
 }
 
 type NotReminderCalleeActor struct {
-	actor.ServerImplBase
+	actor.ServerImplBaseCtx
 }
 
 func (t *NotReminderCalleeActor) Activate() error {

@@ -15,9 +15,11 @@ package http
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
+
+	"google.golang.org/grpc/metadata"
 
 	"github.com/dapr/go-sdk/service/common"
 )
@@ -33,7 +35,7 @@ func (s *Server) AddServiceInvocationHandler(route string, fn common.ServiceInvo
 	}
 
 	if !strings.HasPrefix(route, "/") {
-		route = fmt.Sprintf("/%s", route)
+		route = "/" + route
 	}
 
 	s.mux.Handle(route, optionsHandler(http.HandlerFunc(
@@ -52,18 +54,27 @@ func (s *Server) AddServiceInvocationHandler(route string, fn common.ServiceInvo
 				ContentType: r.Header.Get("Content-type"),
 			}
 
-			// check for post with no data
-			if r.ContentLength > 0 {
-				content, err := ioutil.ReadAll(r.Body)
+			var err error
+			if r.Body != nil {
+				e.Data, err = io.ReadAll(r.Body)
 				if err != nil {
 					http.Error(w, err.Error(), http.StatusBadRequest)
 					return
 				}
-				e.Data = content
 			}
 
+			ctx := r.Context()
+			md, ok := metadata.FromIncomingContext(ctx)
+			if !ok {
+				md = metadata.MD{}
+			}
+			for k, v := range r.Header {
+				md.Set(k, v...)
+			}
+			ctx = metadata.NewIncomingContext(ctx, md)
+
 			// execute handler
-			o, err := fn(r.Context(), e)
+			o, err := fn(ctx, e)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return

@@ -20,6 +20,7 @@ import (
 
 	dapr "github.com/dapr/go-sdk/client"
 	"github.com/dapr/go-sdk/examples/actor/api"
+	"github.com/google/uuid"
 )
 
 func main() {
@@ -114,9 +115,11 @@ func main() {
 	}
 	fmt.Println("stop reminder")
 
+	// Make state key unique to allow multiple runs without side effects
+	testStateKey := fmt.Sprintf("testStateKey-%s", uuid.New().String())
 	for i := 0; i < 2; i++ {
 		// Invoke user defined method IncrementAndGet, and server side actor increase the state named testStateKey and return.
-		usr, err := myActor.IncrementAndGet(ctx, "testStateKey")
+		usr, err := myActor.IncrementAndGet(ctx, testStateKey)
 		if err != nil {
 			panic(err)
 		}

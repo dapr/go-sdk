@@ -9,6 +9,14 @@ Client library to help you build Dapr application in Go. This client supports al
 
 Dapr Go client includes two packages: `client` (for invoking public Dapr APIs), and `service` (to create services that will be invoked by Dapr, this is sometimes referred to as "callback").
 
+### Installing Dapr Go SDK
+
+With a correctly configured Go toolchain:
+
+```go
+go get "github.com/dapr/go-sdk/client"
+```
+
 ### Creating client 
 
 Import Dapr Go `client` package:
@@ -32,7 +40,7 @@ func main() {
         panic(err)
     }
     defer client.Close()
-    //TODO: use the client here, see below for examples 
+    // TODO: use the client here, see below for examples 
 }
 ```
 
@@ -57,7 +65,7 @@ func main() {
 }
 ```
   
-Assuming you have [Dapr CLI](https://docs.dapr.io/getting-started/install-dapr/) installed, you can then launch your app locally like this:
+Assuming you have [Dapr CLI](https://docs.dapr.io/getting-started/install-dapr-cli/) installed, you can then launch your app locally like this:
 
 ```shell
 dapr run --app-id example-service \
@@ -143,7 +151,7 @@ Similarly, `GetBulkState` method provides a way to retrieve multiple state items
 
 ```go
 keys := []string{"key1", "key2", "key3"}
-items, err := client.GetBulkState(ctx, store, keys, nil,100)
+items, err := client.GetBulkState(ctx, store, keys, nil, 100)
 ```
 
 And the `ExecuteStateTransaction` method to execute multiple `upsert` or `delete` operations transactionally.
@@ -284,9 +292,53 @@ func main() {
 }
 ```
 
+##### Error handling
+
+Dapr errors are based on [gRPC's richer error model](https://cloud.google.com/apis/design/errors#error_model). 
+The following code shows how to parse and handle the error details:
+
+```go
+if err != nil {
+    st := status.Convert(err)
+
+    fmt.Printf("Code: %s\n", st.Code().String())
+    fmt.Printf("Message: %s\n", st.Message())
+
+    for _, detail := range st.Details() {
+        switch t := detail.(type) {
+        case *errdetails.ErrorInfo:
+            // Handle ErrorInfo details
+            fmt.Printf("ErrorInfo:\n- Domain: %s\n- Reason: %s\n- Metadata: %v\n", t.GetDomain(), t.GetReason(), t.GetMetadata())
+        case *errdetails.BadRequest:
+            // Handle BadRequest details
+            fmt.Println("BadRequest:")
+            for _, violation := range t.GetFieldViolations() {
+                fmt.Printf("- Key: %s\n", violation.GetField())
+                fmt.Printf("- The %q field was wrong: %s\n", violation.GetField(), violation.GetDescription())
+            }
+        case *errdetails.ResourceInfo:
+            // Handle ResourceInfo details
+            fmt.Printf("ResourceInfo:\n- Resource type: %s\n- Resource name: %s\n- Owner: %s\n- Description: %s\n",
+                t.GetResourceType(), t.GetResourceName(), t.GetOwner(), t.GetDescription())
+        case *errdetails.Help:
+            // Handle ResourceInfo details
+            fmt.Println("HelpInfo:")
+            for _, link := range t.GetLinks() {
+                fmt.Printf("- Url: %s\n", link.Url)
+                fmt.Printf("- Description: %s\n", link.Description)
+            }
+        
+        default:
+            // Add cases for other types of details you expect
+            fmt.Printf("Unhandled error detail type: %v\n", t)
+        }
+    }
+}
+```
+
 ### Service (callback)
 
-In addition to the client capabilities that allow you to call into the Dapr API, the Go SDK also provides `service` package to help you bootstrap Dapr callback services in either gRPC or HTTP. Instructions on how to use it are located [here](./service/Readme.md)
+In addition to the client capabilities that allow you to call into the Dapr API, the Go SDK also provides `service` package to help you bootstrap Dapr callback services in either gRPC or HTTP. Instructions on how to use it are located [here](./service/Readme.md).
 
 ## Contributing to Dapr Go client
 
@@ -294,4 +346,4 @@ See the [Contribution Guide](./CONTRIBUTING.md) to get started with building and
 
 ## Code of Conduct
 
-Please refer to our [Dapr Community Code of Conduct](https://github.com/dapr/community/blob/master/CODE-OF-CONDUCT.md)
+Please refer to our [Dapr Community Code of Conduct](https://github.com/dapr/community/blob/master/CODE-OF-CONDUCT.md).

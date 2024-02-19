@@ -15,12 +15,12 @@ package grpc
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
-	"github.com/golang/protobuf/ptypes/empty"
-	"github.com/pkg/errors"
+	"google.golang.org/protobuf/types/known/emptypb"
 
-	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
+	pb "github.com/dapr/dapr/pkg/proto/runtime/v1"
 	"github.com/dapr/go-sdk/service/common"
 )
 
@@ -38,7 +38,7 @@ func (s *Server) AddBindingInvocationHandler(name string, fn common.BindingInvoc
 
 // ListInputBindings is called by Dapr to get the list of bindings the app will get invoked by. In this example, we are telling Dapr
 // To invoke our app with a binding named storage.
-func (s *Server) ListInputBindings(ctx context.Context, in *empty.Empty) (*pb.ListInputBindingsResponse, error) {
+func (s *Server) ListInputBindings(ctx context.Context, in *emptypb.Empty) (*pb.ListInputBindingsResponse, error) {
 	list := make([]string, 0)
 	for k := range s.bindingHandlers {
 		list = append(list, k)
@@ -54,19 +54,19 @@ func (s *Server) OnBindingEvent(ctx context.Context, in *pb.BindingEventRequest)
 	if in == nil {
 		return nil, errors.New("nil binding event request")
 	}
-	if fn, ok := s.bindingHandlers[in.Name]; ok {
+	if fn, ok := s.bindingHandlers[in.GetName()]; ok {
 		e := &common.BindingEvent{
-			Data:     in.Data,
-			Metadata: in.Metadata,
+			Data:     in.GetData(),
+			Metadata: in.GetMetadata(),
 		}
 		data, err := fn(ctx, e)
 		if err != nil {
-			return nil, errors.Wrapf(err, "error executing %s binding", in.Name)
+			return nil, fmt.Errorf("error executing %s binding: %w", in.GetName(), err)
 		}
 		return &pb.BindingEventResponse{
 			Data: data,
 		}, nil
 	}
 
-	return nil, fmt.Errorf("binding not implemented: %s", in.Name)
+	return nil, fmt.Errorf("binding not implemented: %s", in.GetName())
 }

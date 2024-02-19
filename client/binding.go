@@ -15,10 +15,10 @@ package client
 
 import (
 	"context"
+	"errors"
+	"fmt"
 
-	"github.com/pkg/errors"
-
-	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
+	pb "github.com/dapr/dapr/pkg/proto/runtime/v1"
 )
 
 // InvokeBindingRequest represents binding invocation request.
@@ -61,15 +61,15 @@ func (c *GRPCClient) InvokeBinding(ctx context.Context, in *InvokeBindingRequest
 		Metadata:  in.Metadata,
 	}
 
-	resp, err := c.protoClient.InvokeBinding(c.withAuthToken(ctx), req)
+	resp, err := c.protoClient.InvokeBinding(ctx, req)
 	if err != nil {
-		return nil, errors.Wrapf(err, "error invoking binding %s/%s", in.Name, in.Operation)
+		return nil, fmt.Errorf("error invoking binding %s/%s: %w", in.Name, in.Operation, err)
 	}
 
 	if resp != nil {
 		return &BindingEvent{
-			Data:     resp.Data,
-			Metadata: resp.Metadata,
+			Data:     resp.GetData(),
+			Metadata: resp.GetMetadata(),
 		}, nil
 	}
 
@@ -80,7 +80,7 @@ func (c *GRPCClient) InvokeBinding(ctx context.Context, in *InvokeBindingRequest
 // This method differs from InvokeBinding in that it doesn't expect any content being returned from the invoked method.
 func (c *GRPCClient) InvokeOutputBinding(ctx context.Context, in *InvokeBindingRequest) error {
 	if _, err := c.InvokeBinding(ctx, in); err != nil {
-		return errors.Wrap(err, "error invoking output binding")
+		return fmt.Errorf("error invoking output binding: %w", err)
 	}
 	return nil
 }

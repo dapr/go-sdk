@@ -15,15 +15,19 @@ package http
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/stretchr/testify/assert"
+	"google.golang.org/grpc/metadata"
 
 	"github.com/dapr/go-sdk/service/common"
 )
@@ -31,15 +35,15 @@ import (
 func TestInvocationHandlerWithoutHandler(t *testing.T) {
 	s := newServer("", nil)
 	err := s.AddServiceInvocationHandler("/hello", nil)
-	assert.Errorf(t, err, "expected error adding event handler")
+	require.Errorf(t, err, "expected error adding event handler")
 
 	err = s.AddServiceInvocationHandler("/", nil)
-	assert.Errorf(t, err, "expected error adding event handler, invalid router")
+	require.Errorf(t, err, "expected error adding event handler, invalid router")
 }
 
 func TestInvocationHandlerWithToken(t *testing.T) {
 	data := `{"name": "test", "data": hello}`
-	_ = os.Setenv(common.AppAPITokenEnvVar, "app-dapr-token")
+	t.Setenv(common.AppAPITokenEnvVar, "app-dapr-token")
 	s := newServer("", nil)
 	err := s.AddServiceInvocationHandler("/hello", func(ctx context.Context, in *common.InvocationEvent) (out *common.Content, err error) {
 		if in == nil || in.Data == nil || in.ContentType == "" {
@@ -53,11 +57,11 @@ func TestInvocationHandlerWithToken(t *testing.T) {
 		}
 		return
 	})
-	assert.NoErrorf(t, err, "adding event handler success")
+	require.NoErrorf(t, err, "adding event handler success")
 
 	// forbbiden.
 	req, err := http.NewRequest(http.MethodPost, "/hello", strings.NewReader(data))
-	assert.NoErrorf(t, err, "creating request success")
+	require.NoErrorf(t, err, "creating request success")
 	req.Header.Set("Content-Type", "application/json")
 
 	resp := httptest.NewRecorder()
@@ -87,18 +91,18 @@ func TestInvocationHandlerWithData(t *testing.T) {
 		}
 		return
 	})
-	assert.NoErrorf(t, err, "adding event handler success")
+	require.NoErrorf(t, err, "adding event handler success")
 
 	req, err := http.NewRequest(http.MethodPost, "/hello", strings.NewReader(data))
-	assert.NoErrorf(t, err, "creating request success")
+	require.NoErrorf(t, err, "creating request success")
 	req.Header.Set("Content-Type", "application/json")
 
 	resp := httptest.NewRecorder()
 	s.mux.ServeHTTP(resp, req)
 	assert.Equal(t, http.StatusOK, resp.Code)
 
-	b, err := ioutil.ReadAll(resp.Body)
-	assert.NoErrorf(t, err, "reading response body success")
+	b, err := io.ReadAll(resp.Body)
+	require.NoErrorf(t, err, "reading response body success")
 	assert.Equal(t, data, string(b))
 }
 
@@ -111,18 +115,18 @@ func TestInvocationHandlerWithoutInputData(t *testing.T) {
 		}
 		return &common.Content{}, nil
 	})
-	assert.NoErrorf(t, err, "adding event handler success")
+	require.NoErrorf(t, err, "adding event handler success")
 
 	req, err := http.NewRequest(http.MethodPost, "/hello", nil)
-	assert.NoErrorf(t, err, "creating request success")
+	require.NoErrorf(t, err, "creating request success")
 	req.Header.Set("Content-Type", "application/json")
 
 	resp := httptest.NewRecorder()
 	s.mux.ServeHTTP(resp, req)
 	assert.Equal(t, http.StatusOK, resp.Code)
 
-	b, err := ioutil.ReadAll(resp.Body)
-	assert.NoErrorf(t, err, "reading response body success")
+	b, err := io.ReadAll(resp.Body)
+	require.NoErrorf(t, err, "reading response body success")
 	assert.NotNil(t, b)
 	assert.Equal(t, "", string(b))
 }
@@ -135,13 +139,13 @@ func TestInvocationHandlerWithInvalidRoute(t *testing.T) {
 	s := newServer("", nil)
 
 	err := s.AddServiceInvocationHandler("no-slash", emptyInvocationFn)
-	assert.NoErrorf(t, err, "adding no slash route event handler success")
+	require.NoErrorf(t, err, "adding no slash route event handler success")
 
 	err = s.AddServiceInvocationHandler("", emptyInvocationFn)
-	assert.Errorf(t, err, "expected error from adding no route event handler")
+	require.Errorf(t, err, "expected error from adding no route event handler")
 
 	err = s.AddServiceInvocationHandler("/a", emptyInvocationFn)
-	assert.NoErrorf(t, err, "adding event handler success")
+	require.NoErrorf(t, err, "adding event handler success")
 
 	makeEventRequest(t, s, "/b", "", http.StatusNotFound)
 }
@@ -154,7 +158,63 @@ func TestInvocationHandlerWithError(t *testing.T) {
 	s := newServer("", nil)
 
 	err := s.AddServiceInvocationHandler("/error", errorInvocationFn)
-	assert.NoErrorf(t, err, "adding error event handler success")
+	require.NoErrorf(t, err, "adding error event handler success")
 
 	makeEventRequest(t, s, "/error", "", http.StatusInternalServerError)
+}
+
+func TestInvocationHandlerWithCustomizedHeader(t *testing.T) {
+	data := `{"name": "test", "data": "hello"}`
+	s := newServer("", nil)
+	err := s.AddServiceInvocationHandler("/hello", func(ctx context.Context, in *common.InvocationEvent) (out *common.Content, err error) {
+		if in == nil || in.Data == nil || in.ContentType == "" {
+			err = errors.New("nil input")
+			return
+		}
+
+		dd := map[string]interface{}{}
+		err = json.Unmarshal(in.Data, &dd)
+		if err != nil {
+			return
+		}
+
+		md, ok := metadata.FromIncomingContext(ctx)
+		if ok {
+			vs := md.Get("Customized-Header")
+			if len(vs) > 0 {
+				dd["Customized-Header"] = vs[0]
+			}
+		}
+		data, err := json.Marshal(dd)
+		if err != nil {
+			return
+		}
+		out = &common.Content{
+			Data:        data,
+			ContentType: in.ContentType,
+			DataTypeURL: in.DataTypeURL,
+		}
+		return
+	})
+
+	require.NoErrorf(t, err, "adding event handler success")
+	customizedHeader := "Customized-Header"
+
+	req, err := http.NewRequest(http.MethodPost, "/hello", strings.NewReader(data))
+	require.NoErrorf(t, err, "creating request success")
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set(customizedHeader, "Value")
+
+	resp := httptest.NewRecorder()
+	s.mux.ServeHTTP(resp, req)
+	assert.Equal(t, http.StatusOK, resp.Code)
+
+	b, err := io.ReadAll(resp.Body)
+	require.NoErrorf(t, err, "reading response body success")
+
+	d2 := map[string]interface{}{}
+	err = json.Unmarshal(b, &d2)
+	require.NoError(t, err)
+	assert.Contains(t, d2, customizedHeader)
+	assert.Equal(t, "Value", d2[customizedHeader])
 }

@@ -1,0 +1,46 @@
+name: Test Dapr-Bot
+
+on:
+  push:
+    paths: # Explicitly declare which paths
+      - ".github/workflows/dapr-bot.yml"
+      - ".github/workflows/dapr-bot/*"
+  pull_request:
+    branches:
+      - main
+    paths: # Explicitly declare which paths
+      - ".github/workflows/dapr-bot.yml"
+      - ".github/workflows/dapr-bot/*"
+
+jobs:
+  build:
+    name: Test
+    runs-on: ubuntu-latest
+    env:
+      GOVER: ${{ matrix.gover }}
+      GOLANGCILINT_VER: v1.55.2
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: ./.github/workflows/dapr-bot/go.mod
+
+      - name: Tidy
+        working-directory: ./.github/workflows/dapr-bot
+        run: make tidy
+
+      - name: Test
+        working-directory: ./.github/workflows/dapr-bot
+        run: make test
+
+      - name: Lint
+        uses: golangci/golangci-lint-action@v3
+        with:
+          version: ${{ env.GOLANGCILINT_VER }}
+          working-directory: ./.github/workflows/dapr-bot
+          skip-cache: true
+          args: --timeout=10m0s --config ../../../.golangci.yml

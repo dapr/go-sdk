@@ -2,12 +2,11 @@ package client
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 
-	"github.com/pkg/errors"
-
-	pb "github.com/dapr/go-sdk/dapr/proto/runtime/v1"
+	pb "github.com/dapr/dapr/pkg/proto/runtime/v1"
 )
 
 type ConfigurationItem struct {
@@ -41,7 +40,7 @@ func (c *GRPCClient) GetConfigurationItems(ctx context.Context, storeName string
 	for _, opt := range opts {
 		opt(metadata)
 	}
-	rsp, err := c.protoClient.GetConfigurationAlpha1(ctx, &pb.GetConfigurationRequest{
+	rsp, err := c.protoClient.GetConfiguration(ctx, &pb.GetConfigurationRequest{
 		StoreName: storeName,
 		Keys:      keys,
 		Metadata:  metadata,
@@ -51,11 +50,11 @@ func (c *GRPCClient) GetConfigurationItems(ctx context.Context, storeName string
 	}
 
 	configItems := make(map[string]*ConfigurationItem)
-	for k, v := range rsp.Items {
+	for k, v := range rsp.GetItems() {
 		configItems[k] = &ConfigurationItem{
-			Value:    v.Value,
-			Version:  v.Version,
-			Metadata: v.Metadata,
+			Value:    v.GetValue(),
+			Version:  v.GetVersion(),
+			Metadata: v.GetMetadata(),
 		}
 	}
 	return configItems, nil
@@ -63,62 +62,65 @@ func (c *GRPCClient) GetConfigurationItems(ctx context.Context, storeName string
 
 type ConfigurationHandleFunction func(string, map[string]*ConfigurationItem)
 
-func (c *GRPCClient) SubscribeConfigurationItems(ctx context.Context, storeName string, keys []string, handler ConfigurationHandleFunction, opts ...ConfigurationOpt) error {
+func (c *GRPCClient) SubscribeConfigurationItems(ctx context.Context, storeName string, keys []string, handler ConfigurationHandleFunction, opts ...ConfigurationOpt) (string, error) {
 	metadata := make(map[string]string)
 	for _, opt := range opts {
 		opt(metadata)
 	}
 
-	client, err := c.protoClient.SubscribeConfigurationAlpha1(ctx, &pb.SubscribeConfigurationRequest{
+	client, err := c.protoClient.SubscribeConfiguration(ctx, &pb.SubscribeConfigurationRequest{
 		StoreName: storeName,
 		Keys:      keys,
 		Metadata:  metadata,
 	})
 	if err != nil {
-		return errors.Errorf("subscribe configuration failed with error = %s", err)
+		return "", fmt.Errorf("subscribe configuration failed with error = %w", err)
 	}
-
-	var subscribeID string
-	stopCh := make(chan struct{})
+	subscribeIDChan := make(chan string, 1)
 	go func() {
+		isFirst := true
 		for {
 			rsp, err := client.Recv()
-			if err == io.EOF || rsp == nil {
-				// receive goroutine would close if unsubscribe is called
+			if errors.Is(err, io.EOF) || rsp == nil {
+				// receive goroutine would close if unsubscribe is called.
 				fmt.Println("dapr configuration subscribe finished.")
-				close(stopCh)
 				break
 			}
-			subscribeID = rsp.Id
 			configurationItems := make(map[string]*ConfigurationItem)
-			for k, v := range rsp.Items {
+
+			for k, v := range rsp.GetItems() {
 				configurationItems[k] = &ConfigurationItem{
-					Value:    v.Value,
-					Version:  v.Version,
-					Metadata: v.Metadata,
+					Value:    v.GetValue(),
+					Version:  v.GetVersion(),
+					Metadata: v.GetMetadata(),
 				}
 			}
-			handler(rsp.Id, configurationItems)
+			// Get the subscription ID from the first response.
+			if isFirst {
+				subscribeIDChan <- rsp.GetId()
+				isFirst = false
+			}
+			// Do not invoke handler in case there are no items.
+			if len(configurationItems) > 0 {
+				handler(rsp.GetId(), configurationItems)
+			}
 		}
 	}()
-	select {
-	case <-ctx.Done():
-		return c.UnsubscribeConfigurationItems(context.Background(), storeName, subscribeID)
-	case <-stopCh:
-		return nil
-	}
+	subscribeID := <-subscribeIDChan
+	close(subscribeIDChan)
+	return subscribeID, nil
 }
 
 func (c *GRPCClient) UnsubscribeConfigurationItems(ctx context.Context, storeName string, id string, opts ...ConfigurationOpt) error {
-	alpha1, err := c.protoClient.UnsubscribeConfigurationAlpha1(ctx, &pb.UnsubscribeConfigurationRequest{
+	resp, err := c.protoClient.UnsubscribeConfiguration(ctx, &pb.UnsubscribeConfigurationRequest{
 		StoreName: storeName,
 		Id:        id,
 	})
 	if err != nil {
-		return err
+		return fmt.Errorf("unsubscribe failed with error = %w", err)
 	}
-	if !alpha1.Ok {
-		return errors.Errorf("unsubscribe error message = %s", alpha1.GetMessage())
+	if !resp.GetOk() {
+		return fmt.Errorf("unsubscribe error message = %s", resp.GetMessage())
 	}
 	return nil
 }

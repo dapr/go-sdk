@@ -7,44 +7,45 @@ on:
       - main
 
 jobs:
-
   build:
-    name: Test and Lint on Push
+    name: Test on ${{ matrix.gover }}
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        gover:
+          - "1.21"
+          - "1.22"
     env:
-      GOVER: 1.17
-      GOLANGCILINT_VER: v1.31
+      GOVER: ${{ matrix.gover }}
+      GOLANGCILINT_VER: v1.55.2
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-    - name: Setup
-      uses: actions/setup-go@v2
-      with:
-        go-version: ${{ env.GOVER }}
+      - name: Setup
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GOVER }}
 
-    - name: Checkout
-      uses: actions/checkout@v2
+      - name: Tidy
+        run: make tidy
 
-    - name: Cache
-      uses: actions/cache@v2
-      with:
-        path: ~/go/pkg/mod
-        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-        restore-keys: |
-          ${{ runner.os }}-go-
+      - name: Test
+        run: make test
 
-    - name: Tidy
-      run: |
-        go mod tidy -compat=1.17
-        go mod vendor
+      - name: Cover
+        uses: codecov/codecov-action@v4
 
-    - name: Test
-      run: go test -race -coverprofile=coverage.txt -covermode=atomic ./...
-      
-    - name: Cover
-      uses: codecov/codecov-action@v1
-      
-    - name: Lint
-      uses: golangci/golangci-lint-action@v3.1.0
-      with:
-        version: ${{ env.GOLANGCILINT_VER }}
+      - name: Lint
+        uses: golangci/golangci-lint-action@v3.3.1
+        with:
+          version: ${{ env.GOLANGCILINT_VER }}
+          skip-cache: true
+          args: --timeout=10m0s
+
+      - name: Run go mod tidy check diff
+        run: make modtidy check-diff
+      - name: Run go mod tidy
+        run: make modtidy

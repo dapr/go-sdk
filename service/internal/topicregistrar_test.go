@@ -4,6 +4,8 @@ import (
 	"context"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	"github.com/stretchr/testify/assert"
 
 	"github.com/dapr/go-sdk/service/common"
@@ -61,12 +63,13 @@ func TestTopicRegistrarValidation(t *testing.T) {
 		},
 	}
 	for name, tt := range tests {
+		tt := tt // dereference loop var
 		t.Run(name, func(t *testing.T) {
 			m := internal.TopicRegistrar{}
 			if tt.err != "" {
-				assert.EqualError(t, m.AddSubscription(&tt.sub, tt.fn), tt.err)
+				require.EqualError(t, m.AddSubscription(&tt.sub, tests[name].fn), tt.err)
 			} else {
-				assert.NoError(t, m.AddSubscription(&tt.sub, tt.fn))
+				require.NoError(t, m.AddSubscription(&tt.sub, tt.fn))
 			}
 		})
 	}
@@ -83,7 +86,7 @@ func TestTopicAddSubscriptionMetadata(t *testing.T) {
 		Metadata:   map[string]string{"key": "value"},
 	}
 
-	assert.NoError(t, topicRegistrar.AddSubscription(sub, handler))
+	require.NoError(t, topicRegistrar.AddSubscription(sub, handler))
 
 	actual := topicRegistrar["pubsubname-topic"].Subscription
 	expected := &internal.TopicSubscription{
