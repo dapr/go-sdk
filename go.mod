@@ -1,8 +1,6 @@
 module github.com/dapr/go-sdk
 
-go 1.21
-
-toolchain go1.21.6
+go 1.21.8
 
 require (
 	github.com/dapr/dapr v1.13.0-rc.8
@@ -12,7 +10,7 @@ require (
 	github.com/microsoft/durabletask-go v0.4.1-0.20240122160106-fb5c4c05729d
 	github.com/stretchr/testify v1.8.4
 	google.golang.org/grpc v1.62.0
-	google.golang.org/protobuf v1.32.0
+	google.golang.org/protobuf v1.33.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
