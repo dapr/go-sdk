@@ -1,8 +1,8 @@
 github.com/cenkalti/backoff/v4 v4.2.1 h1:y4OZtCnogmCPw98Zjyt5a6+QwPLGkiQsYW5oUqylYbM=
 github.com/cenkalti/backoff/v4 v4.2.1/go.mod h1:Y3VNntkOUPxTVeUxJ/G5vcM//AlwfmyYozVcomhLiZE=
 github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=
-github.com/dapr/dapr v1.13.0-rc.8 h1:/7GScKdJcflxJOjVAoQ185RTHY7MA8yU81Dhm4B+NEg=
-github.com/dapr/dapr v1.13.0-rc.8/go.mod h1:47I24NFMHOmlqCPSsBc0QNHZdZhb1n2NcHLzh9sy/C4=
+github.com/dapr/dapr v1.13.0 h1:yExu47iCyqBSghAGVjgVjica4NfFd0dVlPXQTpQWR98=
+github.com/dapr/dapr v1.13.0/go.mod h1:VFjFGrLb84k5pjmWNn9reI5D28OQifdUbBdymXxbZDc=
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc h1:U9qPSI2PIWSS1VwoXQT9A3Wy9MM3WgvqSxFWenqJduM=
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/go-chi/chi/v5 v5.0.12 h1:9euLV5sTrTNTRUU9POmDUvfxyj6LAABLUcEWO+JJb4s=
