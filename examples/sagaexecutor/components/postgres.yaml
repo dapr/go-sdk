@@ -1,0 +1,15 @@
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: postgres
+spec:
+  type: bindings.postgresql
+  version: v1
+  metadata:
+    # Connection string
+     name: connectionString
+      secretKeyRef:
+              name: postgres-url
+              key: postgres-url
+auth:
+  secretStore: local-secret-store
