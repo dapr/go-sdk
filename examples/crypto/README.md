@@ -1,6 +1,6 @@
 # Dapr Crypto Example with go-sdk
 
-## Step
+## Steps
 
 ### Prepare
 
@@ -8,8 +8,16 @@
 
 > In order to run this sample, make sure that OpenSSL is available on your system.
 
+### Running
 
-This sample requires a private RSA key and a 256-bit symmetric (AES) key. We will generate them using OpenSSL:
+1. This sample requires a private RSA key and a 256-bit symmetric (AES) key. We will generate them using OpenSSL:
+
+<!-- STEP
+name: Generate crypto
+expected_stderr_lines:
+output_match_mode: substring
+background: false
+-->
 
 ```bash
 mkdir -p keys
@@ -21,7 +29,7 @@ openssl rand -out keys/symmetric-key-256 32
 
 <!-- END_STEP -->
 
-3. Run the Go service app with Dapr:
+2. Run the Go service app with Dapr:
 
 <!-- STEP
 name: Run crypto service
@@ -43,6 +51,8 @@ dapr run --app-id crypto --resources-path ./components/ -- go run .
 <!-- END_STEP -->
 
 ### Cleanup
+
+`ctrl + c` to stop execution
 
 <!-- STEP
 expected_stdout_lines: 

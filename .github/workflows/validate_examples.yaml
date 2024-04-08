@@ -158,6 +158,7 @@ jobs:
           [
             "actor",
             "configuration",
+            "crypto",
             "grpc-service",
             "hello-world",
             "pubsub",
