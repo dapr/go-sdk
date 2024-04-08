@@ -17,6 +17,8 @@ name: Generate crypto
 expected_stderr_lines:
 output_match_mode: substring
 background: false
+sleep: 5
+timeout_seconds: 30
 -->
 
 ```bash
@@ -32,16 +34,18 @@ openssl rand -out keys/symmetric-key-256 32
 2. Run the Go service app with Dapr:
 
 <!-- STEP
-name: Run crypto service
+name: Run crypto example
 expected_stdout_lines:
   - '== APP == Encrypted the message, got 856 bytes'
   - '== APP == Decrypted the message, got 24 bytes'
   - '== APP == The secret is "passw0rd"'
-  - '== APP == Wrote decrypted data to encrypted.out'
+  - '== APP == Wrote encrypted data to encrypted.out'
   - '== APP == Wrote decrypted data to decrypted.out.jpg'
   - "Exited App successfully"
 expected_stderr_lines:
 output_match_mode: substring
+sleep: 30
+timeout_seconds: 90
 -->
 
 ```bash
@@ -54,19 +58,10 @@ dapr run --app-id crypto --resources-path ./components/ -- go run .
 
 `ctrl + c` to stop execution
 
-<!-- STEP
-expected_stdout_lines: 
-  - '✅  app stopped successfully: crypto'
-expected_stderr_lines:
-name: Shutdown dapr
--->
-
 ```bash
 dapr stop --app-id crypto
 (lsof -i:8080 | grep crypto) | awk '{print $2}' | xargs  kill
 ```
-
-<!-- END_STEP -->
 
 ## Result
 
