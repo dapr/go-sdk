@@ -23,8 +23,8 @@ import (
 	"github.com/dapr/go-sdk/actor/mock"
 	"github.com/dapr/go-sdk/actor/mock_client"
 	"github.com/dapr/go-sdk/client"
-	"github.com/golang/mock/gomock"
 
+	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -63,7 +63,7 @@ func TestAdd_EmptyStateName(t *testing.T) {
 	ctx := context.Background()
 	sm := newMockStateManager(t)
 	err := sm.Add(ctx, "", testValue)
-	assert.Error(t, err)
+	require.Error(t, err)
 }
 
 func TestAdd_WithCachedStateChange(t *testing.T) {
@@ -90,7 +90,7 @@ func TestAdd_WithCachedStateChange(t *testing.T) {
 
 			err := sm.Add(ctx, testState, testValue)
 			if tt.shouldErr {
-				assert.Error(t, err)
+				require.Error(t, err)
 			} else {
 				require.NoError(t, err)
 
@@ -98,8 +98,8 @@ func TestAdd_WithCachedStateChange(t *testing.T) {
 				require.True(t, ok)
 
 				metadata := val.(*ChangeMetadata)
-				assert.Equal(t, metadata.Kind, Update)
-				assert.Equal(t, metadata.Value, testValue)
+				assert.Equal(t, Update, metadata.Kind)
+				assert.Equal(t, testValue, metadata.Value)
 			}
 		})
 	}
@@ -135,7 +135,7 @@ func TestAdd_WithoutCachedStateChange(t *testing.T) {
 
 			err := sm.Add(ctx, testState, testValue)
 			if tt.stateProviderErr || tt.duplicateState {
-				assert.Error(t, err)
+				require.Error(t, err)
 			} else {
 				require.NoError(t, err)
 
@@ -143,8 +143,8 @@ func TestAdd_WithoutCachedStateChange(t *testing.T) {
 				require.True(t, ok)
 
 				metadata := val.(*ChangeMetadata)
-				assert.Equal(t, metadata.Kind, Add)
-				assert.Equal(t, metadata.Value, testValue)
+				assert.Equal(t, Add, metadata.Kind)
+				assert.Equal(t, testValue, metadata.Value)
 			}
 		})
 	}
@@ -154,7 +154,7 @@ func TestGet_EmptyStateName(t *testing.T) {
 	ctx := context.Background()
 	sm := newMockStateManager(t)
 	err := sm.Get(ctx, "", testValue)
-	assert.Error(t, err)
+	require.Error(t, err)
 }
 
 func TestGet_WithCachedStateChange(t *testing.T) {
@@ -178,10 +178,10 @@ func TestGet_WithCachedStateChange(t *testing.T) {
 			var reply string
 			err := sm.Get(ctx, testState, &reply)
 			if tt.shouldErr {
-				assert.Error(t, err)
+				require.Error(t, err)
 			} else {
-				assert.NoError(t, err)
-				assert.Equal(t, reply, testValue)
+				require.NoError(t, err)
+				assert.Equal(t, testValue, reply)
 			}
 		})
 	}
@@ -222,8 +222,8 @@ func TestGet_WithoutCachedStateChange(t *testing.T) {
 			require.True(t, ok)
 
 			metadata := val.(*ChangeMetadata)
-			assert.Equal(t, metadata.Kind, None)
-			assert.Equal(t, metadata.Value, testValue)
+			assert.Equal(t, None, metadata.Kind)
+			assert.Equal(t, testValue, metadata.Value)
 		})
 	}
 }
@@ -232,7 +232,7 @@ func TestSet_EmptyStateName(t *testing.T) {
 	ctx := context.Background()
 	sm := newMockStateManager(t)
 	err := sm.Set(ctx, "", testValue)
-	assert.Error(t, err)
+	require.Error(t, err)
 }
 
 func TestSet_WithCachedStateChange(t *testing.T) {
@@ -260,8 +260,8 @@ func TestSet_WithCachedStateChange(t *testing.T) {
 			require.True(t, ok)
 
 			metadata := val.(*ChangeMetadata)
-			assert.Equal(t, metadata.Kind, tt.expectKind)
-			assert.Equal(t, metadata.Value, testValue)
+			assert.Equal(t, tt.expectKind, metadata.Kind)
+			assert.Equal(t, testValue, metadata.Value)
 		})
 	}
 }
@@ -277,22 +277,22 @@ func TestSet_WithoutCachedStateChange(t *testing.T) {
 	require.True(t, ok)
 
 	metadata := val.(*ChangeMetadata)
-	assert.Equal(t, metadata.Kind, Add)
-	assert.Equal(t, metadata.Value, testValue)
+	assert.Equal(t, Add, metadata.Kind)
+	assert.Equal(t, testValue, metadata.Value)
 }
 
 func TestSetWithTTL_EmptyStateName(t *testing.T) {
 	ctx := context.Background()
 	sm := newMockStateManager(t)
 	err := sm.SetWithTTL(ctx, "", testValue, testTTL)
-	assert.Error(t, err)
+	require.Error(t, err)
 }
 
 func TestSetWithTTL_NegativeTTL(t *testing.T) {
 	ctx := context.Background()
 	sm := newMockStateManager(t)
 	err := sm.SetWithTTL(ctx, testState, testValue, -testTTL)
-	assert.Error(t, err)
+	require.Error(t, err)
 }
 
 func TestSetWithTTL_WithCachedStateChange(t *testing.T) {
@@ -320,9 +320,9 @@ func TestSetWithTTL_WithCachedStateChange(t *testing.T) {
 			require.True(t, ok)
 
 			metadata := val.(*ChangeMetadata)
-			assert.Equal(t, metadata.Kind, tt.expectKind)
-			assert.Equal(t, metadata.Value, testValue)
-			assert.Equal(t, *metadata.TTL, testTTL)
+			assert.Equal(t, tt.expectKind, metadata.Kind)
+			assert.Equal(t, testValue, metadata.Value)
+			assert.Equal(t, testTTL, *metadata.TTL)
 		})
 	}
 }
@@ -338,16 +338,16 @@ func TestSetWithTTL_WithoutCachedStateChange(t *testing.T) {
 	require.True(t, ok)
 
 	metadata := val.(*ChangeMetadata)
-	assert.Equal(t, metadata.Kind, Add)
-	assert.Equal(t, metadata.Value, testValue)
-	assert.Equal(t, *metadata.TTL, testTTL)
+	assert.Equal(t, Add, metadata.Kind)
+	assert.Equal(t, testValue, metadata.Value)
+	assert.Equal(t, testTTL, *metadata.TTL)
 }
 
 func TestRemove_EmptyStateName(t *testing.T) {
 	ctx := context.Background()
 	sm := newMockStateManager(t)
 	err := sm.Remove(ctx, "")
-	assert.Error(t, err)
+	require.Error(t, err)
 }
 
 func TestRemove_WithCachedStateChange(t *testing.T) {
@@ -373,7 +373,7 @@ func TestRemove_WithCachedStateChange(t *testing.T) {
 
 			val, ok := sm.stateChangeTracker.Load(testState)
 			if tt.inCache {
-				assert.Equal(t, val.(*ChangeMetadata).Kind, Remove)
+				assert.Equal(t, Remove, val.(*ChangeMetadata).Kind)
 				assert.True(t, ok)
 			} else {
 				assert.Nil(t, val)
@@ -405,7 +405,7 @@ func TestRemove_WithoutCachedStateChange(t *testing.T) {
 			mockClient := sm.stateAsyncProvider.daprClient.(*mock_client.MockClient)
 			tt.mockFunc(sm, mockClient)
 			err := sm.Remove(ctx, testState)
-			assert.NoError(t, err)
+			require.NoError(t, err)
 		})
 	}
 }
@@ -414,8 +414,8 @@ func TestContains_EmptyStateName(t *testing.T) {
 	ctx := context.Background()
 	sm := newMockStateManager(t)
 	res, err := sm.Contains(ctx, "")
+	require.Error(t, err)
 	assert.False(t, res)
-	assert.Error(t, err)
 }
 
 func TestContains_WithCachedStateChange(t *testing.T) {
@@ -437,8 +437,8 @@ func TestContains_WithCachedStateChange(t *testing.T) {
 			sm.stateChangeTracker.Store(testState, &ChangeMetadata{Kind: tt.kind, Value: testValue})
 
 			result, err := sm.Contains(ctx, testState)
-			assert.Equal(t, result, tt.expected)
-			assert.NoError(t, err)
+			require.NoError(t, err)
+			assert.Equal(t, tt.expected, result)
 		})
 	}
 }
@@ -467,10 +467,10 @@ func TestContains_WithoutCachedStateChange(t *testing.T) {
 
 			result, err := sm.Contains(ctx, testState)
 			if tt.shouldErr {
-				assert.Error(t, err)
+				require.Error(t, err)
 				assert.False(t, result)
 			} else {
-				assert.NoError(t, err)
+				require.NoError(t, err)
 				assert.True(t, result)
 			}
 		})
@@ -507,7 +507,7 @@ func TestSave_SingleCachedStateChange(t *testing.T) {
 			}
 
 			err := sm.Save(ctx)
-			assert.Nil(t, err)
+			require.NoError(t, err)
 		})
 	}
 }
@@ -538,7 +538,7 @@ func TestSave_MultipleCachedStateChanges(t *testing.T) {
 	mockCodec.EXPECT().Marshal(gomock.Any()).Times(2)
 
 	err := sm.Save(ctx)
-	assert.Nil(t, err)
+	require.NoError(t, err)
 }
 
 func TestFlush(t *testing.T) {
@@ -567,9 +567,9 @@ func TestFlush(t *testing.T) {
 			assert.False(t, ok)
 		} else {
 			metadata := val.(*ChangeMetadata)
-			assert.Equal(t, metadata.Kind, None)
-			assert.Equal(t, metadata.Value, sc.value)
 			assert.True(t, ok)
+			assert.Equal(t, None, metadata.Kind)
+			assert.Equal(t, sc.value, metadata.Value)
 		}
 	}
 }
