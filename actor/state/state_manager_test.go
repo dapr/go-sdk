@@ -72,10 +72,8 @@ func TestStateManagerWithContext(t *testing.T) {
 
 func TestAdd_EmptyStateName(t *testing.T) {
 	ctx := context.Background()
-	sm := newMockStateManager(t)
-	err := sm.Add("", testValue)
-	require.Error(t, err)
-	err = sm.stateManagerCtx.Add(ctx, "", testValue)
+	sm := newMockStateManagerCtx(t)
+	err := sm.Add(ctx, "", testValue)
 	require.Error(t, err)
 }
 
@@ -86,33 +84,22 @@ func TestAdd_WithCachedStateChange(t *testing.T) {
 		name      string
 		kind      ChangeKind
 		shouldErr bool
-		context   context.Context
 	}{
-		{"state change kind None", None, true, nil},
-		{"state change kind Add", Add, true, nil},
-		{"state change kind Update", Update, true, nil},
-		{"state change kind Remove", Remove, false, nil},
-		{"context state change kind None", None, true, ctx},
-		{"context state change kind Add", Add, true, ctx},
-		{"context state change kind Update", Update, true, ctx},
-		{"context state change kind Remove", Remove, false, ctx},
+		{"state change kind None", None, true},
+		{"state change kind Add", Add, true},
+		{"state change kind Update", Update, true},
+		{"state change kind Remove", Remove, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			sm := newMockStateManager(t)
+			sm := newMockStateManagerCtx(t)
 			sm.stateChangeTracker.Store(testState, &ChangeMetadata{Kind: tt.kind, Value: testValue})
 			mockClient := sm.stateAsyncProvider.daprClient.(*mock_client.MockClient)
-			mockRequest := newGetActorStateRequest(sm.stateManagerCtx, testState)
+			mockRequest := newGetActorStateRequest(sm, testState)
 			mockResult := newGetActorStateResponse([]byte("result"))
 			mockClient.EXPECT().GetActorState(ctx, mockRequest).Return(mockResult, nil)
 
-			var err error
-			if tt.context == nil {
-				err = sm.Add(testState, testValue)
-			} else {
-				err = sm.stateManagerCtx.Add(tt.context, testState, testValue)
-			}
-
+			err := sm.Add(ctx, testState, testValue)
 			if tt.shouldErr {
 				require.Error(t, err)
 			} else {
@@ -136,20 +123,16 @@ func TestAdd_WithoutCachedStateChange(t *testing.T) {
 		name             string
 		stateProviderErr bool
 		duplicateState   bool
-		context          context.Context
 	}{
-		{"state provider returns error", true, false, nil},
-		{"state provider returns data", false, true, nil},
-		{"successfully add new state", false, false, nil},
-		{"context state provider returns error", true, false, ctx},
-		{"context state provider returns data", false, true, ctx},
-		{"context successfully add new state", false, false, ctx},
+		{"state provider returns error", true, false},
+		{"state provider returns data", false, true},
+		{"successfully add new state", false, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			sm := newMockStateManager(t)
+			sm := newMockStateManagerCtx(t)
 			mockClient := sm.stateAsyncProvider.daprClient.(*mock_client.MockClient)
-			mockRequest := newGetActorStateRequest(sm.stateManagerCtx, testState)
+			mockRequest := newGetActorStateRequest(sm, testState)
 			mockResult := newGetActorStateResponse([]byte("result"))
 			if tt.stateProviderErr {
 				mockClient.EXPECT().GetActorState(ctx, mockRequest).Return(nil, errors.New("mockErr"))
@@ -161,13 +144,7 @@ func TestAdd_WithoutCachedStateChange(t *testing.T) {
 				}
 			}
 
-			var err error
-			if tt.context == nil {
-				err = sm.Add(testState, testValue)
-			} else {
-				err = sm.stateManagerCtx.Add(tt.context, testState, testValue)
-			}
-
+			err := sm.Add(ctx, testState, testValue)
 			if tt.stateProviderErr || tt.duplicateState {
 				require.Error(t, err)
 			} else {
@@ -186,10 +163,8 @@ func TestAdd_WithoutCachedStateChange(t *testing.T) {
 
 func TestGet_EmptyStateName(t *testing.T) {
 	ctx := context.Background()
-	sm := newMockStateManager(t)
-	err := sm.Get("", testValue)
-	require.Error(t, err)
-	err = sm.stateManagerCtx.Get(ctx, "", testValue)
+	sm := newMockStateManagerCtx(t)
+	err := sm.Get(ctx, "", testValue)
 	require.Error(t, err)
 }
 
@@ -200,30 +175,19 @@ func TestGet_WithCachedStateChange(t *testing.T) {
 		name      string
 		kind      ChangeKind
 		shouldErr bool
-		context   context.Context
 	}{
-		{"state change kind None", None, false, nil},
-		{"state change kind Add", Add, false, nil},
-		{"state change kind Update", Update, false, nil},
-		{"state change kind Remove", Remove, true, nil},
-		{"context state change kind None", None, false, ctx},
-		{"context state change kind Add", Add, false, ctx},
-		{"context state change kind Update", Update, false, ctx},
-		{"context state change kind Remove", Remove, true, ctx},
+		{"state change kind None", None, false},
+		{"state change kind Add", Add, false},
+		{"state change kind Update", Update, false},
+		{"state change kind Remove", Remove, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			sm := newMockStateManager(t)
+			sm := newMockStateManagerCtx(t)
 			sm.stateChangeTracker.Store(testState, &ChangeMetadata{Kind: tt.kind, Value: testValue})
 
-			var err error
 			var reply string
-			if tt.context == nil {
-				err = sm.Get(testState, &reply)
-			} else {
-				err = sm.stateManagerCtx.Get(tt.context, testState, &reply)
-			}
-
+			err := sm.Get(ctx, testState, &reply)
 			if tt.shouldErr {
 				require.Error(t, err)
 			} else {
@@ -240,19 +204,16 @@ func TestGet_WithoutCachedStateChange(t *testing.T) {
 	tests := []struct {
 		name      string
 		shouldErr bool
-		context   context.Context
 	}{
-		{"state provider returns error", true, nil},
-		{"state provider returns data", false, nil},
-		{"context state provider returns error", true, ctx},
-		{"context state provider returns data", false, ctx},
+		{"state provider returns error", true},
+		{"state provider returns data", false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			sm := newMockStateManager(t)
+			sm := newMockStateManagerCtx(t)
 			mockClient := sm.stateAsyncProvider.daprClient.(*mock_client.MockClient)
 			mockCodec := sm.stateAsyncProvider.stateSerializer.(*mock.MockCodec)
-			mockRequest := newGetActorStateRequest(sm.stateManagerCtx, testState)
+			mockRequest := newGetActorStateRequest(sm, testState)
 			mockResult := newGetActorStateResponse([]byte("result"))
 			if tt.shouldErr {
 				mockClient.EXPECT().GetActorState(ctx, mockRequest).Return(nil, errors.New("mockErr"))
@@ -261,13 +222,7 @@ func TestGet_WithoutCachedStateChange(t *testing.T) {
 				mockCodec.EXPECT().Unmarshal(mockResult.Data, testValue)
 			}
 
-			var err error
-			if tt.context == nil {
-				err = sm.Get(testState, testValue)
-			} else {
-				err = sm.stateManagerCtx.Get(tt.context, testState, testValue)
-			}
-
+			err := sm.Get(ctx, testState, testValue)
 			if tt.shouldErr {
 				require.Error(t, err)
 			} else {
@@ -286,10 +241,8 @@ func TestGet_WithoutCachedStateChange(t *testing.T) {
 
 func TestSet_EmptyStateName(t *testing.T) {
 	ctx := context.Background()
-	sm := newMockStateManager(t)
-	err := sm.Set("", testValue)
-	require.Error(t, err)
-	err = sm.stateManagerCtx.Set(ctx, "", testValue)
+	sm := newMockStateManagerCtx(t)
+	err := sm.Set(ctx, "", testValue)
 	require.Error(t, err)
 }
 
@@ -300,29 +253,19 @@ func TestSet_WithCachedStateChange(t *testing.T) {
 		name       string
 		initKind   ChangeKind
 		expectKind ChangeKind
-		context    context.Context
 	}{
-		{"state change kind None", None, Update, nil},
-		{"state change kind Add", Add, Add, nil},
-		{"state change kind Update", Update, Update, nil},
-		{"state change kind Remove", Remove, Update, nil},
-		{"context state change kind None", None, Update, ctx},
-		{"context state change kind Add", Add, Add, ctx},
-		{"context state change kind Update", Update, Update, ctx},
-		{"context state change kind Remove", Remove, Update, ctx},
+		{"state change kind None", None, Update},
+		{"state change kind Add", Add, Add},
+		{"state change kind Update", Update, Update},
+		{"state change kind Remove", Remove, Update},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			sm := newMockStateManager(t)
+			sm := newMockStateManagerCtx(t)
 			sm.stateChangeTracker.Store(testState, &ChangeMetadata{Kind: tt.initKind, Value: testValue})
 
-			if tt.context == nil {
-				err := sm.Set(testState, testValue)
-				require.NoError(t, err)
-			} else {
-				err := sm.stateManagerCtx.Set(tt.context, testState, testValue)
-				require.NoError(t, err)
-			}
+			err := sm.Set(ctx, testState, testValue)
+			require.NoError(t, err)
 
 			val, ok := sm.stateChangeTracker.Load(testState)
 			require.True(t, ok)
@@ -336,34 +279,17 @@ func TestSet_WithCachedStateChange(t *testing.T) {
 
 func TestSet_WithoutCachedStateChange(t *testing.T) {
 	ctx := context.Background()
+	sm := newMockStateManagerCtx(t)
 
-	tests := []struct {
-		name    string
-		context context.Context
-	}{
-		{"without context", nil},
-		{"with context", ctx},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			sm := newMockStateManager(t)
+	err := sm.Set(ctx, testState, testValue)
+	require.NoError(t, err)
 
-			if tt.context == nil {
-				err := sm.Set(testState, testValue)
-				require.NoError(t, err)
-			} else {
-				err := sm.stateManagerCtx.Set(tt.context, testState, testValue)
-				require.NoError(t, err)
-			}
+	val, ok := sm.stateChangeTracker.Load(testState)
+	require.True(t, ok)
 
-			val, ok := sm.stateChangeTracker.Load(testState)
-			require.True(t, ok)
-
-			metadata := val.(*ChangeMetadata)
-			assert.Equal(t, Add, metadata.Kind)
-			assert.Equal(t, testValue, metadata.Value)
-		})
-	}
+	metadata := val.(*ChangeMetadata)
+	assert.Equal(t, Add, metadata.Kind)
+	assert.Equal(t, testValue, metadata.Value)
 }
 
 func TestSetWithTTL_EmptyStateName(t *testing.T) {
@@ -430,10 +356,8 @@ func TestSetWithTTL_WithoutCachedStateChange(t *testing.T) {
 
 func TestRemove_EmptyStateName(t *testing.T) {
 	ctx := context.Background()
-	sm := newMockStateManager(t)
-	err := sm.Remove("")
-	require.Error(t, err)
-	err = sm.stateManagerCtx.Remove(ctx, "")
+	sm := newMockStateManagerCtx(t)
+	err := sm.Remove(ctx, "")
 	require.Error(t, err)
 }
 
@@ -444,29 +368,19 @@ func TestRemove_WithCachedStateChange(t *testing.T) {
 		name    string
 		kind    ChangeKind
 		inCache bool
-		context context.Context
 	}{
-		{"state change kind None", None, true, nil},
-		{"state change kind Add", Add, false, nil},
-		{"state change kind Update", Update, false, nil},
-		{"state change kind Remove", Remove, true, nil},
-		{"context state change kind None", None, true, ctx},
-		{"context state change kind Add", Add, false, ctx},
-		{"context state change kind Update", Update, false, ctx},
-		{"context state change kind Remove", Remove, true, ctx},
+		{"state change kind None", None, true},
+		{"state change kind Add", Add, false},
+		{"state change kind Update", Update, false},
+		{"state change kind Remove", Remove, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			sm := newMockStateManager(t)
+			sm := newMockStateManagerCtx(t)
 			sm.stateChangeTracker.Store(testState, &ChangeMetadata{Kind: tt.kind, Value: testValue})
 
-			if tt.context == nil {
-				err := sm.Remove(testState)
-				require.NoError(t, err)
-			} else {
-				err := sm.stateManagerCtx.Remove(tt.context, testState)
-				require.NoError(t, err)
-			}
+			err := sm.Remove(ctx, testState)
+			require.NoError(t, err)
 
 			val, ok := sm.stateChangeTracker.Load(testState)
 			if tt.inCache {
@@ -488,58 +402,29 @@ func TestRemove_WithoutCachedStateChange(t *testing.T) {
 	tests := []struct {
 		name     string
 		mockFunc func(sm *stateManagerCtx, mc *mock_client.MockClient)
-		context  context.Context
 	}{
-		{
-			"state provider returns error",
-			func(sm *stateManagerCtx, mc *mock_client.MockClient) {
-				mc.EXPECT().GetActorState(ctx, newGetActorStateRequest(sm, testState)).Return(nil, mockErr)
-			},
-			nil,
-		},
-		{
-			"state provider returns data",
-			func(sm *stateManagerCtx, mc *mock_client.MockClient) {
-				mc.EXPECT().GetActorState(ctx, newGetActorStateRequest(sm, testState)).Return(mockResult, nil)
-			},
-			nil},
-		{
-			"state provider returns error",
-			func(sm *stateManagerCtx, mc *mock_client.MockClient) {
-				mc.EXPECT().GetActorState(ctx, newGetActorStateRequest(sm, testState)).Return(nil, mockErr)
-			},
-			ctx},
-		{
-			"state provider returns data",
-			func(sm *stateManagerCtx, mc *mock_client.MockClient) {
-				mc.EXPECT().GetActorState(ctx, newGetActorStateRequest(sm, testState)).Return(mockResult, nil)
-			},
-			ctx},
+		{"state provider returns error", func(sm *stateManagerCtx, mc *mock_client.MockClient) {
+			mc.EXPECT().GetActorState(ctx, newGetActorStateRequest(sm, testState)).Return(nil, mockErr)
+		}},
+		{"state provider returns data", func(sm *stateManagerCtx, mc *mock_client.MockClient) {
+			mc.EXPECT().GetActorState(ctx, newGetActorStateRequest(sm, testState)).Return(mockResult, nil)
+		}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			sm := newMockStateManager(t)
+			sm := newMockStateManagerCtx(t)
 			mockClient := sm.stateAsyncProvider.daprClient.(*mock_client.MockClient)
-			tt.mockFunc(sm.stateManagerCtx, mockClient)
-
-			if tt.context == nil {
-				err := sm.Remove(testState)
-				require.NoError(t, err)
-			} else {
-				err := sm.stateManagerCtx.Remove(tt.context, testState)
-				require.NoError(t, err)
-			}
+			tt.mockFunc(sm, mockClient)
+			err := sm.Remove(ctx, testState)
+			require.NoError(t, err)
 		})
 	}
 }
 
 func TestContains_EmptyStateName(t *testing.T) {
 	ctx := context.Background()
-	sm := newMockStateManager(t)
-	res, err := sm.Contains("")
-	require.Error(t, err)
-	assert.False(t, res)
-	res, err = sm.stateManagerCtx.Contains(ctx, "")
+	sm := newMockStateManagerCtx(t)
+	res, err := sm.Contains(ctx, "")
 	require.Error(t, err)
 	assert.False(t, res)
 }
@@ -551,31 +436,20 @@ func TestContains_WithCachedStateChange(t *testing.T) {
 		name     string
 		kind     ChangeKind
 		expected bool
-		context  context.Context
 	}{
-		{"state change kind None", None, true, nil},
-		{"state change kind Add", Add, true, nil},
-		{"state change kind Update", Update, true, nil},
-		{"state change kind Remove", Remove, false, nil},
-		{"context state change kind None", None, true, ctx},
-		{"context state change kind Add", Add, true, ctx},
-		{"context state change kind Update", Update, true, ctx},
-		{"context state change kind Remove", Remove, false, ctx},
+		{"state change kind None", None, true},
+		{"state change kind Add", Add, true},
+		{"state change kind Update", Update, true},
+		{"state change kind Remove", Remove, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			sm := newMockStateManager(t)
+			sm := newMockStateManagerCtx(t)
 			sm.stateChangeTracker.Store(testState, &ChangeMetadata{Kind: tt.kind, Value: testValue})
 
-			if tt.context == nil {
-				result, err := sm.Contains(testState)
-				require.NoError(t, err)
-				assert.Equal(t, tt.expected, result)
-			} else {
-				result, err := sm.stateManagerCtx.Contains(tt.context, testState)
-				require.NoError(t, err)
-				assert.Equal(t, tt.expected, result)
-			}
+			result, err := sm.Contains(ctx, testState)
+			require.NoError(t, err)
+			assert.Equal(t, tt.expected, result)
 		})
 	}
 }
@@ -586,18 +460,15 @@ func TestContains_WithoutCachedStateChange(t *testing.T) {
 	tests := []struct {
 		name      string
 		shouldErr bool
-		context   context.Context
 	}{
-		{"state provider returns error", true, nil},
-		{"state provider returns data", false, nil},
-		{"context state provider returns error", true, ctx},
-		{"context state provider returns data", false, ctx},
+		{"state provider returns error", true},
+		{"state provider returns data", false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			sm := newMockStateManager(t)
+			sm := newMockStateManagerCtx(t)
 			mockClient := sm.stateAsyncProvider.daprClient.(*mock_client.MockClient)
-			mockRequest := newGetActorStateRequest(sm.stateManagerCtx, testState)
+			mockRequest := newGetActorStateRequest(sm, testState)
 			mockResult := newGetActorStateResponse([]byte("result"))
 			if tt.shouldErr {
 				mockClient.EXPECT().GetActorState(ctx, mockRequest).Return(nil, errors.New("mockErr"))
@@ -605,14 +476,7 @@ func TestContains_WithoutCachedStateChange(t *testing.T) {
 				mockClient.EXPECT().GetActorState(ctx, mockRequest).Return(mockResult, nil)
 			}
 
-			var result bool
-			var err error
-			if tt.context == nil {
-				result, err = sm.Contains(testState)
-			} else {
-				result, err = sm.stateManagerCtx.Contains(tt.context, testState)
-			}
-
+			result, err := sm.Contains(ctx, testState)
 			if tt.shouldErr {
 				require.Error(t, err)
 				assert.False(t, result)
@@ -630,21 +494,16 @@ func TestSave_SingleCachedStateChange(t *testing.T) {
 	tests := []struct {
 		name         string
 		stateChanges *ChangeMetadata
-		context      context.Context
 	}{
-		{"no state change", nil, nil},
-		{"state change kind None", &ChangeMetadata{Kind: None, Value: testValue}, nil},
-		{"state change kind Add", &ChangeMetadata{Kind: Add, Value: testValue}, nil},
-		{"state change kind Update", &ChangeMetadata{Kind: Update, Value: testValue}, nil},
-		{"state change kind Remove", &ChangeMetadata{Kind: Remove, Value: testValue}, nil},
-		{"context state change kind None", &ChangeMetadata{Kind: None, Value: testValue}, ctx},
-		{"context state change kind Add", &ChangeMetadata{Kind: Add, Value: testValue}, ctx},
-		{"context state change kind Update", &ChangeMetadata{Kind: Update, Value: testValue}, ctx},
-		{"context state change kind Remove", &ChangeMetadata{Kind: Remove, Value: testValue}, ctx},
+		{"no state change", nil},
+		{"state change kind None", &ChangeMetadata{Kind: None, Value: testValue}},
+		{"state change kind Add", &ChangeMetadata{Kind: Add, Value: testValue}},
+		{"state change kind Update", &ChangeMetadata{Kind: Update, Value: testValue}},
+		{"state change kind Remove", &ChangeMetadata{Kind: Remove, Value: testValue}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			sm := newMockStateManager(t)
+			sm := newMockStateManagerCtx(t)
 			mockClient := sm.stateAsyncProvider.daprClient.(*mock_client.MockClient)
 			mockCodec := sm.stateAsyncProvider.stateSerializer.(*mock.MockCodec)
 			if tt.stateChanges != nil {
@@ -658,20 +517,15 @@ func TestSave_SingleCachedStateChange(t *testing.T) {
 				}
 			}
 
-			if tt.context == nil {
-				err := sm.Save()
-				require.NoError(t, err)
-			} else {
-				err := sm.stateManagerCtx.Save(tt.context)
-				require.NoError(t, err)
-			}
+			err := sm.Save(ctx)
+			require.NoError(t, err)
 		})
 	}
 }
 
 func TestSave_MultipleCachedStateChanges(t *testing.T) {
 	ctx := context.Background()
-	sm := newMockStateManager(t)
+	sm := newMockStateManagerCtx(t)
 	mockClient := sm.stateAsyncProvider.daprClient.(*mock_client.MockClient)
 	mockCodec := sm.stateAsyncProvider.stateSerializer.(*mock.MockCodec)
 
@@ -694,94 +548,40 @@ func TestSave_MultipleCachedStateChanges(t *testing.T) {
 	// 2 times: 1 Add, 1 Update
 	mockCodec.EXPECT().Marshal(gomock.Any()).Times(2)
 
-	err := sm.Save()
-	require.NoError(t, err)
-	err = sm.stateManagerCtx.Save(ctx)
+	err := sm.Save(ctx)
 	require.NoError(t, err)
 }
 
 func TestFlush(t *testing.T) {
 	ctx := context.Background()
-
-	tests := []struct {
-		name    string
-		context context.Context
+	sm := newMockStateManagerCtx(t)
+	stateChanges := []struct {
+		stateName string
+		value     string
+		kind      ChangeKind
 	}{
-		{"no context", nil},
-		{"context", ctx},
+		{"stateNone", "valueNone", None},
+		{"stateAdd", "valueAdd", Add},
+		{"stateUpdate", "valueUpdate", Update},
+		{"stateRemove", "valueRemove", Remove},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			sm := newMockStateManager(t)
-			stateChanges := []struct {
-				stateName string
-				value     string
-				kind      ChangeKind
-			}{
-				{"stateNone", "valueNone", None},
-				{"stateAdd", "valueAdd", Add},
-				{"stateUpdate", "valueUpdate", Update},
-				{"stateRemove", "valueRemove", Remove},
-			}
-			for _, sc := range stateChanges {
-				sm.stateChangeTracker.Store(sc.stateName, &ChangeMetadata{Kind: sc.kind, Value: sc.value})
-			}
+	for _, sc := range stateChanges {
+		sm.stateChangeTracker.Store(sc.stateName, &ChangeMetadata{Kind: sc.kind, Value: sc.value})
+	}
 
-			if tt.context == nil {
-				sm.Flush()
-			} else {
-				sm.stateManagerCtx.Flush(tt.context)
-			}
+	sm.Flush(ctx)
 
-			for _, sc := range stateChanges {
-				val, ok := sm.stateChangeTracker.Load(sc.stateName)
-				if sc.kind == Remove {
-					assert.Nil(t, val)
-					assert.False(t, ok)
-				} else {
-					metadata := val.(*ChangeMetadata)
-					assert.True(t, ok)
-					assert.Equal(t, None, metadata.Kind)
-					assert.Equal(t, sc.value, metadata.Value)
-				}
-			}
-		})
-	}
-}
-
-func TestNewActorStateManager(t *testing.T) {
-	type args struct {
-		actorTypeName      string
-		actorID            string
-		stateAsyncProvider *DaprStateAsyncProvider
-	}
-	tests := []struct {
-		name string
-		args args
-		want *stateManager
-	}{
-		{
-			name: "init",
-			args: args{
-				actorTypeName:      "test",
-				actorID:            "fn",
-				stateAsyncProvider: &DaprStateAsyncProvider{},
-			},
-			want: &stateManager{
-				&stateManagerCtx{
-					actorTypeName:      "test",
-					actorID:            "fn",
-					stateAsyncProvider: &DaprStateAsyncProvider{},
-				},
-			},
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := NewActorStateManager(tt.args.actorTypeName, tt.args.actorID, tt.args.stateAsyncProvider); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewActorStateManager() = %v, want %v", got, tt.want)
-			}
-		})
+	for _, sc := range stateChanges {
+		val, ok := sm.stateChangeTracker.Load(sc.stateName)
+		if sc.kind == Remove {
+			assert.Nil(t, val)
+			assert.False(t, ok)
+		} else {
+			metadata := val.(*ChangeMetadata)
+			assert.True(t, ok)
+			assert.Equal(t, None, metadata.Kind)
+			assert.Equal(t, sc.value, metadata.Value)
+		}
 	}
 }
 
