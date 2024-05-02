@@ -35,7 +35,13 @@ const (
 	testTTL   = time.Second * 3600
 )
 
-func newMockStateManager(t *testing.T) *stateManagerCtx {
+func newMockStateManager(t *testing.T) *stateManager {
+	return &stateManager{
+		stateManagerCtx: newMockStateManagerCtx(t),
+	}
+}
+
+func newMockStateManagerCtx(t *testing.T) *stateManagerCtx {
 	ctrl := gomock.NewController(t)
 	return &stateManagerCtx{
 		actorTypeName: "test",
@@ -59,9 +65,14 @@ func newGetActorStateResponse(data []byte) *client.GetActorStateResponse {
 	return &client.GetActorStateResponse{Data: data}
 }
 
+func TestStateManagerWithContext(t *testing.T) {
+	sm := newMockStateManager(t)
+	assert.Equal(t, sm.WithContext(), sm.stateManagerCtx)
+}
+
 func TestAdd_EmptyStateName(t *testing.T) {
 	ctx := context.Background()
-	sm := newMockStateManager(t)
+	sm := newMockStateManagerCtx(t)
 	err := sm.Add(ctx, "", testValue)
 	require.Error(t, err)
 }
@@ -81,7 +92,7 @@ func TestAdd_WithCachedStateChange(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			sm := newMockStateManager(t)
+			sm := newMockStateManagerCtx(t)
 			sm.stateChangeTracker.Store(testState, &ChangeMetadata{Kind: tt.kind, Value: testValue})
 			mockClient := sm.stateAsyncProvider.daprClient.(*mock_client.MockClient)
 			mockRequest := newGetActorStateRequest(sm, testState)
@@ -119,7 +130,7 @@ func TestAdd_WithoutCachedStateChange(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			sm := newMockStateManager(t)
+			sm := newMockStateManagerCtx(t)
 			mockClient := sm.stateAsyncProvider.daprClient.(*mock_client.MockClient)
 			mockRequest := newGetActorStateRequest(sm, testState)
 			mockResult := newGetActorStateResponse([]byte("result"))
@@ -152,7 +163,7 @@ func TestAdd_WithoutCachedStateChange(t *testing.T) {
 
 func TestGet_EmptyStateName(t *testing.T) {
 	ctx := context.Background()
-	sm := newMockStateManager(t)
+	sm := newMockStateManagerCtx(t)
 	err := sm.Get(ctx, "", testValue)
 	require.Error(t, err)
 }
@@ -172,7 +183,7 @@ func TestGet_WithCachedStateChange(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			sm := newMockStateManager(t)
+			sm := newMockStateManagerCtx(t)
 			sm.stateChangeTracker.Store(testState, &ChangeMetadata{Kind: tt.kind, Value: testValue})
 
 			var reply string
@@ -199,7 +210,7 @@ func TestGet_WithoutCachedStateChange(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			sm := newMockStateManager(t)
+			sm := newMockStateManagerCtx(t)
 			mockClient := sm.stateAsyncProvider.daprClient.(*mock_client.MockClient)
 			mockCodec := sm.stateAsyncProvider.stateSerializer.(*mock.MockCodec)
 			mockRequest := newGetActorStateRequest(sm, testState)
@@ -230,7 +241,7 @@ func TestGet_WithoutCachedStateChange(t *testing.T) {
 
 func TestSet_EmptyStateName(t *testing.T) {
 	ctx := context.Background()
-	sm := newMockStateManager(t)
+	sm := newMockStateManagerCtx(t)
 	err := sm.Set(ctx, "", testValue)
 	require.Error(t, err)
 }
@@ -250,7 +261,7 @@ func TestSet_WithCachedStateChange(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			sm := newMockStateManager(t)
+			sm := newMockStateManagerCtx(t)
 			sm.stateChangeTracker.Store(testState, &ChangeMetadata{Kind: tt.initKind, Value: testValue})
 
 			err := sm.Set(ctx, testState, testValue)
@@ -268,7 +279,7 @@ func TestSet_WithCachedStateChange(t *testing.T) {
 
 func TestSet_WithoutCachedStateChange(t *testing.T) {
 	ctx := context.Background()
-	sm := newMockStateManager(t)
+	sm := newMockStateManagerCtx(t)
 
 	err := sm.Set(ctx, testState, testValue)
 	require.NoError(t, err)
@@ -283,14 +294,14 @@ func TestSet_WithoutCachedStateChange(t *testing.T) {
 
 func TestSetWithTTL_EmptyStateName(t *testing.T) {
 	ctx := context.Background()
-	sm := newMockStateManager(t)
+	sm := newMockStateManagerCtx(t)
 	err := sm.SetWithTTL(ctx, "", testValue, testTTL)
 	require.Error(t, err)
 }
 
 func TestSetWithTTL_NegativeTTL(t *testing.T) {
 	ctx := context.Background()
-	sm := newMockStateManager(t)
+	sm := newMockStateManagerCtx(t)
 	err := sm.SetWithTTL(ctx, testState, testValue, -testTTL)
 	require.Error(t, err)
 }
@@ -310,7 +321,7 @@ func TestSetWithTTL_WithCachedStateChange(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			sm := newMockStateManager(t)
+			sm := newMockStateManagerCtx(t)
 			sm.stateChangeTracker.Store(testState, &ChangeMetadata{Kind: tt.initKind, Value: testValue})
 
 			err := sm.SetWithTTL(ctx, testState, testValue, testTTL)
@@ -329,7 +340,7 @@ func TestSetWithTTL_WithCachedStateChange(t *testing.T) {
 
 func TestSetWithTTL_WithoutCachedStateChange(t *testing.T) {
 	ctx := context.Background()
-	sm := newMockStateManager(t)
+	sm := newMockStateManagerCtx(t)
 
 	err := sm.SetWithTTL(ctx, testState, testValue, testTTL)
 	require.NoError(t, err)
@@ -345,7 +356,7 @@ func TestSetWithTTL_WithoutCachedStateChange(t *testing.T) {
 
 func TestRemove_EmptyStateName(t *testing.T) {
 	ctx := context.Background()
-	sm := newMockStateManager(t)
+	sm := newMockStateManagerCtx(t)
 	err := sm.Remove(ctx, "")
 	require.Error(t, err)
 }
@@ -365,7 +376,7 @@ func TestRemove_WithCachedStateChange(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			sm := newMockStateManager(t)
+			sm := newMockStateManagerCtx(t)
 			sm.stateChangeTracker.Store(testState, &ChangeMetadata{Kind: tt.kind, Value: testValue})
 
 			err := sm.Remove(ctx, testState)
@@ -401,7 +412,7 @@ func TestRemove_WithoutCachedStateChange(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			sm := newMockStateManager(t)
+			sm := newMockStateManagerCtx(t)
 			mockClient := sm.stateAsyncProvider.daprClient.(*mock_client.MockClient)
 			tt.mockFunc(sm, mockClient)
 			err := sm.Remove(ctx, testState)
@@ -412,7 +423,7 @@ func TestRemove_WithoutCachedStateChange(t *testing.T) {
 
 func TestContains_EmptyStateName(t *testing.T) {
 	ctx := context.Background()
-	sm := newMockStateManager(t)
+	sm := newMockStateManagerCtx(t)
 	res, err := sm.Contains(ctx, "")
 	require.Error(t, err)
 	assert.False(t, res)
@@ -433,7 +444,7 @@ func TestContains_WithCachedStateChange(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			sm := newMockStateManager(t)
+			sm := newMockStateManagerCtx(t)
 			sm.stateChangeTracker.Store(testState, &ChangeMetadata{Kind: tt.kind, Value: testValue})
 
 			result, err := sm.Contains(ctx, testState)
@@ -455,7 +466,7 @@ func TestContains_WithoutCachedStateChange(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			sm := newMockStateManager(t)
+			sm := newMockStateManagerCtx(t)
 			mockClient := sm.stateAsyncProvider.daprClient.(*mock_client.MockClient)
 			mockRequest := newGetActorStateRequest(sm, testState)
 			mockResult := newGetActorStateResponse([]byte("result"))
@@ -492,7 +503,7 @@ func TestSave_SingleCachedStateChange(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			sm := newMockStateManager(t)
+			sm := newMockStateManagerCtx(t)
 			mockClient := sm.stateAsyncProvider.daprClient.(*mock_client.MockClient)
 			mockCodec := sm.stateAsyncProvider.stateSerializer.(*mock.MockCodec)
 			if tt.stateChanges != nil {
@@ -514,7 +525,7 @@ func TestSave_SingleCachedStateChange(t *testing.T) {
 
 func TestSave_MultipleCachedStateChanges(t *testing.T) {
 	ctx := context.Background()
-	sm := newMockStateManager(t)
+	sm := newMockStateManagerCtx(t)
 	mockClient := sm.stateAsyncProvider.daprClient.(*mock_client.MockClient)
 	mockCodec := sm.stateAsyncProvider.stateSerializer.(*mock.MockCodec)
 
@@ -543,7 +554,7 @@ func TestSave_MultipleCachedStateChanges(t *testing.T) {
 
 func TestFlush(t *testing.T) {
 	ctx := context.Background()
-	sm := newMockStateManager(t)
+	sm := newMockStateManagerCtx(t)
 	stateChanges := []struct {
 		stateName string
 		value     string
