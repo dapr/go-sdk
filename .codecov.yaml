@@ -12,6 +12,4 @@ coverage:
 ignore:
   - "dapr/proto/**"
   - "example/**"
-  - "actor/mock/**"
-  - "actor/mock_client/**"
  
