@@ -24,9 +24,9 @@ import (
 	"github.com/dapr/go-sdk/actor/mock_client"
 	"github.com/dapr/go-sdk/client"
 
-	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/mock/gomock"
 )
 
 const (

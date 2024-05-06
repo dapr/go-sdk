@@ -1,8 +1,8 @@
 RELEASE_VERSION  =v1.0.0-rc-3
 GDOC_PORT        =8888
 GO_COMPAT_VERSION=1.21
-MOCKGEN_FORK     =github.com/golang/mock/mockgen
-MOCKGEN_VERSION  =v1.6.0
+MOCKGEN_FORK     =go.uber.org/mock/mockgen
+MOCKGEN_VERSION  =v0.4.0
 
 .PHONY: all
 all: help
@@ -62,7 +62,7 @@ modtidy:
 
 .PHONY: mock
 mock: ## Generates mock files
-	go install $(MOCKGEN_FORK)@$(MOCKGEN_VERSION)
+	go get $(MOCKGEN_FORK)@$(MOCKGEN_VERSION)
 	mockgen -source ./actor/manager/manager.go -destination ./actor/mock/mock_manager.go -package mock
 	mockgen -source ./actor/manager/container.go -destination ./actor/mock/mock_container.go -package mock
 	mockgen -source ./actor/codec/codec.go -destination ./actor/mock/mock_codec.go -package mock
