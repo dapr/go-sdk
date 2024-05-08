@@ -33,7 +33,7 @@ jobs:
       GOPROXY: https://proxy.golang.org
       DAPR_INSTALL_URL: https://raw.githubusercontent.com/dapr/cli/master/install/install.sh
       DAPR_CLI_REF: ${{ github.event.inputs.daprcli_commit }}
-      DAPR_REF: ${{ github.event.inputs.daprdapr_commit }}
+      DAPR_REF: a3d57d5d5d5323f8aa32fca0f8df955dc606baa0
       CHECKOUT_REPO: ${{ github.repository }}
       CHECKOUT_REF: ${{ github.ref }}
     outputs:
@@ -43,6 +43,7 @@ jobs:
       CHECKOUT_REPO: ${{ steps.outputs.outputs.CHECKOUT_REPO }}
       CHECKOUT_REF: ${{ steps.outputs.outputs.CHECKOUT_REF }}
       DAPR_REF: ${{ steps.outputs.outputs.DAPR_REF }}
+      GITHUB_SHA: ${{ steps.outputs.outputs.GITHUB_SHA }}
     steps:
       - name: Parse repository_dispatch payload
         if: github.event_name == 'repository_dispatch'
@@ -56,6 +57,7 @@ jobs:
       - name: Check out code onto GOPATH
         uses: actions/checkout@v4
         with:
+          submodules: recursive
           repository: ${{ env.CHECKOUT_REPO }}
           ref: ${{ env.CHECKOUT_REF }}
 
@@ -94,7 +96,7 @@ jobs:
         uses: actions/checkout@v4
         if: env.DAPR_REF != ''
         with:
-          repository: dapr/dapr
+          repository: cicoyle/dapr
           ref: ${{ env.DAPR_REF }}
           path: dapr_runtime
 
@@ -104,23 +106,23 @@ jobs:
           cd cli
           make
           mkdir -p $HOME/artifacts/$GITHUB_SHA/
-          sudo cp dist/linux_amd64/release/dapr $HOME/artifacts/$GITHUB_SHA/dapr
+          sudo cp dist/linux_amd64/release/dapr ~/artifacts/$GITHUB_SHA/dapr
 
-      - name: Build daprd and placement with referenced commit.
+      - name: Build dapr
         if: env.DAPR_REF != ''
         run: |
           cd dapr_runtime
           make
           mkdir -p $HOME/artifacts/$GITHUB_SHA/
-          cp dist/linux_amd64/release/daprd $HOME/artifacts/$GITHUB_SHA/daprd
-          cp dist/linux_amd64/release/placement $HOME/artifacts/$GITHUB_SHA/placement
+          echo "artifactPath=~/artifacts/$GITHUB_SHA/" >> $GITHUB_ENV
+          cp ./dist/linux_amd64/release/* ~/artifacts/$GITHUB_SHA/
 
       - name: Upload dapr-artifacts
         uses: actions/upload-artifact@v4
         if: env.DAPR_REF != '' || env.DAPR_CLI_REF != ''
         with:
           name: dapr-artifacts
-          path: $HOME/artifacts/$GITHUB_SHA/
+          path: ${{ env.artifactPath }}
           if-no-files-found: error
           retention-days: 1
           compression-level: 0
@@ -134,6 +136,7 @@ jobs:
           echo "CHECKOUT_REPO=$CHECKOUT_REPO" >> "$GITHUB_OUTPUT"
           echo "CHECKOUT_REF=$CHECKOUT_REF" >> "$GITHUB_OUTPUT"
           echo "DAPR_REF=$DAPR_REF" >> "$GITHUB_OUTPUT"
+          echo "GITHUB_SHA=$GITHUB_SHA" >> "$GITHUB_OUTPUT"
 
   validate-example:
     needs: setup
@@ -147,9 +150,10 @@ jobs:
       DAPR_CLI_VER: ${{ needs.setup.outputs.DAPR_CLI_VER }}
       DAPR_RUNTIME_VER: ${{ needs.setup.outputs.DAPR_RUNTIME_VER }}
       DAPR_CLI_REF: ${{ github.event.inputs.daprcli_commit }}
-      DAPR_REF: ${{ github.event.inputs.daprdapr_commit }}
+      DAPR_REF: ${{ needs.setup.outputs.DAPR_REF }}
       CHECKOUT_REPO: ${{ needs.setup.outputs.CHECKOUT_REPO }}
       CHECKOUT_REF: ${{ needs.setup.outputs.CHECKOUT_REF }}
+      GITHUB_SHA: ${{ needs.setup.outputs.GITHUB_SHA }}
 
     strategy:
       fail-fast: false
@@ -171,6 +175,7 @@ jobs:
       - name: Check out code onto GOPATH
         uses: actions/checkout@v4
         with:
+          submodules: recursive
           repository: ${{ env.CHECKOUT_REPO }}
           ref: ${{ env.CHECKOUT_REF }}
 
@@ -184,7 +189,10 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: dapr-artifacts
-          path: $HOME/artifacts/$GITHUB_SHA/
+          path: ~/artifacts/${{ env.GITHUB_SHA }}/
+      
+      - name: Display artifacts downloaded
+        run: ls ~/artifacts/$GITHUB_SHA/
 
       - name: Set up Go
         id: setup-go
@@ -211,6 +219,7 @@ jobs:
           mkdir -p $HOME/.dapr/bin/
           cp $HOME/artifacts/$GITHUB_SHA/daprd $HOME/.dapr/bin/daprd
           docker stop dapr_placement
+          chmod +x $HOME/artifacts/$GITHUB_SHA/placement
           $HOME/artifacts/$GITHUB_SHA/placement --healthz-port 9091 &
 
       - name: Set up Python ${{ env.PYTHON_VER }}

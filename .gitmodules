@@ -1,0 +1,3 @@
+[submodule "submodules/dapr"]
+	path = submodules/dapr
+	url = https://github.com/cicoyle/dapr
