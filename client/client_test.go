@@ -557,6 +557,33 @@ func (s *testDaprServer) RaiseEventWorkflowBeta1(ctx context.Context, in *pb.Rai
 	return &emptypb.Empty{}, nil
 }
 
+func (s *testDaprServer) ScheduleJob(ctx context.Context, in *pb.ScheduleJobRequest) (*emptypb.Empty, error) {
+	return &emptypb.Empty{}, nil
+}
+
+func (s *testDaprServer) GetJob(ctx context.Context, in *pb.GetJobRequest) (*pb.GetJobResponse, error) {
+	var (
+		schedule        = "@every 10s"
+		dueTime         = "10s"
+		repeats  uint32 = 4
+		ttl             = "10s"
+	)
+	return &pb.GetJobResponse{
+		Job: &pb.Job{
+			Name:     "name",
+			Schedule: &schedule,
+			Repeats:  &repeats,
+			DueTime:  &dueTime,
+			Ttl:      &ttl,
+			Data:     nil,
+		},
+	}, nil
+}
+
+func (s *testDaprServer) DeleteJob(ctx context.Context, in *pb.DeleteJobRequest) (*emptypb.Empty, error) {
+	return &emptypb.Empty{}, nil
+}
+
 func TestGrpcClient(t *testing.T) {
 	protoClient := pb.NewDaprClient(nil)
 	client := &GRPCClient{protoClient: protoClient}
