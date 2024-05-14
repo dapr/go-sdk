@@ -36,7 +36,7 @@ func (c *GRPCClient) GetSecret(ctx context.Context, storeName, key string, meta 
 		Metadata:  meta,
 	}
 
-	resp, err := c.protoClient.GetSecret(c.withAuthToken(ctx), req)
+	resp, err := c.protoClient.GetSecret(ctx, req)
 	if err != nil {
 		return nil, fmt.Errorf("error invoking service: %w", err)
 	}
@@ -59,7 +59,7 @@ func (c *GRPCClient) GetBulkSecret(ctx context.Context, storeName string, meta m
 		Metadata:  meta,
 	}
 
-	resp, err := c.protoClient.GetBulkSecret(c.withAuthToken(ctx), req)
+	resp, err := c.protoClient.GetBulkSecret(ctx, req)
 	if err != nil {
 		return nil, fmt.Errorf("error invoking service: %w", err)
 	}

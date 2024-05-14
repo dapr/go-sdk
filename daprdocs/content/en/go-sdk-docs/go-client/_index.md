@@ -20,6 +20,48 @@ The Dapr client package allows you to interact with other Dapr applications from
 ```go
 import "github.com/dapr/go-sdk/client"
 ```
+## Error handling
+Dapr errors are based on [gRPC's richer error model](https://cloud.google.com/apis/design/errors#error_model). 
+The following code shows an example of how you can parse and handle the error details:
+
+```go
+if err != nil {
+    st := status.Convert(err)
+
+    fmt.Printf("Code: %s\n", st.Code().String())
+    fmt.Printf("Message: %s\n", st.Message())
+
+    for _, detail := range st.Details() {
+        switch t := detail.(type) {
+        case *errdetails.ErrorInfo:
+            // Handle ErrorInfo details
+            fmt.Printf("ErrorInfo:\n- Domain: %s\n- Reason: %s\n- Metadata: %v\n", t.GetDomain(), t.GetReason(), t.GetMetadata())
+        case *errdetails.BadRequest:
+            // Handle BadRequest details
+            fmt.Println("BadRequest:")
+            for _, violation := range t.GetFieldViolations() {
+                fmt.Printf("- Key: %s\n", violation.GetField())
+                fmt.Printf("- The %q field was wrong: %s\n", violation.GetField(), violation.GetDescription())
+            }
+        case *errdetails.ResourceInfo:
+            // Handle ResourceInfo details
+            fmt.Printf("ResourceInfo:\n- Resource type: %s\n- Resource name: %s\n- Owner: %s\n- Description: %s\n",
+                t.GetResourceType(), t.GetResourceName(), t.GetOwner(), t.GetDescription())
+        case *errdetails.Help:
+            // Handle ResourceInfo details
+            fmt.Println("HelpInfo:")
+            for _, link := range t.GetLinks() {
+                fmt.Printf("- Url: %s\n", link.Url)
+                fmt.Printf("- Description: %s\n", link.Description)
+            }
+        
+        default:
+            // Add cases for other types of details you expect
+            fmt.Printf("Unhandled error detail type: %v\n", t)
+        }
+    }
+}
+```
 
 ## Building blocks
 
@@ -304,7 +346,7 @@ opt := map[string]string{
 secret, err := client.GetSecret(ctx, "store-name", "secret-name", opt)
 ```
 
-#### Authentication
+### Authentication
 
 By default, Dapr relies on the network boundary to limit access to its API. If however the target Dapr API is configured with token-based authentication, users can configure the Go Dapr client with that token in two ways:
 
@@ -404,7 +446,7 @@ To encrypt:
 
 ```go
 // Encrypt the data using Dapr
-out, err := sdkClient.Encrypt(context.Background(), rf, dapr.EncryptOptions{
+out, err := client.Encrypt(context.Background(), rf, dapr.EncryptOptions{
 	// These are the 3 required parameters
 	ComponentName: "mycryptocomponent",
 	KeyName:        "mykey",
@@ -419,7 +461,7 @@ To decrypt:
 
 ```go
 // Decrypt the data using Dapr
-out, err := sdkClient.Decrypt(context.Background(), rf, dapr.EncryptOptions{
+out, err := client.Decrypt(context.Background(), rf, dapr.EncryptOptions{
 	// Only required option is the component name
 	ComponentName: "mycryptocomponent",
 })

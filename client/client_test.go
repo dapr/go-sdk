@@ -25,7 +25,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -33,14 +32,16 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/test/bufconn"
 	"google.golang.org/protobuf/types/known/anypb"
+	"google.golang.org/protobuf/types/known/emptypb"
 
 	commonv1pb "github.com/dapr/dapr/pkg/proto/common/v1"
 	pb "github.com/dapr/dapr/pkg/proto/runtime/v1"
 )
 
 const (
-	testBufSize = 1024 * 1024
-	testSocket  = "/tmp/dapr.socket"
+	testBufSize           = 1024 * 1024
+	testSocket            = "/tmp/dapr.socket"
+	testWorkflowFailureID = "test_failure_id"
 )
 
 var testClient Client
@@ -289,11 +290,11 @@ func (s *testDaprServer) GetBulkState(ctx context.Context, in *pb.GetBulkStateRe
 	}, nil
 }
 
-func (s *testDaprServer) SaveState(ctx context.Context, req *pb.SaveStateRequest) (*empty.Empty, error) {
+func (s *testDaprServer) SaveState(ctx context.Context, req *pb.SaveStateRequest) (*emptypb.Empty, error) {
 	for _, item := range req.GetStates() {
 		s.state[item.GetKey()] = item.GetValue()
 	}
-	return &empty.Empty{}, nil
+	return &emptypb.Empty{}, nil
 }
 
 func (s *testDaprServer) QueryStateAlpha1(ctx context.Context, req *pb.QueryStateRequest) (*pb.QueryStateResponse, error) {
@@ -311,19 +312,19 @@ func (s *testDaprServer) QueryStateAlpha1(ctx context.Context, req *pb.QueryStat
 	return ret, nil
 }
 
-func (s *testDaprServer) DeleteState(ctx context.Context, req *pb.DeleteStateRequest) (*empty.Empty, error) {
+func (s *testDaprServer) DeleteState(ctx context.Context, req *pb.DeleteStateRequest) (*emptypb.Empty, error) {
 	delete(s.state, req.GetKey())
-	return &empty.Empty{}, nil
+	return &emptypb.Empty{}, nil
 }
 
-func (s *testDaprServer) DeleteBulkState(ctx context.Context, req *pb.DeleteBulkStateRequest) (*empty.Empty, error) {
+func (s *testDaprServer) DeleteBulkState(ctx context.Context, req *pb.DeleteBulkStateRequest) (*emptypb.Empty, error) {
 	for _, item := range req.GetStates() {
 		delete(s.state, item.GetKey())
 	}
-	return &empty.Empty{}, nil
+	return &emptypb.Empty{}, nil
 }
 
-func (s *testDaprServer) ExecuteStateTransaction(ctx context.Context, in *pb.ExecuteStateTransactionRequest) (*empty.Empty, error) {
+func (s *testDaprServer) ExecuteStateTransaction(ctx context.Context, in *pb.ExecuteStateTransactionRequest) (*emptypb.Empty, error) {
 	for _, op := range in.GetOperations() {
 		item := op.GetRequest()
 		switch opType := op.GetOperationType(); opType {
@@ -332,10 +333,10 @@ func (s *testDaprServer) ExecuteStateTransaction(ctx context.Context, in *pb.Exe
 		case "delete":
 			delete(s.state, item.GetKey())
 		default:
-			return &empty.Empty{}, fmt.Errorf("invalid operation type: %s", opType)
+			return &emptypb.Empty{}, fmt.Errorf("invalid operation type: %s", opType)
 		}
 	}
-	return &empty.Empty{}, nil
+	return &emptypb.Empty{}, nil
 }
 
 func (s *testDaprServer) GetMetadata(ctx context.Context, req *pb.GetMetadataRequest) (metadata *pb.GetMetadataResponse, err error) {
@@ -349,12 +350,12 @@ func (s *testDaprServer) GetMetadata(ctx context.Context, req *pb.GetMetadataReq
 	return resp, nil
 }
 
-func (s *testDaprServer) SetMetadata(ctx context.Context, req *pb.SetMetadataRequest) (*empty.Empty, error) {
-	return &empty.Empty{}, nil
+func (s *testDaprServer) SetMetadata(ctx context.Context, req *pb.SetMetadataRequest) (*emptypb.Empty, error) {
+	return &emptypb.Empty{}, nil
 }
 
-func (s *testDaprServer) PublishEvent(ctx context.Context, req *pb.PublishEventRequest) (*empty.Empty, error) {
-	return &empty.Empty{}, nil
+func (s *testDaprServer) PublishEvent(ctx context.Context, req *pb.PublishEventRequest) (*emptypb.Empty, error) {
+	return &emptypb.Empty{}, nil
 }
 
 // BulkPublishEventAlpha1 mocks the BulkPublishEventAlpha1 API.
@@ -410,12 +411,12 @@ func (s *testDaprServer) GetBulkSecret(ctx context.Context, req *pb.GetBulkSecre
 	}, nil
 }
 
-func (s *testDaprServer) RegisterActorReminder(ctx context.Context, req *pb.RegisterActorReminderRequest) (*empty.Empty, error) {
-	return &empty.Empty{}, nil
+func (s *testDaprServer) RegisterActorReminder(ctx context.Context, req *pb.RegisterActorReminderRequest) (*emptypb.Empty, error) {
+	return &emptypb.Empty{}, nil
 }
 
-func (s *testDaprServer) UnregisterActorReminder(ctx context.Context, req *pb.UnregisterActorReminderRequest) (*empty.Empty, error) {
-	return &empty.Empty{}, nil
+func (s *testDaprServer) UnregisterActorReminder(ctx context.Context, req *pb.UnregisterActorReminderRequest) (*emptypb.Empty, error) {
+	return &emptypb.Empty{}, nil
 }
 
 func (s *testDaprServer) InvokeActor(context.Context, *pb.InvokeActorRequest) (*pb.InvokeActorResponse, error) {
@@ -424,16 +425,16 @@ func (s *testDaprServer) InvokeActor(context.Context, *pb.InvokeActorRequest) (*
 	}, nil
 }
 
-func (s *testDaprServer) RegisterActorTimer(context.Context, *pb.RegisterActorTimerRequest) (*empty.Empty, error) {
-	return &empty.Empty{}, nil
+func (s *testDaprServer) RegisterActorTimer(context.Context, *pb.RegisterActorTimerRequest) (*emptypb.Empty, error) {
+	return &emptypb.Empty{}, nil
 }
 
-func (s *testDaprServer) UnregisterActorTimer(context.Context, *pb.UnregisterActorTimerRequest) (*empty.Empty, error) {
-	return &empty.Empty{}, nil
+func (s *testDaprServer) UnregisterActorTimer(context.Context, *pb.UnregisterActorTimerRequest) (*emptypb.Empty, error) {
+	return &emptypb.Empty{}, nil
 }
 
-func (s *testDaprServer) Shutdown(ctx context.Context, req *pb.ShutdownRequest) (*empty.Empty, error) {
-	return &empty.Empty{}, nil
+func (s *testDaprServer) Shutdown(ctx context.Context, req *pb.ShutdownRequest) (*emptypb.Empty, error) {
+	return &emptypb.Empty{}, nil
 }
 
 func (s *testDaprServer) GetConfiguration(ctx context.Context, in *pb.GetConfigurationRequest) (*pb.GetConfigurationResponse, error) {
@@ -498,6 +499,62 @@ func (s *testDaprServer) UnsubscribeConfiguration(ctx context.Context, in *pb.Un
 	close(ch)
 	delete(s.configurationSubscriptionID, in.GetId())
 	return &pb.UnsubscribeConfigurationResponse{Ok: true}, nil
+}
+
+func (s *testDaprServer) StartWorkflowBeta1(ctx context.Context, in *pb.StartWorkflowRequest) (*pb.StartWorkflowResponse, error) {
+	if in.GetInstanceId() == testWorkflowFailureID {
+		return nil, errors.New("test failure")
+	}
+	return &pb.StartWorkflowResponse{
+		InstanceId: in.GetInstanceId(),
+	}, nil
+}
+
+func (s *testDaprServer) GetWorkflowBeta1(ctx context.Context, in *pb.GetWorkflowRequest) (*pb.GetWorkflowResponse, error) {
+	if in.GetInstanceId() == testWorkflowFailureID {
+		return nil, errors.New("test failure")
+	}
+	return &pb.GetWorkflowResponse{
+		InstanceId:    in.GetInstanceId(),
+		WorkflowName:  "TestWorkflowName",
+		RuntimeStatus: "Running",
+		Properties:    make(map[string]string),
+	}, nil
+}
+
+func (s *testDaprServer) PurgeWorkflowBeta1(ctx context.Context, in *pb.PurgeWorkflowRequest) (*emptypb.Empty, error) {
+	if in.GetInstanceId() == testWorkflowFailureID {
+		return nil, errors.New("test failure")
+	}
+	return &emptypb.Empty{}, nil
+}
+
+func (s *testDaprServer) TerminateWorkflowBeta1(ctx context.Context, in *pb.TerminateWorkflowRequest) (*emptypb.Empty, error) {
+	if in.GetInstanceId() == testWorkflowFailureID {
+		return nil, errors.New("test failure")
+	}
+	return &emptypb.Empty{}, nil
+}
+
+func (s *testDaprServer) PauseWorkflowBeta1(ctx context.Context, in *pb.PauseWorkflowRequest) (*emptypb.Empty, error) {
+	if in.GetInstanceId() == testWorkflowFailureID {
+		return nil, errors.New("test failure")
+	}
+	return &emptypb.Empty{}, nil
+}
+
+func (s *testDaprServer) ResumeWorkflowBeta1(ctx context.Context, in *pb.ResumeWorkflowRequest) (*emptypb.Empty, error) {
+	if in.GetInstanceId() == testWorkflowFailureID {
+		return nil, errors.New("test failure")
+	}
+	return &emptypb.Empty{}, nil
+}
+
+func (s *testDaprServer) RaiseEventWorkflowBeta1(ctx context.Context, in *pb.RaiseEventWorkflowRequest) (*emptypb.Empty, error) {
+	if in.GetInstanceId() == testWorkflowFailureID {
+		return nil, errors.New("test failure")
+	}
+	return &emptypb.Empty{}, nil
 }
 
 func TestGrpcClient(t *testing.T) {

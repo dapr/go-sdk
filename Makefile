@@ -1,6 +1,6 @@
 RELEASE_VERSION  =v1.0.0-rc-3
 GDOC_PORT        =8888
-GO_COMPAT_VERSION=1.20
+GO_COMPAT_VERSION=1.21
 
 .PHONY: all
 all: help
@@ -27,6 +27,7 @@ cover: ## Displays test coverage in the client and service packages
 	go test -coverprofile=cover-client.out ./client && go tool cover -html=cover-client.out
 	go test -coverprofile=cover-grpc.out ./service/grpc && go tool cover -html=cover-grpc.out
 	go test -coverprofile=cover-http.out ./service/http && go tool cover -html=cover-http.out
+	go test -coverprofile=cover-workflow.out ./workflow && go tool cover -html=cover-workflow.out
 
 .PHONY: lint
 lint: check-lint ## Lints the entire project

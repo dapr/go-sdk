@@ -57,8 +57,8 @@ func (c *GRPCClient) GetMetadata(ctx context.Context) (metadata *GetMetadataResp
 		return nil, fmt.Errorf("error invoking service: %w", err)
 	}
 	if resp != nil {
-		activeActorsCount := make([]*MetadataActiveActorsCount, len(resp.GetActiveActorsCount()))
-		for i, a := range resp.GetActiveActorsCount() {
+		activeActorsCount := make([]*MetadataActiveActorsCount, len(resp.GetActorRuntime().GetActiveActors()))
+		for i, a := range resp.GetActorRuntime().GetActiveActors() {
 			activeActorsCount[i] = &MetadataActiveActorsCount{
 				Type:  a.GetType(),
 				Count: a.GetCount(),

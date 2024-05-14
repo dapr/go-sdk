@@ -3,59 +3,57 @@ name: Release
 on:
   push:
     tags:
-      - 'v*' # v0.8.1
+      - "v*" # v0.8.1
 
 jobs:
-
   build:
     name: Create Release on Tag
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-    - name: Setup
-      uses: actions/setup-go@v3
-      with:
-        go-version: ^1.20
+      - name: Setup
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: "go.mod"
 
-    - name: Checkout
-      uses: actions/checkout@v3
+      - name: Check sdk-version file
+        run: |
+          SDK_VERSION="$(head -n1 version/sdk-version)"
+          SDK_VERSION_GIT="refs/tags/${SDK_VERSION}"
+          if [[ "${SDK_VERSION_GIT}" != "${{ github.ref }}" ]]; then
+            echo "File version/sdk-version (${SDK_VERSION}) needs to be updated to ${{ github.ref }}"
+            exit 1
+          fi
+        shell: bash
 
-    - name: Check sdk-version file
-      run: |
-        SDK_VERSION="$(head -n1 version/sdk-version)"
-        SDK_VERSION_GIT="refs/tags/${SDK_VERSION}"
-        if [[ "${SDK_VERSION_GIT}" != "${{ github.ref }}" ]]; then
-          echo "File version/sdk-version (${SDK_VERSION}) needs to be updated to ${{ github.ref }}"
-          exit 1
-        fi
-      shell: bash
+      - name: Tidy
+        run: make tidy
 
-    - name: Tidy
-      run: make tidy
+      - name: Test
+        run: make test
 
-    - name: Test
-      run: make test
+      - name: Version
+        run: |
+          echo "RELEASE_VERSION=$(echo ${GITHUB_REF:10})" >> $GITHUB_ENV
 
-    - name: Version
-      run: |
-        echo "RELEASE_VERSION=$(echo ${GITHUB_REF:10})" >> $GITHUB_ENV
+      - name: Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          body: Automatic Go Dapr client release
+          draft: false
+          prerelease: false
 
-    - name: Release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ github.ref }}
-        release_name: Release ${{ github.ref }}
-        body: Automatic Go Dapr client release
-        draft: false
-        prerelease: false
-
-    - name: Notify
-      uses: rjstone/discord-webhook-notify@v1
-      with:
-        severity: info
-        details: Release ${{ github.ref }} published
-        description: Release
-        webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
-        avatarUrl: https://github.githubassets.com/images/modules/logos_page/Octocat.png
+      - name: Notify
+        uses: rjstone/discord-webhook-notify@v1
+        with:
+          severity: info
+          details: Release ${{ github.ref }} published
+          description: Release
+          webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
+          avatarUrl: https://github.githubassets.com/images/modules/logos_page/Octocat.png

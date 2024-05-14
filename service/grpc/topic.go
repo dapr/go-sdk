@@ -21,7 +21,8 @@ import (
 	"mime"
 	"strings"
 
-	"github.com/golang/protobuf/ptypes/empty"
+	"google.golang.org/grpc/metadata"
+	"google.golang.org/protobuf/types/known/emptypb"
 
 	runtimev1pb "github.com/dapr/dapr/pkg/proto/runtime/v1"
 	"github.com/dapr/go-sdk/service/common"
@@ -46,7 +47,7 @@ func (s *Server) AddBulkTopicEventHandler(sub *common.Subscription, fn common.To
 }
 
 // ListTopicSubscriptions is called by Dapr to get the list of topics in a pubsub component the app wants to subscribe to.
-func (s *Server) ListTopicSubscriptions(ctx context.Context, in *empty.Empty) (*runtimev1pb.ListTopicSubscriptionsResponse, error) {
+func (s *Server) ListTopicSubscriptions(ctx context.Context, in *emptypb.Empty) (*runtimev1pb.ListTopicSubscriptionsResponse, error) {
 	subs := make([]*runtimev1pb.TopicSubscription, 0)
 	for _, v := range s.topicRegistrar {
 		s := v.Subscription
@@ -147,6 +148,7 @@ func (s *Server) OnTopicEvent(ctx context.Context, in *runtimev1pb.TopicEventReq
 			RawData:         in.GetData(),
 			Topic:           in.GetTopic(),
 			PubsubName:      in.GetPubsubName(),
+			Metadata:        getCustomMetadataFromContext(ctx),
 		}
 		h := sub.DefaultHandler
 		if in.GetPath() != "" {
@@ -173,4 +175,17 @@ func (s *Server) OnTopicEvent(ctx context.Context, in *runtimev1pb.TopicEventReq
 		"pub/sub and topic combination not configured: %s/%s",
 		in.GetPubsubName(), in.GetTopic(),
 	)
+}
+
+func getCustomMetadataFromContext(ctx context.Context) map[string]string {
+	md := make(map[string]string)
+	meta, ok := metadata.FromIncomingContext(ctx)
+	if ok {
+		for k, v := range meta {
+			if strings.HasPrefix(strings.ToLower(k), "metadata.") {
+				md[k[9:]] = v[0]
+			}
+		}
+	}
+	return md
 }

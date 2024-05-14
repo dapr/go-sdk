@@ -45,6 +45,8 @@ type TopicEvent struct {
 	Topic string `json:"topic"`
 	// PubsubName is name of the pub/sub this message came from
 	PubsubName string `json:"pubsubname"`
+	// Metadata is the custom metadata attached to the event.
+	Metadata map[string]string `json:"metadata,omitempty"`
 }
 
 func (e *TopicEvent) Struct(target interface{}) error {

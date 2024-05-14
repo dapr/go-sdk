@@ -14,28 +14,20 @@ jobs:
       fail-fast: false
       matrix:
         gover:
-          - "1.20"
           - "1.21"
+          - "1.22"
     env:
       GOVER: ${{ matrix.gover }}
       GOLANGCILINT_VER: v1.55.2
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Setup
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v5
         with:
           go-version: ${{ env.GOVER }}
-
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Cache
-        uses: actions/cache@v3
-        with:
-          path: ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-
 
       - name: Tidy
         run: make tidy
@@ -44,7 +36,7 @@ jobs:
         run: make test
 
       - name: Cover
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
 
       - name: Lint
         uses: golangci/golangci-lint-action@v3.3.1
@@ -55,3 +47,5 @@ jobs:
 
       - name: Run go mod tidy check diff
         run: make modtidy check-diff
+      - name: Run go mod tidy
+        run: make modtidy

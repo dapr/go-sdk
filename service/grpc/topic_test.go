@@ -18,9 +18,10 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/golang/protobuf/ptypes/empty"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"google.golang.org/grpc/metadata"
+	"google.golang.org/protobuf/types/known/emptypb"
 
 	"github.com/dapr/dapr/pkg/proto/runtime/v1"
 	"github.com/dapr/go-sdk/service/common"
@@ -65,7 +66,7 @@ func TestTopicSubscriptionList(t *testing.T) {
 		}
 		err := server.AddTopicEventHandler(sub1, eventHandler)
 		require.NoError(t, err)
-		resp, err := server.ListTopicSubscriptions(context.Background(), &empty.Empty{})
+		resp, err := server.ListTopicSubscriptions(context.Background(), &emptypb.Empty{})
 		require.NoError(t, err)
 		assert.NotNil(t, resp)
 		if assert.Len(t, resp.GetSubscriptions(), 1, "expected 1 handlers") {
@@ -84,7 +85,7 @@ func TestTopicSubscriptionList(t *testing.T) {
 		}
 		err = server.AddTopicEventHandler(sub2, eventHandler)
 		require.NoError(t, err)
-		resp, err = server.ListTopicSubscriptions(context.Background(), &empty.Empty{})
+		resp, err = server.ListTopicSubscriptions(context.Background(), &emptypb.Empty{})
 		require.NoError(t, err)
 		assert.NotNil(t, resp)
 		if assert.Len(t, resp.GetSubscriptions(), 1, "expected 1 handlers") {
@@ -98,6 +99,7 @@ func TestTopicSubscriptionList(t *testing.T) {
 					assert.Equal(t, "/other", rule.GetPath())
 					assert.Equal(t, `event.type == "other"`, rule.GetMatch())
 				}
+
 			}
 		}
 	})
@@ -110,7 +112,7 @@ func TestTopicSubscriptionList(t *testing.T) {
 		}
 		err := server.AddBulkTopicEventHandler(sub1, eventHandler, 10, 1000)
 		require.NoError(t, err)
-		resp, err := server.ListTopicSubscriptions(context.Background(), &empty.Empty{})
+		resp, err := server.ListTopicSubscriptions(context.Background(), &emptypb.Empty{})
 		require.NoError(t, err)
 		assert.NotNil(t, resp)
 		if assert.Len(t, resp.GetSubscriptions(), 1, "expected 1 handlers") {
@@ -129,7 +131,7 @@ func TestTopicSubscriptionList(t *testing.T) {
 		}
 		err = server.AddBulkTopicEventHandler(sub2, eventHandler, 10, 1000)
 		require.NoError(t, err)
-		resp, err = server.ListTopicSubscriptions(context.Background(), &empty.Empty{})
+		resp, err = server.ListTopicSubscriptions(context.Background(), &emptypb.Empty{})
 		require.NoError(t, err)
 		assert.NotNil(t, resp)
 		if assert.Len(t, resp.GetSubscriptions(), 1, "expected 1 handlers") {
@@ -236,8 +238,35 @@ func TestTopic(t *testing.T) {
 			require.NoError(t, err)
 		})
 
+		t.Run("topic event for valid topic with metadata", func(t *testing.T) {
+			sub2 := &common.Subscription{
+				PubsubName: "messages",
+				Topic:      "test2",
+			}
+			err := server.AddTopicEventHandler(sub2, func(ctx context.Context, e *common.TopicEvent) (retry bool, err error) {
+				assert.Equal(t, "value1", e.Metadata["key1"])
+				return false, nil
+			})
+			require.NoError(t, err)
+
+			in := &runtime.TopicEventRequest{
+				Id:              "a123",
+				Source:          "test",
+				Type:            "test",
+				SpecVersion:     "v1.0",
+				DataContentType: "text/plain",
+				Data:            []byte("test"),
+				Topic:           sub2.Topic,
+				PubsubName:      sub2.PubsubName,
+			}
+			ctx := metadata.NewIncomingContext(context.Background(), metadata.New(map[string]string{"Metadata.key1": "value1"}))
+			_, err = server.OnTopicEvent(ctx, in)
+			require.NoError(t, err)
+		})
+
 		stopTestServer(t, server)
 	})
+
 }
 
 func TestTopicWithValidationDisabled(t *testing.T) {
