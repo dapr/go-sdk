@@ -99,7 +99,6 @@ func TestTopicSubscriptionList(t *testing.T) {
 					assert.Equal(t, "/other", rule.GetPath())
 					assert.Equal(t, `event.type == "other"`, rule.GetMatch())
 				}
-
 			}
 		}
 	})
@@ -266,7 +265,6 @@ func TestTopic(t *testing.T) {
 
 		stopTestServer(t, server)
 	})
-
 }
 
 func TestTopicWithValidationDisabled(t *testing.T) {
