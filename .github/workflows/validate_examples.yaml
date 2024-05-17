@@ -163,6 +163,7 @@ jobs:
             "actor",
             "configuration",
             "crypto",
+            "dist-scheduler",
             "grpc-service",
             "hello-world",
             "pubsub",
@@ -190,7 +191,7 @@ jobs:
         with:
           name: dapr-artifacts
           path: ~/artifacts/${{ env.GITHUB_SHA }}/
-      
+
       - name: Display artifacts downloaded
         run: ls ~/artifacts/$GITHUB_SHA/
 
@@ -213,14 +214,14 @@ jobs:
           dapr uninstall --all
           dapr init --runtime-version ${{ env.DAPR_RUNTIME_VER }}
 
-      - name: Override daprd and placement service with referenced commit.
+      - name: Override daprd and scheduler with referenced commit.
         if: env.DAPR_REF != ''
         run: |
           mkdir -p $HOME/.dapr/bin/
           cp $HOME/artifacts/$GITHUB_SHA/daprd $HOME/.dapr/bin/daprd
           docker stop dapr_placement
-          chmod +x $HOME/artifacts/$GITHUB_SHA/placement
-          $HOME/artifacts/$GITHUB_SHA/placement --healthz-port 9091 &
+          chmod +x $HOME/artifacts/$GITHUB_SHA/scheduler
+          $HOME/artifacts/$GITHUB_SHA/scheduler --metrics-port 9123 &
 
       - name: Set up Python ${{ env.PYTHON_VER }}
         uses: actions/setup-python@v5

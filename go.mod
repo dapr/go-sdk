@@ -2,8 +2,6 @@ module github.com/dapr/go-sdk
 
 go 1.22.2
 
-toolchain go1.22.3
-
 require (
 	github.com/dapr/dapr v1.13.0
 	github.com/go-chi/chi/v5 v5.0.12

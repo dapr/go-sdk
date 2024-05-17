@@ -15,9 +15,11 @@ package client
 
 import (
 	"context"
+	"log"
+
+	"google.golang.org/protobuf/types/known/anypb"
 
 	pb "github.com/dapr/dapr/pkg/proto/runtime/v1"
-	"google.golang.org/protobuf/types/known/anypb"
 )
 
 type Job struct {
@@ -37,8 +39,6 @@ func (c *GRPCClient) ScheduleJobAlpha1(ctx context.Context, job *Job) error {
 			Name:     job.Name,
 			Schedule: &job.Schedule,
 			Repeats:  &job.Repeats,
-			DueTime:  &job.DueTime,
-			Ttl:      &job.TTL,
 			Data:     job.Data,
 		},
 	})
@@ -51,6 +51,7 @@ func (c *GRPCClient) GetJobAlpha1(ctx context.Context, name string) (*Job, error
 	resp, err := c.protoClient.GetJob(ctx, &pb.GetJobRequest{
 		Name: name,
 	})
+	log.Println(resp)
 	if err != nil {
 		return &Job{}, err
 	}
