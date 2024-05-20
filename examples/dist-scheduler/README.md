@@ -6,18 +6,38 @@
 
 - Dapr installed (v1.14<)
 
+### Run scheduler
+
+This step needs to be removed
+
+<!-- STEP
+name: Run scheduler
+output_match_mode: substring
+expected_stdout_lines:
+  - 'Dapr Scheduler listening on: 127.0.0.1:50006'
+
+background: true
+sleep: 180
+-->
+
+```bash
+        ~/.dapr/bin/scheduler
+```
+
+<!-- END_STEP -->
+
 ### Run new dapr sidecar with scheduler
 
 This step needs to be removed
 
 <!-- STEP
-name: Run launch sidecar
+name: Run sidecar
 output_match_mode: substring
 expected_stdout_lines:
   - 'Scheduler stream connected'
 
 background: true
-sleep: 60
+sleep: 90
 -->
 
 ```bash
@@ -50,7 +70,7 @@ expected_stdout_lines:
 
 
 background: false
-sleep: 30
+sleep: 60
 -->
 
 ```bash

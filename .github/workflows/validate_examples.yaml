@@ -221,7 +221,7 @@ jobs:
           cp $HOME/artifacts/$GITHUB_SHA/daprd $HOME/.dapr/bin/daprd
           docker stop dapr_placement
           chmod +x $HOME/artifacts/$GITHUB_SHA/scheduler
-          $HOME/artifacts/$GITHUB_SHA/scheduler --metrics-port 9123 &
+          cp $HOME/artifacts/$GITHUB_SHA/scheduler $HOME/.dapr/bin/scheduler
 
       - name: Set up Python ${{ env.PYTHON_VER }}
         uses: actions/setup-python@v5
