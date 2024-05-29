@@ -38,7 +38,7 @@ func main() {
 	}()
 
 	// Brief intermission to allow for the server to initialize.
-	time.Sleep(5 * time.Second)
+	time.Sleep(10 * time.Second)
 
 	signal.Notify(quit, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 

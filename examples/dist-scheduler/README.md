@@ -17,7 +17,7 @@ expected_stdout_lines:
   - 'Dapr Scheduler listening on: 127.0.0.1:50006'
 
 background: true
-sleep: 180
+sleep: 60
 -->
 
 ```bash
@@ -37,7 +37,7 @@ expected_stdout_lines:
   - 'Scheduler stream connected'
 
 background: true
-sleep: 90
+sleep: 60
 -->
 
 ```bash
@@ -69,7 +69,7 @@ expected_stdout_lines:
   - 'deletejob - success'
 
 
-background: false
+background: true
 sleep: 60
 -->
 
