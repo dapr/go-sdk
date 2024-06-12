@@ -34,7 +34,7 @@ type Job struct {
 // ScheduleJobAlpha1 raises and schedules a job.
 func (c *GRPCClient) ScheduleJobAlpha1(ctx context.Context, job *Job) error {
 	// TODO: Assert job fields are defined: Name, Schedule, Data
-	_, err := c.protoClient.ScheduleJob(ctx, &pb.ScheduleJobRequest{
+	_, err := c.protoClient.ScheduleJobAlpha1(ctx, &pb.ScheduleJobRequest{
 		Job: &pb.Job{
 			Name:     job.Name,
 			Schedule: &job.Schedule,
@@ -48,7 +48,7 @@ func (c *GRPCClient) ScheduleJobAlpha1(ctx context.Context, job *Job) error {
 // GetJobAlpha1 retrieves a scheduled job.
 func (c *GRPCClient) GetJobAlpha1(ctx context.Context, name string) (*Job, error) {
 	// TODO: Name validation
-	resp, err := c.protoClient.GetJob(ctx, &pb.GetJobRequest{
+	resp, err := c.protoClient.GetJobAlpha1(ctx, &pb.GetJobRequest{
 		Name: name,
 	})
 	log.Println(resp)
@@ -68,7 +68,7 @@ func (c *GRPCClient) GetJobAlpha1(ctx context.Context, name string) (*Job, error
 // DeleteJobAlpha1 deletes a scheduled job.
 func (c *GRPCClient) DeleteJobAlpha1(ctx context.Context, name string) error {
 	// TODO: Name validation
-	_, err := c.protoClient.DeleteJob(ctx, &pb.DeleteJobRequest{
+	_, err := c.protoClient.DeleteJobAlpha1(ctx, &pb.DeleteJobRequest{
 		Name: name,
 	})
 	return err

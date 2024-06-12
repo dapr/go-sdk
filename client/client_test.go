@@ -557,11 +557,11 @@ func (s *testDaprServer) RaiseEventWorkflowBeta1(ctx context.Context, in *pb.Rai
 	return &emptypb.Empty{}, nil
 }
 
-func (s *testDaprServer) ScheduleJob(ctx context.Context, in *pb.ScheduleJobRequest) (*emptypb.Empty, error) {
+func (s *testDaprServer) ScheduleJobAlpha1(ctx context.Context, in *pb.ScheduleJobRequest) (*emptypb.Empty, error) {
 	return &emptypb.Empty{}, nil
 }
 
-func (s *testDaprServer) GetJob(ctx context.Context, in *pb.GetJobRequest) (*pb.GetJobResponse, error) {
+func (s *testDaprServer) GetJobAlpha1(ctx context.Context, in *pb.GetJobRequest) (*pb.GetJobResponse, error) {
 	var (
 		schedule        = "@every 10s"
 		dueTime         = "10s"
@@ -580,7 +580,7 @@ func (s *testDaprServer) GetJob(ctx context.Context, in *pb.GetJobRequest) (*pb.
 	}, nil
 }
 
-func (s *testDaprServer) DeleteJob(ctx context.Context, in *pb.DeleteJobRequest) (*emptypb.Empty, error) {
+func (s *testDaprServer) DeleteJobAlpha1(ctx context.Context, in *pb.DeleteJobRequest) (*emptypb.Empty, error) {
 	return &emptypb.Empty{}, nil
 }
 
