@@ -6,9 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"os"
-	"os/signal"
-	"syscall"
 	"time"
 
 	"google.golang.org/protobuf/types/known/anypb"
@@ -28,7 +25,6 @@ func main() {
 	if err = server.AddJobEventHandler("prod-db-backup", prodDBBackupHandler); err != nil {
 		log.Fatalf("failed to register job event handler: %v", err)
 	}
-	quit := make(chan os.Signal, 1)
 
 	log.Println("starting server")
 	go func() {
@@ -39,8 +35,6 @@ func main() {
 
 	// Brief intermission to allow for the server to initialize.
 	time.Sleep(10 * time.Second)
-
-	signal.Notify(quit, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 
 	ctx := context.Background()
 
@@ -66,7 +60,7 @@ func main() {
 	}
 
 	// create the client
-	client, err := daprc.NewClientWithPort("50001")
+	client, err := daprc.NewClient()
 	if err != nil {
 		panic(err)
 	}

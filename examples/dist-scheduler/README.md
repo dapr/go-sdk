@@ -30,12 +30,10 @@ sleep: 60
 ```bash
         dapr run \
                 --app-id=distributed-scheduler \
-                --metrics-port=9091 \
-                --dapr-grpc-port 50001 \
                 --app-port 50070 \
                 --app-protocol grpc \
                 --log-level debug \
-                -- go run .
+                -- go run main.go
 ```
 
 <!-- END_STEP -->
