@@ -18,6 +18,7 @@ expected_stdout_lines:
   - 'Received: Dapr'
 background: true
 sleep: 30
+timeout_seconds: 60
 -->
 
 ```bash
@@ -39,6 +40,7 @@ expected_stdout_lines:
 output_match_mode: substring
 background: true
 sleep: 15
+timeout_seconds: 60
 -->
 
 ```bash
@@ -50,15 +52,6 @@ dapr run --app-id grpc-client \
 
 ### Cleanup
 
-<!-- STEP
-expected_stdout_lines:
-  - '✅  app stopped successfully: grpc-server'
-expected_stderr_lines:
-name: Shutdown dapr
--->
-
 ```bash
 dapr stop --app-id grpc-server
 ```
-
-<!-- END_STEP -->

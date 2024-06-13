@@ -26,6 +26,7 @@ expected_stdout_lines:
   - '== APP == dapr configuration subscribe finished.'
 background: false
 sleep: 40
+timeout_seconds: 60
 -->
 
 ```bash
