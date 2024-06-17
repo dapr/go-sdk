@@ -225,7 +225,7 @@ func (c *daprClient) InvokeBinding(ctx context.Context, in *InvokeBindingRequest
 	out := new(InvokeBindingResponse)
 	err := c.cc.Invoke(ctx, "/dapr.proto.runtime.v1.Dapr/InvokeBinding", in, out, opts...)
 	if err != nil {
-		return nil, err
+		return out, err
 	}
 	return out, nil
 }
