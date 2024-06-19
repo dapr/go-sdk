@@ -27,7 +27,7 @@ import (
 	dapr "github.com/dapr/go-sdk/client"
 )
 
-type client struct {
+type Client struct {
 	taskHubClient *durabletaskclient.TaskHubGrpcClient
 }
 
@@ -95,11 +95,11 @@ func WithDaprClient(input dapr.Client) clientOption {
 // TODO: Implement mocks
 
 // NewClient returns a workflow client.
-func NewClient(opts ...clientOption) (client, error) {
+func NewClient(opts ...clientOption) (*Client, error) {
 	options := new(clientOptions)
 	for _, configure := range opts {
 		if err := configure(options); err != nil {
-			return client{}, fmt.Errorf("failed to load options: %v", err)
+			return &Client{}, fmt.Errorf("failed to load options: %v", err)
 		}
 	}
 	var daprClient dapr.Client
@@ -110,18 +110,18 @@ func NewClient(opts ...clientOption) (client, error) {
 		daprClient = options.daprClient
 	}
 	if err != nil {
-		return client{}, fmt.Errorf("failed to initialise dapr.Client: %v", err)
+		return &Client{}, fmt.Errorf("failed to initialise dapr.Client: %v", err)
 	}
 
 	taskHubClient := durabletaskclient.NewTaskHubGrpcClient(daprClient.GrpcClientConn(), backend.DefaultLogger())
 
-	return client{
+	return &Client{
 		taskHubClient: taskHubClient,
 	}, nil
 }
 
 // ScheduleNewWorkflow will start a workflow and return the ID and/or error.
-func (c *client) ScheduleNewWorkflow(ctx context.Context, workflow string, opts ...api.NewOrchestrationOptions) (id string, err error) {
+func (c *Client) ScheduleNewWorkflow(ctx context.Context, workflow string, opts ...api.NewOrchestrationOptions) (id string, err error) {
 	if workflow == "" {
 		return "", errors.New("no workflow specified")
 	}
@@ -130,7 +130,7 @@ func (c *client) ScheduleNewWorkflow(ctx context.Context, workflow string, opts 
 }
 
 // FetchWorkflowMetadata will return the metadata for a given workflow InstanceID and/or error.
-func (c *client) FetchWorkflowMetadata(ctx context.Context, id string, opts ...api.FetchOrchestrationMetadataOptions) (*Metadata, error) {
+func (c *Client) FetchWorkflowMetadata(ctx context.Context, id string, opts ...api.FetchOrchestrationMetadataOptions) (*Metadata, error) {
 	if id == "" {
 		return nil, errors.New("no workflow id specified")
 	}
@@ -140,7 +140,7 @@ func (c *client) FetchWorkflowMetadata(ctx context.Context, id string, opts ...a
 }
 
 // WaitForWorkflowStart will wait for a given workflow to start and return metadata and/or an error.
-func (c *client) WaitForWorkflowStart(ctx context.Context, id string, opts ...api.FetchOrchestrationMetadataOptions) (*Metadata, error) {
+func (c *Client) WaitForWorkflowStart(ctx context.Context, id string, opts ...api.FetchOrchestrationMetadataOptions) (*Metadata, error) {
 	if id == "" {
 		return nil, errors.New("no workflow id specified")
 	}
@@ -150,7 +150,7 @@ func (c *client) WaitForWorkflowStart(ctx context.Context, id string, opts ...ap
 }
 
 // WaitForWorkflowCompletion will block pending the completion of a specified workflow and return the metadata and/or error.
-func (c *client) WaitForWorkflowCompletion(ctx context.Context, id string, opts ...api.FetchOrchestrationMetadataOptions) (*Metadata, error) {
+func (c *Client) WaitForWorkflowCompletion(ctx context.Context, id string, opts ...api.FetchOrchestrationMetadataOptions) (*Metadata, error) {
 	if id == "" {
 		return nil, errors.New("no workflow id specified")
 	}
@@ -160,7 +160,7 @@ func (c *client) WaitForWorkflowCompletion(ctx context.Context, id string, opts 
 }
 
 // TerminateWorkflow will stop a given workflow and return an error output.
-func (c *client) TerminateWorkflow(ctx context.Context, id string, opts ...api.TerminateOptions) error {
+func (c *Client) TerminateWorkflow(ctx context.Context, id string, opts ...api.TerminateOptions) error {
 	if id == "" {
 		return errors.New("no workflow id specified")
 	}
@@ -168,7 +168,7 @@ func (c *client) TerminateWorkflow(ctx context.Context, id string, opts ...api.T
 }
 
 // RaiseEvent will raise an event on a given workflow and return an error output.
-func (c *client) RaiseEvent(ctx context.Context, id, eventName string, opts ...api.RaiseEventOptions) error {
+func (c *Client) RaiseEvent(ctx context.Context, id, eventName string, opts ...api.RaiseEventOptions) error {
 	if id == "" {
 		return errors.New("no workflow id specified")
 	}
@@ -179,7 +179,7 @@ func (c *client) RaiseEvent(ctx context.Context, id, eventName string, opts ...a
 }
 
 // SuspendWorkflow will pause a given workflow and return an error output.
-func (c *client) SuspendWorkflow(ctx context.Context, id, reason string) error {
+func (c *Client) SuspendWorkflow(ctx context.Context, id, reason string) error {
 	if id == "" {
 		return errors.New("no workflow id specified")
 	}
@@ -187,7 +187,7 @@ func (c *client) SuspendWorkflow(ctx context.Context, id, reason string) error {
 }
 
 // ResumeWorkflow will resume a suspended workflow and return an error output.
-func (c *client) ResumeWorkflow(ctx context.Context, id, reason string) error {
+func (c *Client) ResumeWorkflow(ctx context.Context, id, reason string) error {
 	if id == "" {
 		return errors.New("no workflow id specified")
 	}
@@ -196,7 +196,7 @@ func (c *client) ResumeWorkflow(ctx context.Context, id, reason string) error {
 
 // PurgeWorkflow will purge a given workflow and return an error output.
 // NOTE: The workflow must be in a terminated or completed state.
-func (c *client) PurgeWorkflow(ctx context.Context, id string) error {
+func (c *Client) PurgeWorkflow(ctx context.Context, id string) error {
 	if id == "" {
 		return errors.New("no workflow id specified")
 	}
