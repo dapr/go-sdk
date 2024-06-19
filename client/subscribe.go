@@ -39,9 +39,8 @@ type SubscriptionOptions struct {
 type Subscription struct {
 	stream pb.Dapr_SubscribeTopicEventsAlpha1Client
 	// lock locks concurrent writes to subscription stream.
-	lock    sync.Mutex
-	closeCh chan struct{}
-	closed  atomic.Bool
+	lock   sync.Mutex
+	closed atomic.Bool
 }
 
 type SubscriptionMessage struct {
