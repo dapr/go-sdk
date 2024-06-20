@@ -353,6 +353,48 @@ func TestHealthCheck(t *testing.T) {
 	makeRequest(t, s, "/healthz", "", http.MethodGet, http.StatusOK)
 }
 
+func TestCustomHealthCheck(t *testing.T) {
+	s := newServer("", nil)
+	err := s.AddHealthCheckHandler("/healthz", func(ctx context.Context) error {
+		return nil
+	})
+	require.NoErrorf(t, err, "error adding custom health check handler")
+	s.registerBaseHandler()
+	makeRequest(t, s, "/healthz", "", http.MethodGet, http.StatusNoContent)
+}
+
+func TestCustomHealthCheckWithoutLeadingSlash(t *testing.T) {
+	s := newServer("", nil)
+	err := s.AddHealthCheckHandler("healthz", func(ctx context.Context) error {
+		return nil
+	})
+	require.NoErrorf(t, err, "error adding custom health check handler")
+	s.registerBaseHandler()
+	makeRequest(t, s, "/healthz", "", http.MethodGet, http.StatusNoContent)
+}
+
+func TestCustomRouteHealthCheck(t *testing.T) {
+	s := newServer("", nil)
+	err := s.AddHealthCheckHandler("custom-health-check", func(ctx context.Context) error {
+		return nil
+	})
+	require.NoErrorf(t, err, "error adding custom health check handler")
+	s.registerBaseHandler()
+	makeRequest(t, s, "/custom-health-check", "", http.MethodGet, http.StatusNoContent)
+	makeRequest(t, s, "/healthz", "", http.MethodGet, http.StatusOK)
+}
+
+func TestCustomHealthCheckError(t *testing.T) {
+	s := newServer("", nil)
+	err := s.AddHealthCheckHandler("custom-health-check", func(ctx context.Context) error {
+		return errors.New("not feeling well, will take day off")
+	})
+	require.NoErrorf(t, err, "error adding custom health check handler")
+	s.registerBaseHandler()
+	makeRequest(t, s, "/custom-health-check", "", http.MethodGet, http.StatusInternalServerError)
+	makeRequest(t, s, "/healthz", "", http.MethodGet, http.StatusOK)
+}
+
 func TestActorConfig(t *testing.T) {
 	s := newServer("", nil)
 	s.registerBaseHandler()
