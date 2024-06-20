@@ -31,9 +31,10 @@ func main() {
 	}
 	fmt.Printf(">>Created client\n")
 
-	// Another method of streaming subscriptions, this time for the topic "sendorder".
-	// The given subscription handler is called when a message is received.
-	// The  returned `stop` function is used to stop the subscription and close the connection.
+	// Streaming subscription for topic "sendorder" on pubsub component
+	// "messages". The given subscription handler is called when a message is
+	// received. The  returned `stop` function is used to stop the subscription
+	// and close the connection.
 	stop, err := client.SubscribeWithHandler(context.Background(),
 		daprd.SubscriptionOptions{
 			PubsubName: "messages",
@@ -45,7 +46,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// Streaming subscription for topic "neworder" on pubsub component "messages".
+	// Another method of streaming subscriptions, this time for the topic "neworder".
 	// The returned `sub` object is used to receive messages.
 	// `sub` must be closed once it's no longer needed.
 	sub, err := client.Subscribe(context.Background(), daprd.SubscriptionOptions{
