@@ -1,0 +1,9 @@
+{
+  "daprd": "0.0.0-dev",
+  "dashboard": "0.0.0-dev",
+  "cli": "0.0.0-dev",
+  "daprBinarySubDir": "dist",
+  "dockerImageSubDir": "docker",
+  "daprImageName": "daprio/dapr:0.0.0-dev",
+  "daprImageFileName": "daprio-dapr-0.0.0-dev.tar.gz"
+}

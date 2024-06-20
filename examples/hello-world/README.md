@@ -89,7 +89,7 @@ expected_stdout_lines:
 -->
 
 ```bash
-dapr run --app-id order-app --dapr-grpc-port 3500 --log-level error -- ./order put --id 20
+dapr run --app-id order-app --dapr-grpc-port 3500 --log-level error --resources-path ./config -- ./order put --id 20
 ```
 
 <!-- END_STEP -->
@@ -105,7 +105,7 @@ expected_stdout_lines:
 -->
 
 ```bash
-dapr run --app-id order-app --dapr-grpc-port 3500 --log-level error ./order get
+dapr run --app-id order-app --dapr-grpc-port 3500 --log-level error --resources-path ./config ./order get
 ```
 
 <!-- END_STEP -->
@@ -116,7 +116,7 @@ dapr run --app-id order-app --dapr-grpc-port 3500 --log-level error ./order get
 Alternatively, you can start a standalone Dapr runtime, and call the app from another shell:
 
 ```bash
-dapr run --app-id order-app --dapr-grpc-port 3500 --log-level error
+dapr run --app-id order-app --dapr-grpc-port 3500 --log-level error --resources-path ./config
 ```
 
 
@@ -140,7 +140,7 @@ You can run more than one app in Dapr runtime. In this example you will call `or
 Another instance of the `order` app will read the state.
 
 ```sh
-dapr run --app-id order-app --dapr-grpc-port 3500 --log-level error ./order seq
+dapr run --app-id order-app --dapr-grpc-port 3500 --log-level error --resources-path ./config ./order seq
 ```
 
 ```sh
