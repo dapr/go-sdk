@@ -29,7 +29,8 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf(">>Created client\n")
+
+	var deadLetterTopic = "deadletter"
 
 	// Streaming subscription for topic "sendorder" on pubsub component
 	// "messages". The given subscription handler is called when a message is
@@ -37,8 +38,9 @@ func main() {
 	// and close the connection.
 	stop, err := client.SubscribeWithHandler(context.Background(),
 		daprd.SubscriptionOptions{
-			PubsubName: "messages",
-			Topic:      "sendorder",
+			PubsubName:      "messages",
+			Topic:           "sendorder",
+			DeadLetterTopic: &deadLetterTopic,
 		},
 		eventHandler,
 	)
@@ -49,9 +51,11 @@ func main() {
 	// Another method of streaming subscriptions, this time for the topic "neworder".
 	// The returned `sub` object is used to receive messages.
 	// `sub` must be closed once it's no longer needed.
+
 	sub, err := client.Subscribe(context.Background(), daprd.SubscriptionOptions{
-		PubsubName: "messages",
-		Topic:      "neworder",
+		PubsubName:      "pubsub",
+		Topic:           "neworder",
+		DeadLetterTopic: &deadLetterTopic,
 	})
 	if err != nil {
 		log.Fatal(err)
