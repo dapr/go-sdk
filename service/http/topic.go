@@ -38,6 +38,9 @@ const (
 
 	// PubSubHandlerDropStatusCode is the pubsub event appcallback response code indicating that Dapr should drop that message.
 	PubSubHandlerDropStatusCode int = http.StatusSeeOther
+
+	// HealthzRoute Health check default route used by the server
+	HealthzRoute = "healthz"
 )
 
 // topicEventJSON is identical to `common.TopicEvent`
@@ -129,11 +132,22 @@ func (s *Server) registerBaseHandler() {
 	}
 	s.mux.HandleFunc("/dapr/subscribe", f)
 
-	// register health check handler
-	fHealth := func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
+	// check if the healthz route is already registered by the user to avoid overwriting it
+	hasHealthz := false
+	for _, route := range s.mux.Routes() {
+		if route.Pattern == "/"+HealthzRoute || route.Pattern == HealthzRoute {
+			hasHealthz = true
+			break
+		}
 	}
-	s.mux.Get("/healthz", fHealth)
+
+	if !hasHealthz {
+		// register health check handler
+		fHealth := func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusOK)
+		}
+		s.mux.Get("/"+HealthzRoute, fHealth)
+	}
 
 	// register actor config handler
 	fRegister := func(w http.ResponseWriter, r *http.Request) {
