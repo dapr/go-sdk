@@ -66,6 +66,9 @@ func main() {
 		log.Printf(">>Received message\n")
 		log.Printf("event - PubsubName: %s, Topic: %s, ID: %s, Data: %s\n", msg.PubsubName, msg.Topic, msg.ID, msg.RawData)
 
+		// Use _MUST_ always signal the result of processing the message, else the
+		// message will not be considered as processed and will be redelivered or
+		// dead lettered.
 		if err := msg.Success(); err != nil {
 			log.Fatalf("error sending message success: %v", err)
 		}
