@@ -20,8 +20,8 @@ import (
 	actorErr "github.com/dapr/go-sdk/actor/error"
 	actorMock "github.com/dapr/go-sdk/actor/mock"
 
-	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
 )
 
 func TestNewActorRuntime(t *testing.T) {
