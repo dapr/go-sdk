@@ -557,8 +557,8 @@ func (s *testDaprServer) RaiseEventWorkflowBeta1(ctx context.Context, in *pb.Rai
 	return &emptypb.Empty{}, nil
 }
 
-func (s *testDaprServer) ScheduleJobAlpha1(ctx context.Context, in *pb.ScheduleJobRequest) (*emptypb.Empty, error) {
-	return &emptypb.Empty{}, nil
+func (s *testDaprServer) ScheduleJobAlpha1(ctx context.Context, in *pb.ScheduleJobRequest) (*pb.ScheduleJobResponse, error) {
+	return &pb.ScheduleJobResponse{}, nil
 }
 
 func (s *testDaprServer) GetJobAlpha1(ctx context.Context, in *pb.GetJobRequest) (*pb.GetJobResponse, error) {
@@ -580,8 +580,8 @@ func (s *testDaprServer) GetJobAlpha1(ctx context.Context, in *pb.GetJobRequest)
 	}, nil
 }
 
-func (s *testDaprServer) DeleteJobAlpha1(ctx context.Context, in *pb.DeleteJobRequest) (*emptypb.Empty, error) {
-	return &emptypb.Empty{}, nil
+func (s *testDaprServer) DeleteJobAlpha1(ctx context.Context, in *pb.DeleteJobRequest) (*pb.DeleteJobResponse, error) {
+	return &pb.DeleteJobResponse{}, nil
 }
 
 func TestGrpcClient(t *testing.T) {
