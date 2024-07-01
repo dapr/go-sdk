@@ -3,13 +3,13 @@ module github.com/dapr/go-sdk
 go 1.22.3
 
 require (
-	github.com/dapr/dapr v1.13.0-rc.1.0.20240628154211-5e4ff7d5deef
+	github.com/dapr/dapr v1.13.0-rc.1
 	github.com/go-chi/chi/v5 v5.0.12
 	github.com/golang/mock v1.6.0
 	github.com/google/uuid v1.6.0
 	github.com/microsoft/durabletask-go v0.4.1-0.20240122160106-fb5c4c05729d
 	github.com/stretchr/testify v1.9.0
-	google.golang.org/grpc v1.64.0
+	google.golang.org/grpc v1.62.0
 	google.golang.org/protobuf v1.34.2
 	gopkg.in/yaml.v3 v3.0.1
 )
