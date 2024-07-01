@@ -18,6 +18,30 @@ type TopicSubscription struct {
 	Routes *TopicRoutes `json:"routes,omitempty"`
 	// Metadata is the subscription metadata.
 	Metadata map[string]string `json:"metadata,omitempty"`
+	// options for customizing the bulksubscribe behaviour
+	BulkSubscribe *BulkSubscribeOptions `json:"bulkSubscribe,omitempty"`
+}
+
+type BulkSubscribeMessageItem struct {
+	EntryId     string            `json:"entryId"` //nolint:stylecheck
+	Event       interface{}       `json:"event"`
+	Metadata    map[string]string `json:"metadata"`
+	ContentType string            `json:"contentType,omitempty"`
+}
+
+type BulkSubscribeEnvelope struct {
+	ID        string                     `json:"id"`
+	Entries   []BulkSubscribeMessageItem `json:"entries"`
+	Metadata  map[string]string          `json:"metadata"`
+	Topic     string                     `json:"topic"`
+	Pubsub    string                     `json:"pubsub"`
+	EventType string                     `json:"eventType"`
+}
+
+type BulkSubscribeOptions struct {
+	Enabled            bool  `json:"enabled"`
+	MaxMessagesCount   int32 `json:"maxMessagesCount,omitempty"`
+	MaxAwaitDurationMs int32 `json:"maxAwaitDurationMs,omitempty"`
 }
 
 // TopicRoutes encapsulates the default route and multiple routing rules.
@@ -56,6 +80,19 @@ func (s *TopicSubscription) SetMetadata(metadata map[string]string) error {
 		return fmt.Errorf("subscription for topic %s on pubsub %s already has metadata set", s.Topic, s.PubsubName)
 	}
 	s.Metadata = metadata
+
+	return nil
+}
+
+func (s *TopicSubscription) SetBulkSubscribe(maxMessagesCount, maxAwaitDurationMs int32) error {
+	if s.BulkSubscribe != nil {
+		return fmt.Errorf("subscription for topic %s on pubsub %s already has bulkSubscribe set", s.Topic, s.PubsubName)
+	}
+	s.BulkSubscribe = &BulkSubscribeOptions{
+		Enabled:            true,
+		MaxMessagesCount:   maxMessagesCount,
+		MaxAwaitDurationMs: maxAwaitDurationMs,
+	}
 
 	return nil
 }
