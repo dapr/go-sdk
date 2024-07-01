@@ -67,19 +67,10 @@ dapr run --app-id actor-client \
 
 ### Cleanup
 
-<!-- STEP
-expected_stdout_lines: 
-  - '✅  app stopped successfully: actor-serving'
-expected_stderr_lines:
-name: Shutdown dapr
--->
-
 ```bash
 dapr stop --app-id  actor-serving
-(lsof -i:8080 | grep main) | awk '{print $2}' | xargs  kill
+(lsof -i:8081 | grep main) | awk '{print $2}' | xargs  kill
 ```
-
-<!-- END_STEP -->
 
 ## Result
 - client side

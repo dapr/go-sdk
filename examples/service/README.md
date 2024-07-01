@@ -22,7 +22,7 @@ sleep: 15
 ```bash
 dapr run --app-id serving \
          --app-protocol http \
-         --app-port 8080 \
+         --app-port 8081 \
          --dapr-http-port 3500 \
          --log-level debug \
          --resources-path ./config \
@@ -164,7 +164,7 @@ name: Shutdown dapr
 
 ```bash
 dapr stop --app-id serving
-(lsof -i:8080 | grep main) | awk '{print $2}' | xargs  kill
+(lsof -i:8081 | grep main) | awk '{print $2}' | xargs  kill
 ```
 
 <!-- END_STEP -->

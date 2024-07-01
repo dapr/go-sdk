@@ -58,19 +58,10 @@ dapr run --app-id pub \
 
 ### Cleanup
 
-<!-- STEP
-expected_stdout_lines: 
-  - '✅  app stopped successfully: sub'
-expected_stderr_lines:
-name: Shutdown dapr
--->
-
 ```bash
 dapr stop --app-id sub
-(lsof -i:8080 | grep sub) | awk '{print $2}' | xargs  kill
+(lsof -i:8081 | grep sub) | awk '{print $2}' | xargs  kill
 ```
-
-<!-- END_STEP -->
 
 ## Result
 
