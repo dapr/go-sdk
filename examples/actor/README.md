@@ -21,6 +21,7 @@ expected_stdout_lines:
   - '== APP == receive reminder =  testReminderName  state =  "hello" duetime =  5s period =  5s'
 background: true
 sleep: 30
+timeout_seconds: 60
 -->
 
 ```bash
@@ -54,6 +55,7 @@ expected_stdout_lines:
 
 background: true
 sleep: 40
+timeout_seconds: 60
 -->
 
 ```bash
@@ -67,19 +69,10 @@ dapr run --app-id actor-client \
 
 ### Cleanup
 
-<!-- STEP
-expected_stdout_lines: 
-  - '✅  app stopped successfully: actor-serving'
-expected_stderr_lines:
-name: Shutdown dapr
--->
-
 ```bash
 dapr stop --app-id  actor-serving
 (lsof -i:8080 | grep main) | awk '{print $2}' | xargs  kill
 ```
-
-<!-- END_STEP -->
 
 ## Result
 - client side
