@@ -4,7 +4,7 @@ all: help
 http-service: ## Runs the uncompiled HTTP example service code
 	dapr run --app-id serving \
 			 -P http \
-			 -p 8080 \
+			 -p 8081 \
 			 -H 3500 \
 			 -d ./config \
 			 --log-level debug \
@@ -21,11 +21,11 @@ grpc-service: ## Runs the uncompiled gRPC example service code
 			 go run ./serving/grpc/main.go
 
 .PHONY: client
-client: ## Runs the uncompiled example client code 
+client: ## Runs the uncompiled example client code
 	dapr run --app-id caller \
              -d ./config \
              --log-level debug \
-             go run ./client/main.go 
+             go run ./client/main.go
 
 .PHONY: custom-grpc-client
 custom-grpc-client: ## Runs the uncompiled example custom grpc client code
@@ -36,7 +36,7 @@ custom-grpc-client: ## Runs the uncompiled example custom grpc client code
 		 go run ./custom-grpc-client/main.go
 
 .PHONY: publish
-publish: ## Submits pub/sub events in different content types 
+publish: ## Submits pub/sub events in different content types
 	curl -i -d '{ "from": "John", "to": "Lary", "message": "hi" }' \
 		-H "Content-type: application/json" \
 		"http://localhost:3500/v1.0/publish/messages/topic1"
