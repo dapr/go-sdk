@@ -26,7 +26,7 @@ sleep: 30
 ```bash
 dapr run --app-id actor-serving \
          --app-protocol http \
-         --app-port 8080 \
+         --app-port 8081 \
          --dapr-http-port 3500 \
          --log-level debug \
          --resources-path ./config \
