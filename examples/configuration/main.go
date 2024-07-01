@@ -7,9 +7,10 @@ import (
 	"sync"
 	"time"
 
-	dapr "github.com/dapr/go-sdk/client"
 	"github.com/go-redis/redis/v8"
 	"google.golang.org/grpc/metadata"
+
+	dapr "github.com/dapr/go-sdk/client"
 )
 
 func addItems(wg *sync.WaitGroup) {

@@ -18,9 +18,10 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/google/uuid"
+
 	dapr "github.com/dapr/go-sdk/client"
 	"github.com/dapr/go-sdk/examples/actor/api"
-	"github.com/google/uuid"
 )
 
 func main() {

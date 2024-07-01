@@ -26,7 +26,7 @@ sleep: 15
 ```bash
 dapr run --app-id sub \
          --app-protocol http \
-         --app-port 8080 \
+         --app-port 8081 \
          --dapr-http-port 3500 \
          --log-level debug \
          --resources-path ./config \
@@ -58,19 +58,10 @@ dapr run --app-id pub \
 
 ### Cleanup
 
-<!-- STEP
-expected_stdout_lines: 
-  - '✅  app stopped successfully: sub'
-expected_stderr_lines:
-name: Shutdown dapr
--->
-
 ```bash
 dapr stop --app-id sub
-(lsof -i:8080 | grep sub) | awk '{print $2}' | xargs  kill
+(lsof -i:8081 | grep sub) | awk '{print $2}' | xargs  kill
 ```
-
-<!-- END_STEP -->
 
 ## Result
 

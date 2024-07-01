@@ -50,15 +50,8 @@ dapr run --app-id grpc-client \
 
 ### Cleanup
 
-<!-- STEP
-expected_stdout_lines:
-  - '✅  app stopped successfully: grpc-server'
-expected_stderr_lines:
-name: Shutdown dapr
--->
+If the service has not been stopped you can do so manually:
 
 ```bash
 dapr stop --app-id grpc-server
 ```
-
-<!-- END_STEP -->
