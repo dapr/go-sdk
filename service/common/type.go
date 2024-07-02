@@ -105,16 +105,18 @@ type Subscription struct {
 	DisableTopicValidation bool `json:"disableTopicValidation"`
 }
 
+type SubscriptionResponseStatus string
+
 const (
 	// SubscriptionResponseStatusSuccess means message is processed successfully.
-	SubscriptionResponseStatusSuccess = "SUCCESS"
+	SubscriptionResponseStatusSuccess SubscriptionResponseStatus = "SUCCESS"
 	// SubscriptionResponseStatusRetry means message to be retried by Dapr.
-	SubscriptionResponseStatusRetry = "RETRY"
+	SubscriptionResponseStatusRetry SubscriptionResponseStatus = "RETRY"
 	// SubscriptionResponseStatusDrop means warning is logged and message is dropped.
-	SubscriptionResponseStatusDrop = "DROP"
+	SubscriptionResponseStatusDrop SubscriptionResponseStatus = "DROP"
 )
 
 // SubscriptionResponse represents the response handling hint from subscriber to Dapr.
 type SubscriptionResponse struct {
-	Status string `json:"status"`
+	Status SubscriptionResponseStatus `json:"status"`
 }

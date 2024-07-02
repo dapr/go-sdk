@@ -382,7 +382,8 @@ func (c *GRPCClient) GetBulkState(ctx context.Context, storeName string, keys []
 
 // GetState retrieves state from specific store using default consistency option.
 func (c *GRPCClient) GetState(ctx context.Context, storeName, key string, meta map[string]string) (item *StateItem, err error) {
-	return c.GetStateWithConsistency(ctx, storeName, key, meta, StateConsistencyStrong)
+	i, err := c.GetStateWithConsistency(ctx, storeName, key, meta, StateConsistencyStrong)
+	return i, err
 }
 
 // GetStateWithConsistency retrieves state from specific store using provided state consistency.

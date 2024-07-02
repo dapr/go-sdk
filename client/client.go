@@ -162,6 +162,14 @@ type Client interface {
 	// UnsubscribeConfigurationItems can stop the subscription with target store's and id
 	UnsubscribeConfigurationItems(ctx context.Context, storeName string, id string, opts ...ConfigurationOpt) error
 
+	// Subscribe subscribes to a pubsub topic and streams messages to the returned Subscription.
+	// Subscription must be closed after finishing with subscribing.
+	Subscribe(ctx context.Context, opts SubscriptionOptions) (*Subscription, error)
+
+	// SubscribeWithHandler subscribes to a pubsub topic and calls the given handler on topic events.
+	// The returned cancel function must be called after  finishing with subscribing.
+	SubscribeWithHandler(ctx context.Context, opts SubscriptionOptions, handler SubscriptionHandleFunction) (func() error, error)
+
 	// DeleteBulkState deletes content for multiple keys from store.
 	DeleteBulkState(ctx context.Context, storeName string, keys []string, meta map[string]string) error
 
