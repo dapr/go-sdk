@@ -49,7 +49,7 @@ func returnClientOptions(opts ...clientOption) clientOptions {
 }
 
 func TestClientMethods(t *testing.T) {
-	testClient := client{
+	testClient := Client{
 		taskHubClient: nil,
 	}
 	ctx := context.Background()
