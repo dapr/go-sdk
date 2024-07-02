@@ -151,7 +151,7 @@ func getTestClient(ctx context.Context) (client Client, closer func()) {
 	d := grpc.WithContextDialer(func(context.Context, string) (net.Conn, error) {
 		return l.Dial()
 	})
-
+	//nolint:staticcheck
 	c, err := grpc.DialContext(ctx, "", d, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		logger.Fatalf("failed to dial test context: %v", err)

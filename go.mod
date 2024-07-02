@@ -7,9 +7,9 @@ require (
 	github.com/go-chi/chi/v5 v5.0.12
 	github.com/golang/mock v1.6.0
 	github.com/google/uuid v1.6.0
-	github.com/microsoft/durabletask-go v0.4.1-0.20240122160106-fb5c4c05729d
+	github.com/microsoft/durabletask-go v0.4.1-0.20240621011625-bfcc3331ca58
 	github.com/stretchr/testify v1.9.0
-	google.golang.org/grpc v1.62.2
+	google.golang.org/grpc v1.64.0
 	google.golang.org/protobuf v1.33.0
 	gopkg.in/yaml.v3 v3.0.1
 )
@@ -26,9 +26,9 @@ require (
 	go.opentelemetry.io/otel v1.24.0 // indirect
 	go.opentelemetry.io/otel/metric v1.24.0 // indirect
 	go.opentelemetry.io/otel/trace v1.24.0 // indirect
-	golang.org/x/net v0.24.0 // indirect
-	golang.org/x/sys v0.19.0 // indirect
-	golang.org/x/text v0.14.0 // indirect
+	golang.org/x/net v0.26.0 // indirect
+	golang.org/x/sys v0.21.0 // indirect
+	golang.org/x/text v0.16.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240318140521-94a12d6c2237 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 )

@@ -103,7 +103,7 @@ func createUnresponsiveServer(network string, unresponsiveServerAddress string) 
 }
 
 func createNonBlockingClient(ctx context.Context, serverAddr string) (client Client, err error) {
-	conn, err := grpc.DialContext(
+	conn, err := grpc.DialContext( //nolint:staticcheck
 		ctx,
 		serverAddr,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),

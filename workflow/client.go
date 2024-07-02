@@ -135,6 +135,9 @@ func (c *client) FetchWorkflowMetadata(ctx context.Context, id string, opts ...a
 		return nil, errors.New("no workflow id specified")
 	}
 	wfMetadata, err := c.taskHubClient.FetchOrchestrationMetadata(ctx, api.InstanceID(id), opts...)
+	if err != nil {
+		return nil, err
+	}
 
 	return convertMetadata(wfMetadata), err
 }
@@ -145,6 +148,9 @@ func (c *client) WaitForWorkflowStart(ctx context.Context, id string, opts ...ap
 		return nil, errors.New("no workflow id specified")
 	}
 	wfMetadata, err := c.taskHubClient.WaitForOrchestrationStart(ctx, api.InstanceID(id), opts...)
+	if err != nil {
+		return nil, err
+	}
 
 	return convertMetadata(wfMetadata), err
 }
@@ -155,6 +161,9 @@ func (c *client) WaitForWorkflowCompletion(ctx context.Context, id string, opts 
 		return nil, errors.New("no workflow id specified")
 	}
 	wfMetadata, err := c.taskHubClient.WaitForOrchestrationCompletion(ctx, api.InstanceID(id), opts...)
+	if err != nil {
+		return nil, err
+	}
 
 	return convertMetadata(wfMetadata), err
 }

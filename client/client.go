@@ -333,7 +333,7 @@ func NewClientWithAddressContext(ctx context.Context, address string) (client Cl
 
 	opts := []grpc.DialOption{
 		grpc.WithUserAgent(userAgent()),
-		grpc.WithBlock(),
+		grpc.WithBlock(), //nolint:staticcheck
 		authTokenUnaryInterceptor(at),
 		authTokenStreamInterceptor(at),
 	}
@@ -345,7 +345,7 @@ func NewClientWithAddressContext(ctx context.Context, address string) (client Cl
 	}
 
 	ctx, cancel := context.WithTimeout(ctx, time.Duration(timeoutSeconds)*time.Second)
-	conn, err := grpc.DialContext(
+	conn, err := grpc.DialContext( //nolint:staticcheck
 		ctx,
 		parsedAddress.Target,
 		opts...,
@@ -381,7 +381,7 @@ func NewClientWithSocket(socket string) (client Client, err error) {
 	at := &authToken{}
 	logger.Printf("dapr client initializing for: %s", socket)
 	addr := "unix://" + socket
-	conn, err := grpc.Dial(
+	conn, err := grpc.Dial( //nolint:staticcheck
 		addr,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithUserAgent(userAgent()),
