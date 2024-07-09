@@ -1,13 +1,12 @@
 RELEASE_VERSION  =v1.0.0-rc-3
 GDOC_PORT        =8888
-GO_COMPAT_VERSION=1.21
 
 .PHONY: all
 all: help
 
 .PHONY: tidy
 tidy: ## Updates the go modules
-	go mod tidy -compat=$(GO_COMPAT_VERSION)
+	go mod tidy
 
 .PHONY: test
 test:
@@ -57,3 +56,5 @@ check-diff:
 .PHONY: modtidy
 modtidy:
 	go mod tidy
+
+
