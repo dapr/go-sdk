@@ -5,9 +5,10 @@ import (
 	"log"
 	"net"
 
-	daprd "github.com/dapr/go-sdk/service/grpc"
 	"google.golang.org/grpc"
 	pb "google.golang.org/grpc/examples/helloworld/helloworld"
+
+	daprd "github.com/dapr/go-sdk/service/grpc"
 )
 
 const (

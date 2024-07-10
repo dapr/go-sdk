@@ -151,7 +151,7 @@ func getTestClient(ctx context.Context) (client Client, closer func()) {
 	d := grpc.WithContextDialer(func(context.Context, string) (net.Conn, error) {
 		return l.Dial()
 	})
-
+	//nolint:staticcheck
 	c, err := grpc.DialContext(ctx, "", d, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		logger.Fatalf("failed to dial test context: %v", err)
@@ -555,6 +555,33 @@ func (s *testDaprServer) RaiseEventWorkflowBeta1(ctx context.Context, in *pb.Rai
 		return nil, errors.New("test failure")
 	}
 	return &emptypb.Empty{}, nil
+}
+
+func (s *testDaprServer) ScheduleJobAlpha1(ctx context.Context, in *pb.ScheduleJobRequest) (*pb.ScheduleJobResponse, error) {
+	return &pb.ScheduleJobResponse{}, nil
+}
+
+func (s *testDaprServer) GetJobAlpha1(ctx context.Context, in *pb.GetJobRequest) (*pb.GetJobResponse, error) {
+	var (
+		schedule        = "@every 10s"
+		dueTime         = "10s"
+		repeats  uint32 = 4
+		ttl             = "10s"
+	)
+	return &pb.GetJobResponse{
+		Job: &pb.Job{
+			Name:     "name",
+			Schedule: &schedule,
+			Repeats:  &repeats,
+			DueTime:  &dueTime,
+			Ttl:      &ttl,
+			Data:     nil,
+		},
+	}, nil
+}
+
+func (s *testDaprServer) DeleteJobAlpha1(ctx context.Context, in *pb.DeleteJobRequest) (*pb.DeleteJobResponse, error) {
+	return &pb.DeleteJobResponse{}, nil
 }
 
 func TestGrpcClient(t *testing.T) {

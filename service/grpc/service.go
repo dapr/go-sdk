@@ -55,11 +55,12 @@ func NewServiceWithGrpcServer(lis net.Listener, server *grpc.Server) common.Serv
 
 func newService(lis net.Listener, grpcServer *grpc.Server, opts ...grpc.ServerOption) *Server {
 	s := &Server{
-		listener:        lis,
-		invokeHandlers:  make(map[string]common.ServiceInvocationHandler),
-		topicRegistrar:  make(internal.TopicRegistrar),
-		bindingHandlers: make(map[string]common.BindingInvocationHandler),
-		authToken:       os.Getenv(common.AppAPITokenEnvVar),
+		listener:         lis,
+		invokeHandlers:   make(map[string]common.ServiceInvocationHandler),
+		topicRegistrar:   make(internal.TopicRegistrar),
+		bindingHandlers:  make(map[string]common.BindingInvocationHandler),
+		jobEventHandlers: make(map[string]common.JobEventHandler),
+		authToken:        os.Getenv(common.AppAPITokenEnvVar),
 	}
 
 	if grpcServer == nil {
@@ -67,6 +68,7 @@ func newService(lis net.Listener, grpcServer *grpc.Server, opts ...grpc.ServerOp
 	}
 
 	pb.RegisterAppCallbackServer(grpcServer, s)
+	pb.RegisterAppCallbackAlphaServer(grpcServer, s)
 	pb.RegisterAppCallbackHealthCheckServer(grpcServer, s)
 	s.grpcServer = grpcServer
 
@@ -81,6 +83,7 @@ type Server struct {
 	invokeHandlers     map[string]common.ServiceInvocationHandler
 	topicRegistrar     internal.TopicRegistrar
 	bindingHandlers    map[string]common.BindingInvocationHandler
+	jobEventHandlers   map[string]common.JobEventHandler
 	healthCheckHandler common.HealthCheckHandler
 	authToken          string
 	grpcServer         *grpc.Server

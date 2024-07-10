@@ -25,7 +25,7 @@ import (
 
 func main() {
 	// create a Dapr service (e.g. ":8080", "0.0.0.0:8080", "10.1.1.1:8080" )
-	s := daprd.NewService(":8080")
+	s := daprd.NewService(":8081")
 
 	// add some topic subscriptions
 	sub := &common.Subscription{
