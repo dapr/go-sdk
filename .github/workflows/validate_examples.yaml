@@ -32,13 +32,13 @@ jobs:
       GOARCH: amd64
       GOPROXY: https://proxy.golang.org
       DAPR_INSTALL_URL: https://raw.githubusercontent.com/dapr/cli/master/install/install.sh
-      DAPR_CLI_REF: ${{ github.event.inputs.daprcli_commit }}
+      DAPR_CLI_REF: 19b9de05611ade540b06d2c061f32f6c37093a17
       DAPR_REF: ${{ github.event.inputs.daprdapr_commit }}
       CHECKOUT_REPO: ${{ github.repository }}
       CHECKOUT_REF: ${{ github.ref }}
     outputs:
       DAPR_INSTALL_URL: ${{ env.DAPR_INSTALL_URL }}
-      DAPR_CLI_VER: 1.14.0-rc.2
+      DAPR_CLI_VER: ${{ steps.outputs.outputs.DAPR_CLI_VER }}
       DAPR_CLI_REF: ${{ steps.outputs.outputs.DAPR_CLI_REF }}
       DAPR_RUNTIME_VER: 1.14.0-rc.2
       CHECKOUT_REPO: ${{ steps.outputs.outputs.CHECKOUT_REPO }}
@@ -204,15 +204,19 @@ jobs:
         if: env.DAPR_CLI_VER != ''
         run: wget -q ${{ env.DAPR_INSTALL_URL }} -O - | /bin/bash -s ${{ env.DAPR_CLI_VER }}
 
+      - name: Override dapr cli with referenced commit.
+        if: env.DAPR_CLI_REF != ''
+        run: |
+          sudo cp $HOME/artifacts/$GITHUB_SHA/dapr /usr/local/bin/dapr
+
       - name: Initialize Dapr runtime ${{ env.DAPR_RUNTIME_VER }}
         run: |
           dapr uninstall --all
           dapr init --runtime-version ${{ env.DAPR_RUNTIME_VER }}
 
-      - name: Override dapr cli with referenced commit.
-        if: env.DAPR_CLI_REF != ''
+      - name: Print scheduler logs
         run: |
-          sudo cp $HOME/artifacts/$GITHUB_SHA/dapr /usr/local/bin/dapr
+          docker logs dapr_scheduler
 
       - name: Override daprd with referenced commit.
         if: env.DAPR_REF != ''

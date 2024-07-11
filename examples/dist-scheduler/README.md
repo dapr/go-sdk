@@ -23,7 +23,7 @@ sleep: 60
 ```bash
         ~/.dapr/bin/daprd --app-id=distributed-scheduler \
                 --metrics-port=9091 \
-                --scheduler-host-address=127.0.0.1:50006 \
+                --scheduler-host-address=localhost:50006 \
                 --dapr-grpc-port 50001 \
                 --app-port 50070 \
                 --app-protocol grpc \
@@ -51,6 +51,7 @@ expected_stdout_lines:
 
 background: true
 sleep: 60
+
 -->
 
 ```bash
