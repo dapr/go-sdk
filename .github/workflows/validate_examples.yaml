@@ -166,6 +166,7 @@ jobs:
             "grpc-service",
             "hello-world",
             "pubsub",
+            "bidipubsub",
             "service",
             "socket",
             "workflow",

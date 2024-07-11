@@ -327,7 +327,7 @@ func getCustomMetdataFromHeaders(r *http.Request) map[string]string {
 	return md
 }
 
-func writeStatus(w http.ResponseWriter, s string) {
+func writeStatus(w http.ResponseWriter, s common.SubscriptionResponseStatus) {
 	status := &common.SubscriptionResponse{Status: s}
 	if err := json.NewEncoder(w).Encode(status); err != nil {
 		http.Error(w, err.Error(), PubSubHandlerRetryStatusCode)
