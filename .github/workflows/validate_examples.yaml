@@ -104,6 +104,7 @@ jobs:
           make
           mkdir -p $HOME/artifacts/$GITHUB_SHA/
           sudo cp dist/linux_amd64/release/dapr ~/artifacts/$GITHUB_SHA/dapr
+          echo "artifactPath=~/artifacts/$GITHUB_SHA/" >> $GITHUB_ENV
           echo "DAPR_CLI_REF=$DAPR_CLI_REF" >> $GITHUB_ENV
 
       - name: Build dapr
