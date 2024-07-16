@@ -32,7 +32,7 @@ jobs:
       GOARCH: amd64
       GOPROXY: https://proxy.golang.org
       DAPR_INSTALL_URL: https://raw.githubusercontent.com/dapr/cli/master/install/install.sh
-      DAPR_CLI_REF: ${{ github.event.inputs.daprcli_commit }}
+      DAPR_CLI_REF: 19b9de05611ade540b06d2c061f32f6c37093a17
       DAPR_REF: ${{ github.event.inputs.daprdapr_commit }}
       CHECKOUT_REPO: ${{ github.repository }}
       CHECKOUT_REF: ${{ github.ref }}
@@ -101,6 +101,7 @@ jobs:
       - name: Build dapr cli with referenced commit.
         if: env.DAPR_CLI_REF != ''
         run: |
+          echo "artifactPath=~/artifacts/$GITHUB_SHA/" >> $GITHUB_ENV
           cd cli
           make
           mkdir -p $HOME/artifacts/$GITHUB_SHA/
@@ -109,6 +110,7 @@ jobs:
       - name: Build daprd and placement with referenced commit.
         if: env.DAPR_REF != ''
         run: |
+          echo "artifactPath=~/artifacts/$GITHUB_SHA/" >> $GITHUB_ENV
           cd dapr_runtime
           make
           mkdir -p $HOME/artifacts/$GITHUB_SHA/
@@ -120,7 +122,7 @@ jobs:
         if: env.DAPR_REF != '' || env.DAPR_CLI_REF != ''
         with:
           name: dapr-artifacts
-          path: $HOME/artifacts/$GITHUB_SHA/
+          path: ${{ env.artifactPath }}
           if-no-files-found: error
           retention-days: 1
           compression-level: 0
@@ -145,7 +147,7 @@ jobs:
       GOPROXY: https://proxy.golang.org
       DAPR_INSTALL_URL: ${{ needs.setup.outputs.DAPR_INSTALL_URL }}
       DAPR_CLI_VER: ${{ needs.setup.outputs.DAPR_CLI_VER }}
-      DAPR_RUNTIME_VER: ${{ needs.setup.outputs.DAPR_RUNTIME_VER }}
+      DAPR_RUNTIME_VER: 1.14.0-rc.2
       DAPR_CLI_REF: ${{ github.event.inputs.daprcli_commit }}
       DAPR_REF: ${{ github.event.inputs.daprdapr_commit }}
       CHECKOUT_REPO: ${{ needs.setup.outputs.CHECKOUT_REPO }}
