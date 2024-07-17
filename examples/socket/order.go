@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/alecthomas/kingpin/v2"
-
 	dapr "github.com/dapr/go-sdk/client"
 )
 
