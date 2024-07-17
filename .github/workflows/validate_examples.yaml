@@ -39,10 +39,12 @@ jobs:
     outputs:
       DAPR_INSTALL_URL: ${{ env.DAPR_INSTALL_URL }}
       DAPR_CLI_VER: ${{ steps.outputs.outputs.DAPR_CLI_VER }}
-      DAPR_RUNTIME_VER: ${{ steps.outputs.outputs.DAPR_RUNTIME_VER }}
+      DAPR_CLI_REF: ${{ steps.outputs.outputs.DAPR_CLI_REF }}
+      DAPR_RUNTIME_VER: 1.14.0-rc.2
       CHECKOUT_REPO: ${{ steps.outputs.outputs.CHECKOUT_REPO }}
       CHECKOUT_REF: ${{ steps.outputs.outputs.CHECKOUT_REF }}
       DAPR_REF: ${{ steps.outputs.outputs.DAPR_REF }}
+      GITHUB_SHA: ${{ steps.outputs.outputs.GITHUB_SHA }}
     steps:
       - name: Parse repository_dispatch payload
         if: github.event_name == 'repository_dispatch'
@@ -79,9 +81,6 @@ jobs:
           echo "DAPR_CLI_VER=$CLI_VERSION" >> $GITHUB_ENV
           echo "Found $CLI_VERSION"
 
-      - name: Set up Dapr CLI
-        run: wget -q ${{ env.DAPR_INSTALL_URL }} -O - | /bin/bash -s ${{ env.DAPR_CLI_VER }}
-
       - name: Checkout Dapr CLI repo to override dapr command.
         uses: actions/checkout@v4
         if: env.DAPR_CLI_REF != ''
@@ -105,17 +104,19 @@ jobs:
           cd cli
           make
           mkdir -p $HOME/artifacts/$GITHUB_SHA/
-          sudo cp dist/linux_amd64/release/dapr $HOME/artifacts/$GITHUB_SHA/dapr
+          sudo cp dist/linux_amd64/release/dapr ~/artifacts/$GITHUB_SHA/dapr
+          echo "artifactPath=~/artifacts/$GITHUB_SHA/" >> $GITHUB_ENV
+          echo "DAPR_CLI_REF=$DAPR_CLI_REF" >> $GITHUB_ENV
 
-      - name: Build daprd and placement with referenced commit.
+      - name: Build dapr
         if: env.DAPR_REF != ''
         run: |
           echo "artifactPath=~/artifacts/$GITHUB_SHA/" >> $GITHUB_ENV
           cd dapr_runtime
           make
           mkdir -p $HOME/artifacts/$GITHUB_SHA/
-          cp dist/linux_amd64/release/daprd $HOME/artifacts/$GITHUB_SHA/daprd
-          cp dist/linux_amd64/release/placement $HOME/artifacts/$GITHUB_SHA/placement
+          echo "artifactPath=~/artifacts/$GITHUB_SHA/" >> $GITHUB_ENV
+          cp ./dist/linux_amd64/release/* ~/artifacts/$GITHUB_SHA/
 
       - name: Upload dapr-artifacts
         uses: actions/upload-artifact@v4
@@ -132,10 +133,12 @@ jobs:
         run: |
           echo "DAPR_INSTALL_URL=$DAPR_INSTALL_URL"
           echo "DAPR_CLI_VER=$DAPR_CLI_VER" >> "$GITHUB_OUTPUT"
+          echo "DAPR_CLI_REF=$DAPR_CLI_REF" >> "$GITHUB_OUTPUT"
           echo "DAPR_RUNTIME_VER=$DAPR_RUNTIME_VER" >> "$GITHUB_OUTPUT"
           echo "CHECKOUT_REPO=$CHECKOUT_REPO" >> "$GITHUB_OUTPUT"
           echo "CHECKOUT_REF=$CHECKOUT_REF" >> "$GITHUB_OUTPUT"
           echo "DAPR_REF=$DAPR_REF" >> "$GITHUB_OUTPUT"
+          echo "GITHUB_SHA=$GITHUB_SHA" >> "$GITHUB_OUTPUT"
 
   validate-example:
     needs: setup
@@ -148,10 +151,11 @@ jobs:
       DAPR_INSTALL_URL: ${{ needs.setup.outputs.DAPR_INSTALL_URL }}
       DAPR_CLI_VER: ${{ needs.setup.outputs.DAPR_CLI_VER }}
       DAPR_RUNTIME_VER: 1.14.0-rc.2
-      DAPR_CLI_REF: ${{ github.event.inputs.daprcli_commit }}
-      DAPR_REF: ${{ github.event.inputs.daprdapr_commit }}
+      DAPR_CLI_REF: ${{ needs.setup.outputs.DAPR_CLI_REF }}
+      DAPR_REF: ${{ needs.setup.outputs.DAPR_REF }}
       CHECKOUT_REPO: ${{ needs.setup.outputs.CHECKOUT_REPO }}
       CHECKOUT_REF: ${{ needs.setup.outputs.CHECKOUT_REF }}
+      GITHUB_SHA: ${{ needs.setup.outputs.GITHUB_SHA }}
 
     strategy:
       fail-fast: false
@@ -161,6 +165,7 @@ jobs:
             "actor",
             "configuration",
             "crypto",
+            "dist-scheduler",
             "grpc-service",
             "hello-world",
             "pubsub",
@@ -187,7 +192,11 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: dapr-artifacts
-          path: $HOME/artifacts/$GITHUB_SHA/
+          path: ~/artifacts/${{ env.GITHUB_SHA }}/
+
+      - name: Display artifacts downloaded
+        if: env.DAPR_CLI_REF != '' || env.DAPR_REF != ''
+        run: ls ~/artifacts/$GITHUB_SHA/
 
       - name: Set up Go
         id: setup-go
@@ -196,6 +205,7 @@ jobs:
           go-version-file: "go.mod"
 
       - name: Set up Dapr CLI
+        if: env.DAPR_CLI_VER != ''
         run: wget -q ${{ env.DAPR_INSTALL_URL }} -O - | /bin/bash -s ${{ env.DAPR_CLI_VER }}
 
       - name: Override dapr cli with referenced commit.
@@ -208,13 +218,15 @@ jobs:
           dapr uninstall --all
           dapr init --runtime-version ${{ env.DAPR_RUNTIME_VER }}
 
-      - name: Override daprd and placement service with referenced commit.
+      - name: Print scheduler logs
+        run: |
+          docker logs dapr_scheduler
+
+      - name: Override daprd with referenced commit.
         if: env.DAPR_REF != ''
         run: |
           mkdir -p $HOME/.dapr/bin/
           cp $HOME/artifacts/$GITHUB_SHA/daprd $HOME/.dapr/bin/daprd
-          docker stop dapr_placement
-          $HOME/artifacts/$GITHUB_SHA/placement --healthz-port 9091 &
 
       - name: Set up Python ${{ env.PYTHON_VER }}
         uses: actions/setup-python@v5

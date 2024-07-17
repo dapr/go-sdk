@@ -120,3 +120,13 @@ const (
 type SubscriptionResponse struct {
 	Status SubscriptionResponseStatus `json:"status"`
 }
+
+type JobEvent struct {
+	JobType string `json:"job_type"`
+	Data    []byte `json:"data"`
+}
+
+type Job struct {
+	TypeURL string `json:"type_url"`
+	Value   string `json:"value"`
+}

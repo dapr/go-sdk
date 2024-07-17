@@ -250,6 +250,15 @@ type Client interface {
 	// RaiseEventWorkflowBeta1 raises an event for a workflow.
 	RaiseEventWorkflowBeta1(ctx context.Context, req *RaiseEventWorkflowRequest) error
 
+	// ScheduleJobAlpha1 creates and schedules a job.
+	ScheduleJobAlpha1(ctx context.Context, req *Job) error
+
+	// GetJobAlpha1 returns a scheduled job.
+	GetJobAlpha1(ctx context.Context, name string) (*Job, error)
+
+	// DeleteJobAlpha1 deletes a scheduled job.
+	DeleteJobAlpha1(ctx context.Context, name string) error
+
 	// GrpcClient returns the base grpc client if grpc is used and nil otherwise
 	GrpcClient() pb.DaprClient
 

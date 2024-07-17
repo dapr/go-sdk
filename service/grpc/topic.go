@@ -169,3 +169,7 @@ func getCustomMetadataFromContext(ctx context.Context) map[string]string {
 	}
 	return md
 }
+
+func (s *Server) OnBulkTopicEventAlpha1(ctx context.Context, in *runtimev1pb.TopicEventBulkRequest) (*runtimev1pb.TopicEventBulkResponse, error) {
+	panic("This API callback is not supported.")
+}

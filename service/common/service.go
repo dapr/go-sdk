@@ -42,6 +42,9 @@ type Service interface {
 	RegisterActorImplFactory(f actor.Factory, opts ...config.Option)
 	// RegisterActorImplFactoryContext Register a new actor to actor runtime of go sdk
 	RegisterActorImplFactoryContext(f actor.FactoryContext, opts ...config.Option)
+	// AddJobEventHandler appends a provided job event handler with its name to
+	// the service.
+	AddJobEventHandler(name string, fn JobEventHandler) error
 	// Start starts service.
 	Start() error
 	// Stop stops the previously started service.
@@ -54,5 +57,6 @@ type (
 	ServiceInvocationHandler func(ctx context.Context, in *InvocationEvent) (out *Content, err error)
 	TopicEventHandler        func(ctx context.Context, e *TopicEvent) (retry bool, err error)
 	BindingInvocationHandler func(ctx context.Context, in *BindingEvent) (out []byte, err error)
+	JobEventHandler          func(ctx context.Context, in *JobEvent) error
 	HealthCheckHandler       func(context.Context) error
 )
