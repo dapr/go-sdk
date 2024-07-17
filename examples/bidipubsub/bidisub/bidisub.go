@@ -30,7 +30,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	var deadLetterTopic = "deadletter"
+	deadLetterTopic := "deadletter"
 
 	// Streaming subscription for topic "sendorder" on pubsub component
 	// "messages". The given subscription handler is called when a message is
@@ -53,7 +53,7 @@ func main() {
 	// `sub` must be closed once it's no longer needed.
 
 	sub, err := client.Subscribe(context.Background(), daprd.SubscriptionOptions{
-		PubsubName:      "pubsub",
+		PubsubName:      "messages",
 		Topic:           "neworder",
 		DeadLetterTopic: &deadLetterTopic,
 	})
@@ -78,7 +78,7 @@ func main() {
 		}
 	}
 
-	time.Sleep(time.Second * 5)
+	time.Sleep(time.Second * 10)
 
 	if err := errors.Join(stop(), sub.Close()); err != nil {
 		log.Fatal(err)
