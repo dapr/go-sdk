@@ -150,7 +150,7 @@ jobs:
       GOPROXY: https://proxy.golang.org
       DAPR_INSTALL_URL: ${{ needs.setup.outputs.DAPR_INSTALL_URL }}
       DAPR_CLI_VER: ${{ needs.setup.outputs.DAPR_CLI_VER }}
-      DAPR_RUNTIME_VER: 1.14.0-rc.2
+      DAPR_RUNTIME_VER: ${{ needs.setup.outputs.DAPR_RUNTIME_VER }}
       DAPR_CLI_REF: ${{ needs.setup.outputs.DAPR_CLI_REF }}
       DAPR_REF: ${{ needs.setup.outputs.DAPR_REF }}
       CHECKOUT_REPO: ${{ needs.setup.outputs.CHECKOUT_REPO }}
