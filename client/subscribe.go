@@ -104,23 +104,23 @@ func (s *Subscription) Receive() (*SubscriptionMessage, error) {
 		return nil, err
 	}
 
-	data := any(event.GetData())
-	if len(event.GetData()) > 0 {
-		mediaType, _, err := mime.ParseMediaType(event.GetDataContentType())
+	data := any(event.GetEventMessage().GetData())
+	if len(event.GetEventMessage().GetData()) > 0 {
+		mediaType, _, err := mime.ParseMediaType(event.GetEventMessage().GetDataContentType())
 		if err == nil {
 			var v interface{}
 			switch mediaType {
 			case "application/json":
-				if err := json.Unmarshal(event.GetData(), &v); err == nil {
+				if err := json.Unmarshal(event.GetEventMessage().GetData(), &v); err == nil {
 					data = v
 				}
 			case "text/plain":
 				// Assume UTF-8 encoded string.
-				data = string(event.GetData())
+				data = string(event.GetEventMessage().GetData())
 			default:
 				if strings.HasPrefix(mediaType, "application/") &&
 					strings.HasSuffix(mediaType, "+json") {
-					if err := json.Unmarshal(event.GetData(), &v); err == nil {
+					if err := json.Unmarshal(event.GetEventMessage().GetData(), &v); err == nil {
 						data = v
 					}
 				}
@@ -129,15 +129,15 @@ func (s *Subscription) Receive() (*SubscriptionMessage, error) {
 	}
 
 	topicEvent := &common.TopicEvent{
-		ID:              event.GetId(),
-		Source:          event.GetSource(),
-		Type:            event.GetType(),
-		SpecVersion:     event.GetSpecVersion(),
-		DataContentType: event.GetDataContentType(),
+		ID:              event.GetEventMessage().GetId(),
+		Source:          event.GetEventMessage().GetSource(),
+		Type:            event.GetEventMessage().GetType(),
+		SpecVersion:     event.GetEventMessage().GetSpecVersion(),
+		DataContentType: event.GetEventMessage().GetDataContentType(),
 		Data:            data,
-		RawData:         event.GetData(),
-		Topic:           event.GetTopic(),
-		PubsubName:      event.GetPubsubName(),
+		RawData:         event.GetEventMessage().GetData(),
+		Topic:           event.GetEventMessage().GetTopic(),
+		PubsubName:      event.GetEventMessage().GetPubsubName(),
 	}
 
 	return &SubscriptionMessage{
@@ -181,8 +181,8 @@ func (s *SubscriptionMessage) respond(status pb.TopicEventResponse_TopicEventRes
 	defer s.sub.lock.Unlock()
 
 	return s.sub.stream.Send(&pb.SubscribeTopicEventsRequestAlpha1{
-		SubscribeTopicEventsRequestType: &pb.SubscribeTopicEventsRequestAlpha1_EventResponse{
-			EventResponse: &pb.SubscribeTopicEventsResponseAlpha1{
+		SubscribeTopicEventsRequestType: &pb.SubscribeTopicEventsRequestAlpha1_EventProcessed{
+			EventProcessed: &pb.SubscribeTopicEventsRequestProcessedAlpha1{
 				Id:     s.ID,
 				Status: &pb.TopicEventResponse{Status: status},
 			},
@@ -206,7 +206,7 @@ func (c *GRPCClient) subscribeInitialRequest(ctx context.Context, opts Subscript
 
 	err = stream.Send(&pb.SubscribeTopicEventsRequestAlpha1{
 		SubscribeTopicEventsRequestType: &pb.SubscribeTopicEventsRequestAlpha1_InitialRequest{
-			InitialRequest: &pb.SubscribeTopicEventsInitialRequestAlpha1{
+			InitialRequest: &pb.SubscribeTopicEventsRequestInitialAlpha1{
 				PubsubName: opts.PubsubName, Topic: opts.Topic,
 				Metadata: opts.Metadata, DeadLetterTopic: opts.DeadLetterTopic,
 			},
