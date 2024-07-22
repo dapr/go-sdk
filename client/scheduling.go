@@ -24,7 +24,7 @@ import (
 
 type Job struct {
 	Name     string
-	Schedule string
+	Schedule string // Optional
 	Repeats  uint32 // Optional
 	DueTime  string // Optional
 	TTL      string // Optional
@@ -33,11 +33,10 @@ type Job struct {
 
 // ScheduleJobAlpha1 raises and schedules a job.
 func (c *GRPCClient) ScheduleJobAlpha1(ctx context.Context, job *Job) error {
-	// TODO: Assert job fields are defined: Name, Schedule, Data
+	// TODO: Assert job fields are defined: Name, Data
 	jobRequest := &pb.Job{
-		Name:     job.Name,
-		Schedule: &job.Schedule,
-		Data:     job.Data,
+		Name: job.Name,
+		Data: job.Data,
 	}
 
 	if job.Schedule != "" {
