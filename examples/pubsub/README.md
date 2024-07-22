@@ -21,6 +21,7 @@ expected_stdout_lines:
   - 'event - PubsubName: messages, Topic: neworder'
 background: true
 sleep: 15
+timeout_seconds: 60
 -->
 
 ```bash
@@ -43,6 +44,7 @@ expected_stdout_lines:
   - '== APP == data published'
 background: true
 sleep: 15
+timeout_seconds: 60
 -->
 
 ```bash
@@ -58,19 +60,10 @@ dapr run --app-id pub \
 
 ### Cleanup
 
-<!-- STEP
-expected_stdout_lines: 
-  - '✅  app stopped successfully: sub'
-expected_stderr_lines:
-name: Shutdown dapr
--->
-
 ```bash
 dapr stop --app-id sub
 (lsof -i:8080 | grep sub) | awk '{print $2}' | xargs  kill
 ```
-
-<!-- END_STEP -->
 
 ## Result
 

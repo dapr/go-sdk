@@ -40,6 +40,7 @@ expected_stdout_lines:
 
 background: true
 sleep: 60
+timeout_seconds: 60
 -->
 
 ```bash
