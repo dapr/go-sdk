@@ -54,9 +54,11 @@ func (c *GRPCClient) Subscribe(ctx context.Context, opts SubscriptionOptions) (*
 		return nil, err
 	}
 
-	return &Subscription{
+	s := &Subscription{
 		stream: stream,
-	}, nil
+	}
+
+	return s, nil
 }
 
 func (c *GRPCClient) SubscribeWithHandler(ctx context.Context, opts SubscriptionOptions, handler SubscriptionHandleFunction) (func() error, error) {
@@ -99,10 +101,11 @@ func (s *Subscription) Close() error {
 }
 
 func (s *Subscription) Receive() (*SubscriptionMessage, error) {
-	event, err := s.stream.Recv()
+	resp, err := s.stream.Recv()
 	if err != nil {
 		return nil, err
 	}
+	event := resp.GetEventMessage()
 
 	data := any(event.GetData())
 	if len(event.GetData()) > 0 {
@@ -181,8 +184,8 @@ func (s *SubscriptionMessage) respond(status pb.TopicEventResponse_TopicEventRes
 	defer s.sub.lock.Unlock()
 
 	return s.sub.stream.Send(&pb.SubscribeTopicEventsRequestAlpha1{
-		SubscribeTopicEventsRequestType: &pb.SubscribeTopicEventsRequestAlpha1_EventResponse{
-			EventResponse: &pb.SubscribeTopicEventsResponseAlpha1{
+		SubscribeTopicEventsRequestType: &pb.SubscribeTopicEventsRequestAlpha1_EventProcessed{
+			EventProcessed: &pb.SubscribeTopicEventsRequestProcessedAlpha1{
 				Id:     s.ID,
 				Status: &pb.TopicEventResponse{Status: status},
 			},
@@ -206,7 +209,7 @@ func (c *GRPCClient) subscribeInitialRequest(ctx context.Context, opts Subscript
 
 	err = stream.Send(&pb.SubscribeTopicEventsRequestAlpha1{
 		SubscribeTopicEventsRequestType: &pb.SubscribeTopicEventsRequestAlpha1_InitialRequest{
-			InitialRequest: &pb.SubscribeTopicEventsInitialRequestAlpha1{
+			InitialRequest: &pb.SubscribeTopicEventsRequestInitialAlpha1{
 				PubsubName: opts.PubsubName, Topic: opts.Topic,
 				Metadata: opts.Metadata, DeadLetterTopic: opts.DeadLetterTopic,
 			},
@@ -214,6 +217,17 @@ func (c *GRPCClient) subscribeInitialRequest(ctx context.Context, opts Subscript
 	})
 	if err != nil {
 		return nil, errors.Join(err, stream.CloseSend())
+	}
+
+	resp, err := stream.Recv()
+	if err != nil {
+		return nil, errors.Join(err, stream.CloseSend())
+	}
+
+	switch resp.GetSubscribeTopicEventsResponseType().(type) {
+	case *pb.SubscribeTopicEventsResponseAlpha1_InitialResponse:
+	default:
+		return nil, fmt.Errorf("unexpected initial response from server : %v", resp)
 	}
 
 	return stream, nil
