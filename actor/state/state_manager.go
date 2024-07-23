@@ -167,7 +167,7 @@ func (s *stateManagerCtx) SetWithTTL(_ context.Context, stateName string, value 
 		if metadata.Kind == None || metadata.Kind == Remove {
 			metadata.Kind = Update
 		}
-		s.stateChangeTracker.Store(stateName, NewChangeMetadata(metadata.Kind, value))
+		s.stateChangeTracker.Store(stateName, NewChangeMetadata(metadata.Kind, value).WithTTL(ttl))
 		return nil
 	}
 	s.stateChangeTracker.Store(stateName, (&ChangeMetadata{
