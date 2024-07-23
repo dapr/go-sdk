@@ -162,6 +162,14 @@ type Client interface {
 	// UnsubscribeConfigurationItems can stop the subscription with target store's and id
 	UnsubscribeConfigurationItems(ctx context.Context, storeName string, id string, opts ...ConfigurationOpt) error
 
+	// Subscribe subscribes to a pubsub topic and streams messages to the returned Subscription.
+	// Subscription must be closed after finishing with subscribing.
+	Subscribe(ctx context.Context, opts SubscriptionOptions) (*Subscription, error)
+
+	// SubscribeWithHandler subscribes to a pubsub topic and calls the given handler on topic events.
+	// The returned cancel function must be called after  finishing with subscribing.
+	SubscribeWithHandler(ctx context.Context, opts SubscriptionOptions, handler SubscriptionHandleFunction) (func() error, error)
+
 	// DeleteBulkState deletes content for multiple keys from store.
 	DeleteBulkState(ctx context.Context, storeName string, keys []string, meta map[string]string) error
 
@@ -241,6 +249,15 @@ type Client interface {
 
 	// RaiseEventWorkflowBeta1 raises an event for a workflow.
 	RaiseEventWorkflowBeta1(ctx context.Context, req *RaiseEventWorkflowRequest) error
+
+	// ScheduleJobAlpha1 creates and schedules a job.
+	ScheduleJobAlpha1(ctx context.Context, req *Job) error
+
+	// GetJobAlpha1 returns a scheduled job.
+	GetJobAlpha1(ctx context.Context, name string) (*Job, error)
+
+	// DeleteJobAlpha1 deletes a scheduled job.
+	DeleteJobAlpha1(ctx context.Context, name string) error
 
 	// GrpcClient returns the base grpc client if grpc is used and nil otherwise
 	GrpcClient() pb.DaprClient
@@ -325,7 +342,7 @@ func NewClientWithAddressContext(ctx context.Context, address string) (client Cl
 
 	opts := []grpc.DialOption{
 		grpc.WithUserAgent(userAgent()),
-		grpc.WithBlock(),
+		grpc.WithBlock(), //nolint:staticcheck
 		authTokenUnaryInterceptor(at),
 		authTokenStreamInterceptor(at),
 	}
@@ -337,7 +354,7 @@ func NewClientWithAddressContext(ctx context.Context, address string) (client Cl
 	}
 
 	ctx, cancel := context.WithTimeout(ctx, time.Duration(timeoutSeconds)*time.Second)
-	conn, err := grpc.DialContext(
+	conn, err := grpc.DialContext( //nolint:staticcheck
 		ctx,
 		parsedAddress.Target,
 		opts...,
@@ -373,7 +390,7 @@ func NewClientWithSocket(socket string) (client Client, err error) {
 	at := &authToken{}
 	logger.Printf("dapr client initializing for: %s", socket)
 	addr := "unix://" + socket
-	conn, err := grpc.Dial(
+	conn, err := grpc.Dial( //nolint:staticcheck
 		addr,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithUserAgent(userAgent()),

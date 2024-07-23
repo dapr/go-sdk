@@ -17,21 +17,25 @@ This folder contains two Go files that use the Go SDK to invoke the Dapr Pub/Sub
 <!-- STEP
 name: Run Subscriber Server
 output_match_mode: substring
+match_order: none
 expected_stdout_lines:
   - 'event - PubsubName: messages, Topic: neworder'
+  - 'event - PubsubName: messages, Topic: neworder'
+  - 'event - PubsubName: messages, Topic: neworder'
+  - 'event - PubsubName: messages, Topic: sendorder'
+  - 'event - PubsubName: messages, Topic: sendorder'
+  - 'event - PubsubName: messages, Topic: sendorder'
+expected_stderr_lines:
 background: true
 sleep: 15
-timeout_seconds: 60
 -->
 
 ```bash
 dapr run --app-id sub \
-         --app-protocol http \
-         --app-port 8080 \
          --dapr-http-port 3500 \
          --log-level debug \
          --resources-path ./config \
-         go run sub/sub.go
+         go run bidisub/bidisub.go
 ```
 
 <!-- END_STEP -->
@@ -40,16 +44,18 @@ dapr run --app-id sub \
 
 <!-- STEP
 name: Run publisher
+output_match_mode: substring
 expected_stdout_lines:
-  - '== APP == data published'
+  - 'sending message'
+  - 'message published'
+  - 'sending multiple messages'
+  - 'multiple messages published'
+expected_stderr_lines:
 background: true
 sleep: 15
-timeout_seconds: 60
 -->
 
 ```bash
-export DAPR_PUBSUB_NAME=messages
-
 dapr run --app-id pub \
          --log-level debug \
          --resources-path ./config \
@@ -58,17 +64,8 @@ dapr run --app-id pub \
 
 <!-- END_STEP -->
 
-### Cleanup
-
-```bash
-dapr stop --app-id sub
-(lsof -i:8080 | grep sub) | awk '{print $2}' | xargs  kill
-```
-
 ## Result
 
 ```shell
-== APP == 2023/03/29 21:36:07 event - PubsubName: messages, Topic: neworder, ID: 82427280-1c18-4fab-b901-c7e68d295d31, Data: ping
-== APP == 2023/03/29 21:36:07 event - PubsubName: messages, Topic: neworder, ID: cc13829c-af77-4303-a4d7-55cdc0b0fa7d, Data: multi-pong
-== APP == 2023/03/29 21:36:07 event - PubsubName: messages, Topic: neworder, ID: 0147f10a-d6c3-4b16-ad5a-6776956757dd, Data: multi-ping
+== APP == 2023/03/29 21:36:07 event - PubsubName: messages, Topic: neworder, ID: 82427280-1c18-4fab-b901-c7e68d295d31, Data: ping123
 ```
