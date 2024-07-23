@@ -45,27 +45,27 @@ func main() {
 		eventHandler,
 	)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("failed to subscribe to topic: %v", err)
 	}
+	fmt.Printf(">>Created subscription messages/sendorder\n")
 
 	// Another method of streaming subscriptions, this time for the topic "neworder".
 	// The returned `sub` object is used to receive messages.
 	// `sub` must be closed once it's no longer needed.
-
 	sub, err := client.Subscribe(context.Background(), daprd.SubscriptionOptions{
 		PubsubName:      "messages",
 		Topic:           "neworder",
 		DeadLetterTopic: &deadLetterTopic,
 	})
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("failed to subscribe to topic: %v", err)
 	}
-	fmt.Printf(">>Created subscription\n")
+	fmt.Printf(">>Created subscription messages/neworder\n")
 
 	for i := 0; i < 3; i++ {
 		msg, err := sub.Receive()
 		if err != nil {
-			log.Fatalf("error receiving message: %v", err)
+			log.Fatalf("Error receiving message: %v", err)
 		}
 		log.Printf(">>Received message\n")
 		log.Printf("event - PubsubName: %s, Topic: %s, ID: %s, Data: %s\n", msg.PubsubName, msg.Topic, msg.ID, msg.RawData)

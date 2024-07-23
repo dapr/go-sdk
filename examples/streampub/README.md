@@ -35,7 +35,7 @@ dapr run --app-id sub \
          --dapr-http-port 3500 \
          --log-level debug \
          --resources-path ./config \
-         go run bidisub/bidisub.go
+         go run sub/sub.go
 ```
 
 <!-- END_STEP -->
