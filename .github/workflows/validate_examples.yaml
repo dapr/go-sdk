@@ -169,7 +169,7 @@ jobs:
             "grpc-service",
             "hello-world",
             "pubsub",
-            "bidipubsub",
+            "streamsub",
             "service",
             "socket",
             "workflow",
