@@ -204,6 +204,18 @@ func (c *GRPCClient) subscribeInitialRequest(ctx context.Context, opts Subscript
 		return nil, err
 	}
 
+	errChan := make(chan error)
+	go func() {
+		event, streamErr := stream.Recv()
+		if streamErr != nil {
+			errChan <- streamErr
+		}
+		if event.GetInitialResponse() == nil {
+			errChan <- errors.New("unexpected initial response")
+		}
+		errChan <- nil
+	}()
+
 	err = stream.Send(&pb.SubscribeTopicEventsRequestAlpha1{
 		SubscribeTopicEventsRequestType: &pb.SubscribeTopicEventsRequestAlpha1_InitialRequest{
 			InitialRequest: &pb.SubscribeTopicEventsRequestInitialAlpha1{
@@ -214,6 +226,11 @@ func (c *GRPCClient) subscribeInitialRequest(ctx context.Context, opts Subscript
 	})
 	if err != nil {
 		return nil, errors.Join(err, stream.CloseSend())
+	}
+
+	// Check if the stream has been initialised
+	if err := <-errChan; err != nil {
+		return nil, err
 	}
 
 	return stream, nil
