@@ -101,6 +101,20 @@ func (mr *MockClientMockRecorder) DeleteBulkStateItems(ctx, storeName, items any
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteBulkStateItems", reflect.TypeOf((*MockClient)(nil).DeleteBulkStateItems), ctx, storeName, items)
 }
 
+// DeleteJobAlpha1 mocks base method.
+func (m *MockClient) DeleteJobAlpha1(ctx context.Context, name string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteJobAlpha1", ctx, name)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteJobAlpha1 indicates an expected call of DeleteJobAlpha1.
+func (mr *MockClientMockRecorder) DeleteJobAlpha1(ctx, name any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteJobAlpha1", reflect.TypeOf((*MockClient)(nil).DeleteJobAlpha1), ctx, name)
+}
+
 // DeleteState mocks base method.
 func (m *MockClient) DeleteState(ctx context.Context, storeName, key string, meta map[string]string) error {
 	m.ctrl.T.Helper()
@@ -241,6 +255,21 @@ func (mr *MockClientMockRecorder) GetConfigurationItems(ctx, storeName, keys any
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]any{ctx, storeName, keys}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetConfigurationItems", reflect.TypeOf((*MockClient)(nil).GetConfigurationItems), varargs...)
+}
+
+// GetJobAlpha1 mocks base method.
+func (m *MockClient) GetJobAlpha1(ctx context.Context, name string) (*client.Job, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetJobAlpha1", ctx, name)
+	ret0, _ := ret[0].(*client.Job)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetJobAlpha1 indicates an expected call of GetJobAlpha1.
+func (mr *MockClientMockRecorder) GetJobAlpha1(ctx, name any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetJobAlpha1", reflect.TypeOf((*MockClient)(nil).GetJobAlpha1), ctx, name)
 }
 
 // GetMetadata mocks base method.
@@ -674,6 +703,20 @@ func (mr *MockClientMockRecorder) SaveStateWithETag(ctx, storeName, key, data, e
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveStateWithETag", reflect.TypeOf((*MockClient)(nil).SaveStateWithETag), varargs...)
 }
 
+// ScheduleJobAlpha1 mocks base method.
+func (m *MockClient) ScheduleJobAlpha1(ctx context.Context, req *client.Job) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ScheduleJobAlpha1", ctx, req)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ScheduleJobAlpha1 indicates an expected call of ScheduleJobAlpha1.
+func (mr *MockClientMockRecorder) ScheduleJobAlpha1(ctx, req any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScheduleJobAlpha1", reflect.TypeOf((*MockClient)(nil).ScheduleJobAlpha1), ctx, req)
+}
+
 // SetMetadata mocks base method.
 func (m *MockClient) SetMetadata(ctx context.Context, key, value string) error {
 	m.ctrl.T.Helper()
@@ -717,6 +760,21 @@ func (mr *MockClientMockRecorder) StartWorkflowBeta1(ctx, req any) *gomock.Call 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "StartWorkflowBeta1", reflect.TypeOf((*MockClient)(nil).StartWorkflowBeta1), ctx, req)
 }
 
+// Subscribe mocks base method.
+func (m *MockClient) Subscribe(ctx context.Context, opts client.SubscriptionOptions) (*client.Subscription, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Subscribe", ctx, opts)
+	ret0, _ := ret[0].(*client.Subscription)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Subscribe indicates an expected call of Subscribe.
+func (mr *MockClientMockRecorder) Subscribe(ctx, opts any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Subscribe", reflect.TypeOf((*MockClient)(nil).Subscribe), ctx, opts)
+}
+
 // SubscribeConfigurationItems mocks base method.
 func (m *MockClient) SubscribeConfigurationItems(ctx context.Context, storeName string, keys []string, handler client.ConfigurationHandleFunction, opts ...client.ConfigurationOpt) (string, error) {
 	m.ctrl.T.Helper()
@@ -735,6 +793,21 @@ func (mr *MockClientMockRecorder) SubscribeConfigurationItems(ctx, storeName, ke
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]any{ctx, storeName, keys, handler}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SubscribeConfigurationItems", reflect.TypeOf((*MockClient)(nil).SubscribeConfigurationItems), varargs...)
+}
+
+// SubscribeWithHandler mocks base method.
+func (m *MockClient) SubscribeWithHandler(ctx context.Context, opts client.SubscriptionOptions, handler client.SubscriptionHandleFunction) (func() error, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SubscribeWithHandler", ctx, opts, handler)
+	ret0, _ := ret[0].(func() error)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SubscribeWithHandler indicates an expected call of SubscribeWithHandler.
+func (mr *MockClientMockRecorder) SubscribeWithHandler(ctx, opts, handler any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SubscribeWithHandler", reflect.TypeOf((*MockClient)(nil).SubscribeWithHandler), ctx, opts, handler)
 }
 
 // TerminateWorkflowBeta1 mocks base method.
