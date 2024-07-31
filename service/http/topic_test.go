@@ -49,15 +49,28 @@ func testErrorTopicFunc(ctx context.Context, e *common.TopicEvent) (retry bool, 
 }
 
 func TestEventNilHandler(t *testing.T) {
-	s := newServer("", nil)
-	sub := &common.Subscription{
-		PubsubName: "messages",
-		Topic:      "test",
-		Route:      "/",
-		Metadata:   map[string]string{},
-	}
-	err := s.AddTopicEventHandler(sub, nil)
-	require.Errorf(t, err, "expected error adding event handler")
+	t.Run("With single event handling", func(t *testing.T) {
+		s := newServer("", nil)
+		sub := &common.Subscription{
+			PubsubName: "messages",
+			Topic:      "test",
+			Route:      "/",
+			Metadata:   map[string]string{},
+		}
+		err := s.AddTopicEventHandler(sub, nil)
+		require.Error(t, err, "expected error adding event handler")
+	})
+	t.Run("With bulk event handling", func(t *testing.T) {
+		s := newServer("", nil)
+		sub := &common.Subscription{
+			PubsubName: "messages",
+			Topic:      "test",
+			Route:      "/",
+			Metadata:   map[string]string{},
+		}
+		err := s.AddBulkTopicEventHandler(sub, nil, 10, 1000)
+		require.Error(t, err, "expected error adding event handler")
+	})
 }
 
 func TestEventHandler(t *testing.T) {
@@ -83,7 +96,7 @@ func TestEventHandler(t *testing.T) {
 		Metadata:   map[string]string{},
 	}
 	err := s.AddTopicEventHandler(sub, testTopicFunc)
-	require.NoErrorf(t, err, "error adding event handler")
+	require.NoError(t, err, "error adding event handler")
 
 	sub2 := &common.Subscription{
 		PubsubName: "messages",
@@ -92,7 +105,7 @@ func TestEventHandler(t *testing.T) {
 		Metadata:   map[string]string{},
 	}
 	err = s.AddTopicEventHandler(sub2, testErrorTopicFunc)
-	require.NoErrorf(t, err, "error adding error event handler")
+	require.NoError(t, err, "error adding error event handler")
 
 	sub3 := &common.Subscription{
 		PubsubName: "messages",
@@ -102,7 +115,7 @@ func TestEventHandler(t *testing.T) {
 		Priority:   1,
 	}
 	err = s.AddTopicEventHandler(sub3, testTopicFunc)
-	require.NoErrorf(t, err, "error adding error event handler")
+	require.NoError(t, err, "error adding error event handler")
 
 	s.registerBaseHandler()
 
@@ -114,9 +127,9 @@ func TestEventHandler(t *testing.T) {
 	resp := rr.Result()
 	defer resp.Body.Close()
 	payload, err := io.ReadAll(resp.Body)
-	require.NoErrorf(t, err, "error reading response")
+	require.NoError(t, err, "error reading response")
 	var subs []internal.TopicSubscription
-	require.NoErrorf(t, json.Unmarshal(payload, &subs), "could not decode subscribe response")
+	require.NoError(t, json.Unmarshal(payload, &subs), "could not decode subscribe response")
 
 	sort.Slice(subs, func(i, j int) bool {
 		less := strings.Compare(subs[i].PubsubName, subs[j].PubsubName)
@@ -126,7 +139,7 @@ func TestEventHandler(t *testing.T) {
 		return strings.Compare(subs[i].Topic, subs[j].Topic) <= 0
 	})
 
-	if assert.Lenf(t, subs, 2, "unexpected subscription count") {
+	if assert.Len(t, subs, 2, "unexpected subscription count") {
 		assert.Equal(t, "messages", subs[0].PubsubName)
 		assert.Equal(t, "errors", subs[0].Topic)
 
@@ -134,7 +147,93 @@ func TestEventHandler(t *testing.T) {
 		assert.Equal(t, "test", subs[1].Topic)
 		assert.Equal(t, "", subs[1].Route)
 		assert.Equal(t, "/", subs[1].Routes.Default)
-		if assert.Lenf(t, subs[1].Routes.Rules, 1, "unexpected rules count") {
+		if assert.Len(t, subs[1].Routes.Rules, 1, "unexpected rules count") {
+			assert.Equal(t, `event.type == "other"`, subs[1].Routes.Rules[0].Match)
+			assert.Equal(t, "/other", subs[1].Routes.Rules[0].Path)
+		}
+	}
+
+	makeEventRequest(t, s, "/", data, http.StatusOK)
+	makeEventRequest(t, s, "/", "", http.StatusSeeOther)
+	makeEventRequest(t, s, "/", "not JSON", http.StatusSeeOther)
+	makeEventRequest(t, s, "/errors", data, http.StatusOK)
+}
+
+func TestBulkEventHandler(t *testing.T) {
+	data := `{
+		"specversion" : "1.0",
+		"type" : "com.github.pull.create",
+		"source" : "https://github.com/cloudevents/spec/pull",
+		"subject" : "123",
+		"id" : "A234-1234-1234",
+		"time" : "2018-04-05T17:31:00Z",
+		"comexampleextension1" : "value",
+		"comexampleothervalue" : 5,
+		"datacontenttype" : "application/json",
+		"data" : "eyJtZXNzYWdlIjoiaGVsbG8ifQ=="
+	}`
+
+	s := newServer("", nil)
+
+	sub := &common.Subscription{
+		PubsubName: "messages",
+		Topic:      "test",
+		Route:      "/",
+		Metadata:   map[string]string{},
+	}
+	err := s.AddBulkTopicEventHandler(sub, testTopicFunc, 10, 1000)
+	require.NoError(t, err, "error adding event handler")
+
+	sub2 := &common.Subscription{
+		PubsubName: "messages",
+		Topic:      "errors",
+		Route:      "/errors",
+		Metadata:   map[string]string{},
+	}
+	err = s.AddBulkTopicEventHandler(sub2, testErrorTopicFunc, 10, 1000)
+	require.NoError(t, err, "error adding error event handler")
+
+	sub3 := &common.Subscription{
+		PubsubName: "messages",
+		Topic:      "test",
+		Route:      "/other",
+		Match:      `event.type == "other"`,
+		Priority:   1,
+	}
+	err = s.AddBulkTopicEventHandler(sub3, testTopicFunc, 10, 1000)
+	require.NoError(t, err, "error adding error event handler")
+
+	s.registerBaseHandler()
+
+	req, err := http.NewRequest(http.MethodGet, "/dapr/subscribe", nil)
+	require.NoErrorf(t, err, "error creating request: %s", data)
+	req.Header.Set("Accept", "application/json")
+	rr := httptest.NewRecorder()
+	s.mux.ServeHTTP(rr, req)
+	resp := rr.Result()
+	defer resp.Body.Close()
+	payload, err := io.ReadAll(resp.Body)
+	require.NoError(t, err, "error reading response")
+	var subs []internal.TopicSubscription
+	require.NoError(t, json.Unmarshal(payload, &subs), "could not decode subscribe response")
+
+	sort.Slice(subs, func(i, j int) bool {
+		less := strings.Compare(subs[i].PubsubName, subs[j].PubsubName)
+		if less != 0 {
+			return less < 0
+		}
+		return strings.Compare(subs[i].Topic, subs[j].Topic) <= 0
+	})
+
+	if assert.Len(t, subs, 2, "unexpected subscription count") {
+		assert.Equal(t, "messages", subs[0].PubsubName)
+		assert.Equal(t, "errors", subs[0].Topic)
+
+		assert.Equal(t, "messages", subs[1].PubsubName)
+		assert.Equal(t, "test", subs[1].Topic)
+		assert.Equal(t, "", subs[1].Route)
+		assert.Equal(t, "/", subs[1].Routes.Default)
+		if assert.Len(t, subs[1].Routes.Rules, 1, "unexpected rules count") {
 			assert.Equal(t, `event.type == "other"`, subs[1].Routes.Rules[0].Match)
 			assert.Equal(t, "/other", subs[1].Routes.Rules[0].Path)
 		}
@@ -256,7 +355,7 @@ func TestEventDataHandling(t *testing.T) {
 		return false, nil
 	}
 	err := s.AddTopicEventHandler(sub, handler)
-	require.NoErrorf(t, err, "error adding event handler")
+	require.NoError(t, err, "error adding event handler")
 
 	s.registerBaseHandler()
 
@@ -343,6 +442,176 @@ func TestEventMetadataHandling(t *testing.T) {
 			}`, http.StatusOK, tt.metadata)
 			<-recv
 			assert.Equal(t, tt.expectedMetadata, topicEvent.Metadata)
+		})
+	}
+}
+
+func TestBulkEventDataHandling(t *testing.T) {
+	tests := map[string]struct {
+		data    string
+		results []interface{}
+	}{
+		"JSON Values": {
+			data: `{
+            "id": "unique_id",
+            "entries": [
+                {
+                    "entryId": "entry_id_1",
+                    "event": {
+               	"specversion" : "1.0",
+				"type" : "com.github.pull.create",
+				"source" : "https://github.com/cloudevents/spec/pull",
+				"subject" : "123",
+				"id" : "A234-1234-1234",
+				"time" : "2018-04-05T17:31:00Z",
+				"comexampleextension1" : "value",
+				"comexampleothervalue" : 5,
+				"datacontenttype" : "application/json",
+				"data" : {
+					"message":"hello"
+				}
+                    },
+                    "metadata": {
+                        "meta_key_1": "meta_value_1",
+                        "meta_key_2": "meta_value_2"
+                    },
+                    "contentType": "application/json"
+                },
+                {
+                    "entryId": "entry_id_2",
+                    "event": {
+				"specversion" : "1.0",
+				"type" : "com.github.pull.create",
+				"source" : "https://github.com/cloudevents/spec/pull",
+				"subject" : "123",
+				"id" : "A234-1234-1234",
+				"time" : "2018-04-05T17:31:00Z",
+				"comexampleextension1" : "value",
+				"comexampleothervalue" : 5,
+				"datacontenttype" : "application/json",
+				"data" : "eyJtZXNzYWdlIjoiaGVsbG8ifQ=="
+                    },
+                    "metadata": {
+                        "meta_key_3": "meta_value_3",
+                        "meta_key_4": "meta_value_4"
+                    },
+                    "contentType": "application/json"
+                },
+                {
+                    "entryId": "entry_id_2",
+                    "event": {
+				"specversion" : "1.0",
+				"type" : "com.github.pull.create",
+				"source" : "https://github.com/cloudevents/spec/pull",
+				"subject" : "123",
+				"id" : "A234-1234-1234",
+				"time" : "2018-04-05T17:31:00Z",
+				"comexampleextension1" : "value",
+				"comexampleothervalue" : 5,
+				"datacontenttype" : "application/json",
+				"data_base64" : "eyJtZXNzYWdlIjoiaGVsbG8ifQ=="
+                    },
+                    "metadata": {
+                        "meta_key_3": "meta_value_3",
+                        "meta_key_4": "meta_value_4"
+                    },
+                    "contentType": "application/json"
+                },
+                {
+                    "entryId": "entry_id_3",
+                    "event": {
+				"specversion" : "1.0",
+				"type" : "com.github.pull.create",
+				"source" : "https://github.com/cloudevents/spec/pull",
+				"subject" : "123",
+				"id" : "A234-1234-1234",
+				"time" : "2018-04-05T17:31:00Z",
+				"comexampleextension1" : "value",
+				"comexampleothervalue" : 5,
+				"datacontenttype" : "application/octet-stream",
+				"data_base64" : "eyJtZXNzYWdlIjoiaGVsbG8ifQ=="
+                    },
+                    "metadata": {
+                        "meta_key_3": "meta_value_3",
+                        "meta_key_4": "meta_value_4"
+                    },
+                    "contentType": "application/json"
+                },
+                {
+                    "entryId": "entry_id_4",
+                    "event": {
+     			"specversion" : "1.0",
+				"type" : "com.github.pull.create",
+				"source" : "https://github.com/cloudevents/spec/pull",
+				"subject" : "123",
+				"id" : "A234-1234-1234",
+				"time" : "2018-04-05T17:31:00Z",
+				"comexampleextension1" : "value",
+				"comexampleothervalue" : 5,
+				"datacontenttype" : "application/json",
+				"data" : "{\"message\":\"hello\"}"
+                    },
+                    "metadata": {
+                        "meta_key_3": "meta_value_3",
+                        "meta_key_4": "meta_value_4"
+                    },
+                    "contentType": "application/json"
+                }
+            ],
+            "metadata": {
+                "envelope_key_1": "envelope_value_1",
+                "envelope_key_2": "envelope_value_2"
+            },
+            "topic": "overall_topic",
+            "pubsub": "overall_pubsub",
+            "eventType": "overall_eventType"
+        }`,
+			results: []interface{}{
+				map[string]interface{}{
+					"message": "hello",
+				},
+				map[string]interface{}{
+					"message": "hello",
+				},
+				map[string]interface{}{
+					"message": "hello",
+				},
+				[]byte(`{"message":"hello"}`),
+				map[string]interface{}{
+					"message": "hello",
+				},
+			},
+		},
+	}
+
+	s := newServer("", nil)
+
+	sub := &common.Subscription{
+		PubsubName: "messages",
+		Topic:      "test",
+		Route:      "/test",
+		Metadata:   map[string]string{},
+	}
+
+	recv := make(chan struct{}, 5)
+	var topicEvents []common.TopicEvent
+	handler := func(ctx context.Context, e *common.TopicEvent) (retry bool, err error) {
+		topicEvents = append(topicEvents, *e)
+		recv <- struct{}{}
+		return false, nil
+	}
+	err := s.AddBulkTopicEventHandler(sub, handler, 5, 1000)
+	require.NoError(t, err, "error adding event handler")
+
+	s.registerBaseHandler()
+
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			makeEventRequest(t, s, "/test", tt.data, http.StatusOK)
+			<-recv
+			for i, tdata := range topicEvents {
+				assert.Equal(t, tt.results[i], tdata.Data)
+			}
 		})
 	}
 }
@@ -492,19 +761,37 @@ func makeEventRequestWithMetadata(t *testing.T, s *Server, route, data string, e
 func TestAddingInvalidEventHandlers(t *testing.T) {
 	s := newServer("", nil)
 	err := s.AddTopicEventHandler(nil, testTopicFunc)
-	require.Errorf(t, err, "expected error adding no sub event handler")
+	require.Error(t, err, "expected error adding no sub event handler")
 
 	sub := &common.Subscription{Metadata: map[string]string{}}
 	err = s.AddTopicEventHandler(sub, testTopicFunc)
-	require.Errorf(t, err, "expected error adding empty sub event handler")
+	require.Error(t, err, "expected error adding empty sub event handler")
 
 	sub.Topic = "test"
 	err = s.AddTopicEventHandler(sub, testTopicFunc)
-	require.Errorf(t, err, "expected error adding sub without component event handler")
+	require.Error(t, err, "expected error adding sub without component event handler")
 
 	sub.PubsubName = "messages"
 	err = s.AddTopicEventHandler(sub, testTopicFunc)
-	require.Errorf(t, err, "expected error adding sub without route event handler")
+	require.Error(t, err, "expected error adding sub without route event handler")
+}
+
+func TestAddingInvalidBulkEventHandlers(t *testing.T) {
+	s := newServer("", nil)
+	err := s.AddBulkTopicEventHandler(nil, testTopicFunc, 10, 1000)
+	require.Error(t, err, "expected error adding no sub event handler")
+
+	sub := &common.Subscription{Metadata: map[string]string{}}
+	err = s.AddBulkTopicEventHandler(sub, testTopicFunc, 10, 1000)
+	require.Error(t, err, "expected error adding empty sub event handler")
+
+	sub.Topic = "test"
+	err = s.AddBulkTopicEventHandler(sub, testTopicFunc, 10, 1000)
+	require.Error(t, err, "expected error adding sub without component event handler")
+
+	sub.PubsubName = "messages"
+	err = s.AddBulkTopicEventHandler(sub, testTopicFunc, 10, 1000)
+	require.Error(t, err, "expected error adding sub without route event handler")
 }
 
 func TestRawPayloadDecode(t *testing.T) {
@@ -516,7 +803,7 @@ func TestRawPayloadDecode(t *testing.T) {
 			err = errors.New("error decode data_base64")
 		}
 		if err != nil {
-			require.NoErrorf(t, err, "error rawPayload decode")
+			require.NoError(t, err, "error rawPayload decode")
 		}
 		return
 	}
@@ -526,19 +813,38 @@ func TestRawPayloadDecode(t *testing.T) {
 		"data_base64" : "eyJtZXNzYWdlIjoiaGVsbG8ifQ=="
 	}`
 
-	s := newServer("", nil)
+	t.Run("With single event handling", func(t *testing.T) {
+		s := newServer("", nil)
 
-	sub3 := &common.Subscription{
-		PubsubName: "messages",
-		Topic:      "testRaw",
-		Route:      "/raw",
-		Metadata: map[string]string{
-			"rawPayload": "true",
-		},
-	}
-	err := s.AddTopicEventHandler(sub3, testRawTopicFunc)
-	require.NoErrorf(t, err, "error adding raw event handler")
+		sub3 := &common.Subscription{
+			PubsubName: "messages",
+			Topic:      "testRaw",
+			Route:      "/raw",
+			Metadata: map[string]string{
+				"rawPayload": "true",
+			},
+		}
+		err := s.AddTopicEventHandler(sub3, testRawTopicFunc)
+		require.NoError(t, err, "error adding raw event handler")
 
-	s.registerBaseHandler()
-	makeEventRequest(t, s, "/raw", rawData, http.StatusOK)
+		s.registerBaseHandler()
+		makeEventRequest(t, s, "/raw", rawData, http.StatusOK)
+	})
+	t.Run("With bulk event handling", func(t *testing.T) {
+		s := newServer("", nil)
+
+		sub3 := &common.Subscription{
+			PubsubName: "messages",
+			Topic:      "testRaw",
+			Route:      "/raw",
+			Metadata: map[string]string{
+				"rawPayload": "true",
+			},
+		}
+		err := s.AddBulkTopicEventHandler(sub3, testRawTopicFunc, 10, 1000)
+		require.NoError(t, err, "error adding raw event handler")
+
+		s.registerBaseHandler()
+		makeEventRequest(t, s, "/raw", rawData, http.StatusOK)
+	})
 }
