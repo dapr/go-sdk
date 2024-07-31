@@ -181,12 +181,12 @@ func (m *DefaultActorManagerContext) InvokeMethod(ctx context.Context, actorID, 
 	return rspData, actorErr.Success
 }
 
-// DeactivateActor removes actor from actor manager.
 func (m *DefaultActorManagerContext) DeactivateActor(_ context.Context, actorID string) actorErr.ActorErr {
-	_, ok := m.activeActors.Load(actorID)
+	actor, ok := m.activeActors.Load(actorID)
 	if !ok {
 		return actorErr.ErrActorIDNotFound
 	}
+	actor.(ActorContainer).Deactivate()
 	m.activeActors.Delete(actorID)
 	return actorErr.Success
 }
