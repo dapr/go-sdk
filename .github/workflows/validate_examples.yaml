@@ -40,7 +40,7 @@ jobs:
       DAPR_INSTALL_URL: ${{ env.DAPR_INSTALL_URL }}
       DAPR_CLI_VER: ${{ steps.outputs.outputs.DAPR_CLI_VER }}
       DAPR_CLI_REF: ${{ steps.outputs.outputs.DAPR_CLI_REF }}
-      DAPR_RUNTIME_VER: 1.14.1-rc.1
+      DAPR_RUNTIME_VER: 1.14.1
       CHECKOUT_REPO: ${{ steps.outputs.outputs.CHECKOUT_REPO }}
       CHECKOUT_REF: ${{ steps.outputs.outputs.CHECKOUT_REF }}
       DAPR_REF: ${{ steps.outputs.outputs.DAPR_REF }}
