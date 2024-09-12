@@ -9,7 +9,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/microsoft/durabletask-go v0.5.0
 	github.com/stretchr/testify v1.9.0
-	google.golang.org/grpc v1.65.0
+	google.golang.org/grpc v1.66.2
 	google.golang.org/protobuf v1.34.2
 	gopkg.in/yaml.v3 v3.0.1
 )
