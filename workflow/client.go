@@ -53,6 +53,10 @@ func WithStartTime(time time.Time) api.NewOrchestrationOptions {
 	return api.WithStartTime(time)
 }
 
+func WithReuseIDPolicy(policy *api.OrchestrationIdReusePolicy) api.NewOrchestrationOptions {
+	return api.WithOrchestrationIdReusePolicy(policy)
+}
+
 // WithFetchPayloads is an option to return the payload from a workflow.
 func WithFetchPayloads(fetchPayloads bool) api.FetchOrchestrationMetadataOptions {
 	return api.WithFetchPayloads(fetchPayloads)
