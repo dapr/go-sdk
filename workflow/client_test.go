@@ -55,7 +55,7 @@ func TestClientMethods(t *testing.T) {
 	}
 	ctx := context.Background()
 	t.Run("ScheduleNewWorkflow - empty wf name", func(t *testing.T) {
-		id, err := testClient.ScheduleNewWorkflow(ctx, "", WithReuseIDPolicy(&api.OrchestrationIdReusePolicy{
+		id, err := testClient.ScheduleNewWorkflow(ctx, "", WithReuseIDPolicy(WorkflowIdReusePolicy{
 			OperationStatus: []api.OrchestrationStatus{api.RUNTIME_STATUS_COMPLETED},
 			Action:          api.REUSE_ID_ACTION_IGNORE,
 		}))
