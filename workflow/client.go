@@ -31,7 +31,7 @@ type Client struct {
 	taskHubClient *durabletaskclient.TaskHubGrpcClient
 }
 
-type WorkflowIdReusePolicy struct {
+type WorkflowIDReusePolicy struct {
 	OperationStatus []api.OrchestrationStatus
 	Action          api.CreateOrchestrationAction
 }
@@ -58,7 +58,7 @@ func WithStartTime(time time.Time) api.NewOrchestrationOptions {
 	return api.WithStartTime(time)
 }
 
-func WithReuseIDPolicy(policy WorkflowIdReusePolicy) api.NewOrchestrationOptions {
+func WithReuseIDPolicy(policy WorkflowIDReusePolicy) api.NewOrchestrationOptions {
 	return api.WithOrchestrationIdReusePolicy(&api.OrchestrationIdReusePolicy{
 		OperationStatus: policy.OperationStatus,
 		Action:          policy.Action,
