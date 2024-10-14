@@ -78,6 +78,16 @@ func WithRawOutput(data string) api.TerminateOptions {
 	return api.WithRawOutput(data)
 }
 
+// WithRecursiveTerminate configures whether to terminate all sub-workflows created by the target workflow.
+func WithRecursiveTerminate(recursive bool) api.TerminateOptions {
+	return api.WithRecursiveTerminate(recursive)
+}
+
+// WithRecursivePurge configures whether to purge all sub-workflows created by the target workflow.
+func WithRecursivePurge(recursive bool) api.PurgeOptions {
+	return api.WithRecursivePurge(recursive)
+}
+
 type clientOption func(*clientOptions) error
 
 type clientOptions struct {
@@ -205,9 +215,10 @@ func (c *Client) ResumeWorkflow(ctx context.Context, id, reason string) error {
 
 // PurgeWorkflow will purge a given workflow and return an error output.
 // NOTE: The workflow must be in a terminated or completed state.
-func (c *Client) PurgeWorkflow(ctx context.Context, id string) error {
+// TODO missing upstream support for api.PurgeOptions
+func (c *Client) PurgeWorkflow(ctx context.Context, id string, opts ...api.PurgeOptions) error {
 	if id == "" {
 		return errors.New("no workflow id specified")
 	}
-	return c.taskHubClient.PurgeOrchestrationState(ctx, api.InstanceID(id))
+	return c.taskHubClient.PurgeOrchestrationState(ctx, api.InstanceID(id), opts...)
 }
