@@ -26,7 +26,7 @@ require (
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/marusama/semaphore/v2 v2.5.0 // indirect
-	github.com/microsoft/durabletask-go v0.5.0 // indirect
+	github.com/microsoft/durabletask-go v0.5.1-0.20241014200046-fac9dd959f4d // indirect
 	github.com/xhit/go-str2duration/v2 v2.1.0 // indirect
 	go.opentelemetry.io/otel v1.27.0 // indirect
 	go.opentelemetry.io/otel/metric v1.27.0 // indirect
