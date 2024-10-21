@@ -215,7 +215,6 @@ func (c *Client) ResumeWorkflow(ctx context.Context, id, reason string) error {
 
 // PurgeWorkflow will purge a given workflow and return an error output.
 // NOTE: The workflow must be in a terminated or completed state.
-// TODO missing upstream support for api.PurgeOptions
 func (c *Client) PurgeWorkflow(ctx context.Context, id string, opts ...api.PurgeOptions) error {
 	if id == "" {
 		return errors.New("no workflow id specified")
