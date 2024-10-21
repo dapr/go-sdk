@@ -32,29 +32,16 @@ type Client struct {
 }
 
 type WorkflowIDReusePolicy struct {
-	OperationStatus []WorkflowOperationStatus
+	OperationStatus []Status
 	Action          CreateWorkflowAction
 }
-
-type WorkflowOperationStatus = api.OrchestrationStatus
-
-const (
-	RUNTIME_STATUS_RUNNING          WorkflowOperationStatus = api.RUNTIME_STATUS_RUNNING
-	RUNTIME_STATUS_COMPLETED        WorkflowOperationStatus = api.RUNTIME_STATUS_COMPLETED
-	RUNTIME_STATUS_CONTINUED_AS_NEW WorkflowOperationStatus = api.RUNTIME_STATUS_CONTINUED_AS_NEW
-	RUNTIME_STATUS_FAILED           WorkflowOperationStatus = api.RUNTIME_STATUS_FAILED
-	RUNTIME_STATUS_CANCELED         WorkflowOperationStatus = api.RUNTIME_STATUS_CANCELED
-	RUNTIME_STATUS_TERMINATED       WorkflowOperationStatus = api.RUNTIME_STATUS_TERMINATED
-	RUNTIME_STATUS_PENDING          WorkflowOperationStatus = api.RUNTIME_STATUS_PENDING
-	RUNTIME_STATUS_SUSPENDED        WorkflowOperationStatus = api.RUNTIME_STATUS_SUSPENDED
-)
 
 type CreateWorkflowAction = api.CreateOrchestrationAction
 
 const (
-	REUSE_ID_ACTION_ERROR     CreateWorkflowAction = api.REUSE_ID_ACTION_ERROR
-	REUSE_ID_ACTION_IGNORE    CreateWorkflowAction = api.REUSE_ID_ACTION_IGNORE
-	REUSE_ID_ACTION_TERMINATE CreateWorkflowAction = api.REUSE_ID_ACTION_TERMINATE
+	ReuseIDActionError     CreateWorkflowAction = api.REUSE_ID_ACTION_ERROR
+	ReuseIDActionIgnore    CreateWorkflowAction = api.REUSE_ID_ACTION_IGNORE
+	ReuseIDActionTerminate CreateWorkflowAction = api.REUSE_ID_ACTION_TERMINATE
 )
 
 // WithInstanceID is an option to set an InstanceID when scheduling a new workflow.
@@ -81,7 +68,7 @@ func WithStartTime(time time.Time) api.NewOrchestrationOptions {
 
 func WithReuseIDPolicy(policy WorkflowIDReusePolicy) api.NewOrchestrationOptions {
 	return api.WithOrchestrationIdReusePolicy(&api.OrchestrationIdReusePolicy{
-		OperationStatus: policy.OperationStatus,
+		OperationStatus: convertStatusSlice(policy.OperationStatus),
 		Action:          policy.Action,
 	})
 }

@@ -55,8 +55,8 @@ func TestClientMethods(t *testing.T) {
 	ctx := context.Background()
 	t.Run("ScheduleNewWorkflow - empty wf name", func(t *testing.T) {
 		id, err := testClient.ScheduleNewWorkflow(ctx, "", WithReuseIDPolicy(WorkflowIDReusePolicy{
-			OperationStatus: []WorkflowOperationStatus{RUNTIME_STATUS_COMPLETED},
-			Action:          REUSE_ID_ACTION_IGNORE,
+			OperationStatus: []Status{StatusCompleted},
+			Action:          ReuseIDActionIgnore,
 		}))
 		require.Error(t, err)
 		assert.Empty(t, id)
