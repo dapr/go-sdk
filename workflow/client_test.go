@@ -18,7 +18,6 @@ import (
 	"context"
 	"testing"
 
-	"github.com/microsoft/durabletask-go/api"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -56,8 +55,8 @@ func TestClientMethods(t *testing.T) {
 	ctx := context.Background()
 	t.Run("ScheduleNewWorkflow - empty wf name", func(t *testing.T) {
 		id, err := testClient.ScheduleNewWorkflow(ctx, "", WithReuseIDPolicy(WorkflowIDReusePolicy{
-			OperationStatus: []api.OrchestrationStatus{api.RUNTIME_STATUS_COMPLETED},
-			Action:          api.REUSE_ID_ACTION_IGNORE,
+			OperationStatus: []WorkflowOperationStatus{RUNTIME_STATUS_COMPLETED},
+			Action:          REUSE_ID_ACTION_IGNORE,
 		}))
 		require.Error(t, err)
 		assert.Empty(t, id)
