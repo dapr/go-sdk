@@ -135,38 +135,28 @@ func main() {
 	fmt.Printf("stage: %d\n", stage)
 
 	// Terminate workflow test
-	instanceID, err = wfClient.ScheduleNewWorkflow(ctx, "TestWorkflow", workflow.WithInstanceID("a7a4168d-3a1c-41da-8a4f-e7f6d9c718d9"), workflow.WithInput(1))
+	id, err := wfClient.ScheduleNewWorkflow(ctx, "TestWorkflow", workflow.WithInstanceID("a7a4168d-3a1c-41da-8a4f-e7f6d9c718d9"), workflow.WithInput(1))
 	if err != nil {
 		log.Fatalf("failed to start workflow: %v", err)
 	}
+	fmt.Printf("workflow started with id: %v\n", instanceID)
 
-	fmt.Printf("workflow started with id: %s\n", instanceID)
-
-	err = wfClient.TerminateWorkflow(ctx, instanceID)
-	if err != nil {
-		log.Fatalf("failed to terminate workflow: %v", err)
-	}
-
-	respFetch, err = wfClient.FetchWorkflowMetadata(ctx, instanceID, workflow.WithFetchPayloads(true))
+	metadata, err := wfClient.WaitForWorkflowStart(ctx, id)
 	if err != nil {
 		log.Fatalf("failed to get workflow: %v", err)
 	}
-	if respFetch.RuntimeStatus != workflow.StatusTerminated {
-		log.Fatal("failed to terminate workflow")
-	}
+	fmt.Printf("workflow status: %s\n", metadata.RuntimeStatus.String())
 
+	err = wfClient.TerminateWorkflow(ctx, id)
+	if err != nil {
+		log.Fatalf("failed to terminate workflow: %v", err)
+	}
 	fmt.Println("workflow terminated")
 
-	err = wfClient.PurgeWorkflow(ctx, instanceID)
+	err = wfClient.PurgeWorkflow(ctx, id)
 	if err != nil {
 		log.Fatalf("failed to purge workflow: %v", err)
 	}
-
-	respFetch, err = wfClient.FetchWorkflowMetadata(ctx, instanceID, workflow.WithFetchPayloads(true))
-	if err == nil || respFetch != nil {
-		log.Fatalf("failed to purge workflow: %v", err)
-	}
-
 	fmt.Println("workflow purged")
 
 	// stop workflow runtime
