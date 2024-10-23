@@ -298,7 +298,7 @@ func suiteMethod(method reflect.Method) (*MethodType, error) {
 	)
 
 	if outNum > 2 || outNum == 0 {
-		return nil, errors.New("num out invalid")
+		return nil, errors.New("num out invalid, add a return value to the function")
 	}
 
 	// The latest return type of the method must be error.
