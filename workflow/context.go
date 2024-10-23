@@ -50,6 +50,11 @@ func (wfc *WorkflowContext) IsReplaying() bool {
 	return wfc.orchestrationContext.IsReplaying
 }
 
+// SetCustomStatus sets custom status to the workflow context
+func (wfc *WorkflowContext) SetCustomStatus(cs string) {
+	wfc.orchestrationContext.SetCustomStatus(cs)
+}
+
 // CallActivity returns a completable task for a given activity.
 // You must call Await(output any) on the returned Task to block the workflow and wait for the task to complete.
 // The value passed to the Await method must be a pointer or can be nil to ignore the returned value.
