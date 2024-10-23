@@ -1,6 +1,6 @@
 module github.com/dapr/go-sdk/examples
 
-go 1.22.5
+go 1.22.6
 
 replace github.com/dapr/go-sdk => ../
 
@@ -18,7 +18,7 @@ require (
 	github.com/alecthomas/units v0.0.0-20211218093645-b94a6e3cc137 // indirect
 	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
-	github.com/dapr/dapr v1.14.0-rc.5 // indirect
+	github.com/dapr/dapr v1.14.1 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/go-chi/chi/v5 v5.1.0 // indirect
 	github.com/go-logr/logr v1.4.2 // indirect
