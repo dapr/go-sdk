@@ -48,6 +48,28 @@ func (s Status) String() string {
 	return status[s]
 }
 
+func (s Status) RuntimeStatus() api.OrchestrationStatus {
+	switch s {
+	case StatusRunning:
+		return api.RUNTIME_STATUS_RUNNING
+	case StatusCompleted:
+		return api.RUNTIME_STATUS_COMPLETED
+	case StatusContinuedAsNew:
+		return api.RUNTIME_STATUS_CONTINUED_AS_NEW
+	case StatusFailed:
+		return api.RUNTIME_STATUS_FAILED
+	case StatusCanceled:
+		return api.RUNTIME_STATUS_CANCELED
+	case StatusTerminated:
+		return api.RUNTIME_STATUS_TERMINATED
+	case StatusPending:
+		return api.RUNTIME_STATUS_PENDING
+	case StatusSuspended:
+		return api.RUNTIME_STATUS_SUSPENDED
+	}
+	return -1
+}
+
 type WorkflowState struct {
 	Metadata api.OrchestrationMetadata
 }
@@ -56,4 +78,12 @@ type WorkflowState struct {
 func (wfs *WorkflowState) RuntimeStatus() Status {
 	s := Status(wfs.Metadata.RuntimeStatus.Number())
 	return s
+}
+
+func convertStatusSlice(ss []Status) []api.OrchestrationStatus {
+	out := []api.OrchestrationStatus{}
+	for _, s := range ss {
+		out = append(out, s.RuntimeStatus())
+	}
+	return out
 }

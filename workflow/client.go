@@ -31,6 +31,19 @@ type Client struct {
 	taskHubClient *durabletaskclient.TaskHubGrpcClient
 }
 
+type WorkflowIDReusePolicy struct {
+	OperationStatus []Status
+	Action          CreateWorkflowAction
+}
+
+type CreateWorkflowAction = api.CreateOrchestrationAction
+
+const (
+	ReuseIDActionError     CreateWorkflowAction = api.REUSE_ID_ACTION_ERROR
+	ReuseIDActionIgnore    CreateWorkflowAction = api.REUSE_ID_ACTION_IGNORE
+	ReuseIDActionTerminate CreateWorkflowAction = api.REUSE_ID_ACTION_TERMINATE
+)
+
 // WithInstanceID is an option to set an InstanceID when scheduling a new workflow.
 func WithInstanceID(id string) api.NewOrchestrationOptions {
 	return api.WithInstanceID(api.InstanceID(id))
@@ -51,6 +64,13 @@ func WithRawInput(input string) api.NewOrchestrationOptions {
 // WithStartTime is an option to set the start time when scheduling a new workflow.
 func WithStartTime(time time.Time) api.NewOrchestrationOptions {
 	return api.WithStartTime(time)
+}
+
+func WithReuseIDPolicy(policy WorkflowIDReusePolicy) api.NewOrchestrationOptions {
+	return api.WithOrchestrationIdReusePolicy(&api.OrchestrationIdReusePolicy{
+		OperationStatus: convertStatusSlice(policy.OperationStatus),
+		Action:          policy.Action,
+	})
 }
 
 // WithFetchPayloads is an option to return the payload from a workflow.
