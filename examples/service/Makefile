@@ -31,7 +31,7 @@ client: ## Runs the uncompiled example client code
 custom-grpc-client: ## Runs the uncompiled example custom grpc client code
 	dapr run --app-id custom-grpc-client \
 		 -d ./config \
-		 --max-body-size 4Mi \
+		 --dapr-http-max-request-size 41 \
 		 --log-level debug \
 		 go run ./custom-grpc-client/main.go
 
