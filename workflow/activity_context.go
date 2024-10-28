@@ -40,10 +40,10 @@ type callActivityOption func(*callActivityOptions) error
 
 type callActivityOptions struct {
 	rawInput    *wrapperspb.StringValue
-	retryPolicy *ActivityRetryPolicy
+	retryPolicy *RetryPolicy
 }
 
-type ActivityRetryPolicy struct {
+type RetryPolicy struct {
 	MaxAttempts          int
 	InitialRetryInterval time.Duration
 	BackoffCoefficient   float64
@@ -71,7 +71,7 @@ func ActivityRawInput(input string) callActivityOption {
 	}
 }
 
-func RetryPolicy(policy ActivityRetryPolicy) callActivityOption {
+func ActivityRetryPolicy(policy RetryPolicy) callActivityOption {
 	return func(opts *callActivityOptions) error {
 		opts.retryPolicy = &policy
 		return nil
