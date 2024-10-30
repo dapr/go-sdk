@@ -23,11 +23,13 @@ import (
 	"github.com/microsoft/durabletask-go/api"
 	"github.com/microsoft/durabletask-go/backend"
 	durabletaskclient "github.com/microsoft/durabletask-go/client"
+	"google.golang.org/grpc"
 
 	dapr "github.com/dapr/go-sdk/client"
 )
 
 type Client struct {
+	conn          *grpc.ClientConn
 	taskHubClient *durabletaskclient.TaskHubGrpcClient
 }
 
@@ -143,9 +145,11 @@ func NewClient(opts ...clientOption) (*Client, error) {
 		return &Client{}, fmt.Errorf("failed to initialise dapr.Client: %v", err)
 	}
 
-	taskHubClient := durabletaskclient.NewTaskHubGrpcClient(daprClient.GrpcClientConn(), backend.DefaultLogger())
+	conn := daprClient.GrpcClientConn()
+	taskHubClient := durabletaskclient.NewTaskHubGrpcClient(conn, backend.DefaultLogger())
 
 	return &Client{
+		conn:          conn,
 		taskHubClient: taskHubClient,
 	}, nil
 }
@@ -240,4 +244,8 @@ func (c *Client) PurgeWorkflow(ctx context.Context, id string, opts ...api.Purge
 		return errors.New("no workflow id specified")
 	}
 	return c.taskHubClient.PurgeOrchestrationState(ctx, api.InstanceID(id), opts...)
+}
+
+func (c *Client) Close() {
+	_ = c.conn.Close()
 }
