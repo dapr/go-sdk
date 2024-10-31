@@ -182,7 +182,7 @@ func TestWorkflow(ctx *workflow.WorkflowContext) (any, error) {
 		return nil, err
 	}
 
-	if err := ctx.CallActivity(TestActivity, workflow.ActivityInput(input), workflow.RetryPolicy(workflow.ActivityRetryPolicy{
+	if err := ctx.CallActivity(TestActivity, workflow.ActivityInput(input), workflow.ActivityRetryPolicy(workflow.RetryPolicy{
 		MaxAttempts:          3,
 		InitialRetryInterval: 1 * time.Second,
 		BackoffCoefficient:   2,
