@@ -259,6 +259,9 @@ type Client interface {
 	// DeleteJobAlpha1 deletes a scheduled job.
 	DeleteJobAlpha1(ctx context.Context, name string) error
 
+	// ConverseAlpha1 interacts with a conversational AI model.
+	ConverseAlpha1(ctx context.Context, componentName string, inputs []ConversationInput, options ...conversationRequestOption) (*ConversationResponse, error)
+
 	// GrpcClient returns the base grpc client if grpc is used and nil otherwise
 	GrpcClient() pb.DaprClient
 
