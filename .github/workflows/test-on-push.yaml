@@ -10,14 +10,7 @@ jobs:
   build:
     name: Test on ${{ matrix.gover }}
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        gover:
-          - "1.21"
-          - "1.22"
     env:
-      GOVER: ${{ matrix.gover }}
       GOLANGCILINT_VER: v1.55.2
 
     steps:
@@ -29,7 +22,7 @@ jobs:
       - name: Setup
         uses: actions/setup-go@v5
         with:
-          go-version: ${{ env.GOVER }}
+          go-version-file: 'go.mod'
 
       - name: Tidy
         run: make tidy

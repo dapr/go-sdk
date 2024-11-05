@@ -15,7 +15,6 @@ package client
 
 import (
 	"context"
-	"fmt"
 	runtimev1pb "github.com/dapr/dapr/pkg/proto/runtime/v1"
 	"google.golang.org/protobuf/types/known/anypb"
 )
@@ -34,12 +33,6 @@ type ConversationInput struct {
 	Message  string
 	Role     *string
 	ScrubPII *bool // Scrub PII from the input
-}
-
-type ConversationInputOption func(*ConversationInput)
-
-func NewConversationInput(message string, opts ...ConversationInputOption) ConversationInput {
-	return ConversationInput{}
 }
 
 type ConversationResponse struct {
@@ -109,8 +102,6 @@ func (c *GRPCClient) ConverseAlpha1(ctx context.Context, componentName string, i
 		ScrubPII:    o.ScrubPII,
 		Temperature: o.Temperature,
 	}
-
-	fmt.Println("invoking")
 
 	resp, err := c.protoClient.ConverseAlpha1(ctx, &request)
 	if err != nil {

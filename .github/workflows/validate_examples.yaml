@@ -33,7 +33,7 @@ jobs:
       GOPROXY: https://proxy.golang.org
       DAPR_INSTALL_URL: https://raw.githubusercontent.com/dapr/cli/master/install/install.sh
       DAPR_CLI_REF: ${{ github.event.inputs.daprcli_commit }}
-      DAPR_REF: ${{ github.event.inputs.daprdapr_commit }}
+      DAPR_REF: 334ae9eea43d487a7b29a0e4aef904e3eba57a10
       CHECKOUT_REPO: ${{ github.repository }}
       CHECKOUT_REF: ${{ github.ref }}
     outputs:
@@ -164,6 +164,7 @@ jobs:
           [
             "actor",
             "configuration",
+            "conversation",
             "crypto",
             "dist-scheduler",
             "grpc-service",

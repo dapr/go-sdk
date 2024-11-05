@@ -22,15 +22,25 @@ import (
 )
 
 func main() {
-	client, err := dapr.NewClientWithPort("47649")
+	client, err := dapr.NewClient()
 	if err != nil {
 		panic(err)
 	}
 
-	resp, err := client.ConverseAlpha1(context.Background(), "echo", []dapr.ConversationInput{{Message: "hello"}})
+	input := dapr.ConversationInput{
+		Message: "hello world",
+		// Role:     nil, // Optional
+		// ScrubPII: nil, // Optional
+	}
+
+	fmt.Printf("conversation input: %s\n", input.Message)
+
+	var conversationComponent = "echo"
+
+	resp, err := client.ConverseAlpha1(context.Background(), conversationComponent, []dapr.ConversationInput{input})
 	if err != nil {
 		log.Fatalf("err: %v", err)
 	}
 
-	fmt.Println(resp.Outputs)
+	fmt.Printf("conversation output: %s\n", resp.Outputs[0].Result)
 }
