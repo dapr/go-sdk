@@ -259,6 +259,9 @@ type Client interface {
 	// DeleteJobAlpha1 deletes a scheduled job.
 	DeleteJobAlpha1(ctx context.Context, name string) error
 
+	// ConverseAlpha1 issues a prompt to an LLM provider.
+	ConverseAlpha1(ctx context.Context, llmName string, conversation *ConversationRequest) (*ConversationResponse, error)
+
 	// GrpcClient returns the base grpc client if grpc is used and nil otherwise
 	GrpcClient() pb.DaprClient
 
