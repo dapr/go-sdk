@@ -37,7 +37,9 @@ func main() {
 
 	var conversationComponent = "echo"
 
-	resp, err := client.ConverseAlpha1(context.Background(), conversationComponent, []dapr.ConversationInput{input})
+	request := dapr.NewConversationRequest(conversationComponent, []dapr.ConversationInput{input})
+
+	resp, err := client.ConverseAlpha1(context.Background(), request)
 	if err != nil {
 		log.Fatalf("err: %v", err)
 	}

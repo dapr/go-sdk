@@ -19,7 +19,10 @@ import (
 	"google.golang.org/protobuf/types/known/anypb"
 )
 
-type conversationRequestOptions struct {
+// conversationRequest object - currently unexported as used in a functions option pattern
+type conversationRequest struct {
+	name        string
+	inputs      []ConversationInput
 	Parameters  map[string]*anypb.Any
 	Metadata    map[string]string
 	ContextID   *string
@@ -27,58 +30,78 @@ type conversationRequestOptions struct {
 	Temperature *float64
 }
 
-type conversationRequestOption func(request *conversationRequestOptions)
-
-type ConversationInput struct {
-	Message  string
-	Role     *string
-	ScrubPII *bool // Scrub PII from the input
+// NewConversationRequest defines a request with a component name and one or more inputs as a slice
+func NewConversationRequest(llmName string, inputs []ConversationInput) conversationRequest {
+	return conversationRequest{
+		name:   llmName,
+		inputs: inputs,
+	}
 }
 
+type conversationRequestOption func(request *conversationRequest)
+
+// ConversationInput defines a single input.
+type ConversationInput struct {
+	// The string to send to the llm.
+	Message string
+	// The role of the message.
+	Role *string
+	// Whether to Scrub PII from the input
+	ScrubPII *bool
+}
+
+// ConversationResponse is the basic response from a conversationRequest.
 type ConversationResponse struct {
 	ContextID string
 	Outputs   []ConversationResult
 }
 
+// ConversationResult is the individual
 type ConversationResult struct {
 	Result     string
 	Parameters map[string]*anypb.Any
 }
 
+// WithParameters should be used to provide parameters for custom fields.
 func WithParameters(parameters map[string]*anypb.Any) conversationRequestOption {
-	return func(o *conversationRequestOptions) {
+	return func(o *conversationRequest) {
 		o.Parameters = parameters
 	}
 }
 
+// WithMetadata used to define metadata to be passed to components.
 func WithMetadata(metadata map[string]string) conversationRequestOption {
-	return func(o *conversationRequestOptions) {
+	return func(o *conversationRequest) {
 		o.Metadata = metadata
 	}
 }
 
+// WithContextID to provide a new context or continue an existing one.
 func WithContextID(id string) conversationRequestOption {
-	return func(o *conversationRequestOptions) {
+	return func(o *conversationRequest) {
 		o.ContextID = &id
 	}
 }
 
+// WithScrubPII to define whether the outputs should have PII removed.
 func WithScrubPII(scrub bool) conversationRequestOption {
-	return func(o *conversationRequestOptions) {
+	return func(o *conversationRequest) {
 		o.ScrubPII = &scrub
 	}
 }
 
+// WithTemperature to specify which way the LLM leans.
 func WithTemperature(temp float64) conversationRequestOption {
-	return func(o *conversationRequestOptions) {
+	return func(o *conversationRequest) {
 		o.Temperature = &temp
 	}
 }
 
-func (c *GRPCClient) ConverseAlpha1(ctx context.Context, componentName string, inputs []ConversationInput, options ...conversationRequestOption) (*ConversationResponse, error) {
+// ConverseAlpha1 can invoke an LLM given a request created by the NewConversationRequest function.
+func (c *GRPCClient) ConverseAlpha1(ctx context.Context, req conversationRequest, options ...conversationRequestOption) (*ConversationResponse, error) {
 
 	var cinputs []*runtimev1pb.ConversationInput
-	for _, i := range inputs {
+	for _, i := range req.inputs {
 		cinputs = append(cinputs, &runtimev1pb.ConversationInput{
 			Message:  i.Message,
 			Role:     i.Role,
@@ -86,21 +109,20 @@ func (c *GRPCClient) ConverseAlpha1(ctx context.Context, componentName string, i
 		})
 	}
 
-	var o conversationRequestOptions
 	for _, opt := range options {
 		if opt != nil {
-			opt(&o)
+			opt(&req)
 		}
 	}
 
 	request := runtimev1pb.ConversationRequest{
-		Name:        componentName,
-		ContextID:   o.ContextID,
+		Name:        req.name,
+		ContextID:   req.ContextID,
 		Inputs:      cinputs,
-		Parameters:  o.Parameters,
-		Metadata:    o.Metadata,
-		ScrubPII:    o.ScrubPII,
-		Temperature: o.Temperature,
+		Parameters:  req.Parameters,
+		Metadata:    req.Metadata,
+		ScrubPII:    req.ScrubPII,
+		Temperature: req.Temperature,
 	}
 
 	resp, err := c.protoClient.ConverseAlpha1(ctx, &request)
