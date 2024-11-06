@@ -22,6 +22,7 @@ expected_stdout_lines:
   - '== APP == stage: 1'
   - '== APP == workflow event raised'
   - '== APP == stage: 2'
+  - '== APP == fail activity executions: 3'
   - '== APP == workflow status: COMPLETED'
   - '== APP == workflow purged'
   - '== APP == stage: 2'
