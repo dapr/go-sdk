@@ -117,6 +117,29 @@ func (in topicEventJSON) getData() (data any, rawData []byte) {
 	return data, rawData
 }
 
+type AppResponseStatus string
+
+const (
+	// Success means the message is received and processed correctly.
+	Success AppResponseStatus = "SUCCESS"
+	// Retry means the message is received but could not be processed and must be retried.
+	Retry AppResponseStatus = "RETRY"
+	// Drop means the message is received but should not be processed.
+	Drop AppResponseStatus = "DROP"
+)
+
+type BulkSubscribeResponseEntry struct {
+	// The id of the bulk subscribe entry
+	EntryId string `json:"entryId"` //nolint:stylecheck
+
+	// The response status of the bulk subscribe entry
+	Status AppResponseStatus `json:"status"`
+}
+
+type BulkSubscribeResponse struct {
+	Statuses []BulkSubscribeResponseEntry `json:"statuses"`
+}
+
 func (s *Server) registerBaseHandler() {
 	// register subscribe handler
 	f := func(w http.ResponseWriter, r *http.Request) {
@@ -247,7 +270,7 @@ func (s *Server) AddTopicEventHandler(sub *common.Subscription, fn common.TopicE
 	// Route is only required for HTTP but should be specified for the
 	// app protocol to be interchangeable.
 	if sub.Route == "" {
-		return errors.New("handler route name")
+		return errors.New("missing route for this subscription")
 	}
 	if err := s.topicRegistrar.AddSubscription(sub, fn); err != nil {
 		return err
@@ -323,6 +346,119 @@ func (s *Server) AddTopicEventHandler(sub *common.Subscription, fn common.TopicE
 	return nil
 }
 
+func (s *Server) AddBulkTopicEventHandler(sub *common.Subscription, fn common.TopicEventHandler, maxMessagesCount, maxAwaitDurationMs int32) error {
+	if sub == nil {
+		return errors.New("subscription required")
+	}
+	// Route is only required for HTTP but should be specified for the
+	// app protocol to be interchangeable.
+	if sub.Route == "" {
+		return errors.New("missing route for bulk subscription")
+	}
+	if err := s.topicRegistrar.AddBulkSubscription(sub, fn, maxMessagesCount, maxAwaitDurationMs); err != nil {
+		return err
+	}
+
+	s.mux.Handle(sub.Route, optionsHandler(http.HandlerFunc(
+		func(w http.ResponseWriter, r *http.Request) {
+			// check for post with no data
+			var (
+				body []byte
+				err  error
+			)
+			if r.Body != nil {
+				body, err = io.ReadAll(r.Body)
+				if err != nil {
+					http.Error(w, err.Error(), PubSubHandlerDropStatusCode)
+					return
+				}
+			}
+			if len(body) == 0 {
+				http.Error(w, "nil content", PubSubHandlerDropStatusCode)
+				return
+			}
+
+			// deserialize the event
+			var ins internal.BulkSubscribeEnvelope
+			if err = json.Unmarshal(body, &ins); err != nil {
+				http.Error(w, err.Error(), PubSubHandlerDropStatusCode)
+				return
+			}
+
+			statuses := make([]BulkSubscribeResponseEntry, 0, len(ins.Entries))
+
+			for _, entry := range ins.Entries {
+				itemJSON, entryErr := json.Marshal(entry.Event)
+				if entryErr != nil {
+					http.Error(w, entryErr.Error(), PubSubHandlerDropStatusCode)
+					return
+				}
+				var in topicEventJSON
+
+				if err = json.Unmarshal(itemJSON, &in); err != nil {
+					http.Error(w, err.Error(), PubSubHandlerDropStatusCode)
+					return
+				}
+				if in.PubsubName == "" {
+					in.Topic = sub.PubsubName
+				}
+				if in.Topic == "" {
+					in.Topic = sub.Topic
+				}
+				data, rawData := in.getData()
+
+				te := common.TopicEvent{
+					ID:              in.ID,
+					SpecVersion:     in.SpecVersion,
+					Type:            in.Type,
+					Source:          in.Source,
+					DataContentType: in.DataContentType,
+					Data:            data,
+					RawData:         rawData,
+					DataBase64:      in.DataBase64,
+					Subject:         in.Subject,
+					PubsubName:      in.PubsubName,
+					Topic:           in.Topic,
+				}
+
+				retry, funcErr := fn(r.Context(), &te)
+				if funcErr == nil {
+					statuses = append(statuses, BulkSubscribeResponseEntry{
+						EntryId: entry.EntryId,
+						Status:  Success,
+					},
+					)
+				} else if retry {
+					statuses = append(statuses, BulkSubscribeResponseEntry{
+						EntryId: entry.EntryId,
+						Status:  Retry,
+					},
+					)
+				} else {
+					statuses = append(statuses, BulkSubscribeResponseEntry{
+						EntryId: entry.EntryId,
+						Status:  Drop,
+					},
+					)
+				}
+			}
+
+			resp := BulkSubscribeResponse{
+				Statuses: statuses,
+			}
+			if err != nil {
+				http.Error(w, err.Error(), PubSubHandlerDropStatusCode)
+				return
+			}
+			w.Header().Add("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+
+			writeBulkStatus(w, resp)
+		})))
+
+	return nil
+}
+
 func getCustomMetdataFromHeaders(r *http.Request) map[string]string {
 	md := make(map[string]string)
 	for k, v := range r.Header {
@@ -336,6 +472,12 @@ func getCustomMetdataFromHeaders(r *http.Request) map[string]string {
 func writeStatus(w http.ResponseWriter, s common.SubscriptionResponseStatus) {
 	status := &common.SubscriptionResponse{Status: s}
 	if err := json.NewEncoder(w).Encode(status); err != nil {
+		http.Error(w, err.Error(), PubSubHandlerRetryStatusCode)
+	}
+}
+
+func writeBulkStatus(w http.ResponseWriter, s BulkSubscribeResponse) {
+	if err := json.NewEncoder(w).Encode(s); err != nil {
 		http.Error(w, err.Error(), PubSubHandlerRetryStatusCode)
 	}
 }

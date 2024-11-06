@@ -71,4 +71,12 @@ func TestTopicSubscripiton(t *testing.T) {
 			assert.Equal(t, `event.type == "100"`, sub.Routes.Rules[2].Match)
 		}
 	})
+
+	t.Run("enabling bulk subscription", func(t *testing.T) {
+		sub := internal.NewTopicSubscription("test", "mytopic")
+		require.NoError(t, sub.SetBulkSubscribe(10, 1000))
+		assert.True(t, sub.BulkSubscribe.Enabled)
+		assert.Equal(t, int32(10), sub.BulkSubscribe.MaxMessagesCount)
+		assert.Equal(t, int32(1000), sub.BulkSubscribe.MaxAwaitDurationMs)
+	})
 }

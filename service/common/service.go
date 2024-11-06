@@ -35,6 +35,8 @@ type Service interface {
 	// AddTopicEventHandler appends provided event handler with its topic and optional metadata to the service.
 	// Note, retries are only considered when there is an error. Lack of error is considered as a success
 	AddTopicEventHandler(sub *Subscription, fn TopicEventHandler) error
+	// AddBulkTopicEventHandler appends provided event handler with its topic along with configuring maxMessagesCount, maxAwaitDurationMs for bulk handling  and optional metadata to the service.
+	AddBulkTopicEventHandler(sub *Subscription, fn TopicEventHandler, maxMessagesCount, maxAwaitDurationMs int32) error
 	// AddBindingInvocationHandler appends provided binding invocation handler with its name to the service.
 	AddBindingInvocationHandler(name string, fn BindingInvocationHandler) error
 	// RegisterActorImplFactory Register a new actor to actor runtime of go sdk
