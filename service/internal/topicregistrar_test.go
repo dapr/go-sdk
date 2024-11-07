@@ -63,7 +63,6 @@ func TestTopicRegistrarValidation(t *testing.T) {
 		},
 	}
 	for name, tt := range tests {
-		tt := tt // dereference loop var
 		t.Run(name, func(t *testing.T) {
 			m := internal.TopicRegistrar{}
 			if tt.err != "" {
