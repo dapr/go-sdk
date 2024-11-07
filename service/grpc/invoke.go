@@ -28,7 +28,7 @@ import (
 // AddServiceInvocationHandler appends provided service invocation handler with its method to the service.
 func (s *Server) AddServiceInvocationHandler(method string, fn cc.ServiceInvocationHandler) error {
 	if method == "" || method == "/" {
-		return fmt.Errorf("servie name required")
+		return errors.New("service name required")
 	}
 
 	if method[0] == '/' {
@@ -36,7 +36,7 @@ func (s *Server) AddServiceInvocationHandler(method string, fn cc.ServiceInvocat
 	}
 
 	if fn == nil {
-		return fmt.Errorf("invocation handler required")
+		return errors.New("invocation handler required")
 	}
 	s.invokeHandlers[method] = fn
 	return nil
