@@ -484,7 +484,7 @@ func (c *GRPCClient) DeleteBulkState(ctx context.Context, storeName string, keys
 	}
 
 	items := make([]*DeleteStateItem, 0, len(keys))
-	for i := 0; i < len(keys); i++ {
+	for i := range keys {
 		item := &DeleteStateItem{
 			Key:      keys[i],
 			Metadata: meta,
@@ -502,7 +502,7 @@ func (c *GRPCClient) DeleteBulkStateItems(ctx context.Context, storeName string,
 	}
 
 	states := make([]*v1.StateItem, 0, len(items))
-	for i := 0; i < len(items); i++ {
+	for i := range items {
 		item := items[i]
 		if err := hasRequiredStateArgs(storeName, item.Key); err != nil {
 			return fmt.Errorf("missing required arguments: %w", err)
