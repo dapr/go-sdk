@@ -1,8 +1,6 @@
 module github.com/dapr/go-sdk/.github/workflows/dapr-bot
 
-go 1.22
-
-toolchain go1.22.0
+go 1.23.3
 
 require (
 	github.com/google/go-github/v55 v55.0.0

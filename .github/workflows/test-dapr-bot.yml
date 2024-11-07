@@ -17,7 +17,6 @@ jobs:
     name: Test
     runs-on: ubuntu-latest
     env:
-      GOVER: ${{ matrix.gover }}
       GOLANGCILINT_VER: v1.61.0
 
     steps:
