@@ -17,6 +17,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"math"
 	"time"
 
 	"google.golang.org/protobuf/types/known/durationpb"
@@ -65,11 +66,11 @@ const (
 
 type (
 	// StateConsistency is the consistency enum type.
-	StateConsistency int
+	StateConsistency int32
 	// StateConcurrency is the concurrency enum type.
-	StateConcurrency int
+	StateConcurrency int32
 	// OperationType is the operation enum type.
-	OperationType int
+	OperationType int32
 )
 
 // GetPBConsistency get consistency pb value.
@@ -252,9 +253,15 @@ func toProtoDuration(d time.Duration) *durationpb.Duration {
 	nanos := d.Nanoseconds()
 	secs := nanos / 1e9
 	nanos -= secs * 1e9
+
+	// conversion check - gosec ignored below for conversion
+	if nanos <= int64(math.MinInt32) && nanos >= int64(math.MaxInt32) {
+		panic("integer overflow converting duration to proto")
+	}
+
 	return &durationpb.Duration{
 		Seconds: secs,
-		Nanos:   int32(nanos),
+		Nanos:   int32(nanos), //nolint:gosec
 	}
 }
 
