@@ -1,6 +1,6 @@
 module github.com/dapr/go-sdk
 
-go 1.22.6
+go 1.23.3
 
 require (
 	github.com/dapr/dapr v1.14.1

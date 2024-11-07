@@ -1,6 +1,6 @@
 module github.com/dapr/go-sdk/examples
 
-go 1.22.6
+go 1.23.3
 
 replace github.com/dapr/go-sdk => ../
 
