@@ -45,6 +45,11 @@ func main() {
 	}
 	fmt.Println("TestActivity registered")
 
+	if err := w.RegisterActivity(FailActivity); err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println("FailActivity registered")
+
 	// Start workflow runner
 	if err := w.Start(); err != nil {
 		log.Fatal(err)

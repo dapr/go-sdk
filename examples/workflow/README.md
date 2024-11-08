@@ -15,6 +15,7 @@ expected_stdout_lines:
   - '== APP == Worker initialized'
   - '== APP == TestWorkflow registered'
   - '== APP == TestActivity registered'
+  - '== APP == FailActivity registered'
   - '== APP == runner started'
   - '== APP == workflow started with id: a7a4168d-3a1c-41da-8a4f-e7f6d9c718d9'
   - '== APP == workflow paused'
