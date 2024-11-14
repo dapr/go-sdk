@@ -289,7 +289,7 @@ func (c *GRPCClient) implActor(actor actor.Client, serializer codec.Codec) {
 	}
 
 	numField := valueOfActor.NumField()
-	for i := 0; i < numField; i++ {
+	for i := range numField {
 		t := typeOfActor.Field(i)
 		methodName := t.Name
 		if methodName == "Type" {
@@ -312,7 +312,7 @@ func (c *GRPCClient) implActor(actor actor.Client, serializer codec.Codec) {
 			}
 
 			funcOuts := make([]reflect.Type, outNum)
-			for i := 0; i < outNum; i++ {
+			for i := range outNum {
 				funcOuts[i] = t.Type.Out(i)
 			}
 
