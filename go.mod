@@ -10,7 +10,7 @@ require (
 	github.com/microsoft/durabletask-go v0.5.1-0.20241024170039-0c4afbc95428
 	github.com/stretchr/testify v1.9.0
 	google.golang.org/grpc v1.65.0
-	google.golang.org/protobuf v1.34.2
+	google.golang.org/protobuf v1.35.1
 	gopkg.in/yaml.v3 v3.0.1
 )
 
