@@ -16,6 +16,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"time"
@@ -24,6 +25,7 @@ import (
 )
 
 var stage = 0
+var failActivityTries = 0
 
 func main() {
 	w, err := workflow.NewWorker()
@@ -42,6 +44,11 @@ func main() {
 		log.Fatal(err)
 	}
 	fmt.Println("TestActivity registered")
+
+	if err := w.RegisterActivity(FailActivity); err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println("FailActivity registered")
 
 	// Start workflow runner
 	if err := w.Start(); err != nil {
@@ -111,6 +118,15 @@ func main() {
 	time.Sleep(time.Second) // allow workflow to advance
 
 	fmt.Printf("stage: %d\n", stage)
+
+	waitCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	_, err = wfClient.WaitForWorkflowCompletion(waitCtx, instanceID)
+	cancel()
+	if err != nil {
+		log.Fatalf("failed to wait for workflow: %v", err)
+	}
+
+	fmt.Printf("fail activity executions: %d\n", failActivityTries)
 
 	respFetch, err = wfClient.FetchWorkflowMetadata(ctx, instanceID, workflow.WithFetchPayloads(true))
 	if err != nil {
@@ -186,6 +202,15 @@ func TestWorkflow(ctx *workflow.WorkflowContext) (any, error) {
 		return nil, err
 	}
 
+	if err := ctx.CallActivity(FailActivity, workflow.ActivityRetryPolicy(workflow.RetryPolicy{
+		MaxAttempts:          3,
+		InitialRetryInterval: 100 * time.Millisecond,
+		BackoffCoefficient:   2,
+		MaxRetryInterval:     1 * time.Second,
+	})).Await(nil); err == nil {
+		return nil, fmt.Errorf("unexpected no error executing fail activity")
+	}
+
 	return output, nil
 }
 
@@ -198,4 +223,9 @@ func TestActivity(ctx workflow.ActivityContext) (any, error) {
 	stage += input
 
 	return fmt.Sprintf("Stage: %d", stage), nil
+}
+
+func FailActivity(ctx workflow.ActivityContext) (any, error) {
+	failActivityTries += 1
+	return nil, errors.New("dummy activity error")
 }

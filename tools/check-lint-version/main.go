@@ -51,7 +51,7 @@ func getCurrentVersion() (string, error) {
 	if matches == nil {
 		return "", fmt.Errorf("no version found: %v", string(out))
 	}
-	return fmt.Sprintf("v%s", matches[1]), err
+	return "v" + matches[1], err
 }
 
 func isVersionValid(workflowVersion, currentVersion string) bool {
@@ -72,7 +72,7 @@ func compareVersions(path string) string {
 	if !validVersion {
 		return fmt.Sprintf("Invalid version, expected: %s, current: %s - See: https://golangci-lint.run/usage/install/ for instructions to update", workflowVersion, currentVersion)
 	}
-	return fmt.Sprintf("Linter version is valid (MajorMinor): %s", currentVersion)
+	return "Linter version is valid (MajorMinor): " + currentVersion
 }
 
 func main() {

@@ -14,7 +14,7 @@ limitations under the License.
 package http
 
 import (
-	"fmt"
+	"errors"
 	"net/http"
 	"strings"
 
@@ -24,11 +24,11 @@ import (
 // AddHealthCheckHandler appends provided app health check handler.
 func (s *Server) AddHealthCheckHandler(route string, fn common.HealthCheckHandler) error {
 	if fn == nil {
-		return fmt.Errorf("health check handler required")
+		return errors.New("health check handler required")
 	}
 
 	if !strings.HasPrefix(route, "/") {
-		route = fmt.Sprintf("/%s", route)
+		route = "/" + route
 	}
 
 	s.mux.Handle(route, optionsHandler(http.HandlerFunc(

@@ -27,7 +27,6 @@ type Parsed struct {
 	TLS    bool
 }
 
-//nolint:revive
 func ParseGRPCEndpoint(endpoint string) (Parsed, error) {
 	target := endpoint
 	if len(target) == 0 {
