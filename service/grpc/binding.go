@@ -27,10 +27,10 @@ import (
 // AddBindingInvocationHandler appends provided binding invocation handler with its name to the service.
 func (s *Server) AddBindingInvocationHandler(name string, fn common.BindingInvocationHandler) error {
 	if name == "" {
-		return fmt.Errorf("binding name required")
+		return errors.New("binding name required")
 	}
 	if fn == nil {
-		return fmt.Errorf("binding handler required")
+		return errors.New("binding handler required")
 	}
 	s.bindingHandlers[name] = fn
 	return nil

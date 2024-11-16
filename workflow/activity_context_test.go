@@ -19,7 +19,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"testing"
+	"time"
 
+	"github.com/microsoft/durabletask-go/task"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -68,6 +70,26 @@ func TestCallActivityOptions(t *testing.T) {
 	t.Run("activity raw input - valid", func(t *testing.T) {
 		opts := returnCallActivityOptions(ActivityRawInput("test"))
 		assert.Equal(t, "test", opts.rawInput.GetValue())
+	})
+
+	t.Run("activity retry policy - set", func(t *testing.T) {
+		opts := returnCallActivityOptions(ActivityRetryPolicy(RetryPolicy{
+			MaxAttempts:          3,
+			InitialRetryInterval: 100 * time.Millisecond,
+			BackoffCoefficient:   2,
+			MaxRetryInterval:     2 * time.Second,
+		}))
+		assert.Equal(t, &task.ActivityRetryPolicy{
+			MaxAttempts:          3,
+			InitialRetryInterval: 100 * time.Millisecond,
+			BackoffCoefficient:   2,
+			MaxRetryInterval:     2 * time.Second,
+		}, opts.getRetryPolicy())
+	})
+
+	t.Run("activity retry policy - empty", func(t *testing.T) {
+		opts := returnCallActivityOptions()
+		assert.Empty(t, opts.getRetryPolicy())
 	})
 }
 

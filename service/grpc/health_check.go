@@ -15,7 +15,7 @@ package grpc
 
 import (
 	"context"
-	"fmt"
+	"errors"
 
 	pb "github.com/dapr/dapr/pkg/proto/runtime/v1"
 	"github.com/dapr/go-sdk/service/common"
@@ -26,7 +26,7 @@ import (
 // AddHealthCheckHandler appends provided app health check handler.
 func (s *Server) AddHealthCheckHandler(_ string, fn common.HealthCheckHandler) error {
 	if fn == nil {
-		return fmt.Errorf("health check handler required")
+		return errors.New("health check handler required")
 	}
 
 	s.healthCheckHandler = fn
@@ -44,5 +44,5 @@ func (s *Server) HealthCheck(ctx context.Context, _ *emptypb.Empty) (*pb.HealthC
 		return &pb.HealthCheckResponse{}, nil
 	}
 
-	return nil, fmt.Errorf("health check handler not implemented")
+	return nil, errors.New("health check handler not implemented")
 }

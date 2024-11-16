@@ -466,7 +466,7 @@ func (s *testDaprServer) SubscribeConfiguration(in *pb.SubscribeConfigurationReq
 		return err
 	}
 
-	for i := 0; i < 5; i++ {
+	for range 5 {
 		select {
 		case <-stopCh:
 			return nil

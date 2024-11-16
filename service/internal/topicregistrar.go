@@ -2,7 +2,6 @@ package internal
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/dapr/go-sdk/service/common"
 )
@@ -27,7 +26,7 @@ func (m TopicRegistrar) AddSubscription(sub *common.Subscription, fn common.Topi
 		return errors.New("pub/sub name required")
 	}
 	if fn == nil {
-		return fmt.Errorf("topic handler required")
+		return errors.New("topic handler required")
 	}
 
 	var key string

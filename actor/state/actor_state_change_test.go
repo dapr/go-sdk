@@ -46,7 +46,6 @@ func TestNewActorStateChange(t *testing.T) {
 		},
 	}
 	for name, test := range tests {
-		test := test
 		t.Run(name, func(t *testing.T) {
 			assert.Equal(t, test.want, NewActorStateChange(test.stateName, test.value, test.changeKind, &test.ttl))
 		})

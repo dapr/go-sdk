@@ -14,7 +14,7 @@ limitations under the License.
 package http
 
 import (
-	"fmt"
+	"errors"
 	"io"
 	"net/http"
 	"strings"
@@ -25,14 +25,14 @@ import (
 // AddBindingInvocationHandler appends provided binding invocation handler with its route to the service.
 func (s *Server) AddBindingInvocationHandler(route string, fn common.BindingInvocationHandler) error {
 	if route == "" {
-		return fmt.Errorf("binding route required")
+		return errors.New("binding route required")
 	}
 	if fn == nil {
-		return fmt.Errorf("binding handler required")
+		return errors.New("binding handler required")
 	}
 
 	if !strings.HasPrefix(route, "/") {
-		route = fmt.Sprintf("/%s", route)
+		route = "/" + route
 	}
 
 	s.mux.Handle(route, optionsHandler(http.HandlerFunc(
