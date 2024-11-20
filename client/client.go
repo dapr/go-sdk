@@ -230,24 +230,38 @@ type Client interface {
 	ImplActorClientStub(actorClientStub actor.Client, opt ...config.Option)
 
 	// StartWorkflowBeta1 starts a workflow.
+	// Deprecated: Please use the workflow client (github.com/dapr/go-sdk/workflow).
+	// These methods for managing workflows are no longer supported and will be removed in the 1.16 release.
 	StartWorkflowBeta1(ctx context.Context, req *StartWorkflowRequest) (*StartWorkflowResponse, error)
 
 	// GetWorkflowBeta1 gets a workflow.
+	// Deprecated: Please use the workflow client (github.com/dapr/go-sdk/workflow).
+	// These methods for managing workflows are no longer supported and will be removed in the 1.16 release.
 	GetWorkflowBeta1(ctx context.Context, req *GetWorkflowRequest) (*GetWorkflowResponse, error)
 
 	// PurgeWorkflowBeta1 purges a workflow.
+	// Deprecated: Please use the workflow client (github.com/dapr/go-sdk/workflow).
+	// These methods for managing workflows are no longer supported and will be removed in the 1.16 release.
 	PurgeWorkflowBeta1(ctx context.Context, req *PurgeWorkflowRequest) error
 
 	// TerminateWorkflowBeta1 terminates a workflow.
+	// Deprecated: Please use the workflow client (github.com/dapr/go-sdk/workflow).
+	// These methods for managing workflows are no longer supported and will be removed in the 1.16 release.
 	TerminateWorkflowBeta1(ctx context.Context, req *TerminateWorkflowRequest) error
 
 	// PauseWorkflowBeta1 pauses a workflow.
+	// Deprecated: Please use the workflow client (github.com/dapr/go-sdk/workflow).
+	// These methods for managing workflows are no longer supported and will be removed in the 1.16 release.
 	PauseWorkflowBeta1(ctx context.Context, req *PauseWorkflowRequest) error
 
 	// ResumeWorkflowBeta1 resumes a workflow.
+	// Deprecated: Please use the workflow client (github.com/dapr/go-sdk/workflow).
+	// These methods for managing workflows are no longer supported and will be removed in the 1.16 release.
 	ResumeWorkflowBeta1(ctx context.Context, req *ResumeWorkflowRequest) error
 
 	// RaiseEventWorkflowBeta1 raises an event for a workflow.
+	// Deprecated: Please use the workflow client (github.com/dapr/go-sdk/workflow).
+	// These methods for managing workflows are no longer supported and will be removed in the 1.16 release.
 	RaiseEventWorkflowBeta1(ctx context.Context, req *RaiseEventWorkflowRequest) error
 
 	// ScheduleJobAlpha1 creates and schedules a job.
