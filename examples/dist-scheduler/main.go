@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -96,19 +95,11 @@ func main() {
 var jobCount = 0
 
 func prodDBBackupHandler(ctx context.Context, job *common.JobEvent) error {
-	var jobData common.Job
-	if err := json.Unmarshal(job.Data, &jobData); err != nil {
-		return fmt.Errorf("failed to unmarshal job: %v", err)
-	}
-	decodedPayload, err := base64.StdEncoding.DecodeString(jobData.Value)
-	if err != nil {
-		return fmt.Errorf("failed to decode job payload: %v", err)
-	}
 	var jobPayload api.DBBackup
-	if err := json.Unmarshal(decodedPayload, &jobPayload); err != nil {
+	if err := json.Unmarshal(job.Data, &jobPayload); err != nil {
 		return fmt.Errorf("failed to unmarshal payload: %v", err)
 	}
-	fmt.Printf("job %d received:\n type: %v \n typeurl: %v\n value: %v\n extracted payload: %v\n", jobCount, job.JobType, jobData.TypeURL, jobData.Value, jobPayload)
+	fmt.Printf("job %d received:\n type: %v \n payload: %v\n", jobCount, job.JobType, jobPayload)
 	jobCount++
 	return nil
 }
