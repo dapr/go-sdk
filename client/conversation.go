@@ -16,8 +16,9 @@ package client
 import (
 	"context"
 
-	runtimev1pb "github.com/dapr/dapr/pkg/proto/runtime/v1"
 	"google.golang.org/protobuf/types/known/anypb"
+
+	runtimev1pb "github.com/dapr/dapr/pkg/proto/runtime/v1"
 )
 
 // conversationRequest object - currently unexported as used in a functions option pattern
@@ -100,7 +101,7 @@ func WithTemperature(temp float64) conversationRequestOption {
 
 // ConverseAlpha1 can invoke an LLM given a request created by the NewConversationRequest function.
 func (c *GRPCClient) ConverseAlpha1(ctx context.Context, req conversationRequest, options ...conversationRequestOption) (*ConversationResponse, error) {
-	var cinputs = make([]*runtimev1pb.ConversationInput, len(req.inputs))
+	cinputs := make([]*runtimev1pb.ConversationInput, len(req.inputs))
 	for i, in := range req.inputs {
 		cinputs[i] = &runtimev1pb.ConversationInput{
 			Message:  in.Message,
@@ -130,7 +131,7 @@ func (c *GRPCClient) ConverseAlpha1(ctx context.Context, req conversationRequest
 		return nil, err
 	}
 
-	var outputs = make([]ConversationResult, len(resp.GetOutputs()))
+	outputs := make([]ConversationResult, len(resp.GetOutputs()))
 	for i, o := range resp.GetOutputs() {
 		outputs[i] = ConversationResult{
 			Result:     o.GetResult(),
