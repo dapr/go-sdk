@@ -17,8 +17,9 @@ package workflow
 import (
 	"testing"
 
-	"github.com/dapr/durabletask-go/api"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/dapr/durabletask-go/api"
 )
 
 func TestString(t *testing.T) {

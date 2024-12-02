@@ -18,9 +18,10 @@ import (
 	"fmt"
 	"time"
 
+	"google.golang.org/protobuf/types/known/wrapperspb"
+
 	"github.com/dapr/durabletask-go/api"
 	"github.com/dapr/durabletask-go/task"
-	"google.golang.org/protobuf/types/known/wrapperspb"
 )
 
 type Metadata struct {

@@ -4,9 +4,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
+
 	"github.com/dapr/durabletask-go/api"
 	"github.com/dapr/durabletask-go/task"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestConvertMetadata(t *testing.T) {

@@ -20,10 +20,11 @@ import (
 	"fmt"
 	"time"
 
+	"google.golang.org/grpc"
+
 	"github.com/dapr/durabletask-go/api"
 	"github.com/dapr/durabletask-go/backend"
 	durabletaskclient "github.com/dapr/durabletask-go/client"
-	"google.golang.org/grpc"
 
 	dapr "github.com/dapr/go-sdk/client"
 )
