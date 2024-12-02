@@ -14,7 +14,7 @@ limitations under the License.
 */
 package workflow
 
-import "github.com/microsoft/durabletask-go/api"
+import "github.com/dapr/durabletask-go/api"
 
 type Status int
 

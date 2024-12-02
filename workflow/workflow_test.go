@@ -2,8 +2,10 @@ package workflow
 
 import (
 	"testing"
+	"time"
 
-	"github.com/microsoft/durabletask-go/api"
+	"github.com/dapr/durabletask-go/api"
+	"github.com/dapr/durabletask-go/task"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -36,6 +38,26 @@ func TestCallChildWorkflowOptions(t *testing.T) {
 	t.Run("child workflow input - invalid", func(t *testing.T) {
 		opts := returnCallChildWorkflowOptions(ChildWorkflowInput(make(chan int)))
 		assert.Empty(t, opts.rawInput.GetValue())
+	})
+
+	t.Run("child workflow retry policy - set", func(t *testing.T) {
+		opts := returnCallChildWorkflowOptions(ChildWorkflowRetryPolicy(RetryPolicy{
+			MaxAttempts:          3,
+			InitialRetryInterval: 100 * time.Millisecond,
+			BackoffCoefficient:   2,
+			MaxRetryInterval:     2 * time.Second,
+		}))
+		assert.Equal(t, &task.RetryPolicy{
+			MaxAttempts:          3,
+			InitialRetryInterval: 100 * time.Millisecond,
+			BackoffCoefficient:   2,
+			MaxRetryInterval:     2 * time.Second,
+		}, opts.getRetryPolicy())
+	})
+
+	t.Run("child workflow retry policy - empty", func(t *testing.T) {
+		opts := returnCallChildWorkflowOptions()
+		assert.Empty(t, opts.getRetryPolicy())
 	})
 }
 

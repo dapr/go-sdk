@@ -17,7 +17,7 @@ package workflow
 import (
 	"testing"
 
-	"github.com/microsoft/durabletask-go/api"
+	"github.com/dapr/durabletask-go/api"
 	"github.com/stretchr/testify/assert"
 )
 

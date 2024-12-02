@@ -18,8 +18,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/microsoft/durabletask-go/api"
-	"github.com/microsoft/durabletask-go/task"
+	"github.com/dapr/durabletask-go/api"
+	"github.com/dapr/durabletask-go/task"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 )
 
@@ -87,8 +87,9 @@ func convertMetadata(orchestrationMetadata *api.OrchestrationMetadata) *Metadata
 }
 
 type callChildWorkflowOptions struct {
-	instanceID string
-	rawInput   *wrapperspb.StringValue
+	instanceID  string
+	rawInput    *wrapperspb.StringValue
+	retryPolicy *RetryPolicy
 }
 
 type callChildWorkflowOption func(*callChildWorkflowOptions) error
@@ -118,6 +119,26 @@ func ChildWorkflowInstanceID(instanceID string) callChildWorkflowOption {
 	return func(opts *callChildWorkflowOptions) error {
 		opts.instanceID = instanceID
 		return nil
+	}
+}
+
+func ChildWorkflowRetryPolicy(policy RetryPolicy) callChildWorkflowOption {
+	return func(opts *callChildWorkflowOptions) error {
+		opts.retryPolicy = &policy
+		return nil
+	}
+}
+
+func (opts *callChildWorkflowOptions) getRetryPolicy() *task.RetryPolicy {
+	if opts.retryPolicy == nil {
+		return nil
+	}
+	return &task.RetryPolicy{
+		MaxAttempts:          opts.retryPolicy.MaxAttempts,
+		InitialRetryInterval: opts.retryPolicy.InitialRetryInterval,
+		BackoffCoefficient:   opts.retryPolicy.BackoffCoefficient,
+		MaxRetryInterval:     opts.retryPolicy.MaxRetryInterval,
+		RetryTimeout:         opts.retryPolicy.RetryTimeout,
 	}
 }
 
