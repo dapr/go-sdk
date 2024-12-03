@@ -42,6 +42,10 @@ type Server interface {
 	// SaveState is impl by ServerImplBase, It saves the state cache of this actor instance to state store component by calling api of daprd.
 	// Save state is called at two places: 1. On invocation of this actor instance. 2. When new actor starts.
 	SaveState() error
+	// Activate called when actor created by actor manager
+	Activate() error
+	// Deactivate called before actor removed by actor manager
+	Deactivate() error
 
 	WithContext() ServerContext
 }
@@ -64,6 +68,10 @@ type ServerContext interface {
 	// SaveState is impl by ServerImplBase, It saves the state cache of this actor instance to state store component by calling api of daprd.
 	// Save state is called at two places: 1. On invocation of this actor instance. 2. When new actor starts.
 	SaveState(context.Context) error
+	// Activate called when actor created by actor manager
+	Activate() error
+	// Deactivate called before actor removed by actor manager
+	Deactivate() error
 }
 
 type ReminderCallee interface {
@@ -131,6 +139,16 @@ func (b *ServerImplBase) SaveState() error {
 	return b.ctx.SaveState(context.Background())
 }
 
+// Activate when actor created by actor manager
+func (b *ServerImplBase) Activate() error {
+	return nil
+}
+
+// Deactivate before actor removed by actor manager
+func (b *ServerImplBase) Deactivate() error {
+	return nil
+}
+
 // Deprecated: Use ServerImplBaseCtx instead.
 func (b *ServerImplBase) WithContext() *ServerImplBaseCtx {
 	b.ctx.lock.RLock()
@@ -176,6 +194,16 @@ func (b *ServerImplBaseCtx) SaveState(ctx context.Context) error {
 		return b.stateManager.Save(ctx)
 	}
 
+	return nil
+}
+
+// Activate when actor created by actor manager
+func (b *ServerImplBaseCtx) Activate() error {
+	return nil
+}
+
+// Deactivate before actor removed by actor manager
+func (b *ServerImplBaseCtx) Deactivate() error {
 	return nil
 }
 
