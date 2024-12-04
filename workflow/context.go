@@ -18,7 +18,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/microsoft/durabletask-go/task"
+	"github.com/dapr/durabletask-go/task"
 )
 
 type WorkflowContext struct {
@@ -68,7 +68,7 @@ func (wfc *WorkflowContext) CallActivity(activity interface{}, opts ...callActiv
 		}
 	}
 
-	return wfc.orchestrationContext.CallActivity(activity, task.WithRawActivityInput(options.rawInput.GetValue()), task.WithRetryPolicy(options.getRetryPolicy()))
+	return wfc.orchestrationContext.CallActivity(activity, task.WithRawActivityInput(options.rawInput.GetValue()), task.WithActivityRetryPolicy(options.getRetryPolicy()))
 }
 
 // CallChildWorkflow returns a completable task for a given workflow.
@@ -84,9 +84,9 @@ func (wfc *WorkflowContext) CallChildWorkflow(workflow interface{}, opts ...call
 		}
 	}
 	if options.instanceID != "" {
-		return wfc.orchestrationContext.CallSubOrchestrator(workflow, task.WithRawSubOrchestratorInput(options.rawInput.GetValue()), task.WithSubOrchestrationInstanceID(options.instanceID))
+		return wfc.orchestrationContext.CallSubOrchestrator(workflow, task.WithRawSubOrchestratorInput(options.rawInput.GetValue()), task.WithSubOrchestrationInstanceID(options.instanceID), task.WithSubOrchestrationRetryPolicy(options.getRetryPolicy()))
 	}
-	return wfc.orchestrationContext.CallSubOrchestrator(workflow, task.WithRawSubOrchestratorInput(options.rawInput.GetValue()))
+	return wfc.orchestrationContext.CallSubOrchestrator(workflow, task.WithRawSubOrchestratorInput(options.rawInput.GetValue()), task.WithSubOrchestrationRetryPolicy(options.getRetryPolicy()))
 }
 
 // CreateTimer returns a completable task that blocks for a given duration.

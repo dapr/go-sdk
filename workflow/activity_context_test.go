@@ -21,9 +21,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/microsoft/durabletask-go/task"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/dapr/durabletask-go/task"
 )
 
 type testingTaskActivityContext struct {
@@ -79,7 +80,7 @@ func TestCallActivityOptions(t *testing.T) {
 			BackoffCoefficient:   2,
 			MaxRetryInterval:     2 * time.Second,
 		}))
-		assert.Equal(t, &task.ActivityRetryPolicy{
+		assert.Equal(t, &task.RetryPolicy{
 			MaxAttempts:          3,
 			InitialRetryInterval: 100 * time.Millisecond,
 			BackoffCoefficient:   2,

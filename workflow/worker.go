@@ -25,9 +25,9 @@ import (
 
 	dapr "github.com/dapr/go-sdk/client"
 
-	"github.com/microsoft/durabletask-go/backend"
-	durabletaskclient "github.com/microsoft/durabletask-go/client"
-	"github.com/microsoft/durabletask-go/task"
+	"github.com/dapr/durabletask-go/backend"
+	durabletaskclient "github.com/dapr/durabletask-go/client"
+	"github.com/dapr/durabletask-go/task"
 )
 
 type WorkflowWorker struct {

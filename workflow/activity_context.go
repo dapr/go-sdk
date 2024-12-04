@@ -21,7 +21,7 @@ import (
 
 	"google.golang.org/protobuf/types/known/wrapperspb"
 
-	"github.com/microsoft/durabletask-go/task"
+	"github.com/dapr/durabletask-go/task"
 )
 
 type ActivityContext struct {
@@ -78,11 +78,11 @@ func ActivityRetryPolicy(policy RetryPolicy) callActivityOption {
 	}
 }
 
-func (opts *callActivityOptions) getRetryPolicy() *task.ActivityRetryPolicy {
+func (opts *callActivityOptions) getRetryPolicy() *task.RetryPolicy {
 	if opts.retryPolicy == nil {
 		return nil
 	}
-	return &task.ActivityRetryPolicy{
+	return &task.RetryPolicy{
 		MaxAttempts:          opts.retryPolicy.MaxAttempts,
 		InitialRetryInterval: opts.retryPolicy.InitialRetryInterval,
 		BackoffCoefficient:   opts.retryPolicy.BackoffCoefficient,
