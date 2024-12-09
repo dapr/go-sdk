@@ -241,6 +241,15 @@ func (s *Server) registerBaseHandler() {
 
 // AddTopicEventHandler appends provided event handler with it's name to the service.
 func (s *Server) AddTopicEventHandler(sub *common.Subscription, fn common.TopicEventHandler) error {
+	if fn == nil {
+		return errors.New("topic handler required")
+	}
+
+	return s.AddTopicEventSubscriber(sub, fn)
+}
+
+// AddTopicEventSubscriber appends the provided subscriber to the service.
+func (s *Server) AddTopicEventSubscriber(sub *common.Subscription, subscriber common.TopicEventSubscriber) error {
 	if sub == nil {
 		return errors.New("subscription required")
 	}
@@ -249,7 +258,7 @@ func (s *Server) AddTopicEventHandler(sub *common.Subscription, fn common.TopicE
 	if sub.Route == "" {
 		return errors.New("handler route name")
 	}
-	if err := s.topicRegistrar.AddSubscription(sub, fn); err != nil {
+	if err := s.topicRegistrar.AddSubscription(sub, subscriber); err != nil {
 		return err
 	}
 
@@ -306,7 +315,7 @@ func (s *Server) AddTopicEventHandler(sub *common.Subscription, fn common.TopicE
 			w.WriteHeader(http.StatusOK)
 
 			// execute user handler
-			retry, err := fn(r.Context(), &te)
+			retry, err := subscriber.Handle(r.Context(), &te)
 			if err == nil {
 				writeStatus(w, common.SubscriptionResponseStatusSuccess)
 				return

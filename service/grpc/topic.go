@@ -31,11 +31,20 @@ import (
 
 // AddTopicEventHandler appends provided event handler with topic name to the service.
 func (s *Server) AddTopicEventHandler(sub *common.Subscription, fn common.TopicEventHandler) error {
+	if fn == nil {
+		return errors.New("topic handler required")
+	}
+
+	return s.AddTopicEventSubscriber(sub, fn)
+}
+
+// AddTopicEventSubscriber appends the provided subscriber to the service.
+func (s *Server) AddTopicEventSubscriber(sub *common.Subscription, subscriber common.TopicEventSubscriber) error {
 	if sub == nil {
 		return errors.New("subscription required")
 	}
 
-	return s.topicRegistrar.AddSubscription(sub, fn)
+	return s.topicRegistrar.AddSubscription(sub, subscriber)
 }
 
 // ListTopicSubscriptions is called by Dapr to get the list of topics in a pubsub component the app wants to subscribe to.
@@ -142,7 +151,7 @@ func (s *Server) OnTopicEvent(ctx context.Context, in *runtimev1pb.TopicEventReq
 				in.GetPath(), in.GetPubsubName(), in.GetTopic(),
 			)
 		}
-		retry, err := h(ctx, e)
+		retry, err := h.Handle(ctx, e)
 		if err == nil {
 			return &runtimev1pb.TopicEventResponse{Status: runtimev1pb.TopicEventResponse_SUCCESS}, nil
 		}
