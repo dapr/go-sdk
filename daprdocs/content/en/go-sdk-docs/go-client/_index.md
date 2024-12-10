@@ -245,6 +245,49 @@ if res.Error != nil {
 
 For a full guide on pub/sub, visit [How-To: Publish & subscribe]({{< ref howto-publish-subscribe.md >}}).
 
+### Workflow
+
+You can create [workflows]({{< ref workflow-overview.md >}}) using the Go SDK. For example, start with a simple workflow activity:
+
+```go
+func TestActivity(ctx workflow.ActivityContext) (any, error) {
+	var input int
+	if err := ctx.GetInput(&input); err != nil {
+		return "", err
+	}
+	
+	// Do something here
+	return "result", nil
+}
+```
+
+Write a simple workflow function:
+
+```go
+func TestWorkflow(ctx *workflow.WorkflowContext) (any, error) {
+	var input int
+	if err := ctx.GetInput(&input); err != nil {
+		return nil, err
+	}
+	var output string
+	if err := ctx.CallActivity(TestActivity, workflow.ActivityInput(input)).Await(&output); err != nil {
+		return nil, err
+	}
+	if err := ctx.WaitForExternalEvent("testEvent", time.Second*60).Await(&output); err != nil {
+		return nil, err
+	}
+	
+	if err := ctx.CreateTimer(time.Second).Await(nil); err != nil {
+		return nil, nil
+	}
+	return output, nil
+}
+```
+
+Then compose your application that will use the workflow you've created. [Refer to the How-To: Author workflows guide]({{< ref howto-author-workflow.md >}}) for a full walk-through. 
+
+Try out the [Go SDK workflow example.](https://github.com/dapr/go-sdk/blob/main/examples/workflow)
+
 ### Output Bindings
 
 
