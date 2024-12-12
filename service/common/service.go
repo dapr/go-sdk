@@ -27,18 +27,23 @@ const (
 )
 
 // Service represents Dapr callback service.
+//
+//nolint:interfacebloat
 type Service interface {
 	// AddHealthCheckHandler sets a health check handler, name: http (router) and grpc (invalid).
 	AddHealthCheckHandler(name string, fn HealthCheckHandler) error
 	// AddServiceInvocationHandler appends provided service invocation handler with its name to the service.
 	AddServiceInvocationHandler(name string, fn ServiceInvocationHandler) error
 	// AddTopicEventHandler appends provided event handler with its topic and optional metadata to the service.
-	// Note, retries are only considered when there is an error. Lack of error is considered as a success
+	// Note, retries are only considered when there is an error. Lack of error is considered as a success.
 	AddTopicEventHandler(sub *Subscription, fn TopicEventHandler) error
+	// AddTopicEventSubscriber appends the provided subscriber with its topic and optional metadata to the service.
+	// Note, retries are only considered when there is an error. Lack of error is considered as a success.
+	AddTopicEventSubscriber(sub *Subscription, subscriber TopicEventSubscriber) error
 	// AddBindingInvocationHandler appends provided binding invocation handler with its name to the service.
 	AddBindingInvocationHandler(name string, fn BindingInvocationHandler) error
 	// RegisterActorImplFactory Register a new actor to actor runtime of go sdk
-	// Deprecated: use RegisterActorImplFactoryContext instead
+	// Deprecated: use RegisterActorImplFactoryContext instead.
 	RegisterActorImplFactory(f actor.Factory, opts ...config.Option)
 	// RegisterActorImplFactoryContext Register a new actor to actor runtime of go sdk
 	RegisterActorImplFactoryContext(f actor.FactoryContext, opts ...config.Option)
@@ -49,7 +54,7 @@ type Service interface {
 	Start() error
 	// Stop stops the previously started service.
 	Stop() error
-	// Gracefully stops the previous started service
+	// Gracefully stops the previous started service.
 	GracefulStop() error
 }
 
@@ -60,3 +65,13 @@ type (
 	JobEventHandler          func(ctx context.Context, in *JobEvent) error
 	HealthCheckHandler       func(context.Context) error
 )
+
+type TopicEventSubscriber interface {
+	Handle(ctx context.Context, e *TopicEvent) (retry bool, err error)
+}
+
+// Handle converts TopicEventHandler into an adapter that implements
+// TopicEventSubscriber.
+func (h TopicEventHandler) Handle(ctx context.Context, e *TopicEvent) (retry bool, err error) {
+	return h(ctx, e)
+}

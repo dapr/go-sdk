@@ -13,12 +13,12 @@ import (
 )
 
 func TestTopicRegistrarValidation(t *testing.T) {
-	fn := func(ctx context.Context, e *common.TopicEvent) (retry bool, err error) {
+	fn := common.TopicEventHandler(func(ctx context.Context, e *common.TopicEvent) (retry bool, err error) {
 		return false, nil
-	}
+	})
 	tests := map[string]struct {
 		sub common.Subscription
-		fn  common.TopicEventHandler
+		fn  common.TopicEventSubscriber
 		err string
 	}{
 		"pubsub required": {
@@ -75,9 +75,9 @@ func TestTopicRegistrarValidation(t *testing.T) {
 }
 
 func TestTopicAddSubscriptionMetadata(t *testing.T) {
-	handler := func(ctx context.Context, e *common.TopicEvent) (retry bool, err error) {
+	handler := common.TopicEventHandler(func(ctx context.Context, e *common.TopicEvent) (retry bool, err error) {
 		return false, nil
-	}
+	})
 	topicRegistrar := internal.TopicRegistrar{}
 	sub := &common.Subscription{
 		PubsubName: "pubsubname",

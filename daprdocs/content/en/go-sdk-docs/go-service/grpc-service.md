@@ -83,6 +83,35 @@ if err != nil {
 }
 ```
 
+You can also create a custom type that implements the `TopicEventSubscriber` interface to handle your events:
+
+```go
+type EventHandler struct {
+	// any data or references that your event handler needs.
+}
+
+func (h *EventHandler) Handle(ctx context.Context, e *common.TopicEvent) (retry bool, err error) {
+    log.Printf("event - PubsubName:%s, Topic:%s, ID:%s, Data: %v", e.PubsubName, e.Topic, e.ID, e.Data)
+    // do something with the event
+    return true, nil
+}
+```
+
+The `EventHandler` can then be added using the `AddTopicEventSubscriber` method:
+
+```go
+sub := &common.Subscription{
+    PubsubName: "messages",
+    Topic:      "topic1",
+}
+eventHandler := &EventHandler{
+// initialize any fields
+}
+if err := s.AddTopicEventSubscriber(sub, eventHandler); err != nil {
+    log.Fatalf("error adding topic subscription: %v", err)
+}
+```
+
 ### Service Invocation Handler
 To handle service invocations you will need to add at least one service invocation handler before starting the service:
 

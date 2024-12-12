@@ -14,11 +14,11 @@ type TopicRegistrar map[string]*TopicRegistration
 // TopicRegistration encapsulates the subscription and handlers.
 type TopicRegistration struct {
 	Subscription   *TopicSubscription
-	DefaultHandler common.TopicEventHandler
-	RouteHandlers  map[string]common.TopicEventHandler
+	DefaultHandler common.TopicEventSubscriber
+	RouteHandlers  map[string]common.TopicEventSubscriber
 }
 
-func (m TopicRegistrar) AddSubscription(sub *common.Subscription, fn common.TopicEventHandler) error {
+func (m TopicRegistrar) AddSubscription(sub *common.Subscription, fn common.TopicEventSubscriber) error {
 	if sub.Topic == "" {
 		return errors.New("topic name required")
 	}
@@ -40,7 +40,7 @@ func (m TopicRegistrar) AddSubscription(sub *common.Subscription, fn common.Topi
 	if !ok {
 		ts = &TopicRegistration{
 			Subscription:   NewTopicSubscription(sub.PubsubName, sub.Topic),
-			RouteHandlers:  make(map[string]common.TopicEventHandler),
+			RouteHandlers:  make(map[string]common.TopicEventSubscriber),
 			DefaultHandler: nil,
 		}
 		ts.Subscription.SetMetadata(sub.Metadata)
