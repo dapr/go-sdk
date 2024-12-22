@@ -217,6 +217,7 @@ func (s *Server) registerBaseHandler() {
 		}
 		w.WriteHeader(http.StatusOK)
 	}
+
 	s.mux.Put("/actors/{actorType}/{actorId}/method/remind/{reminderName}", fReminder)
 
 	// register actor timer invoke handler
