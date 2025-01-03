@@ -3,8 +3,8 @@ github.com/cenkalti/backoff/v4 v4.3.0/go.mod h1:Y3VNntkOUPxTVeUxJ/G5vcM//AlwfmyY
 github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=
 github.com/dapr/dapr v1.15.0-rc.1 h1:7JP3zSannxQwV27A9pPR2b/DSNmgcSjJOhRDwM4eFpQ=
 github.com/dapr/dapr v1.15.0-rc.1/go.mod h1:SycZrBWgfmog+C5T4p0X6VIpnREQ3xajrYxdih+gn9w=
-github.com/dapr/durabletask-go v0.5.1-0.20241127212625-4232880fd198 h1:vTq9HmTXow4iVb/1dO4qVZhK7XC5KlwbLl2iNIE23Qc=
-github.com/dapr/durabletask-go v0.5.1-0.20241127212625-4232880fd198/go.mod h1:C4ykYCSNv1k2C4wvZv11h2ClkE/qsXw0tv6idOWVmDc=
+github.com/dapr/durabletask-go v0.5.1-0.20241216172832-16da3e7c3530 h1:bfTcj9ewG6vYqV2Xm9fSGzXlLN5IzpeeBUUgoNiqcOg=
+github.com/dapr/durabletask-go v0.5.1-0.20241216172832-16da3e7c3530/go.mod h1:C4ykYCSNv1k2C4wvZv11h2ClkE/qsXw0tv6idOWVmDc=
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc h1:U9qPSI2PIWSS1VwoXQT9A3Wy9MM3WgvqSxFWenqJduM=
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/go-chi/chi/v5 v5.1.0 h1:acVI1TYaD+hhedDJ3r54HyA6sExp3HfXq7QWEEY/xMw=

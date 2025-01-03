@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"google.golang.org/grpc"
+	"google.golang.org/protobuf/types/known/wrapperspb"
 
 	"github.com/dapr/durabletask-go/api"
 	"github.com/dapr/durabletask-go/backend"
@@ -61,7 +62,7 @@ func WithInput(input any) api.NewOrchestrationOptions {
 
 // WithRawInput is an option to pass a byte slice as an input when scheduling a new workflow.
 func WithRawInput(input string) api.NewOrchestrationOptions {
-	return api.WithRawInput(input)
+	return api.WithRawInput(wrapperspb.String(input))
 }
 
 // WithStartTime is an option to set the start time when scheduling a new workflow.
@@ -88,7 +89,7 @@ func WithEventPayload(data any) api.RaiseEventOptions {
 
 // WithRawEventData is an option to send a byte slice with an event to a workflow.
 func WithRawEventData(data string) api.RaiseEventOptions {
-	return api.WithRawEventData(data)
+	return api.WithRawEventData(wrapperspb.String(data))
 }
 
 // WithOutput is an option to define an output when terminating a workflow.
@@ -98,7 +99,7 @@ func WithOutput(data any) api.TerminateOptions {
 
 // WithRawOutput is an option to define a byte slice to output when terminating a workflow.
 func WithRawOutput(data string) api.TerminateOptions {
-	return api.WithRawOutput(data)
+	return api.WithRawOutput(wrapperspb.String(data))
 }
 
 // WithRecursiveTerminate configures whether to terminate all sub-workflows created by the target workflow.

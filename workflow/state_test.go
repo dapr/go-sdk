@@ -19,11 +19,11 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/dapr/durabletask-go/api"
+	"github.com/dapr/durabletask-go/api/protos"
 )
 
 func TestString(t *testing.T) {
-	wfState := WorkflowState{Metadata: api.OrchestrationMetadata{RuntimeStatus: 0}}
+	wfState := WorkflowState{Metadata: protos.OrchestrationMetadata{RuntimeStatus: 0}}
 
 	t.Run("test running", func(t *testing.T) {
 		s := wfState.RuntimeStatus()

@@ -14,7 +14,10 @@ limitations under the License.
 */
 package workflow
 
-import "github.com/dapr/durabletask-go/api"
+import (
+	"github.com/dapr/durabletask-go/api"
+	"github.com/dapr/durabletask-go/api/protos"
+)
 
 type Status int
 
@@ -71,12 +74,12 @@ func (s Status) RuntimeStatus() api.OrchestrationStatus {
 }
 
 type WorkflowState struct {
-	Metadata api.OrchestrationMetadata
+	Metadata protos.OrchestrationMetadata
 }
 
 // RuntimeStatus returns the status from a workflow state.
 func (wfs *WorkflowState) RuntimeStatus() Status {
-	s := Status(wfs.Metadata.RuntimeStatus.Number())
+	s := Status(wfs.Metadata.GetRuntimeStatus().Number())
 	return s
 }
 
