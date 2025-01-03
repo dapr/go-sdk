@@ -20,7 +20,7 @@ import (
 
 	"google.golang.org/protobuf/types/known/wrapperspb"
 
-	"github.com/dapr/durabletask-go/api"
+	"github.com/dapr/durabletask-go/api/protos"
 	"github.com/dapr/durabletask-go/task"
 )
 
@@ -44,16 +44,16 @@ type FailureDetails struct {
 	IsNonRetriable bool            `json:"IsNonRetriable"`
 }
 
-func convertMetadata(orchestrationMetadata *api.OrchestrationMetadata) *Metadata {
+func convertMetadata(orchestrationMetadata *protos.OrchestrationMetadata) *Metadata {
 	metadata := Metadata{
-		InstanceID:             string(orchestrationMetadata.InstanceID),
+		InstanceID:             orchestrationMetadata.InstanceId,
 		Name:                   orchestrationMetadata.Name,
 		RuntimeStatus:          Status(orchestrationMetadata.RuntimeStatus.Number()),
-		CreatedAt:              orchestrationMetadata.CreatedAt,
-		LastUpdatedAt:          orchestrationMetadata.LastUpdatedAt,
-		SerializedInput:        orchestrationMetadata.SerializedInput,
-		SerializedOutput:       orchestrationMetadata.SerializedOutput,
-		SerializedCustomStatus: orchestrationMetadata.SerializedCustomStatus,
+		CreatedAt:              orchestrationMetadata.CreatedAt.AsTime(),
+		LastUpdatedAt:          orchestrationMetadata.LastUpdatedAt.AsTime(),
+		SerializedInput:        orchestrationMetadata.Input.GetValue(),
+		SerializedOutput:       orchestrationMetadata.Output.GetValue(),
+		SerializedCustomStatus: orchestrationMetadata.CustomStatus.GetValue(),
 	}
 	if orchestrationMetadata.FailureDetails != nil {
 		metadata.FailureDetails = &FailureDetails{

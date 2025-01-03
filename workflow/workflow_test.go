@@ -6,14 +6,14 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/dapr/durabletask-go/api"
+	"github.com/dapr/durabletask-go/api/protos"
 	"github.com/dapr/durabletask-go/task"
 )
 
 func TestConvertMetadata(t *testing.T) {
 	t.Run("convert metadata", func(t *testing.T) {
-		rawMetadata := &api.OrchestrationMetadata{
-			InstanceID: api.InstanceID("test"),
+		rawMetadata := &protos.OrchestrationMetadata{
+			InstanceId: "test",
 		}
 		metadata := convertMetadata(rawMetadata)
 		assert.NotEmpty(t, metadata)
