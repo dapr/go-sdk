@@ -46,27 +46,27 @@ type FailureDetails struct {
 
 func convertMetadata(orchestrationMetadata *protos.OrchestrationMetadata) *Metadata {
 	metadata := Metadata{
-		InstanceID:             orchestrationMetadata.InstanceId,
-		Name:                   orchestrationMetadata.Name,
-		RuntimeStatus:          Status(orchestrationMetadata.RuntimeStatus.Number()),
-		CreatedAt:              orchestrationMetadata.CreatedAt.AsTime(),
-		LastUpdatedAt:          orchestrationMetadata.LastUpdatedAt.AsTime(),
-		SerializedInput:        orchestrationMetadata.Input.GetValue(),
-		SerializedOutput:       orchestrationMetadata.Output.GetValue(),
-		SerializedCustomStatus: orchestrationMetadata.CustomStatus.GetValue(),
+		InstanceID:             orchestrationMetadata.GetInstanceId(),
+		Name:                   orchestrationMetadata.GetName(),
+		RuntimeStatus:          Status(orchestrationMetadata.GetRuntimeStatus().Number()),
+		CreatedAt:              orchestrationMetadata.GetCreatedAt().AsTime(),
+		LastUpdatedAt:          orchestrationMetadata.GetLastUpdatedAt().AsTime(),
+		SerializedInput:        orchestrationMetadata.GetInput().GetValue(),
+		SerializedOutput:       orchestrationMetadata.GetOutput().GetValue(),
+		SerializedCustomStatus: orchestrationMetadata.GetCustomStatus().GetValue(),
 	}
-	if orchestrationMetadata.FailureDetails != nil {
+	if orchestrationMetadata.GetFailureDetails() != nil {
 		metadata.FailureDetails = &FailureDetails{
-			Type:           orchestrationMetadata.FailureDetails.GetErrorType(),
-			Message:        orchestrationMetadata.FailureDetails.GetErrorMessage(),
-			StackTrace:     orchestrationMetadata.FailureDetails.GetStackTrace().GetValue(),
-			IsNonRetriable: orchestrationMetadata.FailureDetails.GetIsNonRetriable(),
+			Type:           orchestrationMetadata.GetFailureDetails().GetErrorType(),
+			Message:        orchestrationMetadata.GetFailureDetails().GetErrorMessage(),
+			StackTrace:     orchestrationMetadata.GetFailureDetails().GetStackTrace().GetValue(),
+			IsNonRetriable: orchestrationMetadata.GetFailureDetails().GetIsNonRetriable(),
 		}
 
-		if orchestrationMetadata.FailureDetails.GetInnerFailure() != nil {
+		if orchestrationMetadata.GetFailureDetails().GetInnerFailure() != nil {
 			var root *FailureDetails
 			current := root
-			failure := orchestrationMetadata.FailureDetails.GetInnerFailure()
+			failure := orchestrationMetadata.GetFailureDetails().GetInnerFailure()
 			for {
 				current.Type = failure.GetErrorType()
 				current.Message = failure.GetErrorMessage()

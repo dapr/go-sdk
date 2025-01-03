@@ -79,7 +79,7 @@ type WorkflowState struct {
 
 // RuntimeStatus returns the status from a workflow state.
 func (wfs *WorkflowState) RuntimeStatus() Status {
-	s := Status(wfs.Metadata.RuntimeStatus.Number())
+	s := Status(wfs.Metadata.GetRuntimeStatus().Number())
 	return s
 }
 
