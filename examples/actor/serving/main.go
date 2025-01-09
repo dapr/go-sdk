@@ -124,7 +124,7 @@ func (t *TestActor) IncrementAndGet(ctx context.Context, stateKey string) (*api.
 }
 
 func (t *TestActor) ReminderCall(reminderName string, state []byte, dueTime string, period string) {
-	fmt.Println("receive reminder = ", reminderName, " state = ", string(state), "duetime = ", dueTime, "period = ", period)
+	fmt.Println("receive reminder = ", reminderName, " state = ", string(state))
 }
 
 func main() {
