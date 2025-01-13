@@ -95,7 +95,7 @@ func main() {
 
 	in := &dapr.InvokeBindingRequest{
 		Name:      "example-http-binding",
-		Operation: "create",
+		Operation: "get",
 	}
 	if err := client.InvokeOutputBinding(ctx, in); err != nil {
 		panic(err)

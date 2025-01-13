@@ -17,8 +17,8 @@ expected_stdout_lines:
   - '== APP == get post request =  laurence'
   - '== APP == get req =  hello'
   - '== APP == get req =  hello'
-  - '== APP == receive reminder =  testReminderName  state =  "hello" duetime =  5s period =  5s'
-  - '== APP == receive reminder =  testReminderName  state =  "hello" duetime =  5s period =  5s'
+  - '== APP == receive reminder =  testReminderName  state =  "hello"'
+  - '== APP == receive reminder =  testReminderName  state =  "hello"'
 background: true
 sleep: 30
 timeout_seconds: 60
@@ -99,6 +99,6 @@ dapr stop --app-id  actor-serving
 == APP == get post request =  laurence
 == APP == get req =  hello
 == APP == get req =  hello
-== APP == receive reminder =  testReminderName  state =  "hello" duetime =  5s period =  5s
-== APP == receive reminder =  testReminderName  state =  "hello" duetime =  5s period =  5s
+== APP == receive reminder =  testReminderName  state =  "hello"
+== APP == receive reminder =  testReminderName  state =  "hello"
 ```

@@ -7,6 +7,6 @@ spec:
   version: v1
   metadata:
   - name: url
-    value: https://http2.pro/api/v1
+    value: https://sandbox.api.service.nhs.uk/hello-world/hello/world
   - name: method
     value: GET
