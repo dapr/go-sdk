@@ -73,7 +73,7 @@ func TestEventHandler(t *testing.T) {
 		"datacontenttype" : "application/json",
 		"data" : "eyJtZXNzYWdlIjoiaGVsbG8ifQ==",
 		"traceid": "aaa",
-		"traceparent": "bbb",
+		"traceparent": "bbb"
 	}`
 
 	s := newServer("", nil)
