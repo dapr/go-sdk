@@ -69,6 +69,10 @@ type topicEventJSON struct {
 	Topic string `json:"topic"`
 	// PubsubName is name of the pub/sub this message came from
 	PubsubName string `json:"pubsubname"`
+	// TraceID is the tracing header identifier for the incoming event
+	TraceID string `json:"traceid"`
+	// TraceParent is name of the parent trace identifier for the incoming event
+	TraceParent string `json:"traceparent"`
 }
 
 func (in topicEventJSON) getData() (data any, rawData []byte) {
@@ -309,6 +313,8 @@ func (s *Server) AddTopicEventSubscriber(sub *common.Subscription, subscriber co
 				PubsubName:      in.PubsubName,
 				Topic:           in.Topic,
 				Metadata:        getCustomMetdataFromHeaders(r),
+				TraceID:         in.TraceID,
+				TraceParent:     in.TraceParent,
 			}
 
 			w.Header().Add("Content-Type", "application/json")
