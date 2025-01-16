@@ -40,7 +40,7 @@ jobs:
 
       - name: Release Main
         uses: actions/create-release@v1
-        if: !contains(github.ref , 'rc')
+        if: ${{ !contains(github.ref , 'rc') }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -52,7 +52,7 @@ jobs:
 
       - name: Release RC
         uses: actions/create-release@v1
-        if: contains(github.ref, 'rc')
+        if: ${{ contains(github.ref, 'rc') }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
