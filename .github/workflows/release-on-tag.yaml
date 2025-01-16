@@ -38,8 +38,9 @@ jobs:
         run: |
           echo "RELEASE_VERSION=$(echo ${GITHUB_REF:10})" >> $GITHUB_ENV
 
-      - name: Release
+      - name: Release Main
         uses: actions/create-release@v1
+        if: !contains(github.ref , 'rc')
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -48,6 +49,18 @@ jobs:
           body: Automatic Go Dapr client release
           draft: false
           prerelease: false
+
+      - name: Release RC
+        uses: actions/create-release@v1
+        if: contains(github.ref, 'rc')
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          body: Automatic Go Dapr client release
+          draft: false
+          prerelease: true
 
       - name: Notify
         uses: rjstone/discord-webhook-notify@v1
