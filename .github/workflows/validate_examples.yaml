@@ -38,9 +38,9 @@ jobs:
       CHECKOUT_REF: ${{ github.ref }}
     outputs:
       DAPR_INSTALL_URL: ${{ env.DAPR_INSTALL_URL }}
-      DAPR_CLI_VER: 1.15.0-rc.3
+      DAPR_CLI_VER: 1.15.0-rc.4
       DAPR_CLI_REF: ${{ steps.outputs.outputs.DAPR_CLI_REF }}
-      DAPR_RUNTIME_VER: 1.15.0-rc.8
+      DAPR_RUNTIME_VER: 1.15.0-rc.9
       CHECKOUT_REPO: ${{ steps.outputs.outputs.CHECKOUT_REPO }}
       CHECKOUT_REF: ${{ steps.outputs.outputs.CHECKOUT_REF }}
       DAPR_REF: ${{ steps.outputs.outputs.DAPR_REF }}
