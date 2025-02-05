@@ -12,7 +12,7 @@ import (
 
 func TestTopicSubscripiton(t *testing.T) {
 	t.Run("duplicate metadata", func(t *testing.T) {
-		sub := internal.NewTopicSubscription("test", "mytopic")
+		sub := internal.NewTopicSubscription("test", "mytopic", "")
 		require.NoError(t, sub.SetMetadata(map[string]string{
 			"test": "test",
 		}))
@@ -22,7 +22,7 @@ func TestTopicSubscripiton(t *testing.T) {
 	})
 
 	t.Run("duplicate route", func(t *testing.T) {
-		sub := internal.NewTopicSubscription("test", "mytopic")
+		sub := internal.NewTopicSubscription("test", "mytopic", "")
 		require.NoError(t, sub.SetDefaultRoute("/test"))
 		assert.Equal(t, "/test", sub.Route)
 		require.EqualError(t, sub.SetDefaultRoute("/test"),
@@ -30,7 +30,7 @@ func TestTopicSubscripiton(t *testing.T) {
 	})
 
 	t.Run("duplicate route after routing rule", func(t *testing.T) {
-		sub := internal.NewTopicSubscription("test", "mytopic")
+		sub := internal.NewTopicSubscription("test", "mytopic", "")
 		require.NoError(t, sub.AddRoutingRule("/other", `event.type == "test"`, 0))
 		require.NoError(t, sub.SetDefaultRoute("/test"))
 		require.EqualError(t, sub.SetDefaultRoute("/test"),
@@ -38,7 +38,7 @@ func TestTopicSubscripiton(t *testing.T) {
 	})
 
 	t.Run("default route after routing rule", func(t *testing.T) {
-		sub := internal.NewTopicSubscription("test", "mytopic")
+		sub := internal.NewTopicSubscription("test", "mytopic", "")
 		require.NoError(t, sub.SetDefaultRoute("/test"))
 		assert.Equal(t, "/test", sub.Route)
 		require.NoError(t, sub.AddRoutingRule("/other", `event.type == "test"`, 0))
@@ -49,14 +49,14 @@ func TestTopicSubscripiton(t *testing.T) {
 	})
 
 	t.Run("duplicate routing rule priority", func(t *testing.T) {
-		sub := internal.NewTopicSubscription("test", "mytopic")
+		sub := internal.NewTopicSubscription("test", "mytopic", "")
 		require.NoError(t, sub.AddRoutingRule("/other", `event.type == "other"`, 1))
 		require.EqualError(t, sub.AddRoutingRule("/test", `event.type == "test"`, 1),
 			"subscription for topic mytopic on pubsub test already has a routing rule with priority 1")
 	})
 
 	t.Run("priority ordering", func(t *testing.T) {
-		sub := internal.NewTopicSubscription("test", "mytopic")
+		sub := internal.NewTopicSubscription("test", "mytopic", "")
 		require.NoError(t, sub.AddRoutingRule("/100", `event.type == "100"`, 100))
 		require.NoError(t, sub.AddRoutingRule("/1", `event.type == "1"`, 1))
 		require.NoError(t, sub.AddRoutingRule("/50", `event.type == "50"`, 50))
