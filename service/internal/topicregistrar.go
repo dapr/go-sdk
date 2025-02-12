@@ -39,7 +39,7 @@ func (m TopicRegistrar) AddSubscription(sub *common.Subscription, fn common.Topi
 	ts, ok := m[key]
 	if !ok {
 		ts = &TopicRegistration{
-			Subscription:   NewTopicSubscription(sub.PubsubName, sub.Topic),
+			Subscription:   NewTopicSubscription(sub.PubsubName, sub.Topic, sub.DeadLetterTopic),
 			RouteHandlers:  make(map[string]common.TopicEventSubscriber),
 			DefaultHandler: nil,
 		}
