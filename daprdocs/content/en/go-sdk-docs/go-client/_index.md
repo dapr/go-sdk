@@ -100,69 +100,69 @@ import (
 )
 
 func ExampleWorkflow(ctx *workflow.WorkflowContext) (any, error) {
-var output string
-input := "world"
-
-if err := ctx.CallActivity(ExampleActivity, workflow.ActivityInput(input)).Await(&output); err != nil {
-return nil, err
-}
-
-// Print output - "hello world"
-fmt.Println(output)
-
-return nil, nil
+    var output string
+    input := "world"
+    
+    if err := ctx.CallActivity(ExampleActivity, workflow.ActivityInput(input)).Await(&output); err != nil {
+        return nil, err
+    }
+    
+    // Print output - "hello world"
+    fmt.Println(output)
+    
+    return nil, nil
 }
 
 func ExampleActivity(ctx workflow.ActivityContext) (any, error) {
-var input int
-if err := ctx.GetInput(&input); err != nil {
-return "", err
-}
-
-return fmt.Sprintf("hello %s", input), nil
+    var input int
+    if err := ctx.GetInput(&input); err != nil {
+        return "", err
+    }
+    
+    return fmt.Sprintf("hello %s", input), nil
 }
 
 func main() {
-// Create a workflow worker
-w, err := workflow.NewWorker()
-if err != nil {
-log.Fatalf("error creating worker: %v", err)
-}
-
-// Register the workflow
-w.RegisterWorkflow(ExampleWorkflow)
-
-// Register the activity
-w.RegisterActivity(ExampleActivity)
-
-// Start workflow runner
-if err := w.Start(); err != nil {
-log.Fatal(err)
-}
-
-// Create a workflow client
-wfClient, err := workflow.NewClient()
-if err != nil {
-log.Fatal(err)
-}
-
-// Start a new workflow
-id, err := wfClient.ScheduleNewWorkflow(context.Background(), "ExampleWorkflow")
-if err != nil {
-log.Fatal(err)
-}
-
-// Wait for the workflow to complete
-metadata, err := wfClient.WaitForWorkflowCompletion(ctx, id)
-if err != nil {
-log.Fatal(err)
-}
-
-// Print workflow status post-completion
-fmt.Println(metadata.RuntimeStatus)
-
-// Shutdown Worker
-w.Shutdown()
+    // Create a workflow worker
+    w, err := workflow.NewWorker()
+    if err != nil {
+        log.Fatalf("error creating worker: %v", err)
+    }
+    
+    // Register the workflow
+    w.RegisterWorkflow(ExampleWorkflow)
+    
+    // Register the activity
+    w.RegisterActivity(ExampleActivity)
+    
+    // Start workflow runner
+    if err := w.Start(); err != nil {
+        log.Fatal(err)
+    }
+    
+    // Create a workflow client
+    wfClient, err := workflow.NewClient()
+    if err != nil {
+        log.Fatal(err)
+    }
+    
+    // Start a new workflow
+    id, err := wfClient.ScheduleNewWorkflow(context.Background(), "ExampleWorkflow")
+    if err != nil {
+        log.Fatal(err)
+    }
+    
+    // Wait for the workflow to complete
+    metadata, err := wfClient.WaitForWorkflowCompletion(ctx, id)
+    if err != nil {
+        log.Fatal(err)
+    }
+    
+    // Print workflow status post-completion
+    fmt.Println(metadata.RuntimeStatus)
+    
+    // Shutdown Worker
+    w.Shutdown()
 }
 ```
 
