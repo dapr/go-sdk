@@ -136,7 +136,9 @@ func (s *Subscription) Receive() (*SubscriptionMessage, error) {
 				if s.closed.Load() {
 					return nil, errors.New("subscription is permanently closed; cannot reconnect")
 				}
-				_ = s.closeStreamOnly()
+				if err := s.closeStreamOnly(); err != nil {
+					logger.Printf("error closing current stream: %v", err)
+				}
 
 				newStream, nerr := s.createStream(s.ctx, s.opts)
 				if nerr != nil {
