@@ -17,8 +17,9 @@ package main
 import (
 	"context"
 	"fmt"
-	dapr "github.com/dapr/go-sdk/client"
 	"log"
+
+	dapr "github.com/dapr/go-sdk/client"
 )
 
 func main() {
@@ -28,12 +29,12 @@ func main() {
 	}
 
 	input := dapr.ConversationInput{
-		Message: "hello world",
+		Content: "hello world",
 		// Role:     nil, // Optional
 		// ScrubPII: nil, // Optional
 	}
 
-	fmt.Printf("conversation input: %s\n", input.Message)
+	fmt.Printf("conversation input: %s\n", input.Content)
 
 	var conversationComponent = "echo"
 
