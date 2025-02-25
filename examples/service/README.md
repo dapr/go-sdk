@@ -91,7 +91,7 @@ expected_stdout_lines:
 ```bash
 dapr run --app-id custom-grpc-client \
 		 -d ./config \
-		 --dapr-http-max-request-size 41 \
+		 --max-body-size 41Mi \
 		 --log-level debug \
 		 go run ./custom-grpc-client/main.go
 ```
