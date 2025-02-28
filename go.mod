@@ -1,10 +1,9 @@
 module github.com/dapr/go-sdk
 
 go 1.23.5
-
 require (
-	github.com/dapr/dapr v1.15.0-rc.9
-	github.com/dapr/durabletask-go v0.5.1-0.20250124181508-a1b42ae65aee
+	github.com/dapr/dapr v1.15.0
+	github.com/dapr/durabletask-go v0.6.5
 	github.com/go-chi/chi/v5 v5.1.0
 	github.com/golang/mock v1.6.0
 	github.com/google/uuid v1.6.0
@@ -16,7 +15,7 @@ require (
 
 require (
 	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
-	github.com/dapr/kit v0.13.1-0.20250129050741-c46009f360b0 // indirect
+	github.com/dapr/kit v0.15.1 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/go-logr/logr v1.4.2 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
@@ -28,8 +27,8 @@ require (
 	go.opentelemetry.io/otel/trace v1.34.0 // indirect
 	golang.org/x/exp v0.0.0-20250128182459-e0ece0dbea4c // indirect
 	golang.org/x/net v0.34.0 // indirect
-	golang.org/x/sys v0.29.0 // indirect
-	golang.org/x/text v0.21.0 // indirect
+	golang.org/x/sys v0.30.0 // indirect
+	golang.org/x/text v0.22.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250127172529-29210b9bc287 // indirect
 	k8s.io/utils v0.0.0-20241210054802-24370beab758 // indirect
 )
