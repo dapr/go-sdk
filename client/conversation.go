@@ -44,8 +44,8 @@ type conversationRequestOption func(request *conversationRequest)
 
 // ConversationInput defines a single input.
 type ConversationInput struct {
-	// The string to send to the llm.
-	Message string
+	// The content to send to the llm.
+	Content string
 	// The role of the message.
 	Role *string
 	// Whether to Scrub PII from the input
@@ -104,7 +104,7 @@ func (c *GRPCClient) ConverseAlpha1(ctx context.Context, req conversationRequest
 	cinputs := make([]*runtimev1pb.ConversationInput, len(req.inputs))
 	for i, in := range req.inputs {
 		cinputs[i] = &runtimev1pb.ConversationInput{
-			Message:  in.Message,
+			Content:  in.Content,
 			Role:     in.Role,
 			ScrubPII: in.ScrubPII,
 		}
