@@ -18,6 +18,8 @@ type TopicSubscription struct {
 	Routes *TopicRoutes `json:"routes,omitempty"`
 	// Metadata is the subscription metadata.
 	Metadata map[string]string `json:"metadata,omitempty"`
+	// DeadLetterTopic is the name of the deadletter topic.
+	DeadLetterTopic string `json:"deadLetterTopic"`
 }
 
 // TopicRoutes encapsulates the default route and multiple routing rules.
@@ -42,10 +44,11 @@ type TopicRule struct {
 }
 
 // NewTopicSubscription creates a new `TopicSubscription`.
-func NewTopicSubscription(pubsubName, topic string) *TopicSubscription {
+func NewTopicSubscription(pubsubName, topic, deadLetterTopic string) *TopicSubscription {
 	return &TopicSubscription{ //nolint:exhaustivestruct
-		PubsubName: pubsubName,
-		Topic:      topic,
+		PubsubName:      pubsubName,
+		Topic:           topic,
+		DeadLetterTopic: deadLetterTopic,
 	}
 }
 

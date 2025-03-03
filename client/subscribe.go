@@ -23,6 +23,9 @@ import (
 	"sync"
 	"sync/atomic"
 
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+
 	pb "github.com/dapr/dapr/pkg/proto/runtime/v1"
 	"github.com/dapr/go-sdk/service/common"
 )
@@ -37,10 +40,15 @@ type SubscriptionOptions struct {
 }
 
 type Subscription struct {
+	ctx    context.Context
 	stream pb.Dapr_SubscribeTopicEventsAlpha1Client
+
 	// lock locks concurrent writes to subscription stream.
 	lock   sync.Mutex
 	closed atomic.Bool
+
+	createStream func(ctx context.Context, opts SubscriptionOptions) (pb.Dapr_SubscribeTopicEventsAlpha1Client, error)
+	opts         SubscriptionOptions
 }
 
 type SubscriptionMessage struct {
@@ -55,7 +63,10 @@ func (c *GRPCClient) Subscribe(ctx context.Context, opts SubscriptionOptions) (*
 	}
 
 	s := &Subscription{
-		stream: stream,
+		ctx:          ctx,
+		stream:       stream,
+		createStream: c.subscribeInitialRequest,
+		opts:         opts,
 	}
 
 	return s, nil
@@ -101,52 +112,96 @@ func (s *Subscription) Close() error {
 }
 
 func (s *Subscription) Receive() (*SubscriptionMessage, error) {
-	resp, err := s.stream.Recv()
-	if err != nil {
-		return nil, err
-	}
-	event := resp.GetEventMessage()
-
-	data := any(event.GetData())
-	if len(event.GetData()) > 0 {
-		mediaType, _, err := mime.ParseMediaType(event.GetDataContentType())
-		if err == nil {
-			var v interface{}
-			switch mediaType {
-			case "application/json":
-				if err := json.Unmarshal(event.GetData(), &v); err == nil {
-					data = v
-				}
-			case "text/plain":
-				// Assume UTF-8 encoded string.
-				data = string(event.GetData())
+	for {
+		resp, err := s.stream.Recv()
+		if err != nil {
+			select {
+			case <-s.ctx.Done():
+				return nil, errors.New("subscription context closed")
 			default:
-				if strings.HasPrefix(mediaType, "application/") &&
-					strings.HasSuffix(mediaType, "+json") {
+				// proceed to check the gRPC status error
+			}
+
+			st, ok := status.FromError(err)
+			if !ok {
+				// not a grpc status error
+				return nil, err
+			}
+
+			switch st.Code() {
+			case codes.Unavailable, codes.Unknown:
+				logger.Printf("gRPC error while reading from stream: %s (code=%v)",
+					st.Message(), st.Code())
+				// close the current stream and reconnect
+				if s.closed.Load() {
+					return nil, errors.New("subscription is permanently closed; cannot reconnect")
+				}
+				if err := s.closeStreamOnly(); err != nil {
+					logger.Printf("error closing current stream: %v", err)
+				}
+
+				newStream, nerr := s.createStream(s.ctx, s.opts)
+				if nerr != nil {
+					return nil, errors.New("re-subscribe failed")
+				}
+
+				s.lock.Lock()
+				s.stream = newStream
+				s.lock.Unlock()
+
+				// try receiving again
+				continue
+
+			case codes.Canceled:
+				return nil, errors.New("stream canceled")
+
+			default:
+				return nil, errors.New("subscription recv error")
+			}
+		}
+
+		event := resp.GetEventMessage()
+		data := any(event.GetData())
+		if len(event.GetData()) > 0 {
+			mediaType, _, err := mime.ParseMediaType(event.GetDataContentType())
+			if err == nil {
+				var v interface{}
+				switch mediaType {
+				case "application/json":
 					if err := json.Unmarshal(event.GetData(), &v); err == nil {
 						data = v
+					}
+				case "text/plain":
+					// Assume UTF-8 encoded string.
+					data = string(event.GetData())
+				default:
+					if strings.HasPrefix(mediaType, "application/") &&
+						strings.HasSuffix(mediaType, "+json") {
+						if err := json.Unmarshal(event.GetData(), &v); err == nil {
+							data = v
+						}
 					}
 				}
 			}
 		}
-	}
 
-	topicEvent := &common.TopicEvent{
-		ID:              event.GetId(),
-		Source:          event.GetSource(),
-		Type:            event.GetType(),
-		SpecVersion:     event.GetSpecVersion(),
-		DataContentType: event.GetDataContentType(),
-		Data:            data,
-		RawData:         event.GetData(),
-		Topic:           event.GetTopic(),
-		PubsubName:      event.GetPubsubName(),
-	}
+		topicEvent := &common.TopicEvent{
+			ID:              event.GetId(),
+			Source:          event.GetSource(),
+			Type:            event.GetType(),
+			SpecVersion:     event.GetSpecVersion(),
+			DataContentType: event.GetDataContentType(),
+			Data:            data,
+			RawData:         event.GetData(),
+			Topic:           event.GetTopic(),
+			PubsubName:      event.GetPubsubName(),
+		}
 
-	return &SubscriptionMessage{
-		sub:        s,
-		TopicEvent: topicEvent,
-	}, nil
+		return &SubscriptionMessage{
+			sub:        s,
+			TopicEvent: topicEvent,
+		}, nil
+	}
 }
 
 func (s *SubscriptionMessage) Success() error {
@@ -231,4 +286,14 @@ func (c *GRPCClient) subscribeInitialRequest(ctx context.Context, opts Subscript
 	}
 
 	return stream, nil
+}
+
+func (s *Subscription) closeStreamOnly() error {
+	s.lock.Lock()
+	defer s.lock.Unlock()
+
+	if s.stream != nil {
+		return s.stream.CloseSend()
+	}
+	return nil
 }

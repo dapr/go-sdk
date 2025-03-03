@@ -125,7 +125,13 @@ func wrapActivity(a Activity) task.Activity {
 	return func(ctx task.ActivityContext) (any, error) {
 		aCtx := ActivityContext{ctx: ctx}
 
-		return a(aCtx)
+		result, err := a(aCtx)
+		if err != nil {
+			activityName, _ := getFunctionName(a) // Get the activity name for context
+			return nil, fmt.Errorf("activity %s failed: %w", activityName, err)
+		}
+
+		return result, nil
 	}
 }
 

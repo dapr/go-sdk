@@ -53,10 +53,11 @@ func (s *Server) ListTopicSubscriptions(ctx context.Context, in *emptypb.Empty) 
 	for _, v := range s.topicRegistrar {
 		s := v.Subscription
 		sub := &runtimev1pb.TopicSubscription{
-			PubsubName: s.PubsubName,
-			Topic:      s.Topic,
-			Metadata:   s.Metadata,
-			Routes:     convertRoutes(s.Routes),
+			PubsubName:      s.PubsubName,
+			Topic:           s.Topic,
+			Metadata:        s.Metadata,
+			Routes:          convertRoutes(s.Routes),
+			DeadLetterTopic: s.DeadLetterTopic,
 		}
 		subs = append(subs, sub)
 	}
