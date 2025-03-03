@@ -17,10 +17,11 @@ package workflow
 import (
 	"context"
 	"encoding/json"
+	"time"
 
 	"google.golang.org/protobuf/types/known/wrapperspb"
 
-	"github.com/microsoft/durabletask-go/task"
+	"github.com/dapr/durabletask-go/task"
 )
 
 type ActivityContext struct {
@@ -38,7 +39,16 @@ func (wfac *ActivityContext) Context() context.Context {
 type callActivityOption func(*callActivityOptions) error
 
 type callActivityOptions struct {
-	rawInput *wrapperspb.StringValue
+	rawInput    *wrapperspb.StringValue
+	retryPolicy *RetryPolicy
+}
+
+type RetryPolicy struct {
+	MaxAttempts          int
+	InitialRetryInterval time.Duration
+	BackoffCoefficient   float64
+	MaxRetryInterval     time.Duration
+	RetryTimeout         time.Duration
 }
 
 // ActivityInput is an option to pass a JSON-serializable input
@@ -58,6 +68,26 @@ func ActivityRawInput(input string) callActivityOption {
 	return func(opts *callActivityOptions) error {
 		opts.rawInput = wrapperspb.String(input)
 		return nil
+	}
+}
+
+func ActivityRetryPolicy(policy RetryPolicy) callActivityOption {
+	return func(opts *callActivityOptions) error {
+		opts.retryPolicy = &policy
+		return nil
+	}
+}
+
+func (opts *callActivityOptions) getRetryPolicy() *task.RetryPolicy {
+	if opts.retryPolicy == nil {
+		return nil
+	}
+	return &task.RetryPolicy{
+		MaxAttempts:          opts.retryPolicy.MaxAttempts,
+		InitialRetryInterval: opts.retryPolicy.InitialRetryInterval,
+		BackoffCoefficient:   opts.retryPolicy.BackoffCoefficient,
+		MaxRetryInterval:     opts.retryPolicy.MaxRetryInterval,
+		RetryTimeout:         opts.retryPolicy.RetryTimeout,
 	}
 }
 

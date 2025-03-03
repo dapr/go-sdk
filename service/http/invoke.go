@@ -14,7 +14,7 @@ limitations under the License.
 package http
 
 import (
-	"fmt"
+	"errors"
 	"io"
 	"net/http"
 	"strings"
@@ -27,11 +27,11 @@ import (
 // AddServiceInvocationHandler appends provided service invocation handler with its route to the service.
 func (s *Server) AddServiceInvocationHandler(route string, fn common.ServiceInvocationHandler) error {
 	if route == "" || route == "/" {
-		return fmt.Errorf("service route required")
+		return errors.New("service route required")
 	}
 
 	if fn == nil {
-		return fmt.Errorf("invocation handler required")
+		return errors.New("invocation handler required")
 	}
 
 	if !strings.HasPrefix(route, "/") {

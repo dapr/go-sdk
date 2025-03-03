@@ -20,16 +20,33 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/microsoft/durabletask-go/api"
-	"github.com/microsoft/durabletask-go/backend"
-	durabletaskclient "github.com/microsoft/durabletask-go/client"
+	"google.golang.org/grpc"
+	"google.golang.org/protobuf/types/known/wrapperspb"
+
+	"github.com/dapr/durabletask-go/api"
+	"github.com/dapr/durabletask-go/backend"
+	durabletaskclient "github.com/dapr/durabletask-go/client"
 
 	dapr "github.com/dapr/go-sdk/client"
 )
 
 type Client struct {
+	conn          *grpc.ClientConn
 	taskHubClient *durabletaskclient.TaskHubGrpcClient
 }
+
+type WorkflowIDReusePolicy struct {
+	OperationStatus []Status
+	Action          CreateWorkflowAction
+}
+
+type CreateWorkflowAction = api.CreateOrchestrationAction
+
+const (
+	ReuseIDActionError     CreateWorkflowAction = api.REUSE_ID_ACTION_ERROR
+	ReuseIDActionIgnore    CreateWorkflowAction = api.REUSE_ID_ACTION_IGNORE
+	ReuseIDActionTerminate CreateWorkflowAction = api.REUSE_ID_ACTION_TERMINATE
+)
 
 // WithInstanceID is an option to set an InstanceID when scheduling a new workflow.
 func WithInstanceID(id string) api.NewOrchestrationOptions {
@@ -45,12 +62,19 @@ func WithInput(input any) api.NewOrchestrationOptions {
 
 // WithRawInput is an option to pass a byte slice as an input when scheduling a new workflow.
 func WithRawInput(input string) api.NewOrchestrationOptions {
-	return api.WithRawInput(input)
+	return api.WithRawInput(wrapperspb.String(input))
 }
 
 // WithStartTime is an option to set the start time when scheduling a new workflow.
 func WithStartTime(time time.Time) api.NewOrchestrationOptions {
 	return api.WithStartTime(time)
+}
+
+func WithReuseIDPolicy(policy WorkflowIDReusePolicy) api.NewOrchestrationOptions {
+	return api.WithOrchestrationIdReusePolicy(&api.OrchestrationIdReusePolicy{
+		OperationStatus: convertStatusSlice(policy.OperationStatus),
+		Action:          policy.Action,
+	})
 }
 
 // WithFetchPayloads is an option to return the payload from a workflow.
@@ -65,7 +89,7 @@ func WithEventPayload(data any) api.RaiseEventOptions {
 
 // WithRawEventData is an option to send a byte slice with an event to a workflow.
 func WithRawEventData(data string) api.RaiseEventOptions {
-	return api.WithRawEventData(data)
+	return api.WithRawEventData(wrapperspb.String(data))
 }
 
 // WithOutput is an option to define an output when terminating a workflow.
@@ -75,7 +99,17 @@ func WithOutput(data any) api.TerminateOptions {
 
 // WithRawOutput is an option to define a byte slice to output when terminating a workflow.
 func WithRawOutput(data string) api.TerminateOptions {
-	return api.WithRawOutput(data)
+	return api.WithRawOutput(wrapperspb.String(data))
+}
+
+// WithRecursiveTerminate configures whether to terminate all sub-workflows created by the target workflow.
+func WithRecursiveTerminate(recursive bool) api.TerminateOptions {
+	return api.WithRecursiveTerminate(recursive)
+}
+
+// WithRecursivePurge configures whether to purge all sub-workflows created by the target workflow.
+func WithRecursivePurge(recursive bool) api.PurgeOptions {
+	return api.WithRecursivePurge(recursive)
 }
 
 type clientOption func(*clientOptions) error
@@ -113,9 +147,11 @@ func NewClient(opts ...clientOption) (*Client, error) {
 		return &Client{}, fmt.Errorf("failed to initialise dapr.Client: %v", err)
 	}
 
-	taskHubClient := durabletaskclient.NewTaskHubGrpcClient(daprClient.GrpcClientConn(), backend.DefaultLogger())
+	conn := daprClient.GrpcClientConn()
+	taskHubClient := durabletaskclient.NewTaskHubGrpcClient(conn, backend.DefaultLogger())
 
 	return &Client{
+		conn:          conn,
 		taskHubClient: taskHubClient,
 	}, nil
 }
@@ -205,9 +241,13 @@ func (c *Client) ResumeWorkflow(ctx context.Context, id, reason string) error {
 
 // PurgeWorkflow will purge a given workflow and return an error output.
 // NOTE: The workflow must be in a terminated or completed state.
-func (c *Client) PurgeWorkflow(ctx context.Context, id string) error {
+func (c *Client) PurgeWorkflow(ctx context.Context, id string, opts ...api.PurgeOptions) error {
 	if id == "" {
 		return errors.New("no workflow id specified")
 	}
-	return c.taskHubClient.PurgeOrchestrationState(ctx, api.InstanceID(id))
+	return c.taskHubClient.PurgeOrchestrationState(ctx, api.InstanceID(id), opts...)
+}
+
+func (c *Client) Close() {
+	_ = c.conn.Close()
 }

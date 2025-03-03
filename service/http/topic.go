@@ -69,6 +69,10 @@ type topicEventJSON struct {
 	Topic string `json:"topic"`
 	// PubsubName is name of the pub/sub this message came from
 	PubsubName string `json:"pubsubname"`
+	// TraceID is the tracing header identifier for the incoming event
+	TraceID string `json:"traceid"`
+	// TraceParent is name of the parent trace identifier for the incoming event
+	TraceParent string `json:"traceparent"`
 }
 
 func (in topicEventJSON) getData() (data any, rawData []byte) {
@@ -190,9 +194,11 @@ func (s *Server) registerBaseHandler() {
 		err := runtime.GetActorRuntimeInstanceContext().Deactivate(r.Context(), actorType, actorID)
 		if err == actorErr.ErrActorTypeNotFound || err == actorErr.ErrActorIDNotFound {
 			w.WriteHeader(http.StatusNotFound)
+			return
 		}
 		if err != actorErr.Success {
 			w.WriteHeader(http.StatusInternalServerError)
+			return
 		}
 		w.WriteHeader(http.StatusOK)
 	}
@@ -207,9 +213,11 @@ func (s *Server) registerBaseHandler() {
 		err := runtime.GetActorRuntimeInstanceContext().InvokeReminder(r.Context(), actorType, actorID, reminderName, reqData)
 		if err == actorErr.ErrActorTypeNotFound {
 			w.WriteHeader(http.StatusNotFound)
+			return
 		}
 		if err != actorErr.Success {
 			w.WriteHeader(http.StatusInternalServerError)
+			return
 		}
 		w.WriteHeader(http.StatusOK)
 	}
@@ -224,9 +232,11 @@ func (s *Server) registerBaseHandler() {
 		err := runtime.GetActorRuntimeInstanceContext().InvokeTimer(r.Context(), actorType, actorID, timerName, reqData)
 		if err == actorErr.ErrActorTypeNotFound {
 			w.WriteHeader(http.StatusNotFound)
+			return
 		}
 		if err != actorErr.Success {
 			w.WriteHeader(http.StatusInternalServerError)
+			return
 		}
 		w.WriteHeader(http.StatusOK)
 	}
@@ -235,6 +245,15 @@ func (s *Server) registerBaseHandler() {
 
 // AddTopicEventHandler appends provided event handler with it's name to the service.
 func (s *Server) AddTopicEventHandler(sub *common.Subscription, fn common.TopicEventHandler) error {
+	if fn == nil {
+		return errors.New("topic handler required")
+	}
+
+	return s.AddTopicEventSubscriber(sub, fn)
+}
+
+// AddTopicEventSubscriber appends the provided subscriber to the service.
+func (s *Server) AddTopicEventSubscriber(sub *common.Subscription, subscriber common.TopicEventSubscriber) error {
 	if sub == nil {
 		return errors.New("subscription required")
 	}
@@ -243,7 +262,7 @@ func (s *Server) AddTopicEventHandler(sub *common.Subscription, fn common.TopicE
 	if sub.Route == "" {
 		return errors.New("handler route name")
 	}
-	if err := s.topicRegistrar.AddSubscription(sub, fn); err != nil {
+	if err := s.topicRegistrar.AddSubscription(sub, subscriber); err != nil {
 		return err
 	}
 
@@ -294,13 +313,15 @@ func (s *Server) AddTopicEventHandler(sub *common.Subscription, fn common.TopicE
 				PubsubName:      in.PubsubName,
 				Topic:           in.Topic,
 				Metadata:        getCustomMetdataFromHeaders(r),
+				TraceID:         in.TraceID,
+				TraceParent:     in.TraceParent,
 			}
 
 			w.Header().Add("Content-Type", "application/json")
 			w.WriteHeader(http.StatusOK)
 
 			// execute user handler
-			retry, err := fn(r.Context(), &te)
+			retry, err := subscriber.Handle(r.Context(), &te)
 			if err == nil {
 				writeStatus(w, common.SubscriptionResponseStatusSuccess)
 				return

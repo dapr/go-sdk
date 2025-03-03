@@ -25,9 +25,9 @@ import (
 
 	dapr "github.com/dapr/go-sdk/client"
 
-	"github.com/microsoft/durabletask-go/backend"
-	durabletaskclient "github.com/microsoft/durabletask-go/client"
-	"github.com/microsoft/durabletask-go/task"
+	"github.com/dapr/durabletask-go/backend"
+	durabletaskclient "github.com/dapr/durabletask-go/client"
+	"github.com/dapr/durabletask-go/task"
 )
 
 type WorkflowWorker struct {
@@ -125,7 +125,13 @@ func wrapActivity(a Activity) task.Activity {
 	return func(ctx task.ActivityContext) (any, error) {
 		aCtx := ActivityContext{ctx: ctx}
 
-		return a(aCtx)
+		result, err := a(aCtx)
+		if err != nil {
+			activityName, _ := getFunctionName(a) // Get the activity name for context
+			return nil, fmt.Errorf("activity %s failed: %w", activityName, err)
+		}
+
+		return result, nil
 	}
 }
 

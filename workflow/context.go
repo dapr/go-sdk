@@ -18,7 +18,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/microsoft/durabletask-go/task"
+	"github.com/dapr/durabletask-go/task"
 )
 
 type WorkflowContext struct {
@@ -50,6 +50,11 @@ func (wfc *WorkflowContext) IsReplaying() bool {
 	return wfc.orchestrationContext.IsReplaying
 }
 
+// SetCustomStatus sets custom status to the workflow context
+func (wfc *WorkflowContext) SetCustomStatus(cs string) {
+	wfc.orchestrationContext.SetCustomStatus(cs)
+}
+
 // CallActivity returns a completable task for a given activity.
 // You must call Await(output any) on the returned Task to block the workflow and wait for the task to complete.
 // The value passed to the Await method must be a pointer or can be nil to ignore the returned value.
@@ -63,7 +68,7 @@ func (wfc *WorkflowContext) CallActivity(activity interface{}, opts ...callActiv
 		}
 	}
 
-	return wfc.orchestrationContext.CallActivity(activity, task.WithRawActivityInput(options.rawInput.GetValue()))
+	return wfc.orchestrationContext.CallActivity(activity, task.WithRawActivityInput(options.rawInput), task.WithActivityRetryPolicy(options.getRetryPolicy()))
 }
 
 // CallChildWorkflow returns a completable task for a given workflow.
@@ -79,9 +84,9 @@ func (wfc *WorkflowContext) CallChildWorkflow(workflow interface{}, opts ...call
 		}
 	}
 	if options.instanceID != "" {
-		return wfc.orchestrationContext.CallSubOrchestrator(workflow, task.WithRawSubOrchestratorInput(options.rawInput.GetValue()), task.WithSubOrchestrationInstanceID(options.instanceID))
+		return wfc.orchestrationContext.CallSubOrchestrator(workflow, task.WithRawSubOrchestratorInput(options.rawInput), task.WithSubOrchestrationInstanceID(options.instanceID), task.WithSubOrchestrationRetryPolicy(options.getRetryPolicy()))
 	}
-	return wfc.orchestrationContext.CallSubOrchestrator(workflow, task.WithRawSubOrchestratorInput(options.rawInput.GetValue()))
+	return wfc.orchestrationContext.CallSubOrchestrator(workflow, task.WithRawSubOrchestratorInput(options.rawInput), task.WithSubOrchestrationRetryPolicy(options.getRetryPolicy()))
 }
 
 // CreateTimer returns a completable task that blocks for a given duration.

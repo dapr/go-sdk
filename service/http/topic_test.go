@@ -71,7 +71,9 @@ func TestEventHandler(t *testing.T) {
 		"comexampleextension1" : "value",
 		"comexampleothervalue" : 5,
 		"datacontenttype" : "application/json",
-		"data" : "eyJtZXNzYWdlIjoiaGVsbG8ifQ=="
+		"data" : "eyJtZXNzYWdlIjoiaGVsbG8ifQ==",
+		"traceid": "aaa",
+		"traceparent": "bbb"
 	}`
 
 	s := newServer("", nil)

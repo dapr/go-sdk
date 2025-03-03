@@ -16,19 +16,16 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"time"
 
-	"github.com/dapr/go-sdk/client"
 	"github.com/dapr/go-sdk/workflow"
 )
 
 var stage = 0
-
-const (
-	workflowComponent = "dapr"
-)
+var failActivityTries = 0
 
 func main() {
 	w, err := workflow.NewWorker()
@@ -48,76 +45,60 @@ func main() {
 	}
 	fmt.Println("TestActivity registered")
 
+	if err := w.RegisterActivity(FailActivity); err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println("FailActivity registered")
+
 	// Start workflow runner
 	if err := w.Start(); err != nil {
 		log.Fatal(err)
 	}
 	fmt.Println("runner started")
 
-	daprClient, err := client.NewClient()
+	wfClient, err := workflow.NewClient()
 	if err != nil {
 		log.Fatalf("failed to intialise client: %v", err)
 	}
-	defer daprClient.Close()
+	defer wfClient.Close()
 	ctx := context.Background()
 
 	// Start workflow test
-	respStart, err := daprClient.StartWorkflowBeta1(ctx, &client.StartWorkflowRequest{
-		InstanceID:        "a7a4168d-3a1c-41da-8a4f-e7f6d9c718d9",
-		WorkflowComponent: workflowComponent,
-		WorkflowName:      "TestWorkflow",
-		Options:           nil,
-		Input:             1,
-		SendRawInput:      false,
-	})
+	instanceID, err := wfClient.ScheduleNewWorkflow(ctx, "TestWorkflow", workflow.WithInstanceID("a7a4168d-3a1c-41da-8a4f-e7f6d9c718d9"), workflow.WithInput(1))
 	if err != nil {
 		log.Fatalf("failed to start workflow: %v", err)
 	}
-	fmt.Printf("workflow started with id: %v\n", respStart.InstanceID)
+	fmt.Printf("workflow started with id: %v\n", instanceID)
 
 	// Pause workflow test
-	err = daprClient.PauseWorkflowBeta1(ctx, &client.PauseWorkflowRequest{
-		InstanceID:        "a7a4168d-3a1c-41da-8a4f-e7f6d9c718d9",
-		WorkflowComponent: workflowComponent,
-	})
-
+	err = wfClient.SuspendWorkflow(ctx, instanceID, "")
 	if err != nil {
 		log.Fatalf("failed to pause workflow: %v", err)
 	}
 
-	respGet, err := daprClient.GetWorkflowBeta1(ctx, &client.GetWorkflowRequest{
-		InstanceID:        "a7a4168d-3a1c-41da-8a4f-e7f6d9c718d9",
-		WorkflowComponent: workflowComponent,
-	})
+	respFetch, err := wfClient.FetchWorkflowMetadata(ctx, instanceID, workflow.WithFetchPayloads(true))
 	if err != nil {
-		log.Fatalf("failed to get workflow: %v", err)
+		log.Fatalf("failed to fetch workflow: %v", err)
 	}
 
-	if respGet.RuntimeStatus != workflow.StatusSuspended.String() {
-		log.Fatalf("workflow not paused: %v", respGet.RuntimeStatus)
+	if respFetch.RuntimeStatus != workflow.StatusSuspended {
+		log.Fatalf("workflow not paused: %v", respFetch.RuntimeStatus)
 	}
 
 	fmt.Printf("workflow paused\n")
 
 	// Resume workflow test
-	err = daprClient.ResumeWorkflowBeta1(ctx, &client.ResumeWorkflowRequest{
-		InstanceID:        "a7a4168d-3a1c-41da-8a4f-e7f6d9c718d9",
-		WorkflowComponent: workflowComponent,
-	})
-
+	err = wfClient.ResumeWorkflow(ctx, instanceID, "")
 	if err != nil {
 		log.Fatalf("failed to resume workflow: %v", err)
 	}
 
-	respGet, err = daprClient.GetWorkflowBeta1(ctx, &client.GetWorkflowRequest{
-		InstanceID:        "a7a4168d-3a1c-41da-8a4f-e7f6d9c718d9",
-		WorkflowComponent: workflowComponent,
-	})
+	respFetch, err = wfClient.FetchWorkflowMetadata(ctx, instanceID, workflow.WithFetchPayloads(true))
 	if err != nil {
 		log.Fatalf("failed to get workflow: %v", err)
 	}
 
-	if respGet.RuntimeStatus != workflow.StatusRunning.String() {
+	if respFetch.RuntimeStatus != workflow.StatusRunning {
 		log.Fatalf("workflow not running")
 	}
 
@@ -127,14 +108,7 @@ func main() {
 
 	// Raise Event Test
 
-	err = daprClient.RaiseEventWorkflowBeta1(ctx, &client.RaiseEventWorkflowRequest{
-		InstanceID:        "a7a4168d-3a1c-41da-8a4f-e7f6d9c718d9",
-		WorkflowComponent: workflowComponent,
-		EventName:         "testEvent",
-		EventData:         "testData",
-		SendRawData:       false,
-	})
-
+	err = wfClient.RaiseEvent(ctx, instanceID, "testEvent", workflow.WithEventPayload("testData"))
 	if err != nil {
 		fmt.Printf("failed to raise event: %v", err)
 	}
@@ -145,31 +119,31 @@ func main() {
 
 	fmt.Printf("stage: %d\n", stage)
 
-	respGet, err = daprClient.GetWorkflowBeta1(ctx, &client.GetWorkflowRequest{
-		InstanceID:        "a7a4168d-3a1c-41da-8a4f-e7f6d9c718d9",
-		WorkflowComponent: workflowComponent,
-	})
+	waitCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	_, err = wfClient.WaitForWorkflowCompletion(waitCtx, instanceID)
+	cancel()
+	if err != nil {
+		log.Fatalf("failed to wait for workflow: %v", err)
+	}
+
+	fmt.Printf("fail activity executions: %d\n", failActivityTries)
+
+	respFetch, err = wfClient.FetchWorkflowMetadata(ctx, instanceID, workflow.WithFetchPayloads(true))
 	if err != nil {
 		log.Fatalf("failed to get workflow: %v", err)
 	}
 
-	fmt.Printf("workflow status: %v\n", respGet.RuntimeStatus)
+	fmt.Printf("workflow status: %v\n", respFetch.RuntimeStatus)
 
 	// Purge workflow test
-	err = daprClient.PurgeWorkflowBeta1(ctx, &client.PurgeWorkflowRequest{
-		InstanceID:        "a7a4168d-3a1c-41da-8a4f-e7f6d9c718d9",
-		WorkflowComponent: workflowComponent,
-	})
+	err = wfClient.PurgeWorkflow(ctx, instanceID)
 	if err != nil {
 		log.Fatalf("failed to purge workflow: %v", err)
 	}
 
-	respGet, err = daprClient.GetWorkflowBeta1(ctx, &client.GetWorkflowRequest{
-		InstanceID:        "a7a4168d-3a1c-41da-8a4f-e7f6d9c718d9",
-		WorkflowComponent: workflowComponent,
-	})
-	if err != nil && respGet != nil {
-		log.Fatal("failed to purge workflow")
+	respFetch, err = wfClient.FetchWorkflowMetadata(ctx, instanceID, workflow.WithFetchPayloads(true))
+	if err == nil || respFetch != nil {
+		log.Fatalf("failed to purge workflow: %v", err)
 	}
 
 	fmt.Println("workflow purged")
@@ -177,119 +151,29 @@ func main() {
 	fmt.Printf("stage: %d\n", stage)
 
 	// Terminate workflow test
-	respStart, err = daprClient.StartWorkflowBeta1(ctx, &client.StartWorkflowRequest{
-		InstanceID:        "a7a4168d-3a1c-41da-8a4f-e7f6d9c718d9",
-		WorkflowComponent: workflowComponent,
-		WorkflowName:      "TestWorkflow",
-		Options:           nil,
-		Input:             1,
-		SendRawInput:      false,
-	})
+	id, err := wfClient.ScheduleNewWorkflow(ctx, "TestWorkflow", workflow.WithInstanceID("a7a4168d-3a1c-41da-8a4f-e7f6d9c718d9"), workflow.WithInput(1))
 	if err != nil {
 		log.Fatalf("failed to start workflow: %v", err)
 	}
+	fmt.Printf("workflow started with id: %v\n", instanceID)
 
-	fmt.Printf("workflow started with id: %s\n", respStart.InstanceID)
-
-	err = daprClient.TerminateWorkflowBeta1(ctx, &client.TerminateWorkflowRequest{
-		InstanceID:        "a7a4168d-3a1c-41da-8a4f-e7f6d9c718d9",
-		WorkflowComponent: workflowComponent,
-	})
-	if err != nil {
-		log.Fatalf("failed to terminate workflow: %v", err)
-	}
-
-	respGet, err = daprClient.GetWorkflowBeta1(ctx, &client.GetWorkflowRequest{
-		InstanceID:        "a7a4168d-3a1c-41da-8a4f-e7f6d9c718d9",
-		WorkflowComponent: workflowComponent,
-	})
+	metadata, err := wfClient.WaitForWorkflowStart(ctx, id)
 	if err != nil {
 		log.Fatalf("failed to get workflow: %v", err)
 	}
-	if respGet.RuntimeStatus != workflow.StatusTerminated.String() {
-		log.Fatal("failed to terminate workflow")
-	}
+	fmt.Printf("workflow status: %s\n", metadata.RuntimeStatus.String())
 
+	err = wfClient.TerminateWorkflow(ctx, id)
+	if err != nil {
+		log.Fatalf("failed to terminate workflow: %v", err)
+	}
 	fmt.Println("workflow terminated")
 
-	err = daprClient.PurgeWorkflowBeta1(ctx, &client.PurgeWorkflowRequest{
-		InstanceID:        "a7a4168d-3a1c-41da-8a4f-e7f6d9c718d9",
-		WorkflowComponent: workflowComponent,
-	})
-
-	respGet, err = daprClient.GetWorkflowBeta1(ctx, &client.GetWorkflowRequest{
-		InstanceID:        "a7a4168d-3a1c-41da-8a4f-e7f6d9c718d9",
-		WorkflowComponent: workflowComponent,
-	})
-	if err == nil || respGet != nil {
+	err = wfClient.PurgeWorkflow(ctx, id)
+	if err != nil {
 		log.Fatalf("failed to purge workflow: %v", err)
 	}
-
 	fmt.Println("workflow purged")
-
-	// WFClient
-	// TODO: Expand client validation
-
-	stage = 0
-	fmt.Println("workflow client test")
-
-	wfClient, err := workflow.NewClient()
-	if err != nil {
-		log.Fatalf("[wfclient] faield to initialize: %v", err)
-	}
-
-	id, err := wfClient.ScheduleNewWorkflow(ctx, "TestWorkflow", workflow.WithInstanceID("a7a4168d-3a1c-41da-8a4f-e7f6d9c718d9"), workflow.WithInput(1))
-	if err != nil {
-		log.Fatalf("[wfclient] failed to start workflow: %v", err)
-	}
-
-	fmt.Printf("[wfclient] started workflow with id: %s\n", id)
-
-	metadata, err := wfClient.FetchWorkflowMetadata(ctx, id)
-	if err != nil {
-		log.Fatalf("[wfclient] failed to get worfklow: %v", err)
-	}
-
-	fmt.Printf("[wfclient] workflow status: %v\n", metadata.RuntimeStatus.String())
-
-	if stage != 1 {
-		log.Fatalf("Workflow assertion failed while validating the wfclient. Stage 1 expected, current: %d", stage)
-	}
-
-	fmt.Printf("[wfclient] stage: %d\n", stage)
-
-	// TODO: WaitForWorkflowStart
-	// TODO: WaitForWorkflowCompletion
-
-	// raise event
-
-	if err := wfClient.RaiseEvent(ctx, id, "testEvent", workflow.WithEventPayload("testData")); err != nil {
-		log.Fatalf("[wfclient] failed to raise event: %v", err)
-	}
-
-	fmt.Println("[wfclient] event raised")
-
-	// Sleep to allow the workflow to advance
-	time.Sleep(time.Second)
-
-	if stage != 2 {
-		log.Fatalf("Workflow assertion failed while validating the wfclient. Stage 2 expected, current: %d", stage)
-	}
-
-	fmt.Printf("[wfclient] stage: %d\n", stage)
-
-	// stop workflow
-	if err := wfClient.TerminateWorkflow(ctx, id); err != nil {
-		log.Fatalf("[wfclient] failed to terminate workflow: %v", err)
-	}
-
-	fmt.Println("[wfclient] workflow terminated")
-
-	if err := wfClient.PurgeWorkflow(ctx, id); err != nil {
-		log.Fatalf("[wfclient] failed to purge workflow: %v", err)
-	}
-
-	fmt.Println("[wfclient] workflow purged")
 
 	// stop workflow runtime
 	if err := w.Shutdown(); err != nil {
@@ -318,6 +202,15 @@ func TestWorkflow(ctx *workflow.WorkflowContext) (any, error) {
 		return nil, err
 	}
 
+	if err := ctx.CallActivity(FailActivity, workflow.ActivityRetryPolicy(workflow.RetryPolicy{
+		MaxAttempts:          3,
+		InitialRetryInterval: 100 * time.Millisecond,
+		BackoffCoefficient:   2,
+		MaxRetryInterval:     1 * time.Second,
+	})).Await(nil); err == nil {
+		return nil, fmt.Errorf("unexpected no error executing fail activity")
+	}
+
 	return output, nil
 }
 
@@ -330,4 +223,9 @@ func TestActivity(ctx workflow.ActivityContext) (any, error) {
 	stage += input
 
 	return fmt.Sprintf("Stage: %d", stage), nil
+}
+
+func FailActivity(ctx workflow.ActivityContext) (any, error) {
+	failActivityTries += 1
+	return nil, errors.New("dummy activity error")
 }

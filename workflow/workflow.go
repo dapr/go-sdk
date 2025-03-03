@@ -18,9 +18,10 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/microsoft/durabletask-go/api"
-	"github.com/microsoft/durabletask-go/task"
 	"google.golang.org/protobuf/types/known/wrapperspb"
+
+	"github.com/dapr/durabletask-go/api/protos"
+	"github.com/dapr/durabletask-go/task"
 )
 
 type Metadata struct {
@@ -43,29 +44,29 @@ type FailureDetails struct {
 	IsNonRetriable bool            `json:"IsNonRetriable"`
 }
 
-func convertMetadata(orchestrationMetadata *api.OrchestrationMetadata) *Metadata {
+func convertMetadata(orchestrationMetadata *protos.OrchestrationMetadata) *Metadata {
 	metadata := Metadata{
-		InstanceID:             string(orchestrationMetadata.InstanceID),
-		Name:                   orchestrationMetadata.Name,
-		RuntimeStatus:          Status(orchestrationMetadata.RuntimeStatus.Number()),
-		CreatedAt:              orchestrationMetadata.CreatedAt,
-		LastUpdatedAt:          orchestrationMetadata.LastUpdatedAt,
-		SerializedInput:        orchestrationMetadata.SerializedInput,
-		SerializedOutput:       orchestrationMetadata.SerializedOutput,
-		SerializedCustomStatus: orchestrationMetadata.SerializedCustomStatus,
+		InstanceID:             orchestrationMetadata.GetInstanceId(),
+		Name:                   orchestrationMetadata.GetName(),
+		RuntimeStatus:          Status(orchestrationMetadata.GetRuntimeStatus().Number()),
+		CreatedAt:              orchestrationMetadata.GetCreatedAt().AsTime(),
+		LastUpdatedAt:          orchestrationMetadata.GetLastUpdatedAt().AsTime(),
+		SerializedInput:        orchestrationMetadata.GetInput().GetValue(),
+		SerializedOutput:       orchestrationMetadata.GetOutput().GetValue(),
+		SerializedCustomStatus: orchestrationMetadata.GetCustomStatus().GetValue(),
 	}
-	if orchestrationMetadata.FailureDetails != nil {
+	if orchestrationMetadata.GetFailureDetails() != nil {
 		metadata.FailureDetails = &FailureDetails{
-			Type:           orchestrationMetadata.FailureDetails.GetErrorType(),
-			Message:        orchestrationMetadata.FailureDetails.GetErrorMessage(),
-			StackTrace:     orchestrationMetadata.FailureDetails.GetStackTrace().GetValue(),
-			IsNonRetriable: orchestrationMetadata.FailureDetails.GetIsNonRetriable(),
+			Type:           orchestrationMetadata.GetFailureDetails().GetErrorType(),
+			Message:        orchestrationMetadata.GetFailureDetails().GetErrorMessage(),
+			StackTrace:     orchestrationMetadata.GetFailureDetails().GetStackTrace().GetValue(),
+			IsNonRetriable: orchestrationMetadata.GetFailureDetails().GetIsNonRetriable(),
 		}
 
-		if orchestrationMetadata.FailureDetails.GetInnerFailure() != nil {
+		if orchestrationMetadata.GetFailureDetails().GetInnerFailure() != nil {
 			var root *FailureDetails
 			current := root
-			failure := orchestrationMetadata.FailureDetails.GetInnerFailure()
+			failure := orchestrationMetadata.GetFailureDetails().GetInnerFailure()
 			for {
 				current.Type = failure.GetErrorType()
 				current.Message = failure.GetErrorMessage()
@@ -87,8 +88,9 @@ func convertMetadata(orchestrationMetadata *api.OrchestrationMetadata) *Metadata
 }
 
 type callChildWorkflowOptions struct {
-	instanceID string
-	rawInput   *wrapperspb.StringValue
+	instanceID  string
+	rawInput    *wrapperspb.StringValue
+	retryPolicy *RetryPolicy
 }
 
 type callChildWorkflowOption func(*callChildWorkflowOptions) error
@@ -118,6 +120,26 @@ func ChildWorkflowInstanceID(instanceID string) callChildWorkflowOption {
 	return func(opts *callChildWorkflowOptions) error {
 		opts.instanceID = instanceID
 		return nil
+	}
+}
+
+func ChildWorkflowRetryPolicy(policy RetryPolicy) callChildWorkflowOption {
+	return func(opts *callChildWorkflowOptions) error {
+		opts.retryPolicy = &policy
+		return nil
+	}
+}
+
+func (opts *callChildWorkflowOptions) getRetryPolicy() *task.RetryPolicy {
+	if opts.retryPolicy == nil {
+		return nil
+	}
+	return &task.RetryPolicy{
+		MaxAttempts:          opts.retryPolicy.MaxAttempts,
+		InitialRetryInterval: opts.retryPolicy.InitialRetryInterval,
+		BackoffCoefficient:   opts.retryPolicy.BackoffCoefficient,
+		MaxRetryInterval:     opts.retryPolicy.MaxRetryInterval,
+		RetryTimeout:         opts.retryPolicy.RetryTimeout,
 	}
 }
 

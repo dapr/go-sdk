@@ -2,7 +2,6 @@ package internal
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/dapr/go-sdk/service/common"
 )
@@ -15,11 +14,11 @@ type TopicRegistrar map[string]*TopicRegistration
 // TopicRegistration encapsulates the subscription and handlers.
 type TopicRegistration struct {
 	Subscription   *TopicSubscription
-	DefaultHandler common.TopicEventHandler
-	RouteHandlers  map[string]common.TopicEventHandler
+	DefaultHandler common.TopicEventSubscriber
+	RouteHandlers  map[string]common.TopicEventSubscriber
 }
 
-func (m TopicRegistrar) AddSubscription(sub *common.Subscription, fn common.TopicEventHandler) error {
+func (m TopicRegistrar) AddSubscription(sub *common.Subscription, fn common.TopicEventSubscriber) error {
 	if sub.Topic == "" {
 		return errors.New("topic name required")
 	}
@@ -27,7 +26,7 @@ func (m TopicRegistrar) AddSubscription(sub *common.Subscription, fn common.Topi
 		return errors.New("pub/sub name required")
 	}
 	if fn == nil {
-		return fmt.Errorf("topic handler required")
+		return errors.New("topic handler required")
 	}
 
 	var key string
@@ -40,8 +39,8 @@ func (m TopicRegistrar) AddSubscription(sub *common.Subscription, fn common.Topi
 	ts, ok := m[key]
 	if !ok {
 		ts = &TopicRegistration{
-			Subscription:   NewTopicSubscription(sub.PubsubName, sub.Topic),
-			RouteHandlers:  make(map[string]common.TopicEventHandler),
+			Subscription:   NewTopicSubscription(sub.PubsubName, sub.Topic, sub.DeadLetterTopic),
+			RouteHandlers:  make(map[string]common.TopicEventSubscriber),
 			DefaultHandler: nil,
 		}
 		ts.Subscription.SetMetadata(sub.Metadata)

@@ -49,9 +49,9 @@ func (b *Bot) HandleEvent(ctx context.Context, event Event) (res string, err err
 	switch command {
 	case "/assign":
 		assignee, err := b.AssignIssueToCommenter(event)
-		res = fmt.Sprintf("👍 Issue assigned to %s", assignee)
+		res = "👍 Issue assigned to " + assignee
 		if err == nil {
-			err = b.CreateIssueComment(fmt.Sprintf("🚀 Issue assigned to you @%s", assignee), event)
+			err = b.CreateIssueComment("🚀 Issue assigned to you @"+assignee, event)
 		} else {
 			err = b.CreateIssueComment("⚠️ Unable to assign issue", event)
 		}
