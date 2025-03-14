@@ -9,7 +9,7 @@ import (
 	reflect "reflect"
 
 	actor "github.com/dapr/go-sdk/actor"
-	error "github.com/dapr/go-sdk/actor/error"
+	actorError "github.com/dapr/go-sdk/actor/error"
 	gomock "github.com/golang/mock/gomock"
 )
 
@@ -37,10 +37,10 @@ func (m *MockActorManager) EXPECT() *MockActorManagerMockRecorder {
 }
 
 // DeactivateActor mocks base method.
-func (m *MockActorManager) DeactivateActor(actorID string) error.ActorErr {
+func (m *MockActorManager) DeactivateActor(actorID string) actorError.ActorErr {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeactivateActor", actorID)
-	ret0, _ := ret[0].(error.ActorErr)
+	ret0, _ := ret[0].(actorError.ActorErr)
 	return ret0
 }
 
@@ -51,11 +51,11 @@ func (mr *MockActorManagerMockRecorder) DeactivateActor(actorID interface{}) *go
 }
 
 // InvokeMethod mocks base method.
-func (m *MockActorManager) InvokeMethod(actorID, methodName string, request []byte) ([]byte, error.ActorErr) {
+func (m *MockActorManager) InvokeMethod(actorID, methodName string, request []byte) ([]byte, actorError.ActorErr) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "InvokeMethod", actorID, methodName, request)
 	ret0, _ := ret[0].([]byte)
-	ret1, _ := ret[1].(error.ActorErr)
+	ret1, _ := ret[1].(actorError.ActorErr)
 	return ret0, ret1
 }
 
@@ -66,10 +66,10 @@ func (mr *MockActorManagerMockRecorder) InvokeMethod(actorID, methodName, reques
 }
 
 // InvokeReminder mocks base method.
-func (m *MockActorManager) InvokeReminder(actorID, reminderName string, params []byte) error.ActorErr {
+func (m *MockActorManager) InvokeReminder(actorID, reminderName string, params []byte) actorError.ActorErr {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "InvokeReminder", actorID, reminderName, params)
-	ret0, _ := ret[0].(error.ActorErr)
+	ret0, _ := ret[0].(actorError.ActorErr)
 	return ret0
 }
 
@@ -80,10 +80,10 @@ func (mr *MockActorManagerMockRecorder) InvokeReminder(actorID, reminderName, pa
 }
 
 // InvokeTimer mocks base method.
-func (m *MockActorManager) InvokeTimer(actorID, timerName string, params []byte) error.ActorErr {
+func (m *MockActorManager) InvokeTimer(actorID, timerName string, params []byte) actorError.ActorErr {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "InvokeTimer", actorID, timerName, params)
-	ret0, _ := ret[0].(error.ActorErr)
+	ret0, _ := ret[0].(actorError.ActorErr)
 	return ret0
 }
 
@@ -129,10 +129,10 @@ func (m *MockActorManagerContext) EXPECT() *MockActorManagerContextMockRecorder 
 }
 
 // DeactivateActor mocks base method.
-func (m *MockActorManagerContext) DeactivateActor(ctx context.Context, actorID string) error.ActorErr {
+func (m *MockActorManagerContext) DeactivateActor(ctx context.Context, actorID string) actorError.ActorErr {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeactivateActor", ctx, actorID)
-	ret0, _ := ret[0].(error.ActorErr)
+	ret0, _ := ret[0].(actorError.ActorErr)
 	return ret0
 }
 
@@ -143,11 +143,11 @@ func (mr *MockActorManagerContextMockRecorder) DeactivateActor(ctx, actorID inte
 }
 
 // InvokeMethod mocks base method.
-func (m *MockActorManagerContext) InvokeMethod(ctx context.Context, actorID, methodName string, request []byte) ([]byte, error.ActorErr) {
+func (m *MockActorManagerContext) InvokeMethod(ctx context.Context, actorID, methodName string, request []byte) ([]byte, actorError.ActorErr) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "InvokeMethod", ctx, actorID, methodName, request)
 	ret0, _ := ret[0].([]byte)
-	ret1, _ := ret[1].(error.ActorErr)
+	ret1, _ := ret[1].(actorError.ActorErr)
 	return ret0, ret1
 }
 
@@ -158,10 +158,10 @@ func (mr *MockActorManagerContextMockRecorder) InvokeMethod(ctx, actorID, method
 }
 
 // InvokeReminder mocks base method.
-func (m *MockActorManagerContext) InvokeReminder(ctx context.Context, actorID, reminderName string, params []byte) error.ActorErr {
+func (m *MockActorManagerContext) InvokeReminder(ctx context.Context, actorID, reminderName string, params []byte) actorError.ActorErr {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "InvokeReminder", ctx, actorID, reminderName, params)
-	ret0, _ := ret[0].(error.ActorErr)
+	ret0, _ := ret[0].(actorError.ActorErr)
 	return ret0
 }
 
@@ -172,10 +172,10 @@ func (mr *MockActorManagerContextMockRecorder) InvokeReminder(ctx, actorID, remi
 }
 
 // InvokeTimer mocks base method.
-func (m *MockActorManagerContext) InvokeTimer(ctx context.Context, actorID, timerName string, params []byte) error.ActorErr {
+func (m *MockActorManagerContext) InvokeTimer(ctx context.Context, actorID, timerName string, params []byte) actorError.ActorErr {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "InvokeTimer", ctx, actorID, timerName, params)
-	ret0, _ := ret[0].(error.ActorErr)
+	ret0, _ := ret[0].(actorError.ActorErr)
 	return ret0
 }
 
