@@ -3,8 +3,8 @@ module github.com/dapr/go-sdk
 go 1.23.6
 
 require (
-	github.com/dapr/dapr v1.15.0-rc.17
-	github.com/dapr/durabletask-go v0.6.3
+	github.com/dapr/dapr v1.15.4-rc.1
+	github.com/dapr/durabletask-go v0.6.5
 	github.com/go-chi/chi/v5 v5.1.0
 	github.com/golang/mock v1.6.0
 	github.com/google/uuid v1.6.0
@@ -16,7 +16,7 @@ require (
 
 require (
 	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
-	github.com/dapr/kit v0.15.0 // indirect
+	github.com/dapr/kit v0.15.1 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/go-logr/logr v1.4.2 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
