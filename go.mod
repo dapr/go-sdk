@@ -2,6 +2,8 @@ module github.com/dapr/go-sdk
 
 go 1.23.6
 
+toolchain go1.24.1
+
 require (
 	github.com/dapr/dapr v1.15.0-rc.17
 	github.com/dapr/durabletask-go v0.6.3
@@ -9,7 +11,7 @@ require (
 	github.com/golang/mock v1.6.0
 	github.com/google/uuid v1.6.0
 	github.com/stretchr/testify v1.10.0
-	google.golang.org/grpc v1.70.0
+	google.golang.org/grpc v1.71.1
 	google.golang.org/protobuf v1.36.4
 	gopkg.in/yaml.v3 v3.0.1
 )
