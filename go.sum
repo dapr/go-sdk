@@ -1,11 +1,11 @@
 github.com/cenkalti/backoff/v4 v4.3.0 h1:MyRJ/UdXutAwSAT+s3wNd7MfTIcy71VQueUuFK343L8=
 github.com/cenkalti/backoff/v4 v4.3.0/go.mod h1:Y3VNntkOUPxTVeUxJ/G5vcM//AlwfmyYozVcomhLiZE=
-github.com/dapr/dapr v1.15.0-rc.17 h1:bR0rd4FH81IteuOHTWVNyl58ZuQTDp3DYaTtXnpZ6JA=
-github.com/dapr/dapr v1.15.0-rc.17/go.mod h1:SD0AXom2XpX7pr8eYlbJ+gHfNREsflsrzCR19AZJ7/Q=
-github.com/dapr/durabletask-go v0.6.3 h1:WHhSAw1YL4xneK3Jo5nGfmMaJxfFodIIF5q1rpkDDfs=
-github.com/dapr/durabletask-go v0.6.3/go.mod h1:nTZ5fCbJLnZbVdi6Z2YxdDF1OgQZL3LroogGuetrwuA=
-github.com/dapr/kit v0.15.0 h1:446jrEOQV/0rt6FwmoKrifP3vav5+Uh/u38DqU8q+JM=
-github.com/dapr/kit v0.15.0/go.mod h1:HwFsBKEbcyLanWlDZE7u/jnaDCD/tU+n3pkFNUctQNw=
+github.com/dapr/dapr v1.15.4 h1:1aasasoR7JFMIfwlGOWrYl0Tg5Cn738ZAdbDJSdD4FE=
+github.com/dapr/dapr v1.15.4/go.mod h1:U9XfdsvWo3a72cpvUOFpgcDdDKo/wAQSFTk0bi16uHk=
+github.com/dapr/durabletask-go v0.6.5 h1:aWcxMfYudojpgRjJRdUr7yyZ7rGcvLtWXUuA4cGHBR0=
+github.com/dapr/durabletask-go v0.6.5/go.mod h1:nTZ5fCbJLnZbVdi6Z2YxdDF1OgQZL3LroogGuetrwuA=
+github.com/dapr/kit v0.15.1 h1:WInC8IBveslveCBE2DDeaXh62Si4Wr2Fdv2yJ/7hrDQ=
+github.com/dapr/kit v0.15.1/go.mod h1:HwFsBKEbcyLanWlDZE7u/jnaDCD/tU+n3pkFNUctQNw=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc h1:U9qPSI2PIWSS1VwoXQT9A3Wy9MM3WgvqSxFWenqJduM=
