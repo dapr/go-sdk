@@ -14,7 +14,6 @@ limitations under the License.
 package client
 
 import (
-	"context"
 	"testing"
 	"time"
 
@@ -77,7 +76,7 @@ func TestStateOptionsConverter(t *testing.T) {
 
 // go test -timeout 30s ./client -count 1 -run ^TestSaveState$
 func TestSaveState(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	data := testData
 	store := testStore
 	key := "key1"
@@ -118,7 +117,7 @@ func TestSaveState(t *testing.T) {
 
 // go test -timeout 30s ./client -count 1 -run ^TestDeleteState$
 func TestDeleteState(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	data := testData
 	store := testStore
 	key := "key1"
@@ -189,7 +188,7 @@ func TestDeleteState(t *testing.T) {
 }
 
 func TestDeleteBulkState(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	data := testData
 	store := testStore
 	keys := []string{"key1", "key2", "key3"}
@@ -337,7 +336,7 @@ func TestDeleteBulkState(t *testing.T) {
 
 // go test -timeout 30s ./client -count 1 -run ^TestStateTransactions$
 func TestStateTransactions(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	data := `{ "message": "test" }`
 	store := testStore
 	meta := map[string]string{}
@@ -410,7 +409,7 @@ func TestStateTransactions(t *testing.T) {
 }
 
 func TestQueryState(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	data := testData
 	store := testStore
 	key1 := "key1"

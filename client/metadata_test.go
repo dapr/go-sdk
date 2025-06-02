@@ -1,7 +1,6 @@
 package client
 
 import (
-	"context"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -11,7 +10,7 @@ import (
 
 // Test GetMetadata returns
 func TestGetMetadata(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	t.Run("get meta", func(t *testing.T) {
 		metadata, err := testClient.GetMetadata(ctx)
 		require.NoError(t, err)
@@ -20,7 +19,7 @@ func TestGetMetadata(t *testing.T) {
 }
 
 func TestSetMetadata(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	t.Run("set meta", func(t *testing.T) {
 		err := testClient.SetMetadata(ctx, "test_key", "test_value")
 		require.NoError(t, err)

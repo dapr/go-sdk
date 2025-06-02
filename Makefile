@@ -33,6 +33,10 @@ cover: ## Displays test coverage in the client and service packages
 lint: check-lint ## Lints the entire project
 	golangci-lint run --timeout=3m
 
+.PHONY: lint-fix
+lint-fix: check-lint ## Lints the entire project
+	golangci-lint run --timeout=3m --fix
+
 .PHONY: check-lint
 check-lint: ## Compares the locally installed linter with the workflow version
 	cd ./tools/check-lint-version && \

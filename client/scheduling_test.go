@@ -14,7 +14,6 @@ limitations under the License.
 package client
 
 import (
-	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -23,7 +22,7 @@ import (
 )
 
 func TestSchedulingAlpha1(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 
 	t.Run("schedule job - valid", func(t *testing.T) {
 		err := testClient.ScheduleJobAlpha1(ctx, &Job{
