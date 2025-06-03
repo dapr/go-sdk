@@ -16,7 +16,7 @@ output_match_mode: substring
 expected_stdout_lines:
   - "ContentType:text/plain, Verb:POST, QueryString:, hellow"
 background: true
-sleep: 15
+sleep: 30
 timeout_seconds: 60
 -->
 
