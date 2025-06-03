@@ -40,7 +40,7 @@ func TestListInputBindings(t *testing.T) {
 	require.NoError(t, err)
 	err = server.AddBindingInvocationHandler("test2", testBindingHandler)
 	require.NoError(t, err)
-	resp, err := server.ListInputBindings(context.Background(), &emptypb.Empty{})
+	resp, err := server.ListInputBindings(t.Context(), &emptypb.Empty{})
 	require.NoError(t, err)
 	assert.NotNil(t, resp)
 	assert.Lenf(t, resp.GetBindings(), 2, "expected 2 handlers")
@@ -57,7 +57,7 @@ func TestBindingForErrors(t *testing.T) {
 
 // go test -timeout 30s ./service/grpc -count 1 -run ^TestBinding$
 func TestBinding(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	methodName := "test"
 
 	server := getTestServer()

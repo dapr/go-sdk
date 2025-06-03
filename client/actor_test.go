@@ -14,7 +14,6 @@ limitations under the License.
 package client
 
 import (
-	"context"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -25,7 +24,7 @@ import (
 const testActorType = "test"
 
 func TestInvokeActor(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	in := &InvokeActorRequest{
 		ActorID:   "fn",
 		Method:    "mockMethod",
@@ -74,7 +73,7 @@ func TestInvokeActor(t *testing.T) {
 }
 
 func TestRegisterActorReminder(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	in := &RegisterActorReminderRequest{
 		ActorID:   "fn",
 		Data:      []byte(`{hello}`),
@@ -137,7 +136,7 @@ func TestRegisterActorReminder(t *testing.T) {
 }
 
 func TestRegisterActorTimer(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	in := &RegisterActorTimerRequest{
 		ActorID:   "fn",
 		Data:      []byte(`{hello}`),
@@ -215,7 +214,7 @@ func TestRegisterActorTimer(t *testing.T) {
 }
 
 func TestUnregisterActorReminder(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	in := &UnregisterActorReminderRequest{
 		ActorID:   "fn",
 		ActorType: testActorType,
@@ -260,7 +259,7 @@ func TestUnregisterActorReminder(t *testing.T) {
 }
 
 func TestUnregisterActorTimer(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	in := &UnregisterActorTimerRequest{
 		ActorID:   "fn",
 		ActorType: testActorType,
