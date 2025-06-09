@@ -15,7 +15,6 @@ limitations under the License.
 package workflow
 
 import (
-	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -52,7 +51,7 @@ func TestClientMethods(t *testing.T) {
 	testClient := Client{
 		taskHubClient: nil,
 	}
-	ctx := context.Background()
+	ctx := t.Context()
 	t.Run("ScheduleNewWorkflow - empty wf name", func(t *testing.T) {
 		id, err := testClient.ScheduleNewWorkflow(ctx, "", WithReuseIDPolicy(WorkflowIDReusePolicy{
 			OperationStatus: []Status{StatusCompleted},

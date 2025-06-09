@@ -116,14 +116,14 @@ func createNonBlockingClient(ctx context.Context, serverAddr string) (client Cli
 }
 
 func TestGrpcWaitHappyCase(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 
 	err := testClient.Wait(ctx, waitTimeout)
 	require.NoError(t, err)
 }
 
 func TestGrpcWaitUnresponsiveTcpServer(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 
 	server, err := createUnresponsiveTCPServer()
 	require.NoError(t, err)
@@ -141,7 +141,7 @@ func TestGrpcWaitUnresponsiveTcpServer(t *testing.T) {
 }
 
 func TestGrpcWaitUnresponsiveUnixServer(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 
 	server, err := createUnresponsiveUnixServer()
 	require.NoError(t, err)

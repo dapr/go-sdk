@@ -30,7 +30,7 @@ import (
 )
 
 func TestEncrypt(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 
 	t.Run("missing ComponentName", func(t *testing.T) {
 		out, err := testClient.Encrypt(ctx,
@@ -138,7 +138,7 @@ func TestEncrypt(t *testing.T) {
 }
 
 func TestDecrypt(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 
 	t.Run("missing ComponentName", func(t *testing.T) {
 		out, err := testClient.Decrypt(ctx,

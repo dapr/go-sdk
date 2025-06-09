@@ -14,7 +14,6 @@ limitations under the License.
 package client
 
 import (
-	"context"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -25,7 +24,7 @@ import (
 // go test -timeout 30s ./client -count 1 -run ^TestInvokeBinding$
 
 func TestInvokeBinding(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	in := &InvokeBindingRequest{
 		Name:      "test",
 		Operation: "fn",

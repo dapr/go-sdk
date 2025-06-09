@@ -48,6 +48,7 @@ func TestRegisterActorFactoryAndInvokeMethod(t *testing.T) {
 	mockServer.EXPECT().RegisterActorImplFactory(gomock.Any())
 	rt.RegisterActorFactory(actorMock.ActorImplFactory)
 
+	//nolint:usetesting
 	mockServer.EXPECT().InvokeMethod(context.Background(), "mockActorID", "Invoke", []byte("param")).Return([]byte("response"), actorErr.Success)
 	rspData, err := rt.InvokeActorMethod("testActorType", "mockActorID", "Invoke", []byte("param"))
 
@@ -89,6 +90,7 @@ func TestInvokeReminder(t *testing.T) {
 	mockServer.EXPECT().RegisterActorImplFactory(gomock.Any())
 	rt.RegisterActorFactory(actorMock.ActorImplFactory)
 
+	//nolint:usetesting
 	mockServer.EXPECT().InvokeReminder(context.Background(), "mockActorID", "mockReminder", []byte("param")).Return(actorErr.Success)
 	err = rt.InvokeReminder("testActorType", "mockActorID", "mockReminder", []byte("param"))
 
@@ -109,6 +111,7 @@ func TestInvokeTimer(t *testing.T) {
 	mockServer.EXPECT().RegisterActorImplFactory(gomock.Any())
 	rt.RegisterActorFactory(actorMock.ActorImplFactory)
 
+	//nolint:usetesting
 	mockServer.EXPECT().InvokeTimer(context.Background(), "mockActorID", "mockTimer", []byte("param")).Return(actorErr.Success)
 	err = rt.InvokeTimer("testActorType", "mockActorID", "mockTimer", []byte("param"))
 

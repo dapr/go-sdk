@@ -29,6 +29,7 @@ import (
 
 type testingTaskActivityContext struct {
 	inputBytes []byte
+	ctx        context.Context
 }
 
 func (t *testingTaskActivityContext) GetInput(v any) error {
@@ -36,7 +37,7 @@ func (t *testingTaskActivityContext) GetInput(v any) error {
 }
 
 func (t *testingTaskActivityContext) Context() context.Context {
-	return context.TODO()
+	return t.ctx
 }
 
 func TestActivityContext(t *testing.T) {
@@ -44,7 +45,7 @@ func TestActivityContext(t *testing.T) {
 	inputBytes, err := json.Marshal(inputString)
 	require.NoErrorf(t, err, "required no error, but got %v", err)
 
-	ac := ActivityContext{ctx: &testingTaskActivityContext{inputBytes: inputBytes}}
+	ac := ActivityContext{ctx: &testingTaskActivityContext{inputBytes: inputBytes, ctx: t.Context()}}
 	t.Run("test getinput", func(t *testing.T) {
 		var inputReturn string
 		err := ac.GetInput(&inputReturn)
@@ -53,7 +54,7 @@ func TestActivityContext(t *testing.T) {
 	})
 
 	t.Run("test context", func(t *testing.T) {
-		assert.Equal(t, context.TODO(), ac.Context())
+		assert.Equal(t, t.Context(), ac.Context())
 	})
 }
 

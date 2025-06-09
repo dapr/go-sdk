@@ -14,7 +14,6 @@ limitations under the License.
 package client
 
 import (
-	"context"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -24,7 +23,7 @@ import (
 
 // go test -timeout 30s ./client -count 1 -run ^TestGetSecret$
 func TestGetSecret(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 
 	t.Run("without store", func(t *testing.T) {
 		out, err := testClient.GetSecret(ctx, "", "key1", nil)
@@ -53,7 +52,7 @@ func TestGetSecret(t *testing.T) {
 }
 
 func TestGetBulkSecret(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 
 	t.Run("without store", func(t *testing.T) {
 		out, err := testClient.GetBulkSecret(ctx, "", nil)

@@ -1,7 +1,6 @@
 package client
 
 import (
-	"context"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -16,7 +15,7 @@ const (
 )
 
 func TestGetConfigurationItem(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 
 	t.Run("get configuration item", func(t *testing.T) {
 		resp, err := testClient.GetConfigurationItem(ctx, "example-config", "mykey")
@@ -31,7 +30,7 @@ func TestGetConfigurationItem(t *testing.T) {
 }
 
 func TestGetConfigurationItems(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 
 	keys := []string{"mykey1", "mykey2", "mykey3"}
 	t.Run("Test get configuration items", func(t *testing.T) {
@@ -44,7 +43,7 @@ func TestGetConfigurationItems(t *testing.T) {
 }
 
 func TestSubscribeConfigurationItems(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 
 	var counter, totalCounter uint32
 	counter = 0
@@ -67,7 +66,7 @@ func TestSubscribeConfigurationItems(t *testing.T) {
 }
 
 func TestUnSubscribeConfigurationItems(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 
 	var counter, totalCounter uint32
 	t.Run("Test unsubscribe configuration items", func(t *testing.T) {

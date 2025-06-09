@@ -99,7 +99,7 @@ func TestNewClient(t *testing.T) {
 	})
 
 	t.Run("new client with trace ID", func(t *testing.T) {
-		_ = testClient.WithTraceID(context.Background(), "test")
+		_ = testClient.WithTraceID(t.Context(), "test")
 	})
 
 	t.Run("new client with baggage", func(t *testing.T) {
@@ -134,7 +134,7 @@ func TestNewClient(t *testing.T) {
 		c, err := NewClientWithSocket(testSocket)
 		require.NoError(t, err)
 		defer c.Close()
-		ctx := c.WithTraceID(context.Background(), "")
+		ctx := c.WithTraceID(t.Context(), "")
 		_ = c.WithTraceID(ctx, "test")
 	})
 
@@ -157,7 +157,7 @@ func TestNewClient(t *testing.T) {
 }
 
 func TestShutdown(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 
 	t.Run("shutdown", func(t *testing.T) {
 		err := testClient.Shutdown(ctx)

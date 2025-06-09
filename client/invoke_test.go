@@ -14,7 +14,6 @@ limitations under the License.
 package client
 
 import (
-	"context"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -39,7 +38,7 @@ type _testStructwithSlices struct {
 }
 
 func TestInvokeMethodWithContent(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	data := "ping"
 
 	t.Run("with content", func(t *testing.T) {
