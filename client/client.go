@@ -48,6 +48,7 @@ const (
 	daprPortEnvVarName             = "DAPR_GRPC_PORT" /* #nosec */
 	daprGRPCEndpointEnvVarName     = "DAPR_GRPC_ENDPOINT"
 	traceparentKey                 = "traceparent"
+	baggageHeader                  = "baggage"
 	apiTokenKey                    = "dapr-api-token" /* #nosec */
 	apiTokenEnvVarName             = "DAPR_API_TOKEN" /* #nosec */
 	clientDefaultTimeoutSeconds    = 5
@@ -198,6 +199,9 @@ type Client interface {
 
 	// WithTraceID adds existing trace ID to the outgoing context.
 	WithTraceID(ctx context.Context, id string) context.Context
+
+	// WithBaggage adds baggage information to the outgoing context
+	WithBaggage(ctx context.Context, baggage map[string]string) context.Context
 
 	// WithAuthToken sets Dapr API token on the instantiated client.
 	WithAuthToken(token string)
@@ -504,6 +508,17 @@ func (c *GRPCClient) WithTraceID(ctx context.Context, id string) context.Context
 	logger.Printf("using trace parent ID: %s", id)
 	md := metadata.Pairs(traceparentKey, id)
 	return metadata.NewOutgoingContext(ctx, md)
+}
+
+// WithBaggage adds baggage information to the outgoing context
+func (c *GRPCClient) WithBaggage(ctx context.Context, baggage map[string]string) context.Context {
+	var baggageValues []string
+	for key, value := range baggage {
+		baggageValues = append(baggageValues, key+"="+value)
+	}
+
+	baggageString := strings.Join(baggageValues, ",")
+	return metadata.AppendToOutgoingContext(ctx, baggageHeader, baggageString)
 }
 
 // Shutdown the sidecar.

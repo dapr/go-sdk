@@ -30,6 +30,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/test/bufconn"
 	"google.golang.org/protobuf/types/known/anypb"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -101,6 +102,19 @@ func TestNewClient(t *testing.T) {
 		_ = testClient.WithTraceID(context.Background(), "test")
 	})
 
+	t.Run("new client with baggage", func(t *testing.T) {
+		baggage := map[string]string{
+			"key1": "value1",
+			"key2": "value2",
+		}
+
+		ctx := testClient.WithBaggage(context.Background(), baggage)
+		metadata, ok := metadata.FromOutgoingContext(ctx)
+		require.True(t, ok)
+		baggageString := metadata.Get(baggageHeader)
+		require.Equal(t, []string{"key1=value1,key2=value2"}, baggageString)
+	})
+
 	t.Run("new socket client closed with token", func(t *testing.T) {
 		t.Setenv(apiTokenEnvVarName, "test")
 		c, err := NewClientWithSocket(testSocket)
@@ -122,6 +136,23 @@ func TestNewClient(t *testing.T) {
 		defer c.Close()
 		ctx := c.WithTraceID(context.Background(), "")
 		_ = c.WithTraceID(ctx, "test")
+	})
+
+	t.Run("new socket client with baggage", func(t *testing.T) {
+		c, err := NewClientWithSocket(testSocket)
+		require.NoError(t, err)
+		defer c.Close()
+
+		baggage := map[string]string{
+			"key1": "value1",
+			"key2": "value2",
+		}
+
+		ctx := c.WithBaggage(context.Background(), baggage)
+		metadata, ok := metadata.FromOutgoingContext(ctx)
+		require.True(t, ok)
+		baggageString := metadata.Get(baggageHeader)
+		require.Equal(t, []string{"key1=value1,key2=value2"}, baggageString)
 	})
 }
 
