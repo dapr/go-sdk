@@ -108,7 +108,7 @@ func TestNewClient(t *testing.T) {
 			"key2": "value2",
 		}
 
-		ctx := testClient.WithBaggage(context.Background(), baggage)
+		ctx := testClient.WithBaggage(t.Context(), baggage)
 		metadata, ok := metadata.FromOutgoingContext(ctx)
 		require.True(t, ok)
 		baggageString := metadata.Get(baggageHeader)
@@ -148,7 +148,7 @@ func TestNewClient(t *testing.T) {
 			"key2": "value2",
 		}
 
-		ctx := c.WithBaggage(context.Background(), baggage)
+		ctx := c.WithBaggage(t.Context(), baggage)
 		metadata, ok := metadata.FromOutgoingContext(ctx)
 		require.True(t, ok)
 		baggageString := metadata.Get(baggageHeader)

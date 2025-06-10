@@ -512,7 +512,7 @@ func (c *GRPCClient) WithTraceID(ctx context.Context, id string) context.Context
 
 // WithBaggage adds baggage information to the outgoing context
 func (c *GRPCClient) WithBaggage(ctx context.Context, baggage map[string]string) context.Context {
-	var baggageValues []string
+	baggageValues := make([]string, 0, len(baggage))
 	for key, value := range baggage {
 		baggageValues = append(baggageValues, key+"="+value)
 	}
