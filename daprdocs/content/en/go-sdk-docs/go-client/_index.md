@@ -16,12 +16,12 @@ The Dapr client package allows you to interact with other Dapr applications from
 - [Go installed](https://golang.org/doc/install)
 
 
-## Import the client package 
+## Import the client package
 ```go
 import "github.com/dapr/go-sdk/client"
 ```
 ## Error handling
-Dapr errors are based on [gRPC's richer error model](https://cloud.google.com/apis/design/errors#error_model). 
+Dapr errors are based on [gRPC's richer error model](https://cloud.google.com/apis/design/errors#error_model).
 The following code shows an example of how you can parse and handle the error details:
 
 ```go
@@ -54,7 +54,7 @@ if err != nil {
                 fmt.Printf("- Url: %s\n", link.Url)
                 fmt.Printf("- Description: %s\n", link.Description)
             }
-        
+
         default:
             // Add cases for other types of details you expect
             fmt.Printf("Unhandled error detail type: %v\n", t)
@@ -102,14 +102,14 @@ import (
 func ExampleWorkflow(ctx *workflow.WorkflowContext) (any, error) {
     var output string
     input := "world"
-    
+
     if err := ctx.CallActivity(ExampleActivity, workflow.ActivityInput(input)).Await(&output); err != nil {
         return nil, err
     }
-    
+
     // Print output - "hello world"
     fmt.Println(output)
-    
+
     return nil, nil
 }
 
@@ -118,7 +118,7 @@ func ExampleActivity(ctx workflow.ActivityContext) (any, error) {
     if err := ctx.GetInput(&input); err != nil {
         return "", err
     }
-    
+
     return fmt.Sprintf("hello %s", input), nil
 }
 
@@ -128,39 +128,39 @@ func main() {
     if err != nil {
         log.Fatalf("error creating worker: %v", err)
     }
-    
+
     // Register the workflow
     w.RegisterWorkflow(ExampleWorkflow)
-    
+
     // Register the activity
     w.RegisterActivity(ExampleActivity)
-    
+
     // Start workflow runner
     if err := w.Start(); err != nil {
         log.Fatal(err)
     }
-    
+
     // Create a workflow client
     wfClient, err := workflow.NewClient()
     if err != nil {
         log.Fatal(err)
     }
-    
+
     // Start a new workflow
     id, err := wfClient.ScheduleNewWorkflow(context.Background(), "ExampleWorkflow")
     if err != nil {
         log.Fatal(err)
     }
-    
+
     // Wait for the workflow to complete
     metadata, err := wfClient.WaitForWorkflowCompletion(ctx, id)
     if err != nil {
         log.Fatal(err)
     }
-    
+
     // Print workflow status post-completion
     fmt.Println(metadata.RuntimeStatus)
-    
+
     // Shutdown Worker
     w.Shutdown()
 }
@@ -180,7 +180,7 @@ For simple use-cases, Dapr client provides easy to use `Save`, `Get`, `Delete` m
 ```go
 ctx := context.Background()
 data := []byte("hello")
-store := "my-store" // defined in the component YAML 
+store := "my-store" // defined in the component YAML
 
 // save state with the key key1, default options: strong, last-write
 if err := client.SaveState(ctx, store, "key1", data, nil); err != nil {
@@ -269,7 +269,7 @@ meta := map[string]string{}
 err := testClient.ExecuteStateTransaction(ctx, store, meta, ops)
 ```
 
-Retrieve, filter, and sort key/value data stored in your statestore using `QueryState`. 
+Retrieve, filter, and sort key/value data stored in your statestore using `QueryState`.
 
 ```go
 // Define the query string
@@ -340,7 +340,7 @@ func TestActivity(ctx workflow.ActivityContext) (any, error) {
 	if err := ctx.GetInput(&input); err != nil {
 		return "", err
 	}
-	
+
 	// Do something here
 	return "result", nil
 }
@@ -361,7 +361,7 @@ func TestWorkflow(ctx *workflow.WorkflowContext) (any, error) {
 	if err := ctx.WaitForExternalEvent("testEvent", time.Second*60).Await(&output); err != nil {
 		return nil, err
 	}
-	
+
 	if err := ctx.CreateTimer(time.Second).Await(nil); err != nil {
 		return nil, nil
 	}
@@ -369,9 +369,118 @@ func TestWorkflow(ctx *workflow.WorkflowContext) (any, error) {
 }
 ```
 
-Then compose your application that will use the workflow you've created. [Refer to the How-To: Author workflows guide]({{< ref howto-author-workflow.md >}}) for a full walk-through. 
+Then compose your application that will use the workflow you've created. [Refer to the How-To: Author workflows guide]({{< ref howto-author-workflow.md >}}) for a full walk-through.
 
 Try out the [Go SDK workflow example.](https://github.com/dapr/go-sdk/blob/main/examples/workflow)
+
+### Jobs
+
+The Dapr client Go SDK allows you to schedule, get, and delete jobs. Jobs enable you to schedule work to be executed at specific times or intervals.
+
+#### Scheduling a Job
+
+To schedule a new job, use the `ScheduleJobAlpha1` method:
+
+```go
+import (
+    "google.golang.org/protobuf/types/known/anypb"
+)
+
+// Create job data
+data, err := anypb.New(&YourDataStruct{Message: "Hello, Job!"})
+if err != nil {
+    panic(err)
+}
+
+// Create a simple job
+job := &client.Job{
+    Name:    "my-scheduled-job",
+    Data:    data,
+    DueTime: "10s", // Execute in 10 seconds
+}
+
+// Schedule the job
+err = client.ScheduleJobAlpha1(ctx, job)
+if err != nil {
+    panic(err)
+}
+```
+
+#### Job with Schedule and Repeats
+
+You can create recurring jobs using the `Schedule` field with cron expressions:
+
+```go
+job := &client.Job{
+    Name:     "recurring-job",
+    Data:     data,
+    Schedule: "0 9 * * *", // Run at 9 AM every day
+    Repeats:  10,                // Repeat 10 times
+    TTL:      "1h",              // Job expires after 1 hour
+}
+
+err = client.ScheduleJobAlpha1(ctx, job)
+```
+
+#### Job with Failure Policy
+
+Configure how jobs should handle failures using failure policies:
+
+```go
+// Constant retry policy with max retries and interval
+maxRetries := uint32(3)
+retryInterval := 30 * time.Second
+failurePolicy := client.NewFailurePolicyConstant(&maxRetries, &retryInterval)
+
+job := &client.Job{
+    Name:          "resilient-job",
+    Data:          data,
+    DueTime:       "2024-01-01T10:00:00Z",
+    FailurePolicy: failurePolicy,
+}
+
+err = client.ScheduleJobAlpha1(ctx, job)
+```
+
+For jobs that should not be retried on failure, use the drop policy:
+
+```go
+job := &client.Job{
+    Name:          "one-shot-job",
+    Data:          data,
+    DueTime:       "2024-01-01T10:00:00Z",
+    FailurePolicy: client.NewFailurePolicyDrop(),
+}
+
+err = client.ScheduleJobAlpha1(ctx, job)
+```
+
+#### Getting a Job
+
+To get information about a scheduled job:
+
+```go
+job, err := client.GetJobAlpha1(ctx, "my-scheduled-job")
+if err != nil {
+    panic(err)
+}
+
+fmt.Printf("Job: %s, Schedule: %s, Repeats: %d\n",
+    job.Name, job.Schedule, job.Repeats)
+```
+
+#### Deleting a Job
+
+To cancel a scheduled job:
+
+```go
+err = client.DeleteJobAlpha1(ctx, "my-scheduled-job")
+if err != nil {
+    panic(err)
+}
+```
+
+For a full guide on jobs, visit [How-To: Schedule and manage jobs]({{< ref howto-schedule-and-handle-triggered-jobs.md >}}).
 
 ### Output Bindings
 
@@ -522,7 +631,7 @@ func main() {
         panic(err)
     }
     defer client.Close()
-    
+
     resp, err := client.TryLockAlpha1(ctx, "lockstore", &dapr.LockRequest{
 			LockOwner:         "random_id_abc123",
 			ResourceID:      "my_file_name",
