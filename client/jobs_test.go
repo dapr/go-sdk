@@ -15,6 +15,7 @@ package client
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -26,22 +27,27 @@ func TestSchedulingAlpha1(t *testing.T) {
 
 	t.Run("schedule job - valid", func(t *testing.T) {
 		err := testClient.ScheduleJobAlpha1(ctx, &Job{
-			Name:     "test",
-			Schedule: "test",
-			Data:     &anypb.Any{},
+			Name:          "test",
+			Schedule:      "test",
+			Data:          &anypb.Any{},
+			FailurePolicy: NewFailurePolicyConstant(nil, nil),
 		})
 
 		require.NoError(t, err)
 	})
 
 	t.Run("get job - valid", func(t *testing.T) {
+		maxRetries := uint32(4)
+		interval := time.Second * 10
+
 		expected := &Job{
-			Name:     "name",
-			Schedule: "@every 10s",
-			Repeats:  4,
-			DueTime:  "10s",
-			TTL:      "10s",
-			Data:     nil,
+			Name:          "name",
+			Schedule:      "@every 10s",
+			Repeats:       4,
+			DueTime:       "10s",
+			TTL:           "10s",
+			Data:          nil,
+			FailurePolicy: NewFailurePolicyConstant(&maxRetries, &interval),
 		}
 
 		resp, err := testClient.GetJobAlpha1(ctx, "name")

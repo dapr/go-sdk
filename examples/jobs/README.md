@@ -1,4 +1,4 @@
-# Dapr Distributed Scheduler Example with go-sdk
+# Dapr Jobs Example with go-sdk
 
 ## Steps
 
@@ -6,10 +6,10 @@
 
 - Dapr installed (v1.14 or higher)
 
-### Run Distributed Scheduling Example
+### Run Jobs Example
 
 <!-- STEP
-name: Run Distributed Scheduling Example
+name: Run Jobs Example
 output_match_mode: substring
 expected_stdout_lines:
   - 'Scheduler stream connected'
@@ -29,7 +29,7 @@ sleep: 30
 -->
 
 ```bash
-         dapr run --app-id=distributed-scheduler \
+         dapr run --app-id=jobs \
                 --metrics-port=9091 \
                 --scheduler-host-address=localhost:50006 \
                 --dapr-grpc-port 50001 \

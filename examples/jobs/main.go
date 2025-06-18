@@ -10,7 +10,7 @@ import (
 	"google.golang.org/protobuf/types/known/anypb"
 
 	daprc "github.com/dapr/go-sdk/client"
-	"github.com/dapr/go-sdk/examples/dist-scheduler/api"
+	"github.com/dapr/go-sdk/examples/jobs/api"
 	"github.com/dapr/go-sdk/service/common"
 	daprs "github.com/dapr/go-sdk/service/grpc"
 )
@@ -49,6 +49,8 @@ func main() {
 		panic(err)
 	}
 
+	maxRetries := uint32(4)
+	interval := time.Second * 3
 	job := daprc.Job{
 		Name:     "prod-db-backup",
 		Schedule: "@every 1s",
@@ -56,6 +58,7 @@ func main() {
 		Data: &anypb.Any{
 			Value: jobData,
 		},
+		FailurePolicy: daprc.NewFailurePolicyConstant(&maxRetries, &interval),
 	}
 
 	// create the client
