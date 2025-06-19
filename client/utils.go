@@ -13,7 +13,13 @@ limitations under the License.
 
 package client
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"math"
+	"time"
+
+	"google.golang.org/protobuf/types/known/durationpb"
+)
 
 // isCloudEvent returns true if the event is a CloudEvent.
 // An event is a CloudEvent if it `id`, `source`, `specversion` and `type` fields.
@@ -29,4 +35,21 @@ func isCloudEvent(event []byte) bool {
 		return false
 	}
 	return ce.ID != "" && ce.Source != "" && ce.SpecVersion != "" && ce.Type != ""
+}
+
+// toProtoDuration converts a time.Duration to a protobuf duration.
+func toProtoDuration(d time.Duration) *durationpb.Duration {
+	nanos := d.Nanoseconds()
+	secs := nanos / 1e9
+	nanos -= secs * 1e9
+
+	// conversion check - gosec ignored below for conversion
+	if nanos <= int64(math.MinInt32) && nanos >= int64(math.MaxInt32) {
+		panic("integer overflow converting duration to proto")
+	}
+
+	return &durationpb.Duration{
+		Seconds: secs,
+		Nanos:   int32(nanos), //nolint:gosec
+	}
 }

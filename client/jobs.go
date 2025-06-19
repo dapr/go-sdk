@@ -15,11 +15,10 @@ package client
 
 import (
 	"context"
-	"log"
+	"errors"
 	"time"
 
 	"google.golang.org/protobuf/types/known/anypb"
-	"google.golang.org/protobuf/types/known/durationpb"
 
 	commonpb "github.com/dapr/dapr/pkg/proto/common/v1"
 	runtimepb "github.com/dapr/dapr/pkg/proto/runtime/v1"
@@ -35,18 +34,18 @@ type JobFailurePolicyConstant struct {
 }
 
 func (f *JobFailurePolicyConstant) GetPBFailurePolicy() *commonpb.JobFailurePolicy {
-	policy := &commonpb.JobFailurePolicy{
-		Policy: &commonpb.JobFailurePolicy_Constant{
-			Constant: &commonpb.JobFailurePolicyConstant{},
-		},
-	}
+	constantfp := &commonpb.JobFailurePolicyConstant{}
 	if f.maxRetries != nil {
-		policy.Policy.(*commonpb.JobFailurePolicy_Constant).Constant.MaxRetries = f.maxRetries
+		constantfp.MaxRetries = f.maxRetries
 	}
 	if f.interval != nil {
-		policy.Policy.(*commonpb.JobFailurePolicy_Constant).Constant.Interval = &durationpb.Duration{Seconds: int64(f.interval.Seconds())}
+		constantfp.Interval = toProtoDuration(*f.interval)
 	}
-	return policy
+	return &commonpb.JobFailurePolicy{
+		Policy: &commonpb.JobFailurePolicy_Constant{
+			Constant: constantfp,
+		},
+	}
 }
 
 type JobFailurePolicyDrop struct {
@@ -73,36 +72,30 @@ func NewFailurePolicyDrop() FailurePolicy {
 
 type Job struct {
 	Name          string
-	Schedule      string // Optional
-	Repeats       uint32 // Optional
-	DueTime       string // Optional
-	TTL           string // Optional
+	Schedule      *string
+	Repeats       *uint32
+	DueTime       *string
+	TTL           *string
 	Data          *anypb.Any
 	FailurePolicy FailurePolicy
 }
 
 // ScheduleJobAlpha1 raises and schedules a job.
 func (c *GRPCClient) ScheduleJobAlpha1(ctx context.Context, job *Job) error {
-	// TODO: Assert job fields are defined: Name, Data
+	if job.Name == "" {
+		return errors.New("job name is required")
+	}
+	if job.Data == nil {
+		return errors.New("job data is required")
+	}
+
 	jobRequest := &runtimepb.Job{
-		Name: job.Name,
-		Data: job.Data,
-	}
-
-	if job.Schedule != "" {
-		jobRequest.Schedule = &job.Schedule
-	}
-
-	if job.Repeats != 0 {
-		jobRequest.Repeats = &job.Repeats
-	}
-
-	if job.DueTime != "" {
-		jobRequest.DueTime = &job.DueTime
-	}
-
-	if job.TTL != "" {
-		jobRequest.Ttl = &job.TTL
+		Name:     job.Name,
+		Data:     job.Data,
+		Schedule: job.Schedule,
+		Repeats:  job.Repeats,
+		DueTime:  job.DueTime,
+		Ttl:      job.TTL,
 	}
 
 	if job.FailurePolicy != nil {
@@ -116,11 +109,13 @@ func (c *GRPCClient) ScheduleJobAlpha1(ctx context.Context, job *Job) error {
 
 // GetJobAlpha1 retrieves a scheduled job.
 func (c *GRPCClient) GetJobAlpha1(ctx context.Context, name string) (*Job, error) {
-	// TODO: Name validation
+	if name == "" {
+		return nil, errors.New("job name is required")
+	}
+
 	resp, err := c.protoClient.GetJobAlpha1(ctx, &runtimepb.GetJobRequest{
 		Name: name,
 	})
-	log.Println(resp)
 	if err != nil {
 		return nil, err
 	}
@@ -139,10 +134,10 @@ func (c *GRPCClient) GetJobAlpha1(ctx context.Context, name string) (*Job, error
 
 	return &Job{
 		Name:          resp.GetJob().GetName(),
-		Schedule:      resp.GetJob().GetSchedule(),
-		Repeats:       resp.GetJob().GetRepeats(),
-		DueTime:       resp.GetJob().GetDueTime(),
-		TTL:           resp.GetJob().GetTtl(),
+		Schedule:      resp.GetJob().Schedule,
+		Repeats:       resp.GetJob().Repeats,
+		DueTime:       resp.GetJob().DueTime,
+		TTL:           resp.GetJob().Ttl,
 		Data:          resp.GetJob().GetData(),
 		FailurePolicy: failurePolicy,
 	}, nil
@@ -150,7 +145,10 @@ func (c *GRPCClient) GetJobAlpha1(ctx context.Context, name string) (*Job, error
 
 // DeleteJobAlpha1 deletes a scheduled job.
 func (c *GRPCClient) DeleteJobAlpha1(ctx context.Context, name string) error {
-	// TODO: Name validation
+	if name == "" {
+		return errors.New("job name is required")
+	}
+
 	_, err := c.protoClient.DeleteJobAlpha1(ctx, &runtimepb.DeleteJobRequest{
 		Name: name,
 	})

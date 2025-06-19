@@ -26,9 +26,10 @@ func TestSchedulingAlpha1(t *testing.T) {
 	ctx := t.Context()
 
 	t.Run("schedule job - valid", func(t *testing.T) {
+		schedule := "test"
 		err := testClient.ScheduleJobAlpha1(ctx, &Job{
 			Name:          "test",
-			Schedule:      "test",
+			Schedule:      &schedule,
 			Data:          &anypb.Any{},
 			FailurePolicy: NewFailurePolicyConstant(nil, nil),
 		})
@@ -39,13 +40,17 @@ func TestSchedulingAlpha1(t *testing.T) {
 	t.Run("get job - valid", func(t *testing.T) {
 		maxRetries := uint32(4)
 		interval := time.Second * 10
+		schedule := "@every 10s"
+		repeats := uint32(4)
+		dueTime := "10s"
+		ttl := "10s"
 
 		expected := &Job{
 			Name:          "name",
-			Schedule:      "@every 10s",
-			Repeats:       4,
-			DueTime:       "10s",
-			TTL:           "10s",
+			Schedule:      &schedule,
+			Repeats:       &repeats,
+			DueTime:       &dueTime,
+			TTL:           &ttl,
 			Data:          nil,
 			FailurePolicy: NewFailurePolicyConstant(&maxRetries, &interval),
 		}
