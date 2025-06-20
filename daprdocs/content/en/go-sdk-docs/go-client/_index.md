@@ -383,7 +383,6 @@ To schedule a new job, use the `ScheduleJobAlpha1` method:
 
 ```go
 import (
-    "github.com/dapr/kit/ptr"
     "google.golang.org/protobuf/types/known/anypb"
 )
 
@@ -393,12 +392,11 @@ if err != nil {
     panic(err)
 }
 
-// Create a simple job
-job := &client.Job{
-    Name:    "my-scheduled-job",
-    Data:    data,
-    DueTime: ptr.Of("10s"), // Execute in 10 seconds
-}
+// Create a simple job using the builder pattern
+job := client.NewJob("my-scheduled-job",
+    client.WithJobData(data),
+    client.WithJobDueTime("10s"), // Execute in 10 seconds
+)
 
 // Schedule the job
 err = client.ScheduleJobAlpha1(ctx, job)
@@ -412,13 +410,12 @@ if err != nil {
 You can create recurring jobs using the `Schedule` field with cron expressions:
 
 ```go
-job := &client.Job{
-    Name:     "recurring-job",
-    Data:     data,
-    Schedule: ptr.Of("0 9 * * *"), // Run at 9 AM every day
-    Repeats:  ptr.Of(uint32(10)),  // Repeat 10 times
-    TTL:      ptr.Of("1h"),        // Job expires after 1 hour
-}
+job := client.NewJob("recurring-job",
+    client.WithJobData(data),
+    client.WithJobSchedule("0 9 * * *"), // Run at 9 AM every day
+    client.WithJobRepeats(10),            // Repeat 10 times
+    client.WithJobTTL("1h"),              // Job expires after 1 hour
+)
 
 err = client.ScheduleJobAlpha1(ctx, job)
 ```
@@ -429,15 +426,13 @@ Configure how jobs should handle failures using failure policies:
 
 ```go
 // Constant retry policy with max retries and interval
-job := &client.Job{
-    Name:          "resilient-job",
-    Data:          data,
-    DueTime:       ptr.Of("2024-01-01T10:00:00Z"),
-    FailurePolicy: client.JobFailurePolicyConstant{
-        MaxRetries: ptr.Of(uint32(3)),
-        Interval:   ptr.Of(30*time.Second),
-    },
-}
+job := client.NewJob("resilient-job",
+    client.WithJobData(data),
+    client.WithJobDueTime("2024-01-01T10:00:00Z"),
+    client.WithJobConstantFailurePolicy(),
+    client.WithJobConstantFailurePolicyMaxRetries(3),
+    client.WithJobConstantFailurePolicyInterval(30*time.Second),
+)
 
 err = client.ScheduleJobAlpha1(ctx, job)
 ```
@@ -445,12 +440,11 @@ err = client.ScheduleJobAlpha1(ctx, job)
 For jobs that should not be retried on failure, use the drop policy:
 
 ```go
-job := &client.Job{
-    Name:          "one-shot-job",
-    Data:          data,
-    DueTime:       ptr.Of("2024-01-01T10:00:00Z"),
-    FailurePolicy: client.JobFailurePolicyDrop{},
-}
+job := client.NewJob("one-shot-job",
+    client.WithJobData(data),
+    client.WithJobDueTime("2024-01-01T10:00:00Z"),
+    client.WithJobDropFailurePolicy(),
+)
 
 err = client.ScheduleJobAlpha1(ctx, job)
 ```

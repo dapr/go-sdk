@@ -70,6 +70,90 @@ type Job struct {
 	FailurePolicy FailurePolicy
 }
 
+type JobOption func(*Job)
+
+func NewJob(name string, opts ...JobOption) *Job {
+	job := &Job{
+		Name: name,
+	}
+	for _, opt := range opts {
+		opt(job)
+	}
+	return job
+}
+
+func WithJobSchedule(schedule string) JobOption {
+	return func(job *Job) {
+		job.Schedule = &schedule
+	}
+}
+
+func WithJobRepeats(repeats uint32) JobOption {
+	return func(job *Job) {
+		job.Repeats = &repeats
+	}
+}
+
+func WithJobDueTime(dueTime string) JobOption {
+	return func(job *Job) {
+		job.DueTime = &dueTime
+	}
+}
+
+func WithJobTTL(ttl string) JobOption {
+	return func(job *Job) {
+		job.TTL = &ttl
+	}
+}
+
+func WithJobData(data *anypb.Any) JobOption {
+	return func(job *Job) {
+		job.Data = data
+	}
+}
+
+func WithJobConstantFailurePolicy() JobOption {
+	return func(job *Job) {
+		job.FailurePolicy = &JobFailurePolicyConstant{}
+	}
+}
+
+func WithJobConstantFailurePolicyMaxRetries(maxRetries uint32) JobOption {
+	return func(job *Job) {
+		if job.FailurePolicy == nil {
+			job.FailurePolicy = &JobFailurePolicyConstant{}
+		}
+		if constantPolicy, ok := job.FailurePolicy.(*JobFailurePolicyConstant); ok {
+			constantPolicy.MaxRetries = &maxRetries
+		} else {
+			job.FailurePolicy = &JobFailurePolicyConstant{
+				MaxRetries: &maxRetries,
+			}
+		}
+	}
+}
+
+func WithJobConstantFailurePolicyInterval(interval time.Duration) JobOption {
+	return func(job *Job) {
+		if job.FailurePolicy == nil {
+			job.FailurePolicy = &JobFailurePolicyConstant{}
+		}
+		if constantPolicy, ok := job.FailurePolicy.(*JobFailurePolicyConstant); ok {
+			constantPolicy.Interval = &interval
+		} else {
+			job.FailurePolicy = &JobFailurePolicyConstant{
+				Interval: &interval,
+			}
+		}
+	}
+}
+
+func WithJobDropFailurePolicy() JobOption {
+	return func(job *Job) {
+		job.FailurePolicy = &JobFailurePolicyDrop{}
+	}
+}
+
 // ScheduleJobAlpha1 raises and schedules a job.
 func (c *GRPCClient) ScheduleJobAlpha1(ctx context.Context, job *Job) error {
 	if job.Name == "" {

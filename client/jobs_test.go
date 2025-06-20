@@ -17,7 +17,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/dapr/kit/ptr"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/protobuf/types/known/anypb"
@@ -27,30 +26,27 @@ func TestSchedulingAlpha1(t *testing.T) {
 	ctx := t.Context()
 
 	t.Run("schedule job - valid", func(t *testing.T) {
-		schedule := "test"
-		err := testClient.ScheduleJobAlpha1(ctx, &Job{
-			Name:          "test",
-			Schedule:      &schedule,
-			Data:          &anypb.Any{},
-			FailurePolicy: &JobFailurePolicyConstant{},
-		})
+		job := NewJob("test",
+			WithJobSchedule("test"),
+			WithJobData(&anypb.Any{}),
+			WithJobConstantFailurePolicy(),
+		)
+
+		err := testClient.ScheduleJobAlpha1(ctx, job)
 
 		require.NoError(t, err)
 	})
 
 	t.Run("get job - valid", func(t *testing.T) {
-		expected := &Job{
-			Name:     "name",
-			Schedule: ptr.Of("@every 10s"),
-			Repeats:  ptr.Of(uint32(4)),
-			DueTime:  ptr.Of("10s"),
-			TTL:      ptr.Of("10s"),
-			Data:     nil,
-			FailurePolicy: &JobFailurePolicyConstant{
-				MaxRetries: ptr.Of(uint32(4)),
-				Interval:   ptr.Of(time.Second * 10),
-			},
-		}
+		expected := NewJob("name",
+			WithJobSchedule("@every 10s"),
+			WithJobRepeats(4),
+			WithJobDueTime("10s"),
+			WithJobTTL("10s"),
+			WithJobConstantFailurePolicy(),
+			WithJobConstantFailurePolicyMaxRetries(4),
+			WithJobConstantFailurePolicyInterval(time.Second*10),
+		)
 
 		resp, err := testClient.GetJobAlpha1(ctx, "name")
 		require.NoError(t, err)

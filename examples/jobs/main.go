@@ -13,7 +13,6 @@ import (
 	"github.com/dapr/go-sdk/examples/jobs/api"
 	"github.com/dapr/go-sdk/service/common"
 	daprs "github.com/dapr/go-sdk/service/grpc"
-	"github.com/dapr/kit/ptr"
 )
 
 func main() {
@@ -50,18 +49,16 @@ func main() {
 		panic(err)
 	}
 
-	job := daprc.Job{
-		Name:     "prod-db-backup",
-		Schedule: ptr.Of("@every 1s"),
-		Repeats:  ptr.Of(uint32(10)),
-		Data: &anypb.Any{
+	job := daprc.NewJob("prod-db-backup",
+		daprc.WithJobSchedule("@every 1s"),
+		daprc.WithJobRepeats(10),
+		daprc.WithJobData(&anypb.Any{
 			Value: jobData,
-		},
-		FailurePolicy: &daprc.JobFailurePolicyConstant{
-			MaxRetries: ptr.Of(uint32(4)),
-			Interval:   ptr.Of(time.Second * 30),
-		},
-	}
+		}),
+		daprc.WithJobConstantFailurePolicy(),
+		daprc.WithJobConstantFailurePolicyMaxRetries(4),
+		daprc.WithJobConstantFailurePolicyInterval(time.Second*30),
+	)
 
 	// create the client
 	client, err := daprc.NewClient()
@@ -70,7 +67,7 @@ func main() {
 	}
 	defer client.Close()
 
-	err = client.ScheduleJobAlpha1(ctx, &job)
+	err = client.ScheduleJobAlpha1(ctx, job)
 	if err != nil {
 		panic(err)
 	}
