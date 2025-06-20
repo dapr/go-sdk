@@ -568,7 +568,7 @@ func (s *testDaprServer) GetJobAlpha1(ctx context.Context, in *pb.GetJobRequest)
 		dueTime           = "10s"
 		repeats    uint32 = 4
 		ttl               = "10s"
-		maxRetries        = uint32(4)
+		maxRetries uint32 = 4
 	)
 	return &pb.GetJobResponse{
 		Job: &pb.Job{
