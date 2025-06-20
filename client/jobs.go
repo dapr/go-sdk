@@ -19,6 +19,7 @@ import (
 	"time"
 
 	"google.golang.org/protobuf/types/known/anypb"
+	"google.golang.org/protobuf/types/known/durationpb"
 
 	commonpb "github.com/dapr/dapr/pkg/proto/common/v1"
 	runtimepb "github.com/dapr/dapr/pkg/proto/runtime/v1"
@@ -39,7 +40,7 @@ func (f *JobFailurePolicyConstant) GetPBFailurePolicy() *commonpb.JobFailurePoli
 		constantfp.MaxRetries = f.maxRetries
 	}
 	if f.interval != nil {
-		constantfp.Interval = toProtoDuration(*f.interval)
+		constantfp.Interval = durationpb.New(*f.interval)
 	}
 	return &commonpb.JobFailurePolicy{
 		Policy: &commonpb.JobFailurePolicy_Constant{
