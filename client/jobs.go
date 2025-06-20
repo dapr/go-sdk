@@ -60,17 +60,6 @@ func (f *JobFailurePolicyDrop) GetPBFailurePolicy() *commonpb.JobFailurePolicy {
 	}
 }
 
-func NewFailurePolicyConstant(maxRetries *uint32, interval *time.Duration) FailurePolicy {
-	return &JobFailurePolicyConstant{
-		maxRetries: maxRetries,
-		interval:   interval,
-	}
-}
-
-func NewFailurePolicyDrop() FailurePolicy {
-	return &JobFailurePolicyDrop{}
-}
-
 type Job struct {
 	Name          string
 	Schedule      *string

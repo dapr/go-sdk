@@ -31,28 +31,33 @@ func TestSchedulingAlpha1(t *testing.T) {
 			Name:          "test",
 			Schedule:      &schedule,
 			Data:          &anypb.Any{},
-			FailurePolicy: NewFailurePolicyConstant(nil, nil),
+			FailurePolicy: &JobFailurePolicyConstant{},
 		})
 
 		require.NoError(t, err)
 	})
 
 	t.Run("get job - valid", func(t *testing.T) {
-		maxRetries := uint32(4)
-		interval := time.Second * 10
-		schedule := "@every 10s"
-		repeats := uint32(4)
-		dueTime := "10s"
-		ttl := "10s"
+		var (
+			schedule          = "@every 10s"
+			repeats    uint32 = 4
+			dueTime           = "10s"
+			ttl               = "10s"
+			maxRetries uint32 = 4
+			interval          = time.Second * 10
+		)
 
 		expected := &Job{
-			Name:          "name",
-			Schedule:      &schedule,
-			Repeats:       &repeats,
-			DueTime:       &dueTime,
-			TTL:           &ttl,
-			Data:          nil,
-			FailurePolicy: NewFailurePolicyConstant(&maxRetries, &interval),
+			Name:     "name",
+			Schedule: &schedule,
+			Repeats:  &repeats,
+			DueTime:  &dueTime,
+			TTL:      &ttl,
+			Data:     nil,
+			FailurePolicy: &JobFailurePolicyConstant{
+				maxRetries: &maxRetries,
+				interval:   &interval,
+			},
 		}
 
 		resp, err := testClient.GetJobAlpha1(ctx, "name")
