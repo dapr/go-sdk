@@ -30,17 +30,17 @@ type FailurePolicy interface {
 }
 
 type JobFailurePolicyConstant struct {
-	maxRetries *uint32
-	interval   *time.Duration
+	MaxRetries *uint32
+	Interval   *time.Duration
 }
 
 func (f *JobFailurePolicyConstant) GetPBFailurePolicy() *commonpb.JobFailurePolicy {
 	constantfp := &commonpb.JobFailurePolicyConstant{}
-	if f.maxRetries != nil {
-		constantfp.MaxRetries = f.maxRetries
+	if f.MaxRetries != nil {
+		constantfp.MaxRetries = f.MaxRetries
 	}
-	if f.interval != nil {
-		constantfp.Interval = durationpb.New(*f.interval)
+	if f.Interval != nil {
+		constantfp.Interval = durationpb.New(*f.Interval)
 	}
 	return &commonpb.JobFailurePolicy{
 		Policy: &commonpb.JobFailurePolicy_Constant{
@@ -115,8 +115,8 @@ func (c *GRPCClient) GetJobAlpha1(ctx context.Context, name string) (*Job, error
 	case *commonpb.JobFailurePolicy_Constant:
 		interval := time.Duration(policy.Constant.Interval.GetSeconds()) * time.Second
 		failurePolicy = &JobFailurePolicyConstant{
-			maxRetries: policy.Constant.MaxRetries,
-			interval:   &interval,
+			MaxRetries: policy.Constant.MaxRetries,
+			Interval:   &interval,
 		}
 	case *commonpb.JobFailurePolicy_Drop:
 		failurePolicy = &JobFailurePolicyDrop{}

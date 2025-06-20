@@ -383,6 +383,7 @@ To schedule a new job, use the `ScheduleJobAlpha1` method:
 
 ```go
 import (
+    "github.com/dapr/kit/ptr"
     "google.golang.org/protobuf/types/known/anypb"
 )
 
@@ -396,7 +397,7 @@ if err != nil {
 job := &client.Job{
     Name:    "my-scheduled-job",
     Data:    data,
-    DueTime: "10s", // Execute in 10 seconds
+    DueTime: ptr.Of("10s"), // Execute in 10 seconds
 }
 
 // Schedule the job
@@ -414,9 +415,9 @@ You can create recurring jobs using the `Schedule` field with cron expressions:
 job := &client.Job{
     Name:     "recurring-job",
     Data:     data,
-    Schedule: "0 9 * * *", // Run at 9 AM every day
-    Repeats:  10,                // Repeat 10 times
-    TTL:      "1h",              // Job expires after 1 hour
+    Schedule: ptr.Of("0 9 * * *"), // Run at 9 AM every day
+    Repeats:  ptr.Of(uint32(10)),  // Repeat 10 times
+    TTL:      ptr.Of("1h"),        // Job expires after 1 hour
 }
 
 err = client.ScheduleJobAlpha1(ctx, job)
@@ -428,15 +429,14 @@ Configure how jobs should handle failures using failure policies:
 
 ```go
 // Constant retry policy with max retries and interval
-maxRetries := uint32(3)
-retryInterval := 30 * time.Second
-failurePolicy := client.NewFailurePolicyConstant(&maxRetries, &retryInterval)
-
 job := &client.Job{
     Name:          "resilient-job",
     Data:          data,
-    DueTime:       "2024-01-01T10:00:00Z",
-    FailurePolicy: failurePolicy,
+    DueTime:       ptr.Of("2024-01-01T10:00:00Z"),
+    FailurePolicy: client.JobFailurePolicyConstant{
+        MaxRetries: ptr.Of(uint32(3)),
+        Interval:   ptr.Of(30*time.Second),
+    },
 }
 
 err = client.ScheduleJobAlpha1(ctx, job)
@@ -448,8 +448,8 @@ For jobs that should not be retried on failure, use the drop policy:
 job := &client.Job{
     Name:          "one-shot-job",
     Data:          data,
-    DueTime:       "2024-01-01T10:00:00Z",
-    FailurePolicy: client.NewFailurePolicyDrop(),
+    DueTime:       ptr.Of("2024-01-01T10:00:00Z"),
+    FailurePolicy: client.JobFailurePolicyDrop{},
 }
 
 err = client.ScheduleJobAlpha1(ctx, job)

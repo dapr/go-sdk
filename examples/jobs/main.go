@@ -13,6 +13,7 @@ import (
 	"github.com/dapr/go-sdk/examples/jobs/api"
 	"github.com/dapr/go-sdk/service/common"
 	daprs "github.com/dapr/go-sdk/service/grpc"
+	"github.com/dapr/kit/ptr"
 )
 
 func main() {
@@ -49,16 +50,17 @@ func main() {
 		panic(err)
 	}
 
-	maxRetries := uint32(4)
-	interval := time.Second * 3
 	job := daprc.Job{
 		Name:     "prod-db-backup",
-		Schedule: "@every 1s",
-		Repeats:  10,
+		Schedule: ptr.Of("@every 1s"),
+		Repeats:  ptr.Of(uint32(10)),
 		Data: &anypb.Any{
 			Value: jobData,
 		},
-		FailurePolicy: daprc.NewFailurePolicyConstant(&maxRetries, &interval),
+		FailurePolicy: &daprc.JobFailurePolicyConstant{
+			MaxRetries: ptr.Of(uint32(4)),
+			Interval:   ptr.Of(time.Second * 30),
+		},
 	}
 
 	// create the client

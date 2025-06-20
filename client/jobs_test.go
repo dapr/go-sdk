@@ -17,6 +17,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/dapr/kit/ptr"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/protobuf/types/known/anypb"
@@ -38,25 +39,16 @@ func TestSchedulingAlpha1(t *testing.T) {
 	})
 
 	t.Run("get job - valid", func(t *testing.T) {
-		var (
-			schedule          = "@every 10s"
-			repeats    uint32 = 4
-			dueTime           = "10s"
-			ttl               = "10s"
-			maxRetries uint32 = 4
-			interval          = time.Second * 10
-		)
-
 		expected := &Job{
 			Name:     "name",
-			Schedule: &schedule,
-			Repeats:  &repeats,
-			DueTime:  &dueTime,
-			TTL:      &ttl,
+			Schedule: ptr.Of("@every 10s"),
+			Repeats:  ptr.Of(uint32(4)),
+			DueTime:  ptr.Of("10s"),
+			TTL:      ptr.Of("10s"),
 			Data:     nil,
 			FailurePolicy: &JobFailurePolicyConstant{
-				maxRetries: &maxRetries,
-				interval:   &interval,
+				MaxRetries: ptr.Of(uint32(4)),
+				Interval:   ptr.Of(time.Second * 10),
 			},
 		}
 
