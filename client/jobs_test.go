@@ -59,3 +59,61 @@ func TestSchedulingAlpha1(t *testing.T) {
 		require.NoError(t, err)
 	})
 }
+
+func TestJobBuilder(t *testing.T) {
+	t.Run("basic job creation", func(t *testing.T) {
+		job := NewJob("test-job")
+
+		assert.Equal(t, "test-job", job.Name)
+		assert.Nil(t, job.Schedule)
+		assert.Nil(t, job.Repeats)
+		assert.Nil(t, job.DueTime)
+		assert.Nil(t, job.TTL)
+		assert.Nil(t, job.Data)
+		assert.Nil(t, job.FailurePolicy)
+	})
+
+	t.Run("job with all options and constant failure policy", func(t *testing.T) {
+		job := NewJob("full-job",
+			WithJobSchedule("@every 10m"),
+			WithJobRepeats(5),
+			WithJobDueTime("2024-12-31T23:59:59Z"),
+			WithJobTTL("2h"),
+			WithJobData(&anypb.Any{TypeUrl: "test", Value: []byte("test-data")}),
+			WithJobConstantFailurePolicy(),
+			WithJobConstantFailurePolicyMaxRetries(3),
+			WithJobConstantFailurePolicyInterval(time.Minute*2),
+		)
+
+		assert.Equal(t, "full-job", job.Name)
+		assert.Equal(t, "@every 10m", *job.Schedule)
+		assert.Equal(t, uint32(5), *job.Repeats)
+		assert.Equal(t, "2024-12-31T23:59:59Z", *job.DueTime)
+		assert.Equal(t, "2h", *job.TTL)
+		assert.Equal(t, &anypb.Any{TypeUrl: "test", Value: []byte("test-data")}, job.Data)
+		constantPolicy, ok := job.FailurePolicy.(*JobFailurePolicyConstant)
+		require.True(t, ok)
+		assert.Equal(t, uint32(3), *constantPolicy.MaxRetries)
+		assert.Equal(t, time.Minute*2, *constantPolicy.Interval)
+	})
+
+	t.Run("job with all options and drop failure policy", func(t *testing.T) {
+		job := NewJob("full-job",
+			WithJobSchedule("@every 10m"),
+			WithJobRepeats(5),
+			WithJobDueTime("2024-12-31T23:59:59Z"),
+			WithJobTTL("2h"),
+			WithJobData(&anypb.Any{TypeUrl: "test", Value: []byte("test-data")}),
+			WithJobDropFailurePolicy(),
+		)
+
+		assert.Equal(t, "full-job", job.Name)
+		assert.Equal(t, "@every 10m", *job.Schedule)
+		assert.Equal(t, uint32(5), *job.Repeats)
+		assert.Equal(t, "2024-12-31T23:59:59Z", *job.DueTime)
+		assert.Equal(t, "2h", *job.TTL)
+		assert.Equal(t, &anypb.Any{TypeUrl: "test", Value: []byte("test-data")}, job.Data)
+		_, ok := job.FailurePolicy.(*JobFailurePolicyDrop)
+		require.True(t, ok)
+	})
+}
