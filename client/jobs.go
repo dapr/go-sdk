@@ -23,6 +23,7 @@ import (
 
 	commonpb "github.com/dapr/dapr/pkg/proto/common/v1"
 	runtimepb "github.com/dapr/dapr/pkg/proto/runtime/v1"
+	"github.com/dapr/kit/ptr"
 )
 
 type FailurePolicy interface {
@@ -49,8 +50,7 @@ func (f *JobFailurePolicyConstant) GetPBFailurePolicy() *commonpb.JobFailurePoli
 	}
 }
 
-type JobFailurePolicyDrop struct {
-}
+type JobFailurePolicyDrop struct{}
 
 func (f *JobFailurePolicyDrop) GetPBFailurePolicy() *commonpb.JobFailurePolicy {
 	return &commonpb.JobFailurePolicy{
@@ -195,11 +195,11 @@ func (c *GRPCClient) GetJobAlpha1(ctx context.Context, name string) (*Job, error
 	}
 
 	var failurePolicy FailurePolicy
-	switch policy := resp.GetJob().GetFailurePolicy().Policy.(type) {
+	switch policy := resp.GetJob().GetFailurePolicy().GetPolicy().(type) {
 	case *commonpb.JobFailurePolicy_Constant:
-		interval := time.Duration(policy.Constant.Interval.GetSeconds()) * time.Second
+		interval := time.Duration(policy.Constant.GetInterval().GetSeconds()) * time.Second
 		failurePolicy = &JobFailurePolicyConstant{
-			MaxRetries: policy.Constant.MaxRetries,
+			MaxRetries: ptr.Of(policy.Constant.GetMaxRetries()),
 			Interval:   &interval,
 		}
 	case *commonpb.JobFailurePolicy_Drop:
@@ -208,10 +208,10 @@ func (c *GRPCClient) GetJobAlpha1(ctx context.Context, name string) (*Job, error
 
 	return &Job{
 		Name:          resp.GetJob().GetName(),
-		Schedule:      resp.GetJob().Schedule,
-		Repeats:       resp.GetJob().Repeats,
-		DueTime:       resp.GetJob().DueTime,
-		TTL:           resp.GetJob().Ttl,
+		Schedule:      ptr.Of(resp.GetJob().GetSchedule()),
+		Repeats:       ptr.Of(resp.GetJob().GetRepeats()),
+		DueTime:       ptr.Of(resp.GetJob().GetDueTime()),
+		TTL:           ptr.Of(resp.GetJob().GetTtl()),
 		Data:          resp.GetJob().GetData(),
 		FailurePolicy: failurePolicy,
 	}, nil
