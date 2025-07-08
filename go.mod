@@ -5,6 +5,7 @@ go 1.24.4
 require (
 	github.com/dapr/dapr v1.15.4-0.20250618123356-78343f18338b
 	github.com/dapr/durabletask-go v0.7.2
+	github.com/dapr/kit v0.15.4
 	github.com/go-chi/chi/v5 v5.1.0
 	github.com/golang/mock v1.6.0
 	github.com/google/uuid v1.6.0
@@ -16,7 +17,6 @@ require (
 
 require (
 	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
-	github.com/dapr/kit v0.15.4 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/go-logr/logr v1.4.2 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
