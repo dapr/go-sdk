@@ -80,7 +80,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("getjob - resp: %v\n", resp) // parse
+	fmt.Printf("getjob - resp: Name: %s, Schedule: %s, Repeats: %d, DueTime: %s, TTL: %s, Data: %v\n", resp.Name, *resp.Schedule, *resp.Repeats, *resp.DueTime, *resp.TTL, resp.Data) // parse
 
 	err = client.DeleteJobAlpha1(ctx, "prod-db-backup")
 	if err != nil {

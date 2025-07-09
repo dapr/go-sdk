@@ -20,7 +20,7 @@ expected_stdout_lines:
   - 'payload: {db-backup {my-prod-db /backup-dir}}'
   - 'job 2 received'
   - 'payload: {db-backup {my-prod-db /backup-dir}}'
-  - 'getjob - resp: &{prod-db-backup @every 1s 10   value:"{\"task\":\"db-backup\",\"metadata\":{\"db_name\":\"my-prod-db\",\"backup_location\":\"/backup-dir\"}}"}'
+  - 'getjob - resp: Name: prod-db-backup, Schedule: @every 1s, Repeats: 10, DueTime: , TTL: , Data: value:"{\"task\":\"db-backup\",\"metadata\":{\"db_name\":\"my-prod-db\",\"backup_location\":\"/backup-dir\"}}"'
   - 'deletejob - success'
 
 background: true
