@@ -13,7 +13,9 @@ limitations under the License.
 
 package client
 
-import "encoding/json"
+import (
+	"encoding/json"
+)
 
 // isCloudEvent returns true if the event is a CloudEvent.
 // An event is a CloudEvent if it `id`, `source`, `specversion` and `type` fields.
