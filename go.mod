@@ -6,7 +6,7 @@ require (
 	github.com/dapr/dapr v1.15.4-0.20250618123356-78343f18338b
 	github.com/dapr/durabletask-go v0.7.2
 	github.com/dapr/kit v0.15.4
-	github.com/go-chi/chi/v5 v5.1.0
+	github.com/go-chi/chi/v5 v5.2.2
 	github.com/golang/mock v1.6.0
 	github.com/google/uuid v1.6.0
 	github.com/stretchr/testify v1.10.0
