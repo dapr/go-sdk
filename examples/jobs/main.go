@@ -10,7 +10,7 @@ import (
 	"google.golang.org/protobuf/types/known/anypb"
 
 	daprc "github.com/dapr/go-sdk/client"
-	"github.com/dapr/go-sdk/examples/dist-scheduler/api"
+	"github.com/dapr/go-sdk/examples/jobs/api"
 	"github.com/dapr/go-sdk/service/common"
 	daprs "github.com/dapr/go-sdk/service/grpc"
 )
@@ -49,14 +49,16 @@ func main() {
 		panic(err)
 	}
 
-	job := daprc.Job{
-		Name:     "prod-db-backup",
-		Schedule: "@every 1s",
-		Repeats:  10,
-		Data: &anypb.Any{
+	job := daprc.NewJob("prod-db-backup",
+		daprc.WithJobSchedule("@every 1s"),
+		daprc.WithJobRepeats(10),
+		daprc.WithJobData(&anypb.Any{
 			Value: jobData,
-		},
-	}
+		}),
+		daprc.WithJobConstantFailurePolicy(),
+		daprc.WithJobConstantFailurePolicyMaxRetries(4),
+		daprc.WithJobConstantFailurePolicyInterval(time.Second*30),
+	)
 
 	// create the client
 	client, err := daprc.NewClient()
@@ -65,7 +67,7 @@ func main() {
 	}
 	defer client.Close()
 
-	err = client.ScheduleJobAlpha1(ctx, &job)
+	err = client.ScheduleJobAlpha1(ctx, job)
 	if err != nil {
 		panic(err)
 	}
@@ -78,7 +80,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("getjob - resp: %v\n", resp) // parse
+	fmt.Printf("getjob - resp: Name: %s, Schedule: %s, Repeats: %d, DueTime: %s, TTL: %s, Data: %v\n", resp.Name, *resp.Schedule, *resp.Repeats, *resp.DueTime, *resp.TTL, resp.Data) // parse
 
 	err = client.DeleteJobAlpha1(ctx, "prod-db-backup")
 	if err != nil {
