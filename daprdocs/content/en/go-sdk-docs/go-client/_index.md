@@ -11,8 +11,8 @@ The Dapr client package allows you to interact with other Dapr applications from
 
 ## Prerequisites
 
-- [Dapr CLI]({{< ref install-dapr-cli.md >}}) installed
-- Initialized [Dapr environment]({{< ref install-dapr-selfhost.md >}})
+- [Dapr CLI]({{% ref install-dapr-cli.md %}}) installed
+- Initialized [Dapr environment]({{% ref install-dapr-selfhost.md %}})
 - [Go installed](https://golang.org/doc/install)
 
 
@@ -65,7 +65,7 @@ if err != nil {
 
 ## Building blocks
 
-The Go SDK allows you to interface with all of the [Dapr building blocks]({{< ref building-blocks >}}).
+The Go SDK allows you to interface with all of the [Dapr building blocks]({{% ref building-blocks %}}).
 
 ### Service Invocation
 
@@ -86,7 +86,7 @@ content := &dapr.DataContent{
 resp, err = client.InvokeMethodWithContent(ctx, "app-id", "method-name", "post", content)
 ```
 
-For a full guide on service invocation, visit [How-To: Invoke a service]({{< ref howto-invoke-discover-services.md >}}).
+For a full guide on service invocation, visit [How-To: Invoke a service]({{% ref howto-invoke-discover-services.md %}}).
 
 ### Workflows
 
@@ -167,8 +167,8 @@ func main() {
 ```
 
 - For a more comprehensive guide on workflows visit these How-To guides:
-  - [How-To: Author a workflow]({{< ref howto-author-workflow.md >}}).
-  - [How-To: Manage a workflow]({{< ref howto-manage-workflow.md >}}).
+  - [How-To: Author a workflow]({{% ref howto-author-workflow.md %}}).
+  - [How-To: Manage a workflow]({{% ref howto-manage-workflow.md %}}).
 - Visit the Go SDK Examples to jump into complete examples:
   - [Workflow Example](https://github.com/dapr/go-sdk/tree/main/examples/workflow)
   - [Workflow - Parallelised](https://github.com/dapr/go-sdk/tree/main/examples/workflow-parallel)
@@ -306,7 +306,7 @@ for _, account := range queryResponse {
 
 > **Note:** Query state API is currently in alpha
 
-For a full guide on state management, visit [How-To: Save & get state]({{< ref howto-get-save-state.md >}}).
+For a full guide on state management, visit [How-To: Save & get state]({{% ref howto-get-save-state.md %}}).
 
 ### Publish Messages
 To publish data onto a topic, the Dapr Go client provides a simple method:
@@ -328,11 +328,11 @@ if res.Error != nil {
 }
 ```
 
-For a full guide on pub/sub, visit [How-To: Publish & subscribe]({{< ref howto-publish-subscribe.md >}}).
+For a full guide on pub/sub, visit [How-To: Publish & subscribe]({{% ref howto-publish-subscribe.md %}}).
 
 ### Workflow
 
-You can create [workflows]({{< ref workflow-overview.md >}}) using the Go SDK. For example, start with a simple workflow activity:
+You can create [workflows]({{% ref workflow-overview.md %}}) using the Go SDK. For example, start with a simple workflow activity:
 
 ```go
 func TestActivity(ctx workflow.ActivityContext) (any, error) {
@@ -369,7 +369,7 @@ func TestWorkflow(ctx *workflow.WorkflowContext) (any, error) {
 }
 ```
 
-Then compose your application that will use the workflow you've created. [Refer to the How-To: Author workflows guide]({{< ref howto-author-workflow.md >}}) for a full walk-through.
+Then compose your application that will use the workflow you've created. [Refer to the How-To: Author workflows guide]({{% ref howto-author-workflow.md %}}) for a full walk-through. 
 
 Try out the [Go SDK workflow example.](https://github.com/dapr/go-sdk/blob/main/examples/workflow)
 
@@ -501,7 +501,7 @@ in := &dapr.InvokeBindingRequest{
 out, err := client.InvokeBinding(ctx, in)
 ```
 
-For a full guide on output bindings, visit [How-To: Use bindings]({{< ref howto-bindings.md >}}).
+For a full guide on output bindings, visit [How-To: Use bindings]({{% ref howto-bindings.md %}}).
 
 ### Actors
 
@@ -563,7 +563,7 @@ func main() {
 }
 ```
 
-For a full guide on actors, visit [the Actors building block documentation]({{< ref actors >}}).
+For a full guide on actors, visit [the Actors building block documentation]({{% ref actors %}}).
 
 ### Secret Management
 
@@ -601,7 +601,7 @@ func main() {
 ```
 
 
-For a full guide on secrets, visit [How-To: Retrieve secrets]({{< ref howto-secrets.md >}}).
+For a full guide on secrets, visit [How-To: Retrieve secrets]({{% ref howto-secrets.md %}}).
 
 ### Distributed Lock
 
@@ -636,7 +636,7 @@ func main() {
 }
 ```
 
-For a full guide on distributed lock, visit [How-To: Use a lock]({{< ref howto-use-distributed-lock.md >}}).
+For a full guide on distributed lock, visit [How-To: Use a lock]({{% ref howto-use-distributed-lock.md %}}).
 
 ### Configuration
 
@@ -667,7 +667,7 @@ go func() {
 }()
 ```
 
-For a full guide on configuration, visit [How-To: Manage configuration from a store]({{< ref howto-manage-configuration.md >}}).
+For a full guide on configuration, visit [How-To: Manage configuration from a store]({{% ref howto-manage-configuration.md %}}).
 
 ### Cryptography
 
@@ -698,7 +698,7 @@ out, err := client.Decrypt(context.Background(), rf, dapr.EncryptOptions{
 })
 ```
 
-For a full guide on cryptography, visit [How-To: Use the cryptography APIs]({{< ref howto-cryptography.md >}}).
+For a full guide on cryptography, visit [How-To: Use the cryptography APIs]({{% ref howto-cryptography.md %}}).
 
 ## Related links
 [Go SDK Examples](https://github.com/dapr/go-sdk/tree/main/examples)
