@@ -175,6 +175,7 @@ jobs:
             "socket",
             "workflow",
             "workflow-parallel",
+            "workflow-taskexecutionid"
           ]
     steps:
       - name: Check out code onto GOPATH
