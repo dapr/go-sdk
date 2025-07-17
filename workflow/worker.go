@@ -93,8 +93,8 @@ func getFunctionName(f interface{}) (string, error) {
 	callSplit := strings.Split(runtime.FuncForPC(reflect.ValueOf(f).Pointer()).Name(), ".")
 	funcName := callSplit[len(callSplit)-1]
 
-	const anonymousFunctionRegxp = "^func[0-9]+$"
-	isAnonymousFunc, err := regexp.MatchString(anonymousFunctionRegxp, funcName)
+	const anonymousFunctionRegexp = "^func[0-9]+$"
+	isAnonymousFunc, err := regexp.MatchString(anonymousFunctionRegexp, funcName)
 	if err != nil {
 		return "", fmt.Errorf("failed to match anonymous function regexp: %w", err)
 	}
@@ -175,7 +175,7 @@ func (ww *WorkflowWorker) RegisterActivity(a Activity, opts ...registerOption) e
 		}
 	}
 
-	if options.Name != "" {
+	if options.Name == "" {
 		// get the function name for the passed workflow if there's
 		// no explicit name provided.
 		name, err := getFunctionName(a)
