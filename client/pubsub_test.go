@@ -14,7 +14,6 @@ limitations under the License.
 package client
 
 import (
-	"context"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -39,7 +38,7 @@ type _testCustomContentwithSlices struct {
 
 // go test -timeout 30s ./client -count 1 -run ^TestPublishEvent$
 func TestPublishEvent(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 
 	t.Run("with data", func(t *testing.T) {
 		err := testClient.PublishEvent(ctx, "messages", "test", []byte("ping"))
@@ -96,7 +95,7 @@ func TestPublishEvent(t *testing.T) {
 
 // go test -timeout 30s ./client -count 1 -run ^TestPublishEvents$
 func TestPublishEvents(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 
 	t.Run("without pubsub name", func(t *testing.T) {
 		res := testClient.PublishEvents(ctx, "", "test", []interface{}{"ping", "pong"})

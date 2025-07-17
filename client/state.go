@@ -17,10 +17,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"math"
-	"time"
-
-	"google.golang.org/protobuf/types/known/durationpb"
 
 	v1 "github.com/dapr/dapr/pkg/proto/common/v1"
 	pb "github.com/dapr/dapr/pkg/proto/runtime/v1"
@@ -246,22 +242,6 @@ func copyStateOptionDefault() *StateOptions {
 	return &StateOptions{
 		Concurrency: StateConcurrency(stateOptionDefault.GetConcurrency()),
 		Consistency: StateConsistency(stateOptionDefault.GetConsistency()),
-	}
-}
-
-func toProtoDuration(d time.Duration) *durationpb.Duration {
-	nanos := d.Nanoseconds()
-	secs := nanos / 1e9
-	nanos -= secs * 1e9
-
-	// conversion check - gosec ignored below for conversion
-	if nanos <= int64(math.MinInt32) && nanos >= int64(math.MaxInt32) {
-		panic("integer overflow converting duration to proto")
-	}
-
-	return &durationpb.Duration{
-		Seconds: secs,
-		Nanos:   int32(nanos), //nolint:gosec
 	}
 }
 

@@ -11,17 +11,17 @@ The Dapr client package allows you to interact with other Dapr applications from
 
 ## Prerequisites
 
-- [Dapr CLI]({{< ref install-dapr-cli.md >}}) installed
-- Initialized [Dapr environment]({{< ref install-dapr-selfhost.md >}})
+- [Dapr CLI]({{% ref install-dapr-cli.md %}}) installed
+- Initialized [Dapr environment]({{% ref install-dapr-selfhost.md %}})
 - [Go installed](https://golang.org/doc/install)
 
 
-## Import the client package 
+## Import the client package
 ```go
 import "github.com/dapr/go-sdk/client"
 ```
 ## Error handling
-Dapr errors are based on [gRPC's richer error model](https://cloud.google.com/apis/design/errors#error_model). 
+Dapr errors are based on [gRPC's richer error model](https://cloud.google.com/apis/design/errors#error_model).
 The following code shows an example of how you can parse and handle the error details:
 
 ```go
@@ -54,7 +54,7 @@ if err != nil {
                 fmt.Printf("- Url: %s\n", link.Url)
                 fmt.Printf("- Description: %s\n", link.Description)
             }
-        
+
         default:
             // Add cases for other types of details you expect
             fmt.Printf("Unhandled error detail type: %v\n", t)
@@ -65,7 +65,7 @@ if err != nil {
 
 ## Building blocks
 
-The Go SDK allows you to interface with all of the [Dapr building blocks]({{< ref building-blocks >}}).
+The Go SDK allows you to interface with all of the [Dapr building blocks]({{% ref building-blocks %}}).
 
 ### Service Invocation
 
@@ -86,7 +86,7 @@ content := &dapr.DataContent{
 resp, err = client.InvokeMethodWithContent(ctx, "app-id", "method-name", "post", content)
 ```
 
-For a full guide on service invocation, visit [How-To: Invoke a service]({{< ref howto-invoke-discover-services.md >}}).
+For a full guide on service invocation, visit [How-To: Invoke a service]({{% ref howto-invoke-discover-services.md %}}).
 
 ### Workflows
 
@@ -102,14 +102,14 @@ import (
 func ExampleWorkflow(ctx *workflow.WorkflowContext) (any, error) {
     var output string
     input := "world"
-    
+
     if err := ctx.CallActivity(ExampleActivity, workflow.ActivityInput(input)).Await(&output); err != nil {
         return nil, err
     }
-    
+
     // Print output - "hello world"
     fmt.Println(output)
-    
+
     return nil, nil
 }
 
@@ -118,7 +118,7 @@ func ExampleActivity(ctx workflow.ActivityContext) (any, error) {
     if err := ctx.GetInput(&input); err != nil {
         return "", err
     }
-    
+
     return fmt.Sprintf("hello %s", input), nil
 }
 
@@ -128,47 +128,47 @@ func main() {
     if err != nil {
         log.Fatalf("error creating worker: %v", err)
     }
-    
+
     // Register the workflow
     w.RegisterWorkflow(ExampleWorkflow)
-    
+
     // Register the activity
     w.RegisterActivity(ExampleActivity)
-    
+
     // Start workflow runner
     if err := w.Start(); err != nil {
         log.Fatal(err)
     }
-    
+
     // Create a workflow client
     wfClient, err := workflow.NewClient()
     if err != nil {
         log.Fatal(err)
     }
-    
+
     // Start a new workflow
     id, err := wfClient.ScheduleNewWorkflow(context.Background(), "ExampleWorkflow")
     if err != nil {
         log.Fatal(err)
     }
-    
+
     // Wait for the workflow to complete
     metadata, err := wfClient.WaitForWorkflowCompletion(ctx, id)
     if err != nil {
         log.Fatal(err)
     }
-    
+
     // Print workflow status post-completion
     fmt.Println(metadata.RuntimeStatus)
-    
+
     // Shutdown Worker
     w.Shutdown()
 }
 ```
 
 - For a more comprehensive guide on workflows visit these How-To guides:
-  - [How-To: Author a workflow]({{< ref howto-author-workflow.md >}}).
-  - [How-To: Manage a workflow]({{< ref howto-manage-workflow.md >}}).
+  - [How-To: Author a workflow]({{% ref howto-author-workflow.md %}}).
+  - [How-To: Manage a workflow]({{% ref howto-manage-workflow.md %}}).
 - Visit the Go SDK Examples to jump into complete examples:
   - [Workflow Example](https://github.com/dapr/go-sdk/tree/main/examples/workflow)
   - [Workflow - Parallelised](https://github.com/dapr/go-sdk/tree/main/examples/workflow-parallel)
@@ -180,7 +180,7 @@ For simple use-cases, Dapr client provides easy to use `Save`, `Get`, `Delete` m
 ```go
 ctx := context.Background()
 data := []byte("hello")
-store := "my-store" // defined in the component YAML 
+store := "my-store" // defined in the component YAML
 
 // save state with the key key1, default options: strong, last-write
 if err := client.SaveState(ctx, store, "key1", data, nil); err != nil {
@@ -269,7 +269,7 @@ meta := map[string]string{}
 err := testClient.ExecuteStateTransaction(ctx, store, meta, ops)
 ```
 
-Retrieve, filter, and sort key/value data stored in your statestore using `QueryState`. 
+Retrieve, filter, and sort key/value data stored in your statestore using `QueryState`.
 
 ```go
 // Define the query string
@@ -306,7 +306,7 @@ for _, account := range queryResponse {
 
 > **Note:** Query state API is currently in alpha
 
-For a full guide on state management, visit [How-To: Save & get state]({{< ref howto-get-save-state.md >}}).
+For a full guide on state management, visit [How-To: Save & get state]({{% ref howto-get-save-state.md %}}).
 
 ### Publish Messages
 To publish data onto a topic, the Dapr Go client provides a simple method:
@@ -328,11 +328,11 @@ if res.Error != nil {
 }
 ```
 
-For a full guide on pub/sub, visit [How-To: Publish & subscribe]({{< ref howto-publish-subscribe.md >}}).
+For a full guide on pub/sub, visit [How-To: Publish & subscribe]({{% ref howto-publish-subscribe.md %}}).
 
 ### Workflow
 
-You can create [workflows]({{< ref workflow-overview.md >}}) using the Go SDK. For example, start with a simple workflow activity:
+You can create [workflows]({{% ref workflow-overview.md %}}) using the Go SDK. For example, start with a simple workflow activity:
 
 ```go
 func TestActivity(ctx workflow.ActivityContext) (any, error) {
@@ -340,7 +340,7 @@ func TestActivity(ctx workflow.ActivityContext) (any, error) {
 	if err := ctx.GetInput(&input); err != nil {
 		return "", err
 	}
-	
+
 	// Do something here
 	return "result", nil
 }
@@ -361,7 +361,7 @@ func TestWorkflow(ctx *workflow.WorkflowContext) (any, error) {
 	if err := ctx.WaitForExternalEvent("testEvent", time.Second*60).Await(&output); err != nil {
 		return nil, err
 	}
-	
+
 	if err := ctx.CreateTimer(time.Second).Await(nil); err != nil {
 		return nil, nil
 	}
@@ -369,9 +369,112 @@ func TestWorkflow(ctx *workflow.WorkflowContext) (any, error) {
 }
 ```
 
-Then compose your application that will use the workflow you've created. [Refer to the How-To: Author workflows guide]({{< ref howto-author-workflow.md >}}) for a full walk-through. 
+Then compose your application that will use the workflow you've created. [Refer to the How-To: Author workflows guide]({{% ref howto-author-workflow.md %}}) for a full walk-through. 
 
 Try out the [Go SDK workflow example.](https://github.com/dapr/go-sdk/blob/main/examples/workflow)
+
+### Jobs
+
+The Dapr client Go SDK allows you to schedule, get, and delete jobs. Jobs enable you to schedule work to be executed at specific times or intervals.
+
+#### Scheduling a Job
+
+To schedule a new job, use the `ScheduleJobAlpha1` method:
+
+```go
+import (
+    "google.golang.org/protobuf/types/known/anypb"
+)
+
+// Create job data
+data, err := anypb.New(&YourDataStruct{Message: "Hello, Job!"})
+if err != nil {
+    panic(err)
+}
+
+// Create a simple job using the builder pattern
+job := client.NewJob("my-scheduled-job",
+    client.WithJobData(data),
+    client.WithJobDueTime("10s"), // Execute in 10 seconds
+)
+
+// Schedule the job
+err = client.ScheduleJobAlpha1(ctx, job)
+if err != nil {
+    panic(err)
+}
+```
+
+#### Job with Schedule and Repeats
+
+You can create recurring jobs using the `Schedule` field with cron expressions:
+
+```go
+job := client.NewJob("recurring-job",
+    client.WithJobData(data),
+    client.WithJobSchedule("0 9 * * *"), // Run at 9 AM every day
+    client.WithJobRepeats(10),            // Repeat 10 times
+    client.WithJobTTL("1h"),              // Job expires after 1 hour
+)
+
+err = client.ScheduleJobAlpha1(ctx, job)
+```
+
+#### Job with Failure Policy
+
+Configure how jobs should handle failures using failure policies:
+
+```go
+// Constant retry policy with max retries and interval
+job := client.NewJob("resilient-job",
+    client.WithJobData(data),
+    client.WithJobDueTime("2024-01-01T10:00:00Z"),
+    client.WithJobConstantFailurePolicy(),
+    client.WithJobConstantFailurePolicyMaxRetries(3),
+    client.WithJobConstantFailurePolicyInterval(30*time.Second),
+)
+
+err = client.ScheduleJobAlpha1(ctx, job)
+```
+
+For jobs that should not be retried on failure, use the drop policy:
+
+```go
+job := client.NewJob("one-shot-job",
+    client.WithJobData(data),
+    client.WithJobDueTime("2024-01-01T10:00:00Z"),
+    client.WithJobDropFailurePolicy(),
+)
+
+err = client.ScheduleJobAlpha1(ctx, job)
+```
+
+#### Getting a Job
+
+To get information about a scheduled job:
+
+```go
+job, err := client.GetJobAlpha1(ctx, "my-scheduled-job")
+if err != nil {
+    panic(err)
+}
+
+fmt.Printf("Job: %s, Schedule: %s, Repeats: %d\n",
+    job.Name, job.Schedule, job.Repeats)
+```
+
+#### Deleting a Job
+
+To cancel a scheduled job:
+
+```go
+err = client.DeleteJobAlpha1(ctx, "my-scheduled-job")
+if err != nil {
+    panic(err)
+}
+```
+
+For a full guide on jobs, visit [How-To: Schedule and manage jobs]({{< ref howto-schedule-and-handle-triggered-jobs.md >}}).
 
 ### Output Bindings
 
@@ -398,7 +501,7 @@ in := &dapr.InvokeBindingRequest{
 out, err := client.InvokeBinding(ctx, in)
 ```
 
-For a full guide on output bindings, visit [How-To: Use bindings]({{< ref howto-bindings.md >}}).
+For a full guide on output bindings, visit [How-To: Use bindings]({{% ref howto-bindings.md %}}).
 
 ### Actors
 
@@ -460,7 +563,7 @@ func main() {
 }
 ```
 
-For a full guide on actors, visit [the Actors building block documentation]({{< ref actors >}}).
+For a full guide on actors, visit [the Actors building block documentation]({{% ref actors %}}).
 
 ### Secret Management
 
@@ -498,7 +601,7 @@ func main() {
 ```
 
 
-For a full guide on secrets, visit [How-To: Retrieve secrets]({{< ref howto-secrets.md >}}).
+For a full guide on secrets, visit [How-To: Retrieve secrets]({{% ref howto-secrets.md %}}).
 
 ### Distributed Lock
 
@@ -522,7 +625,7 @@ func main() {
         panic(err)
     }
     defer client.Close()
-    
+
     resp, err := client.TryLockAlpha1(ctx, "lockstore", &dapr.LockRequest{
 			LockOwner:         "random_id_abc123",
 			ResourceID:      "my_file_name",
@@ -533,7 +636,7 @@ func main() {
 }
 ```
 
-For a full guide on distributed lock, visit [How-To: Use a lock]({{< ref howto-use-distributed-lock.md >}}).
+For a full guide on distributed lock, visit [How-To: Use a lock]({{% ref howto-use-distributed-lock.md %}}).
 
 ### Configuration
 
@@ -564,7 +667,7 @@ go func() {
 }()
 ```
 
-For a full guide on configuration, visit [How-To: Manage configuration from a store]({{< ref howto-manage-configuration.md >}}).
+For a full guide on configuration, visit [How-To: Manage configuration from a store]({{% ref howto-manage-configuration.md %}}).
 
 ### Cryptography
 
@@ -595,7 +698,7 @@ out, err := client.Decrypt(context.Background(), rf, dapr.EncryptOptions{
 })
 ```
 
-For a full guide on cryptography, visit [How-To: Use the cryptography APIs]({{< ref howto-cryptography.md >}}).
+For a full guide on cryptography, visit [How-To: Use the cryptography APIs]({{% ref howto-cryptography.md %}}).
 
 ## Related links
 [Go SDK Examples](https://github.com/dapr/go-sdk/tree/main/examples)

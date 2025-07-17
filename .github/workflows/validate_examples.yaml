@@ -166,7 +166,7 @@ jobs:
             "configuration",
             "conversation",
             "crypto",
-            "dist-scheduler",
+            "jobs",
             "grpc-service",
             "hello-world",
             "pubsub",

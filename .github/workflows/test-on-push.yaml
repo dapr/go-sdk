@@ -11,7 +11,7 @@ jobs:
     name: Test
     runs-on: ubuntu-latest
     env:
-      GOLANGCILINT_VER: v1.61.0
+      GOLANGCILINT_VER: v1.64.6
 
     steps:
       - name: Checkout
