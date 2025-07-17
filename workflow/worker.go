@@ -128,15 +128,23 @@ func RegisterWithName(name string) registerOption {
 	}
 }
 
+func processRegisterOptions(defaultOptions registerOptions, opts ...registerOption) (registerOptions, error) {
+	options := defaultOptions
+	for _, opt := range opts {
+		if err := opt(&options); err != nil {
+			return options, fmt.Errorf("failed processing options: %w", err)
+		}
+	}
+	return options, nil
+}
+
 // RegisterWorkflow adds a workflow function to the registry
 func (ww *WorkflowWorker) RegisterWorkflow(w Workflow, opts ...registerOption) error {
 	wrappedOrchestration := wrapWorkflow(w)
 
-	options := registerOptions{}
-	for _, opt := range opts {
-		if err := opt(&options); err != nil {
-			return fmt.Errorf("failed processing options: %w", err)
-		}
+	options, err := processRegisterOptions(registerOptions{}, opts...)
+	if err != nil {
+		return err
 	}
 
 	if options.Name == "" {
@@ -170,11 +178,9 @@ func wrapActivity(a Activity) task.Activity {
 func (ww *WorkflowWorker) RegisterActivity(a Activity, opts ...registerOption) error {
 	wrappedActivity := wrapActivity(a)
 
-	options := registerOptions{}
-	for _, opt := range opts {
-		if err := opt(&options); err != nil {
-			return fmt.Errorf("failed processing options: %w", err)
-		}
+	options, err := processRegisterOptions(registerOptions{}, opts...)
+	if err != nil {
+		return err
 	}
 
 	if options.Name == "" {
