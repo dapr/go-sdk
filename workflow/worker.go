@@ -113,18 +113,41 @@ func wrapWorkflow(w Workflow) task.Orchestrator {
 	}
 }
 
+type registerOptions struct {
+	Name string
+}
+
+type registerOption func(*registerOptions) error
+
+func RegisterWithName(name string) registerOption {
+	return func(opts *registerOptions) error {
+		opts.Name = name
+		return nil
+	}
+}
+
 // RegisterWorkflow adds a workflow function to the registry
-func (ww *WorkflowWorker) RegisterWorkflow(w Workflow) error {
+func (ww *WorkflowWorker) RegisterWorkflow(w Workflow, opts ...registerOption) error {
 	wrappedOrchestration := wrapWorkflow(w)
 
-	// get the function name for the passed workflow
-	name, err := getFunctionName(w)
-	if err != nil {
-		return fmt.Errorf("failed to get workflow decorator: %v", err)
+	options := registerOptions{}
+	for _, opt := range opts {
+		if err := opt(&options); err != nil {
+			return fmt.Errorf("failed processing options: %w", err)
+		}
 	}
 
-	err = ww.tasks.AddOrchestratorN(name, wrappedOrchestration)
-	return err
+	if options.Name != "" {
+		// get the function name for the passed workflow if there's
+		// no explicit name provided.
+		name, err := getFunctionName(w)
+		if err != nil {
+			return fmt.Errorf("failed to get workflow decorator: %v", err)
+		}
+		options.Name = name
+	}
+
+	return ww.tasks.AddOrchestratorN(options.Name, wrappedOrchestration)
 }
 
 func wrapActivity(a Activity) task.Activity {
@@ -142,17 +165,27 @@ func wrapActivity(a Activity) task.Activity {
 }
 
 // RegisterActivity adds an activity function to the registry
-func (ww *WorkflowWorker) RegisterActivity(a Activity) error {
+func (ww *WorkflowWorker) RegisterActivity(a Activity, opts ...registerOption) error {
 	wrappedActivity := wrapActivity(a)
 
-	// get the function name for the passed activity
-	name, err := getFunctionName(a)
-	if err != nil {
-		return fmt.Errorf("failed to get activity decorator: %v", err)
+	options := registerOptions{}
+	for _, opt := range opts {
+		if err := opt(&options); err != nil {
+			return fmt.Errorf("failed processing options: %w", err)
+		}
 	}
 
-	err = ww.tasks.AddActivityN(name, wrappedActivity)
-	return err
+	if options.Name != "" {
+		// get the function name for the passed workflow if there's
+		// no explicit name provided.
+		name, err := getFunctionName(a)
+		if err != nil {
+			return fmt.Errorf("failed to get activity decorator: %v", err)
+		}
+		options.Name = name
+	}
+
+	return ww.tasks.AddActivityN(options.Name, wrappedActivity)
 }
 
 // Start initialises a non-blocking worker to handle workflows and activities registered
