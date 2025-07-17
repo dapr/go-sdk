@@ -121,8 +121,7 @@ func WithName(name string) registerOption {
 	}
 }
 
-func processRegisterOptions(defaultOptions registerOptions, opts ...registerOption) (registerOptions, error) {
-	options := defaultOptions
+func processRegisterOptions(options registerOptions, opts ...registerOption) (registerOptions, error) {
 	for _, opt := range opts {
 		if err := opt(&options); err != nil {
 			return options, fmt.Errorf("failed processing options: %w", err)
