@@ -112,9 +112,9 @@ type registerOptions struct {
 
 type registerOption func(*registerOptions) error
 
-// RegisterWithName allows you to specify a custom name for the workflow or activity being registered.
+// WithName allows you to specify a custom name for the workflow or activity being registered.
 // Activities and Workflows registered without an explicit name will use the function name as the name.
-func RegisterWithName(name string) registerOption {
+func WithName(name string) registerOption {
 	return func(opts *registerOptions) error {
 		opts.Name = name
 		return nil

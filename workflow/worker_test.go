@@ -45,7 +45,7 @@ func TestWorkflowRuntime(t *testing.T) {
 		require.NoError(t, err)
 
 		t.Run("with explicit name", func(t *testing.T) {
-			err := testWorker.RegisterWorkflow(testWorkflow, RegisterWithName("MyWorkflow"))
+			err := testWorker.RegisterWorkflow(testWorkflow, WithName("MyWorkflow"))
 			require.NoError(t, err)
 		})
 	})
@@ -58,7 +58,7 @@ func TestWorkflowRuntime(t *testing.T) {
 		t.Run("with explicit name", func(t *testing.T) {
 			err := testWorker.RegisterWorkflow(func(ctx *WorkflowContext) (any, error) {
 				return nil, nil
-			}, RegisterWithName("MyWorkflow2"))
+			}, WithName("MyWorkflow2"))
 			require.NoError(t, err)
 		})
 	})
@@ -67,7 +67,7 @@ func TestWorkflowRuntime(t *testing.T) {
 		require.NoError(t, err)
 
 		t.Run("with explicit name", func(t *testing.T) {
-			err := testWorker.RegisterActivity(testActivity, RegisterWithName("MyActivity"))
+			err := testWorker.RegisterActivity(testActivity, WithName("MyActivity"))
 			require.NoError(t, err)
 		})
 	})
@@ -80,7 +80,7 @@ func TestWorkflowRuntime(t *testing.T) {
 		t.Run("with explicit name", func(t *testing.T) {
 			err := testWorker.RegisterActivity(func(ctx ActivityContext) (any, error) {
 				return nil, nil
-			}, RegisterWithName("MyActivity2"))
+			}, WithName("MyActivity2"))
 			require.NoError(t, err)
 		})
 	})
@@ -96,7 +96,7 @@ func TestWorkerOptions(t *testing.T) {
 func TestRegisterOptions(t *testing.T) {
 	t.Run("with name", func(t *testing.T) {
 		defaultOpts := registerOptions{}
-		options, err := processRegisterOptions(defaultOpts, RegisterWithName("testWorkflow"))
+		options, err := processRegisterOptions(defaultOpts, WithName("testWorkflow"))
 		require.NoError(t, err)
 		assert.NotEmpty(t, options.Name)
 		assert.Equal(t, "testWorkflow", options.Name)
