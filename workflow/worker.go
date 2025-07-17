@@ -137,7 +137,7 @@ func (ww *WorkflowWorker) RegisterWorkflow(w Workflow, opts ...registerOption) e
 		}
 	}
 
-	if options.Name != "" {
+	if options.Name == "" {
 		// get the function name for the passed workflow if there's
 		// no explicit name provided.
 		name, err := getFunctionName(w)
