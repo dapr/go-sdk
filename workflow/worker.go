@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"log"
 	"reflect"
+	"regexp"
 	"runtime"
 	"strings"
 
@@ -90,10 +91,15 @@ func getFunctionName(f interface{}) (string, error) {
 	}
 
 	callSplit := strings.Split(runtime.FuncForPC(reflect.ValueOf(f).Pointer()).Name(), ".")
-
 	funcName := callSplit[len(callSplit)-1]
 
-	if funcName == "1" {
+	const anonymousFunctionRegxp = "^func[0-9]+$"
+	isAnonymousFunc, err := regexp.MatchString(anonymousFunctionRegxp, funcName)
+	if err != nil {
+		return "", fmt.Errorf("failed to match anonymous function regexp: %w", err)
+	}
+
+	if isAnonymousFunc {
 		return "", errors.New("anonymous function name")
 	}
 
