@@ -43,22 +43,46 @@ func TestWorkflowRuntime(t *testing.T) {
 	t.Run("register workflow", func(t *testing.T) {
 		err := testWorker.RegisterWorkflow(testWorkflow)
 		require.NoError(t, err)
+
+		t.Run("with explicit name", func(t *testing.T) {
+			err := testWorker.RegisterWorkflow(testWorkflow, RegisterWithName("MyWorkflow"))
+			require.NoError(t, err)
+		})
 	})
 	t.Run("register workflow - anonymous func", func(t *testing.T) {
 		err := testWorker.RegisterWorkflow(func(ctx *WorkflowContext) (any, error) {
 			return nil, nil
 		})
 		require.Error(t, err)
+
+		t.Run("with explicit name", func(t *testing.T) {
+			err := testWorker.RegisterWorkflow(func(ctx *WorkflowContext) (any, error) {
+				return nil, nil
+			}, RegisterWithName("MyWorkflow2"))
+			require.NoError(t, err)
+		})
 	})
 	t.Run("register activity", func(t *testing.T) {
 		err := testWorker.RegisterActivity(testActivity)
 		require.NoError(t, err)
+
+		t.Run("with explicit name", func(t *testing.T) {
+			err := testWorker.RegisterActivity(testActivity, RegisterWithName("MyActivity"))
+			require.NoError(t, err)
+		})
 	})
 	t.Run("register activity - anonymous func", func(t *testing.T) {
 		err := testWorker.RegisterActivity(func(ctx ActivityContext) (any, error) {
 			return nil, nil
 		})
 		require.Error(t, err)
+
+		t.Run("with explicit name", func(t *testing.T) {
+			err := testWorker.RegisterActivity(func(ctx ActivityContext) (any, error) {
+				return nil, nil
+			}, RegisterWithName("MyActivity2"))
+			require.NoError(t, err)
+		})
 	})
 }
 
@@ -66,6 +90,16 @@ func TestWorkerOptions(t *testing.T) {
 	t.Run("worker client option", func(t *testing.T) {
 		options := returnWorkerOptions(WorkerWithDaprClient(&daprClient.GRPCClient{}))
 		assert.NotNil(t, options.daprClient)
+	})
+}
+
+func TestRegisterOptions(t *testing.T) {
+	t.Run("with name", func(t *testing.T) {
+		defaultOpts := registerOptions{}
+		options, err := processRegisterOptions(defaultOpts, RegisterWithName("testWorkflow"))
+		require.NoError(t, err)
+		assert.NotEmpty(t, options.Name)
+		assert.Equal(t, "testWorkflow", options.Name)
 	})
 }
 
@@ -101,6 +135,12 @@ func TestGetFunctionName(t *testing.T) {
 	})
 	t.Run("get function name - nil", func(t *testing.T) {
 		name, err := getFunctionName(nil)
+		require.Error(t, err)
+		assert.Equal(t, "", name)
+	})
+
+	t.Run("get function name - anonymous", func(t *testing.T) {
+		name, err := getFunctionName(func() {})
 		require.Error(t, err)
 		assert.Equal(t, "", name)
 	})
