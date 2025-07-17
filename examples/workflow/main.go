@@ -64,6 +64,10 @@ func main() {
 	ctx := context.Background()
 
 	// Start workflow test
+	// Set the start time to the current time to not wait for the workflow to
+	// "start". This is useful for increasing the throughput of creating
+	// workflows.
+	// workflow.WithStartTime(time.Now())
 	instanceID, err := wfClient.ScheduleNewWorkflow(ctx, "TestWorkflow", workflow.WithInstanceID("a7a4168d-3a1c-41da-8a4f-e7f6d9c718d9"), workflow.WithInput(1))
 	if err != nil {
 		log.Fatalf("failed to start workflow: %v", err)

@@ -65,7 +65,10 @@ func WithRawInput(input string) api.NewOrchestrationOptions {
 	return api.WithRawInput(wrapperspb.String(input))
 }
 
-// WithStartTime is an option to set the start time when scheduling a new workflow.
+// WithStartTime is an option to set the start time when scheduling a new
+// workflow. Setting this option will prevent Dapr from "waiting" for the
+// Workflow to start, meaning that it can improve workflow creation throughput.
+// Meaning setting this value to `time.Now()` can be useful.
 func WithStartTime(time time.Time) api.NewOrchestrationOptions {
 	return api.WithStartTime(time)
 }
