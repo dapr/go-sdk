@@ -443,7 +443,7 @@ type authToken struct {
 func newAuthToken() *authToken {
 	apiToken := os.Getenv(apiTokenEnvVarName)
 	if apiToken != "" {
-		logger.Println("client uses API token")
+		logger.Println("API Token loaded from the environment variable")
 	}
 	return &authToken{
 		authToken: apiToken,
