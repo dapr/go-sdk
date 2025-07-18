@@ -15,6 +15,7 @@ limitations under the License.
 package workflow
 
 import (
+	"errors"
 	"testing"
 
 	daprClient "github.com/dapr/go-sdk/client"
@@ -94,12 +95,23 @@ func TestWorkerOptions(t *testing.T) {
 }
 
 func TestRegisterOptions(t *testing.T) {
-	t.Run("with name", func(t *testing.T) {
+	t.Run("WithName", func(t *testing.T) {
 		defaultOpts := registerOptions{}
 		options, err := processRegisterOptions(defaultOpts, WithName("testWorkflow"))
 		require.NoError(t, err)
 		assert.NotEmpty(t, options.Name)
 		assert.Equal(t, "testWorkflow", options.Name)
+	})
+
+	t.Run("error handling", func(t *testing.T) {
+		optionThatFails := func(opts *registerOptions) error {
+			return errors.New("this always fails")
+		}
+
+		defaultOpts := registerOptions{}
+		_, err := processRegisterOptions(defaultOpts, optionThatFails)
+		require.Error(t, err)
+		require.ErrorContains(t, err, "this always fails")
 	})
 }
 
