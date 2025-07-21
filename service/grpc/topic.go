@@ -24,7 +24,7 @@ import (
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/emptypb"
 
-	runtimev1pb "github.com/dapr/dapr/pkg/proto/runtime/v1"
+	runtimev1pb "github.com/dapr/go-sdk/internal/proto/dapr/proto/runtime/v1"
 	"github.com/dapr/go-sdk/service/common"
 	"github.com/dapr/go-sdk/service/internal"
 )

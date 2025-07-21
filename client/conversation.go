@@ -18,7 +18,7 @@ import (
 
 	"google.golang.org/protobuf/types/known/anypb"
 
-	runtimev1pb "github.com/dapr/dapr/pkg/proto/runtime/v1"
+	runtimev1pb "github.com/dapr/go-sdk/internal/proto/dapr/proto/runtime/v1"
 )
 
 // conversationRequest object - currently unexported as used in a functions option pattern

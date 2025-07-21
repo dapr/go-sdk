@@ -20,7 +20,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	pb "github.com/dapr/dapr/pkg/proto/runtime/v1"
+	pb "github.com/dapr/go-sdk/internal/proto/dapr/proto/runtime/v1"
 )
 
 const (
