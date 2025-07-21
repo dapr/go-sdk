@@ -61,3 +61,12 @@ check-diff:
 .PHONY: modtidy
 modtidy:
 	go mod tidy
+
+.PHONY: proto
+proto:
+	rm -rf ./internal/proto/*
+	buf generate \
+		--template buf.gen.yaml \
+		--path dapr/proto/common/v1 \
+		--path dapr/proto/runtime/v1 \
+		'https://github.com/dapr/dapr.git'

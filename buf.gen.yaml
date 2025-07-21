@@ -1,0 +1,15 @@
+version: v2
+managed:
+  enabled: true
+  override:
+    - file_option: go_package_prefix
+      value: github.com/dapr/go-sdk/internal/proto
+plugins:
+  - remote: buf.build/protocolbuffers/go
+    out: internal/proto
+    opt:
+      - paths=source_relative
+  - remote: buf.build/grpc/go
+    out: internal/proto
+    opt:
+      - paths=source_relative
