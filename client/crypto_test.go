@@ -25,8 +25,8 @@ import (
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc"
 
-	commonv1 "github.com/dapr/dapr/pkg/proto/common/v1"
-	runtimev1pb "github.com/dapr/dapr/pkg/proto/runtime/v1"
+	commonv1 "github.com/dapr/go-sdk/internal/proto/dapr/proto/common/v1"
+	runtimev1pb "github.com/dapr/go-sdk/internal/proto/dapr/proto/runtime/v1"
 )
 
 func TestEncrypt(t *testing.T) {

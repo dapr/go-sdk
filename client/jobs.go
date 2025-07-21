@@ -21,8 +21,8 @@ import (
 	"google.golang.org/protobuf/types/known/anypb"
 	"google.golang.org/protobuf/types/known/durationpb"
 
-	commonpb "github.com/dapr/dapr/pkg/proto/common/v1"
-	runtimepb "github.com/dapr/dapr/pkg/proto/runtime/v1"
+	commonpb "github.com/dapr/go-sdk/internal/proto/dapr/proto/common/v1"
+	runtimepb "github.com/dapr/go-sdk/internal/proto/dapr/proto/runtime/v1"
 	"github.com/dapr/kit/ptr"
 )
 

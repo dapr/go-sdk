@@ -22,10 +22,10 @@ import (
 
 	"google.golang.org/protobuf/types/known/anypb"
 
-	pb "github.com/dapr/dapr/pkg/proto/runtime/v1"
 	"github.com/dapr/go-sdk/actor"
 	"github.com/dapr/go-sdk/actor/codec"
 	"github.com/dapr/go-sdk/actor/config"
+	pb "github.com/dapr/go-sdk/internal/proto/dapr/proto/runtime/v1"
 )
 
 const (

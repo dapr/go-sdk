@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"strings"
 
-	runtimepb "github.com/dapr/dapr/pkg/proto/runtime/v1"
+	runtimepb "github.com/dapr/go-sdk/internal/proto/dapr/proto/runtime/v1"
 	"github.com/dapr/go-sdk/service/common"
 )
 

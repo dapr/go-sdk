@@ -1,7 +1,5 @@
 github.com/cenkalti/backoff/v4 v4.3.0 h1:MyRJ/UdXutAwSAT+s3wNd7MfTIcy71VQueUuFK343L8=
 github.com/cenkalti/backoff/v4 v4.3.0/go.mod h1:Y3VNntkOUPxTVeUxJ/G5vcM//AlwfmyYozVcomhLiZE=
-github.com/dapr/dapr v1.15.4-0.20250618123356-78343f18338b h1:fR+ae4QXF8R4GqKrzEls7WaibF1wjiVvifUl+IoP37I=
-github.com/dapr/dapr v1.15.4-0.20250618123356-78343f18338b/go.mod h1:kx/7l7wDGkKRVoE6CUtuNl1FjKA0hj7bn/6xJ1Fc6HY=
 github.com/dapr/durabletask-go v0.7.2 h1:ssNupibV65/o5HNJRceU6x7D4LSyrGsz6nfMFUcI540=
 github.com/dapr/durabletask-go v0.7.2/go.mod h1:JhMyDybRUFmmgieGxCPeg9e2cWwtx4LwNXjD+LBtKYk=
 github.com/dapr/kit v0.15.4 h1:29DezCR22OuZhXX4yPEc+lqcOf/PNaeAuIEx9nGv394=
