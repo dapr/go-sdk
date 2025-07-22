@@ -64,9 +64,21 @@ modtidy:
 
 .PHONY: proto
 proto:
-	rm -rf ./internal/proto/*
-	buf generate \
+	@rm -rf ./internal/proto/*
+	@buf generate \
 		--template buf.gen.yaml \
 		--path dapr/proto/common/v1 \
 		--path dapr/proto/runtime/v1 \
 		'https://github.com/dapr/dapr.git'
+
+PROTO_PATH := internal/proto
+.PHONY: proto-check-diff
+proto-check-diff:
+	@$(MAKE) proto
+	@# single‐shell if…then…fi block
+	@if ! git diff --quiet -- $(PROTO_PATH); then \
+	  echo "::error ::Proto files are out of date. Please run 'make proto' and commit the changes."; \
+	  git --no-pager diff -- $(PROTO_PATH); \
+	  exit 1; \
+	fi
+

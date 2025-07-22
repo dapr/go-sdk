@@ -44,3 +44,9 @@ jobs:
         run: make modtidy check-diff
       - name: Run go mod tidy
         run: make modtidy
+
+      - name: Install Buf CLI
+        uses: bufbuild/buf-setup-action@v1.50.0
+
+      - name: Run make proto check diff
+        run: make proto-check-diff
