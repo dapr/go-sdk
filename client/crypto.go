@@ -22,6 +22,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/proto"
 
+	"github.com/dapr/go-sdk/client/internal/crypto"
 	commonv1pb "github.com/dapr/go-sdk/internal/proto/dapr/proto/common/v1"
 	runtimev1pb "github.com/dapr/go-sdk/internal/proto/dapr/proto/runtime/v1"
 )
@@ -48,9 +49,11 @@ func (c *GRPCClient) Encrypt(ctx context.Context, in io.Reader, opts EncryptOpti
 	}
 
 	// Use the context of the stream here.
-	return c.performCryptoOperation(
-		stream.Context(), stream,
-		in, opts,
+	return performCryptoOperation(
+		stream.Context(),
+		stream,
+		in,
+		opts,
 		&runtimev1pb.EncryptRequest{},
 		&runtimev1pb.EncryptResponse{},
 	)
@@ -72,15 +75,25 @@ func (c *GRPCClient) Decrypt(ctx context.Context, in io.Reader, opts DecryptOpti
 	}
 
 	// Use the context of the stream here.
-	return c.performCryptoOperation(
-		stream.Context(), stream,
-		in, opts,
+	return performCryptoOperation(
+		stream.Context(),
+		stream,
+		in,
+		opts,
 		&runtimev1pb.DecryptRequest{},
 		&runtimev1pb.DecryptResponse{},
 	)
 }
 
-func (c *GRPCClient) performCryptoOperation(ctx context.Context, stream grpc.ClientStream, in io.Reader, opts cryptoOperationOpts, reqProto runtimev1pb.CryptoRequests, resProto runtimev1pb.CryptoResponses) (io.Reader, error) {
+func performCryptoOperation[T runtimev1pb.DecryptRequest | runtimev1pb.EncryptRequest, Y runtimev1pb.DecryptResponse | runtimev1pb.EncryptResponse](
+	ctx context.Context,
+	stream grpc.ClientStream,
+	in io.Reader,
+	opts cryptoOperationOpts,
+	reqProto *T,
+	resProto *Y,
+) (io.Reader, error) {
+
 	var err error
 	// Pipe for writing the response
 	pr, pw := io.Pipe()
@@ -110,11 +123,11 @@ func (c *GRPCClient) performCryptoOperation(ctx context.Context, stream grpc.Cli
 
 			// First message only - add the options
 			if optsProto != nil {
-				reqProto.SetOptions(optsProto)
+				crypto.SetOptions(reqProto, optsProto)
 				optsProto = nil
 			} else {
 				// Reset the object so we can re-use it
-				reqProto.Reset()
+				crypto.Reset(reqProto)
 			}
 
 			n, err = in.Read(*reqBuf)
@@ -127,7 +140,7 @@ func (c *GRPCClient) performCryptoOperation(ctx context.Context, stream grpc.Cli
 
 			// Send the chunk if there's anything to send
 			if n > 0 {
-				reqProto.SetPayload(&commonv1pb.StreamPayload{
+				crypto.SetPayload(reqProto, &commonv1pb.StreamPayload{
 					Data: (*reqBuf)[:n],
 					Seq:  seq,
 				})
@@ -184,7 +197,7 @@ func (c *GRPCClient) performCryptoOperation(ctx context.Context, stream grpc.Cli
 			}
 
 			// Write the data, if any, into the pipe
-			payload = resProto.GetPayload()
+			payload = crypto.GetPayload(resProto)
 			if payload != nil {
 				if payload.GetSeq() != expectSeq {
 					pw.CloseWithError(fmt.Errorf("invalid sequence number in chunk: %d (expected: %d)", payload.GetSeq(), expectSeq))
@@ -205,7 +218,7 @@ func (c *GRPCClient) performCryptoOperation(ctx context.Context, stream grpc.Cli
 			}
 
 			// Reset the proto
-			resProto.Reset()
+			crypto.Reset(resProto)
 		}
 
 		// Close the writer of the pipe when done
