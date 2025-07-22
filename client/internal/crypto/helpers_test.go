@@ -1,6 +1,7 @@
 package crypto_test
 
 import (
+	"reflect"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -33,6 +34,14 @@ func TestPayloadMethods(t *testing.T) {
 			protoMsg:  &runtimev1.DecryptResponse{},
 			inputData: []byte("test data"),
 		},
+		"with nil proto message": {
+			protoMsg:  nilValue[runtimev1.EncryptRequest](),
+			inputData: []byte("test data"),
+		},
+		"with nil input data": {
+			protoMsg:  &runtimev1.EncryptRequest{},
+			inputData: nil,
+		},
 	}
 
 	for name, tc := range testCases {
@@ -57,6 +66,11 @@ func TestPayloadMethods(t *testing.T) {
 				require.Failf(t, "unsupported proto message type", "the type was %T", r)
 			}
 
+			if reflect.ValueOf(tc.protoMsg).IsNil() {
+				assert.Nil(t, outputPayload.GetData(), "the payload should be nil")
+				return
+			}
+
 			assert.Equal(t, tc.inputData, outputPayload.GetData(), "payload should match the input")
 		})
 	}
@@ -79,6 +93,16 @@ func TestSetOptions(t *testing.T) {
 				KeyName: "testing",
 			},
 		},
+		"with nil proto message": {
+			protoMsg: nilValue[runtimev1.EncryptRequest](),
+			options: &runtimev1.EncryptRequestOptions{
+				KeyName: "testing",
+			},
+		},
+		"with nil options": {
+			protoMsg: &runtimev1.EncryptRequest{},
+			options:  nilValue[runtimev1.EncryptRequestOptions](),
+		},
 	}
 
 	for name, tc := range testCases {
@@ -94,6 +118,11 @@ func TestSetOptions(t *testing.T) {
 				outputOptions = r.GetOptions()
 			default:
 				require.Failf(t, "unsupported proto message type", "the type was %T", r)
+			}
+
+			if reflect.ValueOf(tc.protoMsg).IsNil() {
+				assert.Nil(t, outputOptions, "the payload should be nil")
+				return
 			}
 
 			assert.Equal(t, tc.options, outputOptions, "options should be persisted")
@@ -116,6 +145,12 @@ func TestReset(t *testing.T) {
 		},
 		"DecryptResponse": {
 			protoMsg: &runtimev1.DecryptResponse{Payload: &commonv1.StreamPayload{Data: []byte("test data")}},
+		},
+		"with nil proto message": {
+			protoMsg: nilValue[runtimev1.EncryptRequest](),
+		},
+		"with nil payload": {
+			protoMsg: &runtimev1.EncryptRequest{Payload: nil},
 		},
 	}
 
@@ -143,4 +178,8 @@ func TestReset(t *testing.T) {
 			assert.Nil(t, payload)
 		})
 	}
+}
+
+func nilValue[T any]() *T {
+	return nil
 }
