@@ -35,8 +35,8 @@ import (
 	"google.golang.org/protobuf/types/known/durationpb"
 	"google.golang.org/protobuf/types/known/emptypb"
 
-	commonv1pb "github.com/dapr/dapr/pkg/proto/common/v1"
-	pb "github.com/dapr/dapr/pkg/proto/runtime/v1"
+	commonv1pb "github.com/dapr/go-sdk/internal/proto/dapr/proto/common/v1"
+	pb "github.com/dapr/go-sdk/internal/proto/dapr/proto/runtime/v1"
 )
 
 const (

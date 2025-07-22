@@ -44,3 +44,7 @@ jobs:
         run: make modtidy check-diff
       - name: Run go mod tidy
         run: make modtidy
+
+      - name: Run make proto check diff
+        uses: bufbuild/buf-action@v1
+        run: make proto-check-diff

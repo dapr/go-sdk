@@ -37,7 +37,7 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
 
-	pb "github.com/dapr/dapr/pkg/proto/runtime/v1"
+	pb "github.com/dapr/go-sdk/internal/proto/dapr/proto/runtime/v1"
 
 	// used to import codec implements.
 	_ "github.com/dapr/go-sdk/actor/codec/impl"

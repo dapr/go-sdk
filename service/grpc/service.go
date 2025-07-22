@@ -22,9 +22,9 @@ import (
 
 	"google.golang.org/grpc"
 
-	pb "github.com/dapr/dapr/pkg/proto/runtime/v1"
 	"github.com/dapr/go-sdk/actor"
 	"github.com/dapr/go-sdk/actor/config"
+	pb "github.com/dapr/go-sdk/internal/proto/dapr/proto/runtime/v1"
 	"github.com/dapr/go-sdk/service/common"
 	"github.com/dapr/go-sdk/service/internal"
 )
@@ -79,6 +79,7 @@ func newService(lis net.Listener, grpcServer *grpc.Server, opts ...grpc.ServerOp
 type Server struct {
 	pb.UnimplementedAppCallbackServer
 	pb.UnimplementedAppCallbackHealthCheckServer
+	pb.UnimplementedAppCallbackAlphaServer
 	listener           net.Listener
 	invokeHandlers     map[string]common.ServiceInvocationHandler
 	topicRegistrar     internal.TopicRegistrar

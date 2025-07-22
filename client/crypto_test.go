@@ -25,8 +25,9 @@ import (
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc"
 
-	commonv1 "github.com/dapr/dapr/pkg/proto/common/v1"
-	runtimev1pb "github.com/dapr/dapr/pkg/proto/runtime/v1"
+	"github.com/dapr/go-sdk/client/internal/crypto"
+	commonv1 "github.com/dapr/go-sdk/internal/proto/dapr/proto/common/v1"
+	runtimev1pb "github.com/dapr/go-sdk/internal/proto/dapr/proto/runtime/v1"
 )
 
 func TestEncrypt(t *testing.T) {
@@ -189,7 +190,7 @@ func TestDecrypt(t *testing.T) {
 /* --- Server methods --- */
 
 func (s *testDaprServer) EncryptAlpha1(stream runtimev1pb.Dapr_EncryptAlpha1Server) error {
-	return s.performCryptoOperation(
+	return testPerformCryptoOperation(
 		stream,
 		&runtimev1pb.EncryptRequest{},
 		&runtimev1pb.EncryptResponse{},
@@ -197,14 +198,16 @@ func (s *testDaprServer) EncryptAlpha1(stream runtimev1pb.Dapr_EncryptAlpha1Serv
 }
 
 func (s *testDaprServer) DecryptAlpha1(stream runtimev1pb.Dapr_DecryptAlpha1Server) error {
-	return s.performCryptoOperation(
+	return testPerformCryptoOperation(
 		stream,
 		&runtimev1pb.DecryptRequest{},
 		&runtimev1pb.DecryptResponse{},
 	)
 }
 
-func (s *testDaprServer) performCryptoOperation(stream grpc.ServerStream, reqProto runtimev1pb.CryptoRequests, resProto runtimev1pb.CryptoResponses) error {
+func testPerformCryptoOperation[T runtimev1pb.DecryptRequest | runtimev1pb.EncryptRequest, Y runtimev1pb.DecryptResponse | runtimev1pb.EncryptResponse](
+	stream grpc.ServerStream, reqProto *T, resProto *Y,
+) error {
 	// This doesn't really encrypt or decrypt the data and just sends back whatever it receives
 	pr, pw := io.Pipe()
 
@@ -216,7 +219,7 @@ func (s *testDaprServer) performCryptoOperation(stream grpc.ServerStream, reqPro
 		)
 		first := true
 		for !done && stream.Context().Err() == nil {
-			reqProto.Reset()
+			crypto.Reset(reqProto)
 			err = stream.RecvMsg(reqProto)
 			if errors.Is(err, io.EOF) {
 				done = true
@@ -225,16 +228,16 @@ func (s *testDaprServer) performCryptoOperation(stream grpc.ServerStream, reqPro
 				return
 			}
 
-			if first && !reqProto.HasOptions() {
+			if first && !hasOptions(reqProto) {
 				pw.CloseWithError(errors.New("first message must have options"))
 				return
-			} else if !first && reqProto.HasOptions() {
+			} else if !first && hasOptions(reqProto) {
 				pw.CloseWithError(errors.New("messages after first must not have options"))
 				return
 			}
 			first = false
 
-			payload := reqProto.GetPayload()
+			payload := crypto.GetPayload(reqProto)
 			if payload != nil {
 				if payload.GetSeq() != expectSeq {
 					pw.CloseWithError(fmt.Errorf("invalid sequence number: %d (expected: %d)", payload.GetSeq(), expectSeq))
@@ -261,7 +264,7 @@ func (s *testDaprServer) performCryptoOperation(stream grpc.ServerStream, reqPro
 	)
 	buf := make([]byte, 2<<10)
 	for !done && stream.Context().Err() == nil {
-		resProto.Reset()
+		crypto.Reset(resProto)
 
 		n, err = pr.Read(buf)
 		if errors.Is(err, io.EOF) {
@@ -271,7 +274,7 @@ func (s *testDaprServer) performCryptoOperation(stream grpc.ServerStream, reqPro
 		}
 
 		if n > 0 {
-			resProto.SetPayload(&commonv1.StreamPayload{
+			crypto.SetPayload(resProto, &commonv1.StreamPayload{
 				Seq:  seq,
 				Data: buf[:n],
 			})
@@ -285,4 +288,19 @@ func (s *testDaprServer) performCryptoOperation(stream grpc.ServerStream, reqPro
 	}
 
 	return nil
+}
+
+func hasOptions[T runtimev1pb.DecryptRequest | runtimev1pb.EncryptRequest](msg *T) bool {
+	if msg == nil {
+		return false
+	}
+
+	switch r := any(msg).(type) {
+	case *runtimev1pb.EncryptRequest:
+		return r.GetOptions() != nil
+	case *runtimev1pb.DecryptRequest:
+		return r.GetOptions() != nil
+	}
+
+	return false
 }
