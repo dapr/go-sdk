@@ -79,6 +79,7 @@ func newService(lis net.Listener, grpcServer *grpc.Server, opts ...grpc.ServerOp
 type Server struct {
 	pb.UnimplementedAppCallbackServer
 	pb.UnimplementedAppCallbackHealthCheckServer
+	pb.UnimplementedAppCallbackAlphaServer
 	listener           net.Listener
 	invokeHandlers     map[string]common.ServiceInvocationHandler
 	topicRegistrar     internal.TopicRegistrar
