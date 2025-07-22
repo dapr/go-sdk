@@ -64,12 +64,21 @@ modtidy:
 
 .PHONY: proto
 proto:
-	@rm -rf ./internal/proto/*
-	@buf generate \
+	@if [ ! -f .dapr-proto-ref ]; then echo "No .dapr-proto-ref file found. Run 'make proto-update' first."; exit 1; fi
+	@find ./internal/proto -type f -name '*.go' -delete
+	@COMMIT=$$(cat .dapr-proto-ref | tr -d '\n'); \
+	buf generate \
 		--template buf.gen.yaml \
 		--path dapr/proto/common/v1 \
 		--path dapr/proto/runtime/v1 \
-		'https://github.com/dapr/dapr.git'
+		"https://github.com/dapr/dapr.git#commit=$$COMMIT"
+
+.PHONY: proto-update
+proto-update:
+	@echo "Updating Dapr to latest commit..."
+	@git ls-remote https://github.com/dapr/dapr.git HEAD | cut -f1 > .dapr-proto-ref
+	@echo "Updated .dapr-proto-ref to: $$(cat .dapr-proto-ref)"
+	@$(MAKE) proto
 
 PROTO_PATH := internal/proto
 .PHONY: proto-check-diff
