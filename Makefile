@@ -64,6 +64,7 @@ modtidy:
 
 .PHONY: proto
 proto:
+	@command -v buf >/dev/null 2>&1 || { echo "buf is not installed. Install it from https://docs.buf.build/installation"; exit 1; }
 	@if [ ! -f .dapr-proto-ref ]; then echo "No .dapr-proto-ref file found. Run 'make proto-update' first."; exit 1; fi
 	@find ./internal/proto -type f -name '*.go' -delete
 	@COMMIT=$$(cat .dapr-proto-ref | tr -d '\n'); \
