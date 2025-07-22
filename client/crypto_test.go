@@ -297,9 +297,9 @@ func hasOptions[T runtimev1pb.DecryptRequest | runtimev1pb.EncryptRequest](msg *
 
 	switch r := any(msg).(type) {
 	case *runtimev1pb.EncryptRequest:
-		return r.Options != nil
+		return r.GetOptions() != nil
 	case *runtimev1pb.DecryptRequest:
-		return r.Options != nil
+		return r.GetOptions() != nil
 	}
 
 	return false

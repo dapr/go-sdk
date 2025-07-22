@@ -93,7 +93,6 @@ func performCryptoOperation[T runtimev1pb.DecryptRequest | runtimev1pb.EncryptRe
 	reqProto *T,
 	resProto *Y,
 ) (io.Reader, error) {
-
 	var err error
 	// Pipe for writing the response
 	pr, pw := io.Pipe()

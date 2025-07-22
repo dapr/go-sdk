@@ -3,12 +3,13 @@ package crypto_test
 import (
 	"testing"
 
-	"github.com/dapr/go-sdk/client/internal/crypto"
-	commonv1 "github.com/dapr/go-sdk/internal/proto/dapr/proto/common/v1"
-	runtimev1 "github.com/dapr/go-sdk/internal/proto/dapr/proto/runtime/v1"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/protobuf/proto"
+
+	"github.com/dapr/go-sdk/client/internal/crypto"
+	commonv1 "github.com/dapr/go-sdk/internal/proto/dapr/proto/common/v1"
+	runtimev1 "github.com/dapr/go-sdk/internal/proto/dapr/proto/runtime/v1"
 )
 
 func TestPayloadMethods(t *testing.T) {
@@ -56,7 +57,7 @@ func TestPayloadMethods(t *testing.T) {
 				require.Failf(t, "unsupported proto message type", "the type was %T", r)
 			}
 
-			assert.Equal(t, tc.inputData, outputPayload.Data, "payload should match the input")
+			assert.Equal(t, tc.inputData, outputPayload.GetData(), "payload should match the input")
 		})
 	}
 }
@@ -87,10 +88,10 @@ func TestSetOptions(t *testing.T) {
 			switch r := tc.protoMsg.(type) {
 			case *runtimev1.EncryptRequest:
 				crypto.SetOptions(r, tc.options)
-				outputOptions = r.Options
+				outputOptions = r.GetOptions()
 			case *runtimev1.DecryptRequest:
 				crypto.SetOptions(r, tc.options)
-				outputOptions = r.Options
+				outputOptions = r.GetOptions()
 			default:
 				require.Failf(t, "unsupported proto message type", "the type was %T", r)
 			}

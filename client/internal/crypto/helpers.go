@@ -1,9 +1,10 @@
 package crypto
 
 import (
+	"google.golang.org/protobuf/proto"
+
 	commonv1pb "github.com/dapr/go-sdk/internal/proto/dapr/proto/common/v1"
 	runtimev1 "github.com/dapr/go-sdk/internal/proto/dapr/proto/runtime/v1"
-	"google.golang.org/protobuf/proto"
 )
 
 func GetPayload[T runtimev1.DecryptRequest | runtimev1.EncryptRequest | runtimev1.DecryptResponse | runtimev1.EncryptResponse](req *T) *commonv1pb.StreamPayload {
@@ -13,13 +14,13 @@ func GetPayload[T runtimev1.DecryptRequest | runtimev1.EncryptRequest | runtimev
 
 	switch r := any(req).(type) {
 	case *runtimev1.EncryptRequest:
-		return r.Payload
+		return r.GetPayload()
 	case *runtimev1.DecryptRequest:
-		return r.Payload
+		return r.GetPayload()
 	case *runtimev1.EncryptResponse:
-		return r.Payload
+		return r.GetPayload()
 	case *runtimev1.DecryptResponse:
-		return r.Payload
+		return r.GetPayload()
 	}
 
 	return nil
