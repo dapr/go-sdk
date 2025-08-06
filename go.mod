@@ -3,10 +3,10 @@ module github.com/dapr/go-sdk
 go 1.24.4
 
 require (
-	github.com/dapr/dapr v1.15.4-0.20250618123356-78343f18338b
-	github.com/dapr/durabletask-go v0.7.2
+	github.com/dapr/dapr v1.16.0-rc.2.0.20250806141003-0c6999bac3f4
+	github.com/dapr/durabletask-go v0.7.3-0.20250711135247-7a35af6fe0e5
 	github.com/dapr/kit v0.15.4
-	github.com/go-chi/chi/v5 v5.1.0
+	github.com/go-chi/chi/v5 v5.2.2
 	github.com/golang/mock v1.6.0
 	github.com/google/uuid v1.6.0
 	github.com/stretchr/testify v1.10.0
