@@ -36,6 +36,10 @@ func (wfac *ActivityContext) Context() context.Context {
 	return wfac.ctx.Context()
 }
 
+func (wfac *ActivityContext) GetTaskExecutionID() string {
+	return wfac.ctx.GetTaskExecutionID()
+}
+
 type callActivityOption func(*callActivityOptions) error
 
 type callActivityOptions struct {
