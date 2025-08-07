@@ -28,8 +28,17 @@ import (
 )
 
 type testingTaskActivityContext struct {
-	inputBytes []byte
-	ctx        context.Context
+	inputBytes      []byte
+	ctx             context.Context
+	taskExecutionID string
+}
+
+func (t *testingTaskActivityContext) GetTaskID() int32 {
+	return 0
+}
+
+func (t *testingTaskActivityContext) GetTaskExecutionID() string {
+	return t.taskExecutionID
 }
 
 func (t *testingTaskActivityContext) GetInput(v any) error {
@@ -117,5 +126,21 @@ func TestMarshalData(t *testing.T) {
 		require.NoError(t, err)
 		fmt.Println(out)
 		assert.Equal(t, []byte{0x22, 0x74, 0x65, 0x73, 0x74, 0x53, 0x74, 0x72, 0x69, 0x6e, 0x67, 0x22}, out)
+	})
+}
+
+func TestTaskExecutionID(t *testing.T) {
+	ac := ActivityContext{ctx: &testingTaskActivityContext{ctx: t.Context(), taskExecutionID: "testTaskExecutionID"}}
+
+	t.Run("test getTaskExecutionID", func(t *testing.T) {
+		assert.Equal(t, "testTaskExecutionID", ac.GetTaskExecutionID())
+	})
+}
+
+func TestTaskID(t *testing.T) {
+	ac := ActivityContext{ctx: &testingTaskActivityContext{ctx: t.Context(), taskExecutionID: "testTaskExecutionID"}}
+
+	t.Run("test getTaskID", func(t *testing.T) {
+		assert.EqualValues(t, 0, ac.ctx.GetTaskID())
 	})
 }
