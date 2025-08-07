@@ -355,7 +355,7 @@ func NewClientWithAddressContext(ctx context.Context, address string) (client Cl
 		return nil, fmt.Errorf("error parsing address '%s': %w", address, err)
 	}
 
-	at := &authToken{}
+	at := newAuthToken()
 
 	opts := []grpc.DialOption{
 		grpc.WithUserAgent(userAgent()),
@@ -404,7 +404,7 @@ func NewClientWithSocket(socket string) (client Client, err error) {
 	if socket == "" {
 		return nil, errors.New("nil socket")
 	}
-	at := &authToken{}
+	at := newAuthToken()
 	logger.Printf("dapr client initializing for: %s", socket)
 	addr := "unix://" + socket
 	conn, err := grpc.Dial( //nolint:staticcheck
@@ -421,11 +421,6 @@ func NewClientWithSocket(socket string) (client Client, err error) {
 }
 
 func newClientWithConnection(conn *grpc.ClientConn, authToken *authToken) Client {
-	apiToken := os.Getenv(apiTokenEnvVarName)
-	if apiToken != "" {
-		logger.Println("client uses API token")
-		authToken.set(apiToken)
-	}
 	return &GRPCClient{
 		connection:  conn,
 		protoClient: pb.NewDaprClient(conn),
@@ -435,12 +430,24 @@ func newClientWithConnection(conn *grpc.ClientConn, authToken *authToken) Client
 
 // NewClientWithConnection instantiates Dapr client using specific connection.
 func NewClientWithConnection(conn *grpc.ClientConn) Client {
-	return newClientWithConnection(conn, &authToken{})
+	return newClientWithConnection(conn, newAuthToken())
 }
 
+// NOTE: authToken must be created using newAuthToken()
+// it is crucial to correctly initialize the dapr client with the API token from the environment variable
 type authToken struct {
 	mu        sync.RWMutex
 	authToken string
+}
+
+func newAuthToken() *authToken {
+	apiToken := os.Getenv(apiTokenEnvVarName)
+	if apiToken != "" {
+		logger.Println("API Token loaded from the environment variable")
+	}
+	return &authToken{
+		authToken: apiToken,
+	}
 }
 
 func (a *authToken) get() string {
