@@ -32,6 +32,16 @@ type testingTaskActivityContext struct {
 	ctx        context.Context
 }
 
+func (t *testingTaskActivityContext) GetTaskID() int32 {
+	// TODO implement me
+	panic("implement me")
+}
+
+func (t *testingTaskActivityContext) GetTaskExecutionID() string {
+	// TODO implement me
+	panic("implement me")
+}
+
 func (t *testingTaskActivityContext) GetInput(v any) error {
 	return json.Unmarshal(t.inputBytes, &v)
 }

@@ -101,8 +101,10 @@ func WithTemperature(temp float64) conversationRequestOption {
 
 // ConverseAlpha1 can invoke an LLM given a request created by the NewConversationRequest function.
 func (c *GRPCClient) ConverseAlpha1(ctx context.Context, req conversationRequest, options ...conversationRequestOption) (*ConversationResponse, error) {
+	//nolint:staticcheck
 	cinputs := make([]*runtimev1pb.ConversationInput, len(req.inputs))
 	for i, in := range req.inputs {
+		//nolint:staticcheck
 		cinputs[i] = &runtimev1pb.ConversationInput{
 			Content:  in.Content,
 			Role:     in.Role,
@@ -115,7 +117,7 @@ func (c *GRPCClient) ConverseAlpha1(ctx context.Context, req conversationRequest
 			opt(&req)
 		}
 	}
-
+	//nolint:staticcheck
 	request := runtimev1pb.ConversationRequest{
 		Name:        req.name,
 		ContextID:   req.ContextID,
