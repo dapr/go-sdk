@@ -68,6 +68,7 @@ type Job struct {
 	TTL           *string
 	Data          *anypb.Any
 	FailurePolicy FailurePolicy
+	Overwrite     bool
 }
 
 type JobOption func(*Job)
@@ -176,7 +177,8 @@ func (c *GRPCClient) ScheduleJobAlpha1(ctx context.Context, job *Job) error {
 		jobRequest.FailurePolicy = job.FailurePolicy.GetPBFailurePolicy()
 	}
 	_, err := c.protoClient.ScheduleJobAlpha1(ctx, &runtimepb.ScheduleJobRequest{
-		Job: jobRequest,
+		Job:       jobRequest,
+		Overwrite: job.Overwrite,
 	})
 	return err
 }
