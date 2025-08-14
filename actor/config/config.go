@@ -17,7 +17,11 @@ import "github.com/dapr/go-sdk/actor/codec/constant"
 
 // ActorConfig is Actor's configuration struct.
 type ActorConfig struct {
-	SerializerType string
+	SerializerType         string
+	ActorIdleTimeout       string
+	ActorScanInterval      string
+	DrainOngingCallTimeout string
+	DrainBalancedActors    bool
 }
 
 // Option is option function of ActorConfig.
@@ -27,6 +31,34 @@ type Option func(config *ActorConfig)
 func WithSerializerName(serializerType string) Option {
 	return func(config *ActorConfig) {
 		config.SerializerType = serializerType
+	}
+}
+
+// WithActorIdleTimeout set actorIdleTimeout type of the actor as @actorIdleTimeout.
+func WithActorIdleTimeout(actorIdleTimeout string) Option {
+	return func(config *ActorConfig) {
+		config.ActorIdleTimeout = actorIdleTimeout
+	}
+}
+
+// WithActorScanInterval set actorScanInterval type of the actor as @actorScanInterval.
+func WithActorScanInterval(actorScanInterval string) Option {
+	return func(config *ActorConfig) {
+		config.ActorScanInterval = actorScanInterval
+	}
+}
+
+// WithDrainOngingCallTimeout set drainOngingCallTimeout type of the actor as @drainOngingCallTimeout.
+func WithDrainOngingCallTimeout(drainOngingCallTimeout string) Option {
+	return func(config *ActorConfig) {
+		config.DrainOngingCallTimeout = drainOngingCallTimeout
+	}
+}
+
+// WithDrainBalancedActors set drainBalancedActors type of the actor as @drainBalancedActors.
+func WithDrainBalancedActors(drainBalancedActors bool) Option {
+	return func(config *ActorConfig) {
+		config.DrainBalancedActors = drainBalancedActors
 	}
 }
 
