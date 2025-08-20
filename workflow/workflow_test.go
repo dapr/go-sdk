@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/dapr/durabletask-go/api/protos"
 	"github.com/dapr/durabletask-go/task"
@@ -75,4 +76,22 @@ func returnCallChildWorkflowOptions(opts ...callChildWorkflowOption) callChildWo
 func TestNewTaskSlice(t *testing.T) {
 	tasks := NewTaskSlice(10)
 	assert.Len(t, tasks, 10)
+}
+
+func TestCreateTimerOptions(t *testing.T) {
+	t.Run("create timer options - valid", func(t *testing.T) {
+		opts := returnCreateTimerOptions(WithTimerName("test"))
+		require.NotNil(t, opts.name)
+		require.Equal(t, "test", *opts.name)
+	})
+}
+
+func returnCreateTimerOptions(opts ...createTimerOption) createTimerOptions {
+	options := new(createTimerOptions)
+	for _, configure := range opts {
+		if err := configure(options); err != nil {
+			return *options
+		}
+	}
+	return *options
 }
