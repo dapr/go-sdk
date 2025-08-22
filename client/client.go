@@ -276,6 +276,10 @@ type Client interface {
 	// ConverseAlpha1 interacts with a conversational AI model.
 	ConverseAlpha1(ctx context.Context, request conversationRequest, options ...conversationRequestOption) (*ConversationResponse, error)
 
+	// ConverseAlpha2 interacts with a conversational AI model.
+	ConverseAlpha2(ctx context.Context, request ConversationRequestAlpha2,
+		options ...conversationRequestOptionAlpha2) (*ConversationResponseAlpha2, error)
+
 	// GrpcClient returns the base grpc client if grpc is used and nil otherwise
 	GrpcClient() pb.DaprClient
 

@@ -1,4 +1,4 @@
-# Dapr Conversation Example with go-sdk
+# Dapr Conversation (Alpha1) Example with go-sdk
 
 ## Step
 
@@ -20,10 +20,10 @@ timeout_seconds: 60
 -->
 
 ```bash
-dapr run --app-id conversation \
-         --dapr-grpc-port 50001 \
-         --log-level debug \
-         --resources-path ./config \
+dapr run --app-id conversation 
+         --dapr-grpc-port 50001 
+         --log-level debug 
+         --resources-path ./config 
          -- go run ./main.go
 ```
 

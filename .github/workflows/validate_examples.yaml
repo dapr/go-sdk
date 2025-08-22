@@ -164,7 +164,8 @@ jobs:
           [
             "actor",
             "configuration",
-            "conversation",
+            "conversation-alpha1",
+            "conversation-alpha2",
             "crypto",
             "jobs",
             "grpc-service",
