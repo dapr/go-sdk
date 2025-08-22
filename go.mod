@@ -4,7 +4,7 @@ go 1.24.4
 
 require (
 	github.com/dapr/dapr v1.16.0-rc.3
-	github.com/dapr/durabletask-go v0.7.3-0.20250711135247-7a35af6fe0e5
+	github.com/dapr/durabletask-go v0.8.1
 	github.com/dapr/kit v0.15.4
 	github.com/go-chi/chi/v5 v5.2.2
 	github.com/golang/mock v1.6.0
