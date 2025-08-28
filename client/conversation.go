@@ -404,22 +404,6 @@ func (cm *ConversationMessageAlpha2) toProto() (*runtimev1pb.ConversationMessage
 	return &protoMsg, nil
 }
 
-func NewConversationMessageAlpha2() (*ConversationMessageAlpha2, error) {
-	msg := &ConversationMessageAlpha2{
-		ConversationMessageOfDeveloper: nil,
-		ConversationMessageOfSystem:    nil,
-		ConversationMessageOfUser:      nil,
-		ConversationMessageOfAssistant: nil,
-		ConversationMessageOfTool:      nil,
-	}
-
-	if !msg.Validate() {
-		return nil, errors.New("exactly one of the oneof fields must be set")
-	}
-
-	return msg, nil
-}
-
 type ConversationMessageContentAlpha2 struct {
 	Text *string
 }
