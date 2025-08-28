@@ -16,8 +16,9 @@ package client
 import (
 	"context"
 	"errors"
-	"google.golang.org/protobuf/types/known/structpb"
 	"reflect"
+
+	"google.golang.org/protobuf/types/known/structpb"
 
 	"google.golang.org/protobuf/types/known/anypb"
 
