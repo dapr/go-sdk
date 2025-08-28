@@ -94,7 +94,16 @@ func (wfc *WorkflowContext) CallChildWorkflow(workflow interface{}, opts ...call
 // The value passed to the Await method must be a pointer or can be nil to ignore the returned value.
 // Alternatively, tasks can be awaited using the task.WhenAll or task.WhenAny methods, allowing the workflow
 // to block and wait for multiple tasks at the same time.
-func (wfc *WorkflowContext) CreateTimer(duration time.Duration) task.Task {
+func (wfc *WorkflowContext) CreateTimer(duration time.Duration, opts ...createTimerOption) task.Task {
+	options := new(createTimerOptions)
+	for _, configure := range opts {
+		if err := configure(options); err != nil {
+			return nil
+		}
+	}
+	if options.name != nil {
+		return wfc.orchestrationContext.CreateTimer(duration, task.WithTimerName(*options.name))
+	}
 	return wfc.orchestrationContext.CreateTimer(duration)
 }
 
