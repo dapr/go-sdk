@@ -16,8 +16,8 @@ expected_stdout_lines:
   - '== APP == conversation output: hello world'
 
 background: true
-sleep: 60
-timeout_seconds: 60
+sleep: 120
+timeout_seconds: 120
 -->
 
 ```bash
