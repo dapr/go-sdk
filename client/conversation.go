@@ -16,6 +16,7 @@ package client
 import (
 	"context"
 	"errors"
+	"google.golang.org/protobuf/types/known/structpb"
 	"reflect"
 
 	"google.golang.org/protobuf/types/known/anypb"
@@ -160,29 +161,27 @@ func (c *GRPCClient) ConverseAlpha1(ctx context.Context, req conversationRequest
 	}, nil
 }
 
-type ConversationToolsAlpha2 []*ConversationToolAlpha2
+// ConversationToolsAlpha2 is one of the ConversationToolsFunctionAlpha2 types.
+type ConversationToolsAlpha2 ConversationToolsFunctionAlpha2
 
 func (ct *ConversationToolsAlpha2) toProto() []*runtimev1pb.ConversationTools {
-	if ct == nil {
-		return nil
-	}
-	protoTools := make([]*runtimev1pb.ConversationTools, len(*ct))
-	for i, t := range *ct {
-		protoTools[i] = &runtimev1pb.ConversationTools{
+	if ct != nil {
+		protoTools := make([]*runtimev1pb.ConversationTools, 1)
+
+		protoTools[0] = &runtimev1pb.ConversationTools{
 			ToolTypes: &runtimev1pb.ConversationTools_Function{
 				Function: &runtimev1pb.ConversationToolsFunction{
-					Name:        t.Name,
-					Description: nil,
-					Parameters:  nil,
+					Name:        ct.Name,
+					Description: ct.Description,
+					Parameters:  ct.Parameters,
 				},
 			},
 		}
-		if t == nil {
-			protoTools[i] = nil
-			continue
-		}
+
+		return protoTools
 	}
-	return protoTools
+
+	return nil
 }
 
 type ConversationInputAlpha2 struct {
@@ -231,7 +230,7 @@ func (ci *ConversationInputAlpha2) toProto() *runtimev1pb.ConversationInputAlpha
 type ConversationToolsFunctionAlpha2 struct {
 	Name        string
 	Description *string
-	Parameters  *anypb.Any
+	Parameters  *structpb.Struct
 }
 
 type ConversationMessageAlpha2 struct {
@@ -357,7 +356,7 @@ func (cm *ConversationMessageAlpha2) toProto() (*runtimev1pb.ConversationMessage
 			for i, t := range cm.ConversationMessageOfAssistant.ToolCalls {
 				if t != nil {
 					toolCalls[i] = &runtimev1pb.ConversationToolCalls{
-						Id: t.ID,
+						Id: &t.ID,
 						ToolTypes: &runtimev1pb.ConversationToolCalls_Function{
 							Function: &runtimev1pb.ConversationToolCallsOfFunction{
 								Name:      t.ToolTypes.Name,
@@ -460,12 +459,12 @@ type ConversationRequestAlpha2 struct {
 	Metadata    map[string]string
 	ScrubPII    *bool // Scrub PII from the output
 	Temperature *float64
-	Tools       *ConversationToolsAlpha2
+	Tools       []*ConversationToolsAlpha2
 	ToolChoice  *ToolChoiceAlpha2
 }
 
 type ConversationResponseAlpha2 struct {
-	ContextID *string
+	ContextID string
 	Outputs   []*ConversationResultAlpha2
 }
 
@@ -485,7 +484,7 @@ type ConversationResultMessageAlpha2 struct {
 }
 
 type ConversationToolCallsAlpha2 struct {
-	ID        *string
+	ID        string
 	ToolTypes ConversationToolAlpha2
 }
 
@@ -532,6 +531,21 @@ func (c *GRPCClient) ConverseAlpha2(ctx context.Context, request ConversationReq
 		}
 	}
 
+	var tools []*runtimev1pb.ConversationTools
+	if request.Tools != nil {
+		tools = make([]*runtimev1pb.ConversationTools, 0, len(request.Tools))
+		for _, t := range request.Tools {
+			if t == nil {
+				continue
+			}
+			protoTools := t.toProto()
+			if protoTools == nil {
+				return nil, errors.New("failed to convert ConversationToolsAlpha2 to proto")
+			}
+			tools = append(tools, protoTools...)
+		}
+	}
+
 	req := runtimev1pb.ConversationRequestAlpha2{
 		Name:        request.Name,
 		ContextId:   request.ContextID,
@@ -540,7 +554,7 @@ func (c *GRPCClient) ConverseAlpha2(ctx context.Context, request ConversationReq
 		Metadata:    request.Metadata,
 		ScrubPii:    request.ScrubPII,
 		Temperature: request.Temperature,
-		Tools:       request.Tools.toProto(),
+		Tools:       tools,
 		ToolChoice:  request.ToolChoice.toPtr(),
 	}
 
@@ -556,7 +570,7 @@ func (c *GRPCClient) ConverseAlpha2(ctx context.Context, request ConversationReq
 			toolCalls := make([]*ConversationToolCallsAlpha2, len(c.GetMessage().GetToolCalls()))
 			for k, t := range c.GetMessage().GetToolCalls() {
 				toolCalls[k] = &ConversationToolCallsAlpha2{
-					ID: t.Id,
+					ID: t.GetId(),
 					ToolTypes: ConversationToolAlpha2{
 						Name:      t.GetFunction().GetName(),
 						Arguments: t.GetFunction().GetArguments(),
@@ -579,7 +593,7 @@ func (c *GRPCClient) ConverseAlpha2(ctx context.Context, request ConversationReq
 	}
 
 	response := &ConversationResponseAlpha2{
-		ContextID: resp.ContextId,
+		ContextID: resp.GetContextId(),
 		Outputs:   outputs,
 	}
 
