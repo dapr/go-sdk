@@ -550,7 +550,7 @@ func (c *GRPCClient) ConverseAlpha2(ctx context.Context, request ConversationReq
 	}
 
 	outputs := make([]*ConversationResultAlpha2, len(resp.GetOutputs()))
-	for _, o := range resp.GetOutputs() {
+	for i, o := range resp.GetOutputs() {
 		choices := make([]*ConversationResultChoicesAlpha2, len(o.GetChoices()))
 		for j, c := range o.GetChoices() {
 			toolCalls := make([]*ConversationToolCallsAlpha2, len(c.GetMessage().GetToolCalls()))
@@ -572,6 +572,9 @@ func (c *GRPCClient) ConverseAlpha2(ctx context.Context, request ConversationReq
 					ToolCalls: toolCalls,
 				},
 			}
+		}
+		outputs[i] = &ConversationResultAlpha2{
+			Choices: choices,
 		}
 	}
 

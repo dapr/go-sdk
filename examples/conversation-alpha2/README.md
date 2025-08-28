@@ -12,6 +12,7 @@
 name: Run Conversation
 output_match_mode: substring
 expected_stdout_lines:
+  - '== APP == conversation input: hello world'
   - '== APP == conversation output: hello world'
 
 background: true
