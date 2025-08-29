@@ -37,7 +37,7 @@ func TestHealthCheckHandlerForErrors(t *testing.T) {
 
 // go test -timeout 30s ./service/grpc -count 1 -run ^TestHealthCheck$
 func TestHealthCheck(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 
 	server := getTestServer()
 	startTestServer(server)

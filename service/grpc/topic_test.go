@@ -57,7 +57,7 @@ func TestTopicSubscriptionList(t *testing.T) {
 	}
 	err := server.AddTopicEventHandler(sub1, eventHandler)
 	require.NoError(t, err)
-	resp, err := server.ListTopicSubscriptions(context.Background(), &emptypb.Empty{})
+	resp, err := server.ListTopicSubscriptions(t.Context(), &emptypb.Empty{})
 	require.NoError(t, err)
 	assert.NotNil(t, resp)
 	if assert.Lenf(t, resp.GetSubscriptions(), 1, "expected 1 handlers") {
@@ -76,7 +76,7 @@ func TestTopicSubscriptionList(t *testing.T) {
 	}
 	err = server.AddTopicEventHandler(sub2, eventHandler)
 	require.NoError(t, err)
-	resp, err = server.ListTopicSubscriptions(context.Background(), &emptypb.Empty{})
+	resp, err = server.ListTopicSubscriptions(t.Context(), &emptypb.Empty{})
 	require.NoError(t, err)
 	assert.NotNil(t, resp)
 	if assert.Lenf(t, resp.GetSubscriptions(), 1, "expected 1 handlers") {
@@ -96,7 +96,7 @@ func TestTopicSubscriptionList(t *testing.T) {
 
 // go test -timeout 30s ./service/grpc -count 1 -run ^TestTopic$
 func TestTopic(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 
 	sub := &common.Subscription{
 		PubsubName: "messages",
@@ -158,7 +158,7 @@ func TestTopic(t *testing.T) {
 			Topic:           sub2.Topic,
 			PubsubName:      sub2.PubsubName,
 		}
-		ctx := metadata.NewIncomingContext(context.Background(), metadata.New(map[string]string{"Metadata.key1": "value1"}))
+		ctx := metadata.NewIncomingContext(t.Context(), metadata.New(map[string]string{"Metadata.key1": "value1"}))
 		_, err = server.OnTopicEvent(ctx, in)
 		require.NoError(t, err)
 	})
@@ -167,7 +167,7 @@ func TestTopic(t *testing.T) {
 }
 
 func TestTopicWithValidationDisabled(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 
 	sub := &common.Subscription{
 		PubsubName:             "messages",
@@ -197,7 +197,7 @@ func TestTopicWithValidationDisabled(t *testing.T) {
 }
 
 func TestTopicWithErrors(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 
 	sub1 := &common.Subscription{
 		PubsubName: "messages",
@@ -269,7 +269,7 @@ func eventHandlerWithError(ctx context.Context, event *common.TopicEvent) (retry
 }
 
 func TestEventDataHandling(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 
 	tests := map[string]struct {
 		contentType string

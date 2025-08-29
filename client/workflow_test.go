@@ -15,7 +15,6 @@ limitations under the License.
 package client
 
 import (
-	"context"
 	"math"
 	"testing"
 
@@ -35,7 +34,7 @@ func TestMarshalInput(t *testing.T) {
 }
 
 func TestWorkflowBeta1(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 
 	// 1: StartWorkflow
 	t.Run("start workflow - valid (without id)", func(t *testing.T) {
