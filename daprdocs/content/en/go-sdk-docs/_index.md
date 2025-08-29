@@ -18,11 +18,11 @@ A client library to help build Dapr applications in Go. This client supports all
 {{< card title="**Client**">}}
   Use the Go Client SDK for invoking public Dapr APIs
 
-  [**Learn more about the Go Client SDK**]({{< ref go-client >}})
+  [**Learn more about the Go Client SDK**]({{% ref go-client %}})
 {{< /card >}}
 {{< card title="**Service**">}}
   Use the Dapr Service (Callback) SDK for Go to create services that will be invoked by Dapr.
 
-  [**Learn more about the Go Service (Callback) SDK**]({{< ref go-service >}})
+  [**Learn more about the Go Service (Callback) SDK**]({{% ref go-service %}})
 {{< /card >}}
 {{< /cardpane >}}

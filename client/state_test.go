@@ -18,6 +18,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
+	"google.golang.org/protobuf/types/known/durationpb"
 
 	"github.com/stretchr/testify/assert"
 
@@ -58,7 +59,7 @@ func TestTypes(t *testing.T) {
 
 func TestDurationConverter(t *testing.T) {
 	d := 10 * time.Second
-	pd := toProtoDuration(d)
+	pd := durationpb.New(d)
 	assert.NotNil(t, pd)
 	assert.Equal(t, int64(10), pd.GetSeconds())
 }

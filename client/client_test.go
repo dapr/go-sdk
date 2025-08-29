@@ -32,6 +32,7 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/test/bufconn"
 	"google.golang.org/protobuf/types/known/anypb"
+	"google.golang.org/protobuf/types/known/durationpb"
 	"google.golang.org/protobuf/types/known/emptypb"
 
 	commonv1pb "github.com/dapr/dapr/pkg/proto/common/v1"
@@ -563,10 +564,11 @@ func (s *testDaprServer) ScheduleJobAlpha1(ctx context.Context, in *pb.ScheduleJ
 
 func (s *testDaprServer) GetJobAlpha1(ctx context.Context, in *pb.GetJobRequest) (*pb.GetJobResponse, error) {
 	var (
-		schedule        = "@every 10s"
-		dueTime         = "10s"
-		repeats  uint32 = 4
-		ttl             = "10s"
+		schedule          = "@every 10s"
+		dueTime           = "10s"
+		repeats    uint32 = 4
+		ttl               = "10s"
+		maxRetries uint32 = 4
 	)
 	return &pb.GetJobResponse{
 		Job: &pb.Job{
@@ -576,6 +578,14 @@ func (s *testDaprServer) GetJobAlpha1(ctx context.Context, in *pb.GetJobRequest)
 			DueTime:  &dueTime,
 			Ttl:      &ttl,
 			Data:     nil,
+			FailurePolicy: &commonv1pb.JobFailurePolicy{
+				Policy: &commonv1pb.JobFailurePolicy_Constant{
+					Constant: &commonv1pb.JobFailurePolicyConstant{
+						MaxRetries: &maxRetries,
+						Interval:   &durationpb.Duration{Seconds: 10},
+					},
+				},
+			},
 		},
 	}, nil
 }
