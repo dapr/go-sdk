@@ -16,15 +16,15 @@ expected_stdout_lines:
   - '== APP == conversation output: hello world'
 
 background: true
-sleep: 120
-timeout_seconds: 120
+sleep: 60
+timeout_seconds: 60
 -->
 
 ```bash
-dapr run --app-id conversation 
-         --dapr-grpc-port 50001 
-         --log-level debug 
-         --resources-path ./config 
+dapr run --app-id conversation \
+         --dapr-grpc-port 50001 \
+         --log-level debug \
+         --resources-path ./config \
          -- go run ./main.go
 ```
 
