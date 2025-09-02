@@ -13,11 +13,10 @@ name: Run Workflow
 output_match_mode: substring
 expected_stdout_lines:
   - '== APP == Workflow(s) and activities registered.'
-  - 'work item listener started'
   - '== APP == Processing work item: 9'
   - '== APP == Work item 9 processed. Result: 18'
   - '== APP == Final result: 90'
-  - '== APP == workflow status: COMPLETED'
+  - '== APP == workflow status: ORCHESTRATION_STATUS_COMPLETED'
   - '== APP == workflow terminated'
   - '== APP == workflow purged'
 
@@ -40,11 +39,10 @@ dapr run --app-id workflow-parallel \
 
 ```
   - '== APP == Workflow(s) and activities registered.'
-  - 'work item listener started'
   - '== APP == Processing work item: 9'
   - '== APP == Work item 9 processed. Result: 18'
   - '== APP == Final result: 90'
-  - '== APP == workflow status: COMPLETED'
+  - '== APP == workflow status: ORCHESTRATION_STATUS_COMPLETED'
   - '== APP == workflow terminated'
   - '== APP == workflow purged'
 ```
