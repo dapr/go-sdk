@@ -8,50 +8,55 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/dapr/go-sdk/workflow"
+	"github.com/dapr/durabletask-go/api"
+	"github.com/dapr/durabletask-go/backend"
+	"github.com/dapr/durabletask-go/client"
+	"github.com/dapr/durabletask-go/task"
+	dapr "github.com/dapr/go-sdk/client"
 )
 
 func main() {
-	w, err := workflow.NewWorker()
-	if err != nil {
-		log.Fatalf("failed to initialise worker: %v", err)
-	}
+	registry := task.NewTaskRegistry()
 
-	if err := w.RegisterWorkflow(TaskExecutionIdWorkflow); err != nil {
+	if err := registry.AddOrchestrator(TaskExecutionIdWorkflow); err != nil {
 		log.Fatalf("failed to register workflow: %v", err)
 	}
-	if err := w.RegisterActivity(RetryN); err != nil {
+	if err := registry.AddActivity(RetryN); err != nil {
 		log.Fatalf("failed to register activity: %v", err)
 	}
 	fmt.Println("Workflow(s) and activities registered.")
 
-	if err := w.Start(); err != nil {
-		log.Fatalf("failed to start worker")
+	daprClient, err := dapr.NewClient()
+	if err != nil {
+		log.Fatalf("failed to create Dapr client: %v", err)
 	}
 
-	wfClient, err := workflow.NewClient()
-	if err != nil {
-		log.Fatalf("failed to initialise client: %v", err)
-	}
+	client := client.NewTaskHubGrpcClient(daprClient.GrpcClientConn(), backend.DefaultLogger())
+
 	ctx := context.Background()
-	id, err := wfClient.ScheduleNewWorkflow(ctx, "TaskExecutionIdWorkflow", workflow.WithInput(5))
+
+	if err := client.StartWorkItemListener(ctx, registry); err != nil {
+		log.Fatalf("failed to start work item listener: %v", err)
+	}
+
+	id, err := client.ScheduleNewOrchestration(ctx, "TaskExecutionIdWorkflow", api.WithInput(5))
 	if err != nil {
 		log.Fatalf("failed to schedule a new workflow: %v", err)
 	}
 
-	metadata, err := wfClient.WaitForWorkflowCompletion(ctx, id)
+	metadata, err := client.WaitForOrchestrationCompletion(ctx, id)
 	if err != nil {
 		log.Fatalf("failed to get workflow: %v", err)
 	}
 	fmt.Printf("workflow status: %s\n", metadata.RuntimeStatus.String())
 
-	err = wfClient.TerminateWorkflow(ctx, id)
+	err = client.TerminateOrchestration(ctx, id)
 	if err != nil {
 		log.Fatalf("failed to terminate workflow: %v", err)
 	}
 	fmt.Println("workflow terminated")
 
-	err = wfClient.PurgeWorkflow(ctx, id)
+	err = client.PurgeOrchestrationState(ctx, id)
 	if err != nil {
 		log.Fatalf("failed to purge workflow: %v", err)
 	}
@@ -60,35 +65,35 @@ func main() {
 
 var eMap = sync.Map{}
 
-func TaskExecutionIdWorkflow(ctx *workflow.WorkflowContext) (any, error) {
+func TaskExecutionIdWorkflow(ctx *task.OrchestrationContext) (any, error) {
 	var retries int
 	if err := ctx.GetInput(&retries); err != nil {
 		return 0, err
 	}
 
 	var workBatch []int
-	if err := ctx.CallActivity(RetryN, workflow.ActivityRetryPolicy(workflow.RetryPolicy{
+	if err := ctx.CallActivity(RetryN, task.WithActivityRetryPolicy(&task.RetryPolicy{
 		MaxAttempts:          retries,
 		InitialRetryInterval: 100 * time.Millisecond,
 		BackoffCoefficient:   2,
 		MaxRetryInterval:     1 * time.Second,
-	}), workflow.ActivityInput(retries)).Await(&workBatch); err != nil {
+	}), task.WithActivityInput(retries)).Await(&workBatch); err != nil {
 		return 0, err
 	}
 
-	if err := ctx.CallActivity(RetryN, workflow.ActivityRetryPolicy(workflow.RetryPolicy{
+	if err := ctx.CallActivity(RetryN, task.WithActivityRetryPolicy(&task.RetryPolicy{
 		MaxAttempts:          retries,
 		InitialRetryInterval: 100 * time.Millisecond,
 		BackoffCoefficient:   2,
 		MaxRetryInterval:     1 * time.Second,
-	}), workflow.ActivityInput(retries)).Await(&workBatch); err != nil {
+	}), task.WithActivityInput(retries)).Await(&workBatch); err != nil {
 		return 0, err
 	}
 
 	return 0, nil
 }
 
-func RetryN(ctx workflow.ActivityContext) (any, error) {
+func RetryN(ctx task.ActivityContext) (any, error) {
 	taskExecutionID := ctx.GetTaskExecutionID()
 	counter, _ := eMap.LoadOrStore(taskExecutionID, &atomic.Int32{})
 	var retries int32
