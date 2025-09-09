@@ -6,17 +6,14 @@ import (
 	"log"
 	"time"
 
-	"github.com/dapr/durabletask-go/api"
-	"github.com/dapr/durabletask-go/backend"
-	"github.com/dapr/durabletask-go/client"
-	"github.com/dapr/durabletask-go/task"
+	"github.com/dapr/durabletask-go/workflow"
 	dapr "github.com/dapr/go-sdk/client"
 )
 
 func main() {
-	registry := task.NewTaskRegistry()
+	registry := workflow.NewTaskRegistry()
 
-	if err := registry.AddOrchestrator(BatchProcessingWorkflow); err != nil {
+	if err := registry.AddWorkflow(BatchProcessingWorkflow); err != nil {
 		log.Fatalf("failed to register workflow: %v", err)
 	}
 	if err := registry.AddActivity(GetWorkBatch); err != nil {
@@ -37,55 +34,55 @@ func main() {
 		log.Fatalf("failed to create Dapr client: %v", err)
 	}
 
-	client := client.NewTaskHubGrpcClient(daprClient.GrpcClientConn(), backend.DefaultLogger())
-	if err := client.StartWorkItemListener(ctx, registry); err != nil {
+	wfclient := workflow.NewClient(daprClient.GrpcClientConn())
+	if err := wfclient.StartWorker(ctx, registry); err != nil {
 		log.Fatalf("failed to start work item listener: %v", err)
 	}
 
-	id, err := client.ScheduleNewOrchestration(ctx, "BatchProcessingWorkflow", api.WithInput(10))
+	id, err := wfclient.ScheduleNewWorkflow(ctx, "BatchProcessingWorkflow", workflow.WithInput(10))
 	if err != nil {
 		log.Fatalf("failed to schedule a new workflow: %v", err)
 	}
 
-	metadata, err := client.WaitForOrchestrationCompletion(ctx, id)
+	metadata, err := wfclient.WaitForWorkflowCompletion(ctx, id)
 	if err != nil {
 		log.Fatalf("failed to get workflow: %v", err)
 	}
 	fmt.Printf("workflow status: %s\n", metadata.RuntimeStatus.String())
 
-	err = client.TerminateOrchestration(ctx, id)
+	err = wfclient.TerminateWorkflow(ctx, id)
 	if err != nil {
 		log.Fatalf("failed to terminate workflow: %v", err)
 	}
 	fmt.Println("workflow terminated")
 
-	err = client.PurgeOrchestrationState(ctx, id)
+	err = wfclient.PurgeWorkflowState(ctx, id)
 	if err != nil {
 		log.Fatalf("failed to purge workflow: %v", err)
 	}
 	fmt.Println("workflow purged")
 }
 
-func BatchProcessingWorkflow(ctx *task.OrchestrationContext) (any, error) {
+func BatchProcessingWorkflow(ctx *workflow.WorkflowContext) (any, error) {
 	var input int
 	if err := ctx.GetInput(&input); err != nil {
 		return 0, err
 	}
 
 	var workBatch []int
-	if err := ctx.CallActivity(GetWorkBatch, task.WithActivityInput(input)).Await(&workBatch); err != nil {
+	if err := ctx.CallActivity(GetWorkBatch, workflow.WithActivityInput(input)).Await(&workBatch); err != nil {
 		return 0, err
 	}
 
-	parallelTasks := make([]task.Task, len(workBatch))
+	parallelTasks := make([]workflow.Task, len(workBatch))
 	for i, workItem := range workBatch {
-		parallelTasks[i] = ctx.CallActivity(ProcessWorkItem, task.WithActivityInput(workItem))
+		parallelTasks[i] = ctx.CallActivity(ProcessWorkItem, workflow.WithActivityInput(workItem))
 	}
 
 	var outputs int
-	for _, task := range parallelTasks {
+	for _, workflow := range parallelTasks {
 		var output int
-		err := task.Await(&output)
+		err := workflow.Await(&output)
 		if err == nil {
 			outputs += output
 		} else {
@@ -93,14 +90,14 @@ func BatchProcessingWorkflow(ctx *task.OrchestrationContext) (any, error) {
 		}
 	}
 
-	if err := ctx.CallActivity(ProcessResults, task.WithActivityInput(outputs)).Await(nil); err != nil {
+	if err := ctx.CallActivity(ProcessResults, workflow.WithActivityInput(outputs)).Await(nil); err != nil {
 		return 0, err
 	}
 
 	return 0, nil
 }
 
-func GetWorkBatch(ctx task.ActivityContext) (any, error) {
+func GetWorkBatch(ctx workflow.ActivityContext) (any, error) {
 	var batchSize int
 	if err := ctx.GetInput(&batchSize); err != nil {
 		return 0, err
@@ -112,7 +109,7 @@ func GetWorkBatch(ctx task.ActivityContext) (any, error) {
 	return batch, nil
 }
 
-func ProcessWorkItem(ctx task.ActivityContext) (any, error) {
+func ProcessWorkItem(ctx workflow.ActivityContext) (any, error) {
 	var workItem int
 	if err := ctx.GetInput(&workItem); err != nil {
 		return 0, err
@@ -124,7 +121,7 @@ func ProcessWorkItem(ctx task.ActivityContext) (any, error) {
 	return result, nil
 }
 
-func ProcessResults(ctx task.ActivityContext) (any, error) {
+func ProcessResults(ctx workflow.ActivityContext) (any, error) {
 	var finalResult int
 	if err := ctx.GetInput(&finalResult); err != nil {
 		return 0, err
