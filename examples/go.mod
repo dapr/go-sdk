@@ -37,4 +37,4 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
-replace github.com/dapr/durabletask-go => github.com/joshvanl/durabletask-go v0.0.0-20250909232152-78b35605272e
+replace github.com/dapr/durabletask-go => github.com/joshvanl/durabletask-go v0.0.0-20250909233258-f612c96321f6

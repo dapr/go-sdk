@@ -31,4 +31,4 @@ require (
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250603155806-513f23925822 // indirect
 )
 
-replace github.com/dapr/durabletask-go => github.com/joshvanl/durabletask-go v0.0.0-20250909232152-78b35605272e
+replace github.com/dapr/durabletask-go => github.com/joshvanl/durabletask-go v0.0.0-20250909233258-f612c96321f6
