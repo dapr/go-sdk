@@ -27,12 +27,10 @@ func main() {
 	}
 	fmt.Println("Workflow(s) and activities registered.")
 
-	dclient, err := client.NewClient()
+	wclient, err := client.NewWorkflowClient()
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	wclient := workflow.NewClient(dclient.GrpcClientConn())
 	fmt.Println("Worker initialized")
 
 	ctx, cancel := context.WithCancel(context.Background())
