@@ -16,7 +16,7 @@ expected_stdout_lines:
   - '== APP == Processing work item: 9'
   - '== APP == Work item 9 processed. Result: 18'
   - '== APP == Final result: 90'
-  - '== APP == workflow status: ORCHESTRATION_STATUS_COMPLETED'
+  - '== APP == workflow status: COMPLETED'
   - '== APP == workflow terminated'
   - '== APP == workflow purged'
 
@@ -42,7 +42,7 @@ dapr run --app-id workflow-parallel \
   - '== APP == Processing work item: 9'
   - '== APP == Work item 9 processed. Result: 18'
   - '== APP == Final result: 90'
-  - '== APP == workflow status: ORCHESTRATION_STATUS_COMPLETED'
+  - '== APP == workflow status: COMPLETED'
   - '== APP == workflow terminated'
   - '== APP == workflow purged'
 ```

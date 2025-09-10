@@ -21,7 +21,7 @@ expected_stdout_lines:
   - '== APP == RetryN  2'
   - '== APP == RetryN  3'
   - '== APP == RetryN  4'
-  - '== APP == workflow status: ORCHESTRATION_STATUS_COMPLETED'
+  - '== APP == workflow status: COMPLETED'
   - '== APP == workflow terminated'
   - '== APP == workflow purged'
 
@@ -52,7 +52,7 @@ dapr run --app-id workflow-taskexecutionid \
   - '== APP == RetryN  2'
   - '== APP == RetryN  3'
   - '== APP == RetryN  4'
-  - '== APP == workflow status: ORCHESTRATION_STATUS_COMPLETED'
+  - '== APP == workflow status: COMPELTED'
   - '== APP == workflow terminated'
   - '== APP == workflow purged'
 ```
