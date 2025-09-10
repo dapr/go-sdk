@@ -49,7 +49,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to get workflow: %v", err)
 	}
-	fmt.Printf("workflow status: %s\n", metadata.RuntimeStatus().String())
+	fmt.Printf("workflow status: %s\n", metadata.String())
 
 	err = wclient.TerminateWorkflow(ctx, id)
 	if err != nil {
