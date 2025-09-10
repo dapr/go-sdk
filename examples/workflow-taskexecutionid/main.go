@@ -9,49 +9,53 @@ import (
 	"time"
 
 	"github.com/dapr/durabletask-go/workflow"
-	dapr "github.com/dapr/go-sdk/client"
+	"github.com/dapr/go-sdk/client"
 )
 
 func main() {
-	registry := workflow.NewTaskRegistry()
+	r := workflow.NewRegistry()
 
-	if err := registry.AddWorkflow(TaskExecutionIdWorkflow); err != nil {
+	if err := r.AddWorkflow(TaskExecutionIdWorkflow); err != nil {
 		log.Fatalf("failed to register workflow: %v", err)
 	}
-	if err := registry.AddActivity(RetryN); err != nil {
+	if err := r.AddActivity(RetryN); err != nil {
 		log.Fatalf("failed to register activity: %v", err)
 	}
 	fmt.Println("Workflow(s) and activities registered.")
 
-	daprClient, err := dapr.NewClient()
+	dclient, err := client.NewClient()
 	if err != nil {
-		log.Fatalf("failed to create Dapr client: %v", err)
+		log.Fatal(err)
 	}
 
-	ctx := context.Background()
-	wfclient := workflow.NewClient(daprClient.GrpcClientConn())
-	if err := wfclient.StartWorker(ctx, registry); err != nil {
-		log.Fatalf("failed to start work item listener: %v", err)
+	wclient := workflow.NewClient(dclient.GrpcClientConn())
+	fmt.Println("Worker initialized")
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	if err = wclient.StartWorker(ctx, r); err != nil {
+		log.Fatal(err)
 	}
 
-	id, err := wfclient.ScheduleNewWorkflow(ctx, "TaskExecutionIdWorkflow", workflow.WithInput(5))
+	id, err := wclient.StartWorkflow(ctx, "TaskExecutionIdWorkflow", workflow.WithInput(5))
 	if err != nil {
 		log.Fatalf("failed to schedule a new workflow: %v", err)
 	}
 
-	metadata, err := wfclient.WaitForWorkflowCompletion(ctx, id)
+	metadata, err := wclient.WaitForWorkflowCompletion(ctx, id)
 	if err != nil {
 		log.Fatalf("failed to get workflow: %v", err)
 	}
 	fmt.Printf("workflow status: %s\n", metadata.RuntimeStatus.String())
 
-	err = wfclient.TerminateWorkflow(ctx, id)
+	err = wclient.TerminateWorkflow(ctx, id)
 	if err != nil {
 		log.Fatalf("failed to terminate workflow: %v", err)
 	}
 	fmt.Println("workflow terminated")
 
-	err = wfclient.PurgeWorkflowState(ctx, id)
+	err = wclient.PurgeWorkflowState(ctx, id)
 	if err != nil {
 		log.Fatalf("failed to purge workflow: %v", err)
 	}

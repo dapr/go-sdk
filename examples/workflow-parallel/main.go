@@ -7,56 +7,59 @@ import (
 	"time"
 
 	"github.com/dapr/durabletask-go/workflow"
-	dapr "github.com/dapr/go-sdk/client"
+	"github.com/dapr/go-sdk/client"
 )
 
 func main() {
-	registry := workflow.NewTaskRegistry()
+	r := workflow.NewRegistry()
 
-	if err := registry.AddWorkflow(BatchProcessingWorkflow); err != nil {
+	if err := r.AddWorkflow(BatchProcessingWorkflow); err != nil {
 		log.Fatalf("failed to register workflow: %v", err)
 	}
-	if err := registry.AddActivity(GetWorkBatch); err != nil {
+	if err := r.AddActivity(GetWorkBatch); err != nil {
 		log.Fatalf("failed to register activity: %v", err)
 	}
-	if err := registry.AddActivity(ProcessWorkItem); err != nil {
+	if err := r.AddActivity(ProcessWorkItem); err != nil {
 		log.Fatalf("failed to register activity: %v", err)
 	}
-	if err := registry.AddActivity(ProcessResults); err != nil {
+	if err := r.AddActivity(ProcessResults); err != nil {
 		log.Fatalf("failed to register activity: %v", err)
 	}
 	fmt.Println("Workflow(s) and activities registered.")
 
-	ctx := context.Background()
-
-	daprClient, err := dapr.NewClient()
+	dclient, err := client.NewClient()
 	if err != nil {
-		log.Fatalf("failed to create Dapr client: %v", err)
+		log.Fatal(err)
 	}
 
-	wfclient := workflow.NewClient(daprClient.GrpcClientConn())
-	if err := wfclient.StartWorker(ctx, registry); err != nil {
-		log.Fatalf("failed to start work item listener: %v", err)
+	wclient := workflow.NewClient(dclient.GrpcClientConn())
+	fmt.Println("Worker initialized")
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	if err = wclient.StartWorker(ctx, r); err != nil {
+		log.Fatal(err)
 	}
 
-	id, err := wfclient.ScheduleNewWorkflow(ctx, "BatchProcessingWorkflow", workflow.WithInput(10))
+	id, err := wclient.StartWorkflow(ctx, "BatchProcessingWorkflow", workflow.WithInput(10))
 	if err != nil {
 		log.Fatalf("failed to schedule a new workflow: %v", err)
 	}
 
-	metadata, err := wfclient.WaitForWorkflowCompletion(ctx, id)
+	metadata, err := wclient.WaitForWorkflowCompletion(ctx, id)
 	if err != nil {
 		log.Fatalf("failed to get workflow: %v", err)
 	}
 	fmt.Printf("workflow status: %s\n", metadata.RuntimeStatus.String())
 
-	err = wfclient.TerminateWorkflow(ctx, id)
+	err = wclient.TerminateWorkflow(ctx, id)
 	if err != nil {
 		log.Fatalf("failed to terminate workflow: %v", err)
 	}
 	fmt.Println("workflow terminated")
 
-	err = wfclient.PurgeWorkflowState(ctx, id)
+	err = wclient.PurgeWorkflowState(ctx, id)
 	if err != nil {
 		log.Fatalf("failed to purge workflow: %v", err)
 	}
@@ -80,9 +83,9 @@ func BatchProcessingWorkflow(ctx *workflow.WorkflowContext) (any, error) {
 	}
 
 	var outputs int
-	for _, workflow := range parallelTasks {
+	for _, task := range parallelTasks {
 		var output int
-		err := workflow.Await(&output)
+		err := task.Await(&output)
 		if err == nil {
 			outputs += output
 		} else {
