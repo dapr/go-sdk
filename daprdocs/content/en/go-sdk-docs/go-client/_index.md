@@ -94,72 +94,71 @@ Workflows and their activities can be authored and managed using the Dapr Go SDK
 
 ```go
 import (
-...
-	"github.com/dapr/durabletask-go/api"
-	"github.com/dapr/durabletask-go/backend"
-	"github.com/dapr/durabletask-go/client"
-	"github.com/dapr/durabletask-go/task"
+	"context"
+	"fmt"
+	"log"
+
+	"github.com/dapr/durabletask-go/workflow"
 	dapr "github.com/dapr/go-sdk/client"
-...
 )
 
-func ExampleWorkflow(ctx *task.OrchestrationContext) (any, error) {
-    var output string
-    input := "world"
+func ExampleWorkflow(ctx *workflow.WorkflowContext) (any, error) {
+	var output string
+	input := "world"
 
-    if err := ctx.CallActivity(ExampleActivity, task.WithActivityInput(input)).Await(&output); err != nil {
-        return nil, err
-    }
+	if err := ctx.CallActivity(ExampleActivity, workflow.WithActivityInput(input)).Await(&output); err != nil {
+		return nil, err
+	}
 
-    // Print output - "hello world"
-    fmt.Println(output)
+	// Print output - "hello world"
+	fmt.Println(output)
 
-    return nil, nil
+	return nil, nil
 }
 
-func ExampleActivity(ctx task.ActivityContext) (any, error) {
-    var input int
-    if err := ctx.GetInput(&input); err != nil {
-        return "", err
-    }
+func ExampleActivity(ctx workflow.ActivityContext) (any, error) {
+	var input int
+	if err := ctx.GetInput(&input); err != nil {
+		return "", err
+	}
 
-    return fmt.Sprintf("hello %s", input), nil
+	return fmt.Sprintf("hello %s", input), nil
 }
 
 func main() {
-	registry := task.NewTaskRegistry()
+	r := workflow.NewRegistry()
 
-    // Register the workflow
-    registry.AddOrchestrator(ExampleWorkflow)
+	// Register the workflow
+	r.AddWorkflow(ExampleWorkflow)
 
-    // Register the activity
-    registry.AddActivity(ExampleActivity)
+	// Register the activity
+	r.AddActivity(ExampleActivity)
 
-	daprClient, err := dapr.NewClient()
+	client, err := dapr.NewWorkflowClient()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-    ctx := context.Background()
-	client := client.NewTaskHubGrpcClient(daprClient.GrpcClientConn(), backend.DefaultLogger())
-	if err := client.StartWorkItemListener(ctx, registry); err != nil {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	if err := client.StartWorker(ctx, r); err != nil {
 		log.Fatal(err)
 	}
 
-    // Start a new workflow
-    id, err := client.ScheduleNewOrchestration(ctx, "ExampleWorkflow")
-    if err != nil {
-        log.Fatal(err)
-    }
+	// Start a new workflow
+	id, err := client.StartWorkflow(ctx, "ExampleWorkflow")
+	if err != nil {
+		log.Fatal(err)
+	}
 
-    // Wait for the workflow to complete
-    metadata, err := client.WaitForOrchestrationCompletion(ctx, id)
-    if err != nil {
-        log.Fatal(err)
-    }
+	// Wait for the workflow to complete
+	metadata, err := client.WaitForWorkflowCompletion(ctx, id)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-    // Print workflow status post-completion
-    fmt.Println(metadata.RuntimeStatus.String())
+	// Print workflow status post-completion
+	fmt.Println(metadata.String())
 }
 ```
 
