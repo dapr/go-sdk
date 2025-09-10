@@ -83,7 +83,7 @@ func main() {
 	}
 
 	if respFetch.RuntimeStatus != workflow.StatusSuspended {
-		log.Fatalf("workflow not paused: %v", respFetch.RuntimeStatus)
+		log.Fatalf("workflow not paused: %s: %v", respFetch.RuntimeStatus, respFetch)
 	}
 
 	fmt.Printf("workflow paused\n")
