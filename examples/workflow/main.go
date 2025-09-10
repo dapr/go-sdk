@@ -80,7 +80,7 @@ func main() {
 		log.Fatalf("failed to fetch workflow: %v", err)
 	}
 
-	if respFetch.RuntimeStatus != workflow.StatusSuspended {
+	if respFetch.RuntimeStatus() != workflow.StatusSuspended {
 		log.Fatalf("workflow not paused: %s: %v", respFetch.RuntimeStatus, respFetch)
 	}
 
@@ -97,7 +97,7 @@ func main() {
 		log.Fatalf("failed to get workflow: %v", err)
 	}
 
-	if respFetch.RuntimeStatus != workflow.StatusRunning {
+	if respFetch.RuntimeStatus() != workflow.StatusRunning {
 		log.Fatalf("workflow not running")
 	}
 
@@ -132,7 +132,7 @@ func main() {
 		log.Fatalf("failed to get workflow: %v", err)
 	}
 
-	fmt.Printf("workflow status: %v\n", respFetch.RuntimeStatus)
+	fmt.Printf("workflow status: %v\n", respFetch.RuntimeStatus().String())
 
 	// Purge workflow test
 	err = wclient.PurgeWorkflowState(ctx, instanceID)
@@ -160,7 +160,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to get workflow: %v", err)
 	}
-	fmt.Printf("workflow status: %s\n", metadata.RuntimeStatus.String())
+	fmt.Printf("workflow status: %s\n", metadata.RuntimeStatus().String())
 
 	err = wclient.TerminateWorkflow(ctx, id)
 	if err != nil {
