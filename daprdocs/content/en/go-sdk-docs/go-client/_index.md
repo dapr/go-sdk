@@ -146,7 +146,7 @@ func main() {
 	}
 
 	// Start a new workflow
-	id, err := client.StartWorkflow(ctx, "ExampleWorkflow")
+	id, err := client.ScheduleWorkflow(ctx, "ExampleWorkflow")
 	if err != nil {
 		log.Fatal(err)
 	}

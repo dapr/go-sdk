@@ -40,7 +40,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	id, err := wclient.StartWorkflow(ctx, "BatchProcessingWorkflow", workflow.WithInput(10))
+	id, err := wclient.ScheduleWorkflow(ctx, "BatchProcessingWorkflow", workflow.WithInput(10))
 	if err != nil {
 		log.Fatalf("failed to schedule a new workflow: %v", err)
 	}

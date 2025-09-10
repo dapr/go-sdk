@@ -36,7 +36,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	id, err := wclient.StartWorkflow(ctx, "TaskExecutionIdWorkflow", workflow.WithInput(5))
+	id, err := wclient.ScheduleWorkflow(ctx, "TaskExecutionIdWorkflow", workflow.WithInput(5))
 	if err != nil {
 		log.Fatalf("failed to schedule a new workflow: %v", err)
 	}
