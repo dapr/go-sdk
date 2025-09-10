@@ -21,49 +21,40 @@ import (
 	"log"
 	"time"
 
-	"github.com/dapr/durabletask-go/api"
-	"github.com/dapr/durabletask-go/backend"
-	"github.com/dapr/durabletask-go/client"
-	"github.com/dapr/durabletask-go/task"
-	dapr "github.com/dapr/go-sdk/client"
+	"github.com/dapr/durabletask-go/workflow"
+	"github.com/dapr/go-sdk/client"
 )
 
 var stage = 0
 var failActivityTries = 0
 
 func main() {
-	registry := task.NewTaskRegistry()
+	r := workflow.NewRegistry()
 
-	if err := registry.AddOrchestrator(TestWorkflow); err != nil {
+	if err := r.AddWorkflow(TestWorkflow); err != nil {
 		log.Fatal(err)
 	}
 	fmt.Println("TestWorkflow registered")
 
-	if err := registry.AddActivity(TestActivity); err != nil {
+	if err := r.AddActivity(TestActivity); err != nil {
 		log.Fatal(err)
 	}
 	fmt.Println("TestActivity registered")
 
-	if err := registry.AddActivity(FailActivity); err != nil {
+	if err := r.AddActivity(FailActivity); err != nil {
 		log.Fatal(err)
 	}
 	fmt.Println("FailActivity registered")
 
-	daprClient, err := dapr.NewClient()
+	wclient, err := client.NewWorkflowClient()
 	if err != nil {
-		log.Fatalf("failed to create Dapr client: %v", err)
+		log.Fatal(err)
 	}
-
-	client := client.NewTaskHubGrpcClient(daprClient.GrpcClientConn(), backend.DefaultLogger())
-
 	fmt.Println("Worker initialized")
 
 	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	// Start workflow runner
-	if err := client.StartWorkItemListener(ctx, registry); err != nil {
-		log.Fatalf("failed to start work item listener: %v", err)
+	if err = wclient.StartWorker(ctx, r); err != nil {
+		log.Fatal(err)
 	}
 	fmt.Println("runner started")
 
@@ -72,44 +63,41 @@ func main() {
 	// "start". This is useful for increasing the throughput of creating
 	// workflows.
 	// workflow.WithStartTime(time.Now())
-	instanceID, err := client.ScheduleNewOrchestration(ctx, "TestWorkflow",
-		api.WithInstanceID("a7a4168d-3a1c-41da-8a4f-e7f6d9c718d9"),
-		api.WithInput(1),
-	)
+	instanceID, err := wclient.StartWorkflow(ctx, "TestWorkflow", workflow.WithInstanceID("a7a4168d-3a1c-41da-8a4f-e7f6d9c718d9"), workflow.WithInput(1))
 	if err != nil {
 		log.Fatalf("failed to start workflow: %v", err)
 	}
 	fmt.Printf("workflow started with id: %v\n", instanceID)
 
 	// Pause workflow test
-	err = client.SuspendOrchestration(ctx, instanceID, "")
+	err = wclient.SuspendWorkflow(ctx, instanceID, "")
 	if err != nil {
 		log.Fatalf("failed to pause workflow: %v", err)
 	}
 
-	respFetch, err := client.FetchOrchestrationMetadata(ctx, instanceID, api.WithFetchPayloads(true))
+	respFetch, err := wclient.FetchWorkflowMetadata(ctx, instanceID, workflow.WithFetchPayloads(true))
 	if err != nil {
 		log.Fatalf("failed to fetch workflow: %v", err)
 	}
 
-	if respFetch.RuntimeStatus != api.RUNTIME_STATUS_SUSPENDED {
-		log.Fatalf("workflow not paused: %v", respFetch.RuntimeStatus)
+	if respFetch.RuntimeStatus != workflow.StatusSuspended {
+		log.Fatalf("workflow not paused: %s: %v", respFetch.RuntimeStatus, respFetch)
 	}
 
 	fmt.Printf("workflow paused\n")
 
 	// Resume workflow test
-	err = client.ResumeOrchestration(ctx, instanceID, "")
+	err = wclient.ResumeWorkflow(ctx, instanceID, "")
 	if err != nil {
 		log.Fatalf("failed to resume workflow: %v", err)
 	}
 
-	respFetch, err = client.FetchOrchestrationMetadata(ctx, instanceID, api.WithFetchPayloads(true))
+	respFetch, err = wclient.FetchWorkflowMetadata(ctx, instanceID, workflow.WithFetchPayloads(true))
 	if err != nil {
 		log.Fatalf("failed to get workflow: %v", err)
 	}
 
-	if respFetch.RuntimeStatus != api.RUNTIME_STATUS_RUNNING {
+	if respFetch.RuntimeStatus != workflow.StatusRunning {
 		log.Fatalf("workflow not running")
 	}
 
@@ -119,7 +107,7 @@ func main() {
 
 	// Raise Event Test
 
-	err = client.RaiseEvent(ctx, instanceID, "testEvent", api.WithEventPayload("testData"))
+	err = wclient.RaiseEvent(ctx, instanceID, "testEvent", workflow.WithEventPayload("testData"))
 	if err != nil {
 		fmt.Printf("failed to raise event: %v", err)
 	}
@@ -131,7 +119,7 @@ func main() {
 	fmt.Printf("stage: %d\n", stage)
 
 	waitCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
-	_, err = client.WaitForOrchestrationCompletion(waitCtx, instanceID)
+	_, err = wclient.WaitForWorkflowCompletion(waitCtx, instanceID)
 	cancel()
 	if err != nil {
 		log.Fatalf("failed to wait for workflow: %v", err)
@@ -139,7 +127,7 @@ func main() {
 
 	fmt.Printf("fail activity executions: %d\n", failActivityTries)
 
-	respFetch, err = client.FetchOrchestrationMetadata(ctx, instanceID, api.WithFetchPayloads(true))
+	respFetch, err = wclient.FetchWorkflowMetadata(ctx, instanceID, workflow.WithFetchPayloads(true))
 	if err != nil {
 		log.Fatalf("failed to get workflow: %v", err)
 	}
@@ -147,12 +135,12 @@ func main() {
 	fmt.Printf("workflow status: %v\n", respFetch.RuntimeStatus)
 
 	// Purge workflow test
-	err = client.PurgeOrchestrationState(ctx, instanceID)
+	err = wclient.PurgeWorkflowState(ctx, instanceID)
 	if err != nil {
 		log.Fatalf("failed to purge workflow: %v", err)
 	}
 
-	respFetch, err = client.FetchOrchestrationMetadata(ctx, instanceID, api.WithFetchPayloads(true))
+	respFetch, err = wclient.FetchWorkflowMetadata(ctx, instanceID, workflow.WithFetchPayloads(true))
 	if err == nil || respFetch != nil {
 		log.Fatalf("failed to purge workflow: %v", err)
 	}
@@ -162,56 +150,55 @@ func main() {
 	fmt.Printf("stage: %d\n", stage)
 
 	// Terminate workflow test
-	id, err := client.ScheduleNewOrchestration(ctx, "TestWorkflow", api.WithInstanceID("a7a4168d-3a1c-41da-8a4f-e7f6d9c718d9"), api.WithInput(1))
+	id, err := wclient.StartWorkflow(ctx, "TestWorkflow", workflow.WithInstanceID("a7a4168d-3a1c-41da-8a4f-e7f6d9c718d9"), workflow.WithInput(1))
 	if err != nil {
 		log.Fatalf("failed to start workflow: %v", err)
 	}
 	fmt.Printf("workflow started with id: %v\n", instanceID)
 
-	metadata, err := client.WaitForOrchestrationStart(ctx, id)
+	metadata, err := wclient.WaitForWorkflowStart(ctx, id)
 	if err != nil {
 		log.Fatalf("failed to get workflow: %v", err)
 	}
 	fmt.Printf("workflow status: %s\n", metadata.RuntimeStatus.String())
 
-	err = client.TerminateOrchestration(ctx, id)
+	err = wclient.TerminateWorkflow(ctx, id)
 	if err != nil {
 		log.Fatalf("failed to terminate workflow: %v", err)
 	}
 	fmt.Println("workflow terminated")
 
-	err = client.PurgeOrchestrationState(ctx, id)
+	err = wclient.PurgeWorkflowState(ctx, id)
 	if err != nil {
 		log.Fatalf("failed to purge workflow: %v", err)
 	}
 	fmt.Println("workflow purged")
 
-	// stop workflow runtime
 	cancel()
 
 	fmt.Println("workflow worker successfully shutdown")
 }
 
-func TestWorkflow(ctx *task.OrchestrationContext) (any, error) {
+func TestWorkflow(ctx *workflow.WorkflowContext) (any, error) {
 	var input int
 	if err := ctx.GetInput(&input); err != nil {
 		return nil, err
 	}
 	var output string
-	if err := ctx.CallActivity(TestActivity, task.WithActivityInput(input)).Await(&output); err != nil {
+	if err := ctx.CallActivity(TestActivity, workflow.WithActivityInput(input)).Await(&output); err != nil {
 		return nil, err
 	}
 
-	err := ctx.WaitForSingleEvent("testEvent", time.Second*60).Await(&output)
+	err := ctx.WaitForExternalEvent("testEvent", time.Second*60).Await(&output)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := ctx.CallActivity(TestActivity, task.WithActivityInput(input)).Await(&output); err != nil {
+	if err := ctx.CallActivity(TestActivity, workflow.WithActivityInput(input)).Await(&output); err != nil {
 		return nil, err
 	}
 
-	if err := ctx.CallActivity(FailActivity, task.WithActivityRetryPolicy(&task.RetryPolicy{
+	if err := ctx.CallActivity(FailActivity, workflow.WithActivityRetryPolicy(&workflow.RetryPolicy{
 		MaxAttempts:          3,
 		InitialRetryInterval: 100 * time.Millisecond,
 		BackoffCoefficient:   2,
@@ -223,7 +210,7 @@ func TestWorkflow(ctx *task.OrchestrationContext) (any, error) {
 	return output, nil
 }
 
-func TestActivity(ctx task.ActivityContext) (any, error) {
+func TestActivity(ctx workflow.ActivityContext) (any, error) {
 	var input int
 	if err := ctx.GetInput(&input); err != nil {
 		return "", err
@@ -234,7 +221,7 @@ func TestActivity(ctx task.ActivityContext) (any, error) {
 	return fmt.Sprintf("Stage: %d", stage), nil
 }
 
-func FailActivity(ctx task.ActivityContext) (any, error) {
+func FailActivity(ctx workflow.ActivityContext) (any, error) {
 	failActivityTries += 1
 	return nil, errors.New("dummy activity error")
 }

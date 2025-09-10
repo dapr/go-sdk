@@ -27,6 +27,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/dapr/durabletask-go/workflow"
 	"github.com/dapr/go-sdk/actor"
 	"github.com/dapr/go-sdk/actor/config"
 	"github.com/dapr/go-sdk/client/internal"
@@ -290,6 +291,15 @@ func NewClient() (client Client, err error) {
 	defaultClient = c
 
 	return defaultClient, nil
+}
+
+func NewWorkflowClient() (*workflow.Client, error) {
+	dclient, err := NewClient()
+	if err != nil {
+		return nil, err
+	}
+
+	return workflow.NewClient(dclient.GrpcClientConn()), nil
 }
 
 // NewClientWithPort instantiates Dapr using specific gRPC port.
