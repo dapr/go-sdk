@@ -1,4 +1,4 @@
-# Dapr Conversation (Alpha1) Example with go-sdk
+# Dapr Conversation (Alpha2) Example with go-sdk
 
 ## Step
 
