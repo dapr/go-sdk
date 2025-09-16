@@ -13,7 +13,6 @@ name: Run Workflow
 output_match_mode: substring
 expected_stdout_lines:
   - '== APP == Workflow(s) and activities registered.'
-  - 'work item listener started'
   - '== APP == RetryN  1'
   - '== APP == RetryN  2'
   - '== APP == RetryN  3'
@@ -45,7 +44,6 @@ dapr run --app-id workflow-taskexecutionid \
 
 ```
   - '== APP == Workflow(s) and activities registered.'
-  - 'work item listener started'
   - '== APP == RetryN  1'
   - '== APP == RetryN  2'
   - '== APP == RetryN  3'
@@ -54,7 +52,7 @@ dapr run --app-id workflow-taskexecutionid \
   - '== APP == RetryN  2'
   - '== APP == RetryN  3'
   - '== APP == RetryN  4'
-  - '== APP == workflow status: COMPLETED'
+  - '== APP == workflow status: COMPELTED'
   - '== APP == workflow terminated'
   - '== APP == workflow purged'
 ```

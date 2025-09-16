@@ -8,6 +8,7 @@ replace github.com/dapr/go-sdk => ../
 
 require (
 	github.com/alecthomas/kingpin/v2 v2.4.0
+	github.com/dapr/durabletask-go v0.10.0
 	github.com/dapr/go-sdk v0.0.0-00010101000000-000000000000
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/google/uuid v1.6.0
@@ -21,7 +22,6 @@ require (
 	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/dapr/dapr v1.16.0 // indirect
-	github.com/dapr/durabletask-go v0.9.0 // indirect
 	github.com/dapr/kit v0.16.1 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/go-chi/chi/v5 v5.2.2 // indirect

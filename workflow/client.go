@@ -132,6 +132,7 @@ func WithDaprClient(input dapr.Client) clientOption {
 // TODO: Implement mocks
 
 // NewClient returns a workflow client.
+// Deprecated: Please use the workflow client (github.com/dapr/durabletask-go/workflow).
 func NewClient(opts ...clientOption) (*Client, error) {
 	options := new(clientOptions)
 	for _, configure := range opts {

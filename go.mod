@@ -6,7 +6,7 @@ toolchain go1.24.7
 
 require (
 	github.com/dapr/dapr v1.16.0
-	github.com/dapr/durabletask-go v0.9.0
+	github.com/dapr/durabletask-go v0.10.0
 	github.com/dapr/kit v0.16.1
 	github.com/go-chi/chi/v5 v5.2.2
 	github.com/golang/mock v1.6.0
