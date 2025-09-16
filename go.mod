@@ -5,7 +5,7 @@ go 1.24.6
 toolchain go1.24.7
 
 require (
-	github.com/dapr/dapr v1.16.0-rc.8
+	github.com/dapr/dapr v1.16.0
 	github.com/dapr/durabletask-go v0.9.0
 	github.com/dapr/kit v0.16.1
 	github.com/go-chi/chi/v5 v5.2.2
