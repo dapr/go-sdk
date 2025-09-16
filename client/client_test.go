@@ -538,6 +538,22 @@ func (s *testDaprServer) DeleteJobAlpha1(ctx context.Context, in *pb.DeleteJobRe
 	return &pb.DeleteJobResponse{}, nil
 }
 
+// TODO: remove in 1.17
+//
+//nolint:staticcheck
+func (s *testDaprServer) ConverseAlpha1(ctx context.Context, in *pb.ConversationRequest) (*pb.ConversationResponse,
+	error,
+) {
+	return &pb.ConversationResponse{}, nil
+}
+
+func (s *testDaprServer) ConverseAlpha2(ctx context.Context, in *pb.ConversationRequestAlpha2) (*pb.
+	ConversationResponseAlpha2,
+	error,
+) {
+	return &pb.ConversationResponseAlpha2{}, nil
+}
+
 func TestGrpcClient(t *testing.T) {
 	protoClient := pb.NewDaprClient(nil)
 	client := &GRPCClient{protoClient: protoClient}
