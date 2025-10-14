@@ -3,6 +3,9 @@ module github.com/dapr/go-sdk
 go 1.24.4
 
 require (
+	buf.build/gen/go/johansja/dapr/connectrpc/go v1.19.1-00000000000000-bd06fb5ac098.2
+	buf.build/gen/go/johansja/dapr/protocolbuffers/go v1.36.10-00000000000000-bd06fb5ac098.1
+	connectrpc.com/connect v1.19.1
 	github.com/dapr/dapr v1.16.0-rc.3
 	github.com/dapr/durabletask-go v0.7.3-0.20250711135247-7a35af6fe0e5
 	github.com/dapr/kit v0.15.4
@@ -11,7 +14,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/stretchr/testify v1.10.0
 	google.golang.org/grpc v1.73.0
-	google.golang.org/protobuf v1.36.6
+	google.golang.org/protobuf v1.36.10
 	gopkg.in/yaml.v3 v3.0.1
 )
 
