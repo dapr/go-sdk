@@ -21,8 +21,8 @@ import (
 	"mime"
 	"strings"
 
-	runtimev1 "buf.build/gen/go/johansja/dapr/protocolbuffers/go/dapr/proto/runtime/v1"
 	"connectrpc.com/connect"
+	runtimev1 "github.com/dapr/dapr/pkg/proto/runtime/v1"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/emptypb"
 

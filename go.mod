@@ -1,14 +1,12 @@
 module github.com/dapr/go-sdk
 
-go 1.24.4
+go 1.24.6
 
 require (
-	buf.build/gen/go/johansja/dapr/connectrpc/go v1.19.1-00000000000000-bd06fb5ac098.2
-	buf.build/gen/go/johansja/dapr/protocolbuffers/go v1.36.10-00000000000000-bd06fb5ac098.1
 	connectrpc.com/connect v1.19.1
 	github.com/dapr/dapr v1.16.0-rc.3
-	github.com/dapr/durabletask-go v0.7.3-0.20250711135247-7a35af6fe0e5
-	github.com/dapr/kit v0.15.4
+	github.com/dapr/durabletask-go v0.10.1
+	github.com/dapr/kit v0.16.1
 	github.com/go-chi/chi/v5 v5.2.2
 	github.com/golang/mock v1.6.0
 	github.com/google/uuid v1.6.0
@@ -24,7 +22,6 @@ require (
 	github.com/go-logr/logr v1.4.2 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
-	github.com/sirupsen/logrus v1.9.3 // indirect
 	go.opentelemetry.io/auto/sdk v1.1.0 // indirect
 	go.opentelemetry.io/otel v1.36.0 // indirect
 	go.opentelemetry.io/otel/metric v1.36.0 // indirect
@@ -33,5 +30,6 @@ require (
 	golang.org/x/sys v0.33.0 // indirect
 	golang.org/x/text v0.26.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250603155806-513f23925822 // indirect
-	k8s.io/utils v0.0.0-20250502105355-0f33e8f1c979 // indirect
 )
+
+replace github.com/dapr/dapr => github.com/johansja/dapr v1.16.2-johansja

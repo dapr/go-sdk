@@ -6,8 +6,9 @@ import (
 	"fmt"
 	"strings"
 
-	runtimev1 "buf.build/gen/go/johansja/dapr/protocolbuffers/go/dapr/proto/runtime/v1"
 	"connectrpc.com/connect"
+	runtimev1 "github.com/dapr/dapr/pkg/proto/runtime/v1"
+
 	"github.com/dapr/go-sdk/service/common"
 )
 
@@ -25,7 +26,7 @@ func (s *Server) AddJobEventHandler(name string, fn common.JobEventHandler) erro
 	return nil
 }
 
-// OnJobEvent is invoked by the sidecar following a scheduled job registered in
+// OnJobEventAlpha1 is invoked by the sidecar following a scheduled job registered in
 // the scheduler
 func (s *Server) OnJobEventAlpha1(ctx context.Context, in *connect.Request[runtimev1.JobEventRequest]) (*connect.Response[runtimev1.JobEventResponse], error) {
 	// parse the job type from the method or name

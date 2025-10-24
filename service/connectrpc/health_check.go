@@ -17,10 +17,11 @@ import (
 	"context"
 	"errors"
 
-	runtimev1 "buf.build/gen/go/johansja/dapr/protocolbuffers/go/dapr/proto/runtime/v1"
 	"connectrpc.com/connect"
-	"github.com/dapr/go-sdk/service/common"
+	runtimev1 "github.com/dapr/dapr/pkg/proto/runtime/v1"
 	"google.golang.org/protobuf/types/known/emptypb"
+
+	"github.com/dapr/go-sdk/service/common"
 )
 
 // AddHealthCheckHandler appends provided app health check handler.

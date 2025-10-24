@@ -14,50 +14,43 @@ limitations under the License.
 package connectrpc
 
 import (
+	"errors"
+	"net/http"
 	"testing"
-
-	"github.com/stretchr/testify/require"
+	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
-// func TestServer(t *testing.T) {
-// 	server := getTestServer()
-// 	startTestServer(server)
-// 	stopTestServer(t, server)
-// }
+func TestStoppingUnstartedService(t *testing.T) {
+	s := newService("", nil)
+	assert.NotNil(t, s)
+	err := s.Stop()
+	require.NoError(t, err)
+}
 
-// func TestServerWithListener(t *testing.T) {
-// 	server := NewServiceWithListener(bufconn.Listen(1024 * 1024))
-// 	assert.NotNil(t, server)
-// }
+func TestStoppingStartedService(t *testing.T) {
+	s := newService(":3333", nil)
+	assert.NotNil(t, s)
 
-// func TestServerWithGrpcServer(t *testing.T) {
-// 	grpcServer := grpc.NewServer()
-// 	server := NewServiceWithGrpcServer(bufconn.Listen(1024*1024), grpcServer)
-// 	assert.NotNil(t, server)
-// }
+	go func() {
+		if err := s.Start(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			panic(err)
+		}
+	}()
+	// Wait for the server to start
+	time.Sleep(200 * time.Millisecond)
+	require.NoError(t, s.Stop())
+}
 
-// func TestService(t *testing.T) {
-// 	_ := NewService("")
-// }
+func TestStartingStoppedService(t *testing.T) {
+	s := newService(":3333", nil)
+	assert.NotNil(t, s)
+	stopErr := s.Stop()
+	require.NoError(t, stopErr)
 
-// func getTestServer() *Server {
-// 	return newService(bufconn.Listen(1024*1024), nil)
-// }
-
-// func startTestServer(server *Server) {
-// 	go func() {
-// 		if err := server.Start(); err != nil && err.Error() != "closed" {
-// 			panic(err)
-// 		}
-// 	}()
-// }
-
-func stopTestServer(t *testing.T, server *Server) {
-	t.Helper()
-
-	assert.NotNil(t, server)
-	err := server.Stop()
-	require.NoErrorf(t, err, "error stopping server")
+	startErr := s.Start()
+	require.Error(t, startErr, "expected starting a stopped server to raise an error")
+	assert.Equal(t, startErr.Error(), http.ErrServerClosed.Error())
 }

@@ -18,8 +18,8 @@ import (
 	"errors"
 	"fmt"
 
-	commonv1 "buf.build/gen/go/johansja/dapr/protocolbuffers/go/dapr/proto/common/v1"
 	"connectrpc.com/connect"
+	commonv1 "github.com/dapr/dapr/pkg/proto/common/v1"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/anypb"
 

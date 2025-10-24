@@ -18,11 +18,10 @@ import (
 	"errors"
 	"testing"
 
-	runtimev1 "buf.build/gen/go/johansja/dapr/protocolbuffers/go/dapr/proto/runtime/v1"
 	"connectrpc.com/connect"
-	"github.com/stretchr/testify/require"
-
+	runtimev1 "github.com/dapr/dapr/pkg/proto/runtime/v1"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"google.golang.org/protobuf/types/known/emptypb"
 
 	"github.com/dapr/go-sdk/service/common"
@@ -64,7 +63,6 @@ func TestBinding(t *testing.T) {
 	server := newService("", nil)
 	err := server.AddBindingInvocationHandler(methodName, testBindingHandler)
 	require.NoError(t, err)
-	// startTestServer(server)
 
 	t.Run("binding without event", func(t *testing.T) {
 		_, err := server.OnBindingEvent(ctx, nil)
@@ -105,6 +103,4 @@ func TestBinding(t *testing.T) {
 		require.NoError(t, err)
 		assert.NotNil(t, out)
 	})
-
-	stopTestServer(t, server)
 }

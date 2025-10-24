@@ -40,7 +40,6 @@ func TestHealthCheck(t *testing.T) {
 	ctx := t.Context()
 
 	server := newService("", nil)
-	// startTestServer(server)
 
 	t.Run("health check without handler", func(t *testing.T) {
 		_, err := server.HealthCheck(ctx, nil)
@@ -62,6 +61,4 @@ func TestHealthCheck(t *testing.T) {
 		_, err = server.HealthCheck(ctx, nil)
 		require.Error(t, err)
 	})
-
-	stopTestServer(t, server)
 }

@@ -19,11 +19,10 @@ import (
 	"os"
 	"testing"
 
-	commonv1 "buf.build/gen/go/johansja/dapr/protocolbuffers/go/dapr/proto/common/v1"
 	"connectrpc.com/connect"
-	"github.com/stretchr/testify/require"
-
+	commonv1 "github.com/dapr/dapr/pkg/proto/common/v1"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/anypb"
 
@@ -60,7 +59,6 @@ func TestInvokeErrors(t *testing.T) {
 func TestInvokeWithToken(t *testing.T) {
 	t.Setenv(cc.AppAPITokenEnvVar, "app-dapr-token")
 	server := newService("", nil)
-	// startTestServer(server)
 	methodName := "test"
 	err := server.AddServiceInvocationHandler(methodName, testInvokeHandler)
 	require.NoError(t, err)
@@ -103,8 +101,6 @@ func TestInvoke(t *testing.T) {
 	err = server.AddServiceInvocationHandler(methodNameWithError, testInvokeHandlerWithError)
 	require.NoError(t, err)
 
-	// startTestServer(server)
-
 	t.Run("invoke without request", func(t *testing.T) {
 		_, err := server.OnInvoke(ctx, nil)
 		require.Error(t, err)
@@ -144,6 +140,4 @@ func TestInvoke(t *testing.T) {
 		_, err := server.OnInvoke(ctx, in)
 		require.Error(t, err)
 	})
-
-	stopTestServer(t, server)
 }

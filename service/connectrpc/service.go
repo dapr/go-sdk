@@ -21,12 +21,13 @@ import (
 	"sync/atomic"
 	"time"
 
-	"buf.build/gen/go/johansja/dapr/connectrpc/go/dapr/proto/runtime/v1/runtimev1connect"
+	"github.com/dapr/dapr/pkg/proto/runtime/v1/runtimeconnect"
+	"github.com/go-chi/chi/v5"
+
 	"github.com/dapr/go-sdk/actor"
 	"github.com/dapr/go-sdk/actor/config"
 	"github.com/dapr/go-sdk/service/common"
 	"github.com/dapr/go-sdk/service/internal"
-	"github.com/go-chi/chi/v5"
 )
 
 // NewService creates new Service.
@@ -54,13 +55,14 @@ func newService(address string, router *chi.Mux) *Server {
 			Addr:    address,
 			Handler: router,
 		},
+		mux: router,
 	}
 
-	path, handler := runtimev1connect.NewAppCallbackHandler(s)
+	path, handler := runtimeconnect.NewAppCallbackHandler(s)
 	router.Handle(path+"*", handler)
-	path, handler = runtimev1connect.NewAppCallbackAlphaHandler(s)
+	path, handler = runtimeconnect.NewAppCallbackAlphaHandler(s)
 	router.Handle(path+"*", handler)
-	path, handler = runtimev1connect.NewAppCallbackHealthCheckHandler(s)
+	path, handler = runtimeconnect.NewAppCallbackHealthCheckHandler(s)
 	router.Handle(path+"*", handler)
 
 	return s
@@ -68,8 +70,8 @@ func newService(address string, router *chi.Mux) *Server {
 
 // Server is the gRPC service implementation for Dapr.
 type Server struct {
-	runtimev1connect.UnimplementedAppCallbackHandler
-	runtimev1connect.UnimplementedAppCallbackHealthCheckHandler
+	runtimeconnect.UnimplementedAppCallbackHandler
+	runtimeconnect.UnimplementedAppCallbackHealthCheckHandler
 	invokeHandlers     map[string]common.ServiceInvocationHandler
 	topicRegistrar     internal.TopicRegistrar
 	bindingHandlers    map[string]common.BindingInvocationHandler
@@ -78,6 +80,7 @@ type Server struct {
 	authToken          string
 	started            uint32
 	httpServer         *http.Server
+	mux                *chi.Mux
 }
 
 // Deprecated: Use RegisterActorImplFactoryContext instead.
@@ -109,7 +112,7 @@ func (s *Server) Stop() error {
 	return s.httpServer.Shutdown(ctxShutDown)
 }
 
-// GrecefulStop stops the previously-started service gracefully.
+// GracefulStop stops the previously-started service gracefully.
 func (s *Server) GracefulStop() error {
 	return s.Stop()
 }

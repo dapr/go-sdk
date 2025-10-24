@@ -18,15 +18,13 @@ import (
 	"errors"
 	"testing"
 
-	runtimev1 "buf.build/gen/go/johansja/dapr/protocolbuffers/go/dapr/proto/runtime/v1"
 	"connectrpc.com/connect"
+	"github.com/dapr/dapr/pkg/proto/runtime/v1"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc/metadata"
-
-	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/types/known/emptypb"
 
-	"github.com/dapr/dapr/pkg/proto/runtime/v1"
 	"github.com/dapr/go-sdk/service/common"
 )
 
@@ -115,7 +113,7 @@ func TestTopic(t *testing.T) {
 	})
 
 	t.Run("topic event for wrong topic", func(t *testing.T) {
-		in := connect.NewRequest(&runtimev1.TopicEventRequest{
+		in := connect.NewRequest(&runtime.TopicEventRequest{
 			Topic: "invalid",
 		})
 		_, err := server.OnTopicEvent(ctx, in)
@@ -123,7 +121,7 @@ func TestTopic(t *testing.T) {
 	})
 
 	t.Run("topic event for valid topic", func(t *testing.T) {
-		in := connect.NewRequest(&runtimev1.TopicEventRequest{
+		in := connect.NewRequest(&runtime.TopicEventRequest{
 			Id:              "a123",
 			Source:          "test",
 			Type:            "test",
@@ -148,7 +146,7 @@ func TestTopic(t *testing.T) {
 		})
 		require.NoError(t, err)
 
-		in := connect.NewRequest(&runtimev1.TopicEventRequest{
+		in := connect.NewRequest(&runtime.TopicEventRequest{
 			Id:              "a123",
 			Source:          "test",
 			Type:            "test",
@@ -162,8 +160,6 @@ func TestTopic(t *testing.T) {
 		_, err = server.OnTopicEvent(ctx, in)
 		require.NoError(t, err)
 	})
-
-	stopTestServer(t, server)
 }
 
 func TestTopicWithValidationDisabled(t *testing.T) {
@@ -179,7 +175,7 @@ func TestTopicWithValidationDisabled(t *testing.T) {
 	err := server.AddTopicEventHandler(sub, eventHandler)
 	require.NoError(t, err)
 
-	in := connect.NewRequest(&runtimev1.TopicEventRequest{
+	in := connect.NewRequest(&runtime.TopicEventRequest{
 		Id:              "a123",
 		Source:          "test",
 		Type:            "test",
@@ -215,7 +211,7 @@ func TestTopicWithErrors(t *testing.T) {
 	require.NoError(t, err)
 
 	t.Run("topic event for retry error", func(t *testing.T) {
-		in := connect.NewRequest(&runtimev1.TopicEventRequest{
+		in := connect.NewRequest(&runtime.TopicEventRequest{
 			Id:              "a123",
 			Source:          "test",
 			Type:            "test",
@@ -231,7 +227,7 @@ func TestTopicWithErrors(t *testing.T) {
 	})
 
 	t.Run("topic event for error", func(t *testing.T) {
-		in := connect.NewRequest(&runtimev1.TopicEventRequest{
+		in := connect.NewRequest(&runtime.TopicEventRequest{
 			Id:              "a123",
 			Source:          "test",
 			Type:            "test",
@@ -245,8 +241,6 @@ func TestTopicWithErrors(t *testing.T) {
 		require.NoError(t, err)
 		assert.Equal(t, runtime.TopicEventResponse_DROP, resp.Msg.GetStatus())
 	})
-
-	stopTestServer(t, server)
 }
 
 func eventHandler(ctx context.Context, event *common.TopicEvent) (retry bool, err error) {
@@ -320,7 +314,7 @@ func TestEventDataHandling(t *testing.T) {
 
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			in := connect.NewRequest(&runtimev1.TopicEventRequest{
+			in := connect.NewRequest(&runtime.TopicEventRequest{
 				Id:              "a123",
 				Source:          "test",
 				Type:            "test",
