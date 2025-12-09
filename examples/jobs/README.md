@@ -1,4 +1,4 @@
-# Dapr Distributed Scheduler Example with go-sdk
+# Dapr Jobs Example with go-sdk
 
 ## Steps
 
@@ -6,10 +6,10 @@
 
 - Dapr installed (v1.14 or higher)
 
-### Run Distributed Scheduling Example
+### Run Jobs Example
 
 <!-- STEP
-name: Run Distributed Scheduling Example
+name: Run Jobs Example
 output_match_mode: substring
 expected_stdout_lines:
   - 'Scheduler stream connected'
@@ -20,7 +20,7 @@ expected_stdout_lines:
   - 'payload: {db-backup {my-prod-db /backup-dir}}'
   - 'job 2 received'
   - 'payload: {db-backup {my-prod-db /backup-dir}}'
-  - 'getjob - resp: &{prod-db-backup @every 1s 10   value:"{\"task\":\"db-backup\",\"metadata\":{\"db_name\":\"my-prod-db\",\"backup_location\":\"/backup-dir\"}}"}'
+  - 'getjob - resp: Name: prod-db-backup, Schedule: @every 1s, Repeats: 10, DueTime: , TTL: , Data: value:"{\"task\":\"db-backup\",\"metadata\":{\"db_name\":\"my-prod-db\",\"backup_location\":\"/backup-dir\"}}"'
   - 'deletejob - success'
 
 background: true
@@ -29,7 +29,7 @@ sleep: 30
 -->
 
 ```bash
-         dapr run --app-id=distributed-scheduler \
+         dapr run --app-id=jobs \
                 --metrics-port=9091 \
                 --scheduler-host-address=localhost:50006 \
                 --dapr-grpc-port 50001 \

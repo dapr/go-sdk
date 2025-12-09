@@ -14,7 +14,6 @@ limitations under the License.
 package client
 
 import (
-	"context"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -29,7 +28,7 @@ const (
 )
 
 func TestLock(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 
 	t.Run("try lock invalid store name", func(t *testing.T) {
 		r, err := testClient.TryLockAlpha1(ctx, "", &LockRequest{})

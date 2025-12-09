@@ -67,21 +67,21 @@ func TestInvokeWithToken(t *testing.T) {
 		grpcMetadata := metadata.New(map[string]string{
 			cc.APITokenKey: os.Getenv(cc.AppAPITokenEnvVar),
 		})
-		ctx := metadata.NewIncomingContext(context.Background(), grpcMetadata)
+		ctx := metadata.NewIncomingContext(t.Context(), grpcMetadata)
 		in := &common.InvokeRequest{Method: methodName}
 		_, err := server.OnInvoke(ctx, in)
 		require.NoError(t, err)
 	})
 	t.Run("invoke with empty token, return failed", func(t *testing.T) {
 		in := &common.InvokeRequest{Method: methodName}
-		_, err := server.OnInvoke(context.Background(), in)
+		_, err := server.OnInvoke(t.Context(), in)
 		require.Error(t, err)
 	})
 	t.Run("invoke with mismatch token, return failed", func(t *testing.T) {
 		grpcMetadata := metadata.New(map[string]string{
 			cc.APITokenKey: "mismatch-token",
 		})
-		ctx := metadata.NewOutgoingContext(context.Background(), grpcMetadata)
+		ctx := metadata.NewOutgoingContext(t.Context(), grpcMetadata)
 		in := &common.InvokeRequest{Method: methodName}
 		_, err := server.OnInvoke(ctx, in)
 		require.Error(t, err)
@@ -93,7 +93,7 @@ func TestInvokeWithToken(t *testing.T) {
 func TestInvoke(t *testing.T) {
 	methodName := "test"
 	methodNameWithError := "error"
-	ctx := context.Background()
+	ctx := t.Context()
 
 	server := getTestServer()
 	err := server.AddServiceInvocationHandler("/"+methodName, testInvokeHandler)

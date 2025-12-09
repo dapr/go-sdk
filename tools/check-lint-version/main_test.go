@@ -28,7 +28,7 @@ func TestParseWorkflow(t *testing.T) {
 
 	t.Run("parse testing workflow file", func(t *testing.T) {
 		parsedVersion, err := parseWorkflowVersionFromFile("../../.github/workflows/test-tooling.yml")
-		assert.Equal(t, "v1.61.0", parsedVersion)
+		assert.Equal(t, "v1.64.6", parsedVersion)
 		require.NoError(t, err)
 	})
 }
@@ -36,7 +36,7 @@ func TestParseWorkflow(t *testing.T) {
 func TestGetCurrentVersion(t *testing.T) {
 	t.Run("get current version from system", func(t *testing.T) {
 		currentVersion, err := getCurrentVersion()
-		assert.Equal(t, "v1.61.0", currentVersion)
+		assert.Equal(t, "v1.64.6", currentVersion)
 		require.NoError(t, err)
 	})
 
@@ -49,23 +49,23 @@ func TestGetCurrentVersion(t *testing.T) {
 
 func TestIsVersionValid(t *testing.T) {
 	t.Run("compare versions - exactly equal to", func(t *testing.T) {
-		assert.True(t, true, isVersionValid("v1.54.2", "v1.54.2"))
+		assert.True(t, isVersionValid("v1.54.2", "v1.54.2"))
 	})
 
 	t.Run("compare versions - patch version greater (workflow)", func(t *testing.T) {
-		assert.True(t, true, isVersionValid("v1.54.3", "v1.54.2"))
+		assert.True(t, isVersionValid("v1.54.3", "v1.54.2"))
 	})
 
 	t.Run("compare versions - patch version greater (installed)", func(t *testing.T) {
-		assert.True(t, true, isVersionValid("v1.54.2", "v1.54.3"))
+		assert.True(t, isVersionValid("v1.54.2", "v1.54.3"))
 	})
 
 	t.Run("compare versions - invalid (installed)", func(t *testing.T) {
-		assert.False(t, false, isVersionValid("v1.54.2", "v1.52.2"))
+		assert.False(t, isVersionValid("v1.54.2", "v1.52.2"))
 	})
 
 	t.Run("compare versions - invalid (workflow)", func(t *testing.T) {
-		assert.False(t, false, isVersionValid("v1.52.2", "v1.54.2"))
+		assert.False(t, isVersionValid("v1.52.2", "v1.54.2"))
 	})
 }
 

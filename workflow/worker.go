@@ -64,22 +64,29 @@ func NewWorker(opts ...workerOption) (*WorkflowWorker, error) {
 			return nil, errors.New("failed to load options")
 		}
 	}
-	var daprClient dapr.Client
-	var err error
-	if options.daprClient == nil {
-		daprClient, err = dapr.NewClient()
-	} else {
+
+	var (
+		daprClient dapr.Client
+		err        error
+		closeFunc  = func() {}
+	)
+
+	if options.daprClient != nil {
 		daprClient = options.daprClient
+	} else {
+		if daprClient, err = dapr.NewClient(); err != nil {
+			return nil, err
+		}
+
+		closeFunc = daprClient.Close
 	}
-	if err != nil {
-		return nil, err
-	}
+
 	grpcConn := daprClient.GrpcClientConn()
 
 	return &WorkflowWorker{
 		tasks:  task.NewTaskRegistry(),
 		client: durabletaskclient.NewTaskHubGrpcClient(grpcConn, backend.DefaultLogger()),
-		close:  daprClient.Close,
+		close:  closeFunc,
 	}, nil
 }
 
