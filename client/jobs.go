@@ -160,9 +160,6 @@ func (c *GRPCClient) ScheduleJobAlpha1(ctx context.Context, job *Job) error {
 	if job.Name == "" {
 		return errors.New("job name is required")
 	}
-	if job.Data == nil {
-		return errors.New("job data is required")
-	}
 
 	jobRequest := &runtimepb.Job{
 		Name:     job.Name,
