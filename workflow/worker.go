@@ -57,6 +57,7 @@ func WorkerWithDaprClient(input dapr.Client) workerOption {
 }
 
 // NewWorker returns a worker that can interface with the workflow engine
+// Deprecated: Please use the workflow client (github.com/dapr/durabletask-go/client).
 func NewWorker(opts ...workerOption) (*WorkflowWorker, error) {
 	options := new(workerOptions)
 	for _, configure := range opts {

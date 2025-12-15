@@ -94,75 +94,71 @@ Workflows and their activities can be authored and managed using the Dapr Go SDK
 
 ```go
 import (
-...
-"github.com/dapr/go-sdk/workflow"
-...
+	"context"
+	"fmt"
+	"log"
+
+	"github.com/dapr/durabletask-go/workflow"
+	dapr "github.com/dapr/go-sdk/client"
 )
 
 func ExampleWorkflow(ctx *workflow.WorkflowContext) (any, error) {
-    var output string
-    input := "world"
+	var output string
+	input := "world"
 
-    if err := ctx.CallActivity(ExampleActivity, workflow.ActivityInput(input)).Await(&output); err != nil {
-        return nil, err
-    }
+	if err := ctx.CallActivity(ExampleActivity, workflow.WithActivityInput(input)).Await(&output); err != nil {
+		return nil, err
+	}
 
-    // Print output - "hello world"
-    fmt.Println(output)
+	// Print output - "hello world"
+	fmt.Println(output)
 
-    return nil, nil
+	return nil, nil
 }
 
 func ExampleActivity(ctx workflow.ActivityContext) (any, error) {
-    var input int
-    if err := ctx.GetInput(&input); err != nil {
-        return "", err
-    }
+	var input int
+	if err := ctx.GetInput(&input); err != nil {
+		return "", err
+	}
 
-    return fmt.Sprintf("hello %s", input), nil
+	return fmt.Sprintf("hello %s", input), nil
 }
 
 func main() {
-    // Create a workflow worker
-    w, err := workflow.NewWorker()
-    if err != nil {
-        log.Fatalf("error creating worker: %v", err)
-    }
+	r := workflow.NewRegistry()
 
-    // Register the workflow
-    w.RegisterWorkflow(ExampleWorkflow)
+	// Register the workflow
+	r.AddWorkflow(ExampleWorkflow)
 
-    // Register the activity
-    w.RegisterActivity(ExampleActivity)
+	// Register the activity
+	r.AddActivity(ExampleActivity)
 
-    // Start workflow runner
-    if err := w.Start(); err != nil {
-        log.Fatal(err)
-    }
+	client, err := dapr.NewWorkflowClient()
+	if err != nil {
+		log.Fatal(err)
+	}
 
-    // Create a workflow client
-    wfClient, err := workflow.NewClient()
-    if err != nil {
-        log.Fatal(err)
-    }
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	if err := client.StartWorker(ctx, r); err != nil {
+		log.Fatal(err)
+	}
 
-    // Start a new workflow
-    id, err := wfClient.ScheduleNewWorkflow(context.Background(), "ExampleWorkflow")
-    if err != nil {
-        log.Fatal(err)
-    }
+	// Start a new workflow
+	id, err := client.ScheduleWorkflow(ctx, "ExampleWorkflow")
+	if err != nil {
+		log.Fatal(err)
+	}
 
-    // Wait for the workflow to complete
-    metadata, err := wfClient.WaitForWorkflowCompletion(ctx, id)
-    if err != nil {
-        log.Fatal(err)
-    }
+	// Wait for the workflow to complete
+	metadata, err := client.WaitForWorkflowCompletion(ctx, id)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-    // Print workflow status post-completion
-    fmt.Println(metadata.RuntimeStatus)
-
-    // Shutdown Worker
-    w.Shutdown()
+	// Print workflow status post-completion
+	fmt.Println(metadata.String())
 }
 ```
 
@@ -335,7 +331,7 @@ For a full guide on pub/sub, visit [How-To: Publish & subscribe]({{% ref howto-p
 You can create [workflows]({{% ref workflow-overview.md %}}) using the Go SDK. For example, start with a simple workflow activity:
 
 ```go
-func TestActivity(ctx workflow.ActivityContext) (any, error) {
+func TestActivity(ctx task.ActivityContext) (any, error) {
 	var input int
 	if err := ctx.GetInput(&input); err != nil {
 		return "", err
