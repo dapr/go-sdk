@@ -30,6 +30,7 @@ type ActorContainer interface {
 	Invoke(methodName string, param []byte) ([]reflect.Value, actorErr.ActorErr)
 	//nolint:staticcheck // SA1019 Deprecated: use ActorContainerContext instead.
 	GetActor() actor.Server
+	Deactivate() error
 }
 
 type ActorContainerContext interface {
@@ -80,8 +81,12 @@ func NewDefaultActorContainerContext(ctx context.Context, actorID string, impl a
 	daprClient, _ := dapr.NewClient()
 	// create state manager for this new actor
 	impl.SetStateManager(state.NewActorStateManagerContext(impl.Type(), actorID, state.NewDaprStateAsyncProvider(daprClient)))
+  	err := impl.Activate()
+	if err != nil {
+		return nil, actorErr.ErrSaveStateFailed
+	}
 	// save state of this actor
-	err := impl.SaveState(ctx)
+	err = impl.SaveState(ctx)
 	if err != nil {
 		return nil, actorErr.ErrSaveStateFailed
 	}
@@ -116,6 +121,10 @@ func (d *DefaultActorContainerContext) Invoke(ctx context.Context, methodName st
 	}
 	returnValue := methodType.method.Func.Call(argsValues)
 	return returnValue, actorErr.Success
+}
+
+func (d *DefaultActorContainer) Deactivate() error {
+	return d.actor.Deactivate()
 }
 
 func (d *DefaultActorContainerContext) GetActor() actor.ServerContext {
