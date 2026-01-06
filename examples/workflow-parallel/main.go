@@ -6,56 +6,58 @@ import (
 	"log"
 	"time"
 
-	"github.com/dapr/go-sdk/workflow"
+	"github.com/dapr/durabletask-go/workflow"
+	"github.com/dapr/go-sdk/client"
 )
 
 func main() {
-	w, err := workflow.NewWorker()
-	if err != nil {
-		log.Fatalf("failed to initialise worker: %v", err)
-	}
+	r := workflow.NewRegistry()
 
-	if err := w.RegisterWorkflow(BatchProcessingWorkflow); err != nil {
+	if err := r.AddWorkflow(BatchProcessingWorkflow); err != nil {
 		log.Fatalf("failed to register workflow: %v", err)
 	}
-	if err := w.RegisterActivity(GetWorkBatch); err != nil {
+	if err := r.AddActivity(GetWorkBatch); err != nil {
 		log.Fatalf("failed to register activity: %v", err)
 	}
-	if err := w.RegisterActivity(ProcessWorkItem); err != nil {
+	if err := r.AddActivity(ProcessWorkItem); err != nil {
 		log.Fatalf("failed to register activity: %v", err)
 	}
-	if err := w.RegisterActivity(ProcessResults); err != nil {
+	if err := r.AddActivity(ProcessResults); err != nil {
 		log.Fatalf("failed to register activity: %v", err)
 	}
 	fmt.Println("Workflow(s) and activities registered.")
 
-	if err := w.Start(); err != nil {
-		log.Fatalf("failed to start worker")
+	wclient, err := client.NewWorkflowClient()
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println("Worker initialized")
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	if err = wclient.StartWorker(ctx, r); err != nil {
+		log.Fatal(err)
 	}
 
-	wfClient, err := workflow.NewClient()
-	if err != nil {
-		log.Fatalf("failed to initialise client: %v", err)
-	}
-	ctx := context.Background()
-	id, err := wfClient.ScheduleNewWorkflow(ctx, "BatchProcessingWorkflow", workflow.WithInput(10))
+	id, err := wclient.ScheduleWorkflow(ctx, "BatchProcessingWorkflow", workflow.WithInput(10))
 	if err != nil {
 		log.Fatalf("failed to schedule a new workflow: %v", err)
 	}
 
-	metadata, err := wfClient.WaitForWorkflowCompletion(ctx, id)
+	metadata, err := wclient.WaitForWorkflowCompletion(ctx, id)
 	if err != nil {
 		log.Fatalf("failed to get workflow: %v", err)
 	}
-	fmt.Printf("workflow status: %s\n", metadata.RuntimeStatus.String())
+	fmt.Printf("workflow status: %s\n", metadata.String())
 
-	err = wfClient.TerminateWorkflow(ctx, id)
+	err = wclient.TerminateWorkflow(ctx, id)
 	if err != nil {
 		log.Fatalf("failed to terminate workflow: %v", err)
 	}
 	fmt.Println("workflow terminated")
 
-	err = wfClient.PurgeWorkflow(ctx, id)
+	err = wclient.PurgeWorkflowState(ctx, id)
 	if err != nil {
 		log.Fatalf("failed to purge workflow: %v", err)
 	}
@@ -69,13 +71,13 @@ func BatchProcessingWorkflow(ctx *workflow.WorkflowContext) (any, error) {
 	}
 
 	var workBatch []int
-	if err := ctx.CallActivity(GetWorkBatch, workflow.ActivityInput(input)).Await(&workBatch); err != nil {
+	if err := ctx.CallActivity(GetWorkBatch, workflow.WithActivityInput(input)).Await(&workBatch); err != nil {
 		return 0, err
 	}
 
-	parallelTasks := workflow.NewTaskSlice(len(workBatch))
+	parallelTasks := make([]workflow.Task, len(workBatch))
 	for i, workItem := range workBatch {
-		parallelTasks[i] = ctx.CallActivity(ProcessWorkItem, workflow.ActivityInput(workItem))
+		parallelTasks[i] = ctx.CallActivity(ProcessWorkItem, workflow.WithActivityInput(workItem))
 	}
 
 	var outputs int
@@ -89,7 +91,7 @@ func BatchProcessingWorkflow(ctx *workflow.WorkflowContext) (any, error) {
 		}
 	}
 
-	if err := ctx.CallActivity(ProcessResults, workflow.ActivityInput(outputs)).Await(nil); err != nil {
+	if err := ctx.CallActivity(ProcessResults, workflow.WithActivityInput(outputs)).Await(nil); err != nil {
 		return 0, err
 	}
 

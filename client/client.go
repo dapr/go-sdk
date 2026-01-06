@@ -27,6 +27,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/dapr/durabletask-go/workflow"
 	"github.com/dapr/go-sdk/actor"
 	"github.com/dapr/go-sdk/actor/config"
 	"github.com/dapr/go-sdk/client/internal"
@@ -229,41 +230,6 @@ type Client interface {
 	// ImplActorClientStub is to impl user defined actor client stub
 	ImplActorClientStub(actorClientStub actor.Client, opt ...config.Option)
 
-	// StartWorkflowBeta1 starts a workflow.
-	// Deprecated: Please use the workflow client (github.com/dapr/go-sdk/workflow).
-	// These methods for managing workflows are no longer supported and will be removed in the 1.16 release.
-	StartWorkflowBeta1(ctx context.Context, req *StartWorkflowRequest) (*StartWorkflowResponse, error)
-
-	// GetWorkflowBeta1 gets a workflow.
-	// Deprecated: Please use the workflow client (github.com/dapr/go-sdk/workflow).
-	// These methods for managing workflows are no longer supported and will be removed in the 1.16 release.
-	GetWorkflowBeta1(ctx context.Context, req *GetWorkflowRequest) (*GetWorkflowResponse, error)
-
-	// PurgeWorkflowBeta1 purges a workflow.
-	// Deprecated: Please use the workflow client (github.com/dapr/go-sdk/workflow).
-	// These methods for managing workflows are no longer supported and will be removed in the 1.16 release.
-	PurgeWorkflowBeta1(ctx context.Context, req *PurgeWorkflowRequest) error
-
-	// TerminateWorkflowBeta1 terminates a workflow.
-	// Deprecated: Please use the workflow client (github.com/dapr/go-sdk/workflow).
-	// These methods for managing workflows are no longer supported and will be removed in the 1.16 release.
-	TerminateWorkflowBeta1(ctx context.Context, req *TerminateWorkflowRequest) error
-
-	// PauseWorkflowBeta1 pauses a workflow.
-	// Deprecated: Please use the workflow client (github.com/dapr/go-sdk/workflow).
-	// These methods for managing workflows are no longer supported and will be removed in the 1.16 release.
-	PauseWorkflowBeta1(ctx context.Context, req *PauseWorkflowRequest) error
-
-	// ResumeWorkflowBeta1 resumes a workflow.
-	// Deprecated: Please use the workflow client (github.com/dapr/go-sdk/workflow).
-	// These methods for managing workflows are no longer supported and will be removed in the 1.16 release.
-	ResumeWorkflowBeta1(ctx context.Context, req *ResumeWorkflowRequest) error
-
-	// RaiseEventWorkflowBeta1 raises an event for a workflow.
-	// Deprecated: Please use the workflow client (github.com/dapr/go-sdk/workflow).
-	// These methods for managing workflows are no longer supported and will be removed in the 1.16 release.
-	RaiseEventWorkflowBeta1(ctx context.Context, req *RaiseEventWorkflowRequest) error
-
 	// ScheduleJobAlpha1 creates and schedules a job.
 	ScheduleJobAlpha1(ctx context.Context, req *Job) error
 
@@ -275,6 +241,10 @@ type Client interface {
 
 	// ConverseAlpha1 interacts with a conversational AI model.
 	ConverseAlpha1(ctx context.Context, request conversationRequest, options ...conversationRequestOption) (*ConversationResponse, error)
+
+	// ConverseAlpha2 interacts with a conversational AI model.
+	ConverseAlpha2(ctx context.Context, request ConversationRequestAlpha2,
+		options ...conversationRequestOptionAlpha2) (*ConversationResponseAlpha2, error)
 
 	// GrpcClient returns the base grpc client if grpc is used and nil otherwise
 	GrpcClient() pb.DaprClient
@@ -321,6 +291,15 @@ func NewClient() (client Client, err error) {
 	defaultClient = c
 
 	return defaultClient, nil
+}
+
+func NewWorkflowClient() (*workflow.Client, error) {
+	dclient, err := NewClient()
+	if err != nil {
+		return nil, err
+	}
+
+	return workflow.NewClient(dclient.GrpcClientConn()), nil
 }
 
 // NewClientWithPort instantiates Dapr using specific gRPC port.

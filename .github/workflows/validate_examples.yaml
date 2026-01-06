@@ -38,9 +38,9 @@ jobs:
       CHECKOUT_REF: ${{ github.ref }}
     outputs:
       DAPR_INSTALL_URL: ${{ env.DAPR_INSTALL_URL }}
-      DAPR_CLI_VER: 1.16.0-rc.1
+      DAPR_CLI_VER: ${{ steps.outputs.outputs.DAPR_CLI_VER }}
       DAPR_CLI_REF: ${{ steps.outputs.outputs.DAPR_CLI_REF }}
-      DAPR_RUNTIME_VER: 1.16.0-rc.3
+      DAPR_RUNTIME_VER: ${{ steps.outputs.outputs.DAPR_RUNTIME_VER }}
       CHECKOUT_REPO: ${{ steps.outputs.outputs.CHECKOUT_REPO }}
       CHECKOUT_REF: ${{ steps.outputs.outputs.CHECKOUT_REF }}
       DAPR_REF: ${{ steps.outputs.outputs.DAPR_REF }}
@@ -164,7 +164,8 @@ jobs:
           [
             "actor",
             "configuration",
-            "conversation",
+            "conversation-alpha1",
+            "conversation-alpha2",
             "crypto",
             "jobs",
             "grpc-service",

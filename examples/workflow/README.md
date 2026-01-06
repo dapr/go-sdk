@@ -12,10 +12,10 @@
 name: Run Workflow
 output_match_mode: substring
 expected_stdout_lines:
-  - '== APP == Worker initialized'
   - '== APP == TestWorkflow registered'
   - '== APP == TestActivity registered'
   - '== APP == FailActivity registered'
+  - '== APP == Worker initialized'
   - '== APP == runner started'
   - '== APP == workflow started with id: a7a4168d-3a1c-41da-8a4f-e7f6d9c718d9'
   - '== APP == workflow paused'
@@ -51,9 +51,9 @@ dapr run --app-id workflow \
 ## Result
 
 ```
-  - '== APP == Worker initialized'
   - '== APP == TestWorkflow registered'
   - '== APP == TestActivity registered'
+  - '== APP == Worker initialized'
   - '== APP == runner started'
   - '== APP == workflow started with id: a7a4168d-3a1c-41da-8a4f-e7f6d9c718d9'
   - '== APP == workflow paused'
