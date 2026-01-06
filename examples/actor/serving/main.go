@@ -18,10 +18,12 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/dapr/go-sdk/actor"
 	dapr "github.com/dapr/go-sdk/client"
 	"github.com/dapr/go-sdk/examples/actor/api"
+	"github.com/dapr/kit/ptr"
 
 	daprd "github.com/dapr/go-sdk/service/http"
 )
@@ -74,6 +76,10 @@ func (t *TestActor) StartReminder(ctx context.Context, req *api.ReminderRequest)
 		DueTime:   req.Duration,
 		Period:    req.Period,
 		Data:      []byte(req.Data),
+		FailurePolicy: &dapr.JobFailurePolicyConstant{
+			MaxRetries: nil,
+			Interval:   ptr.Of(time.Second * 1),
+		},
 	})
 }
 
