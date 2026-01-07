@@ -23,6 +23,7 @@ import (
 
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/protobuf/types/known/emptypb"
+	"google.golang.org/protobuf/types/known/structpb"
 
 	runtimev1pb "github.com/dapr/dapr/pkg/proto/runtime/v1"
 	"github.com/dapr/go-sdk/service/common"
@@ -139,6 +140,8 @@ func (s *Server) OnTopicEvent(ctx context.Context, in *runtimev1pb.TopicEventReq
 			Topic:           in.GetTopic(),
 			PubsubName:      in.GetPubsubName(),
 			Metadata:        getCustomMetadataFromContext(ctx),
+			TraceID:         getStringValueFromExtension(in.GetExtensions(), "traceid"),
+			TraceParent:     getStringValueFromExtension(in.GetExtensions(), "traceparent"),
 		}
 		h := sub.DefaultHandler
 		if in.GetPath() != "" {
@@ -182,4 +185,19 @@ func getCustomMetadataFromContext(ctx context.Context) map[string]string {
 
 func (s *Server) OnBulkTopicEventAlpha1(ctx context.Context, in *runtimev1pb.TopicEventBulkRequest) (*runtimev1pb.TopicEventBulkResponse, error) {
 	panic("This API callback is not supported.")
+}
+
+func getStringValueFromExtension(extension *structpb.Struct, key string) string {
+	if extension == nil {
+		return ""
+	}
+	value, ok := extension.GetFields()[key]
+	if !ok {
+		return ""
+	}
+	typed, ok := value.GetKind().(*structpb.Value_StringValue)
+	if !ok {
+		return ""
+	}
+	return typed.StringValue
 }

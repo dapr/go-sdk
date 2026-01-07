@@ -25,6 +25,7 @@ import (
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/structpb"
 
 	pb "github.com/dapr/dapr/pkg/proto/runtime/v1"
 	"github.com/dapr/go-sdk/service/common"
@@ -195,6 +196,8 @@ func (s *Subscription) Receive() (*SubscriptionMessage, error) {
 			RawData:         event.GetData(),
 			Topic:           event.GetTopic(),
 			PubsubName:      event.GetPubsubName(),
+			TraceID:         getStringValueFromExtension(event.GetExtensions(), "traceid"),
+			TraceParent:     getStringValueFromExtension(event.GetExtensions(), "traceparent"),
 		}
 
 		return &SubscriptionMessage{
@@ -296,4 +299,19 @@ func (s *Subscription) closeStreamOnly() error {
 		return s.stream.CloseSend()
 	}
 	return nil
+}
+
+func getStringValueFromExtension(extension *structpb.Struct, key string) string {
+	if extension == nil {
+		return ""
+	}
+	value, ok := extension.GetFields()[key]
+	if !ok {
+		return ""
+	}
+	typed, ok := value.GetKind().(*structpb.Value_StringValue)
+	if !ok {
+		return ""
+	}
+	return typed.StringValue
 }
