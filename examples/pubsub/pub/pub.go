@@ -45,7 +45,7 @@ func main() {
 
 	// Publish multiple events
 	if res := client.PublishEvents(ctx, pubsubName, topicName, publishEventsData); res.Error != nil {
-		panic(err)
+		panic(res.Error)
 	}
 
 	fmt.Println("data published")

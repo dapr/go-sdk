@@ -21,6 +21,8 @@ import (
 	"log"
 
 	"github.com/google/uuid"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	pb "github.com/dapr/dapr/pkg/proto/runtime/v1"
 )
@@ -169,12 +171,15 @@ func (c *GRPCClient) PublishEvents(ctx context.Context, pubsubName, topicName st
 		o(request)
 	}
 
-	//nolint:staticcheck // SA1019 Deprecated: use BulkPublishEvent instead.
-	res, err := c.protoClient.BulkPublishEventAlpha1(ctx, request)
+	res, err := c.protoClient.BulkPublishEvent(ctx, request)
+	if err != nil && status.Code(err) == codes.Unimplemented {
+		//nolint:staticcheck // SA1019 Deprecated: use BulkPublishEvent instead.
+		res, err = c.protoClient.BulkPublishEventAlpha1(ctx, request)
+	}
 	// If there is an error, all events failed to publish.
 	if err != nil {
 		return PublishEventsResponse{
-			Error:        fmt.Errorf("error publishing events unto %s topic: %w", topicName, err),
+			Error:        fmt.Errorf("error publishing events onto %s topic: %w", topicName, err),
 			FailedEvents: events,
 		}
 	}
