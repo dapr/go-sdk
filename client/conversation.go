@@ -18,9 +18,9 @@ import (
 	"errors"
 	"reflect"
 
-	"google.golang.org/protobuf/types/known/structpb"
-
 	"google.golang.org/protobuf/types/known/anypb"
+	"google.golang.org/protobuf/types/known/durationpb"
+	"google.golang.org/protobuf/types/known/structpb"
 
 	runtimev1pb "github.com/dapr/dapr/pkg/proto/runtime/v1"
 )
@@ -437,15 +437,17 @@ type ConversationMessageOfToolAlpha2 struct {
 }
 
 type ConversationRequestAlpha2 struct {
-	Name        string // LLM component name
-	ContextID   *string
-	Inputs      []*ConversationInputAlpha2
-	Parameters  map[string]*anypb.Any
-	Metadata    map[string]string
-	ScrubPII    *bool // Scrub PII from the output
-	Temperature *float64
-	Tools       []*ConversationToolsAlpha2
-	ToolChoice  *ToolChoiceAlpha2
+	Name                 string // LLM component name
+	ContextID            *string
+	Inputs               []*ConversationInputAlpha2
+	Parameters           map[string]*anypb.Any
+	Metadata             map[string]string
+	ScrubPII             *bool
+	Temperature          *float64
+	Tools                []*ConversationToolsAlpha2
+	ToolChoice           *ToolChoiceAlpha2
+	ResponseFormat       *structpb.Struct
+	PromptCacheRetention *durationpb.Duration
 }
 
 type ConversationResponseAlpha2 struct {
@@ -554,15 +556,17 @@ func (c *GRPCClient) ConverseAlpha2(ctx context.Context, request ConversationReq
 	}
 
 	req := runtimev1pb.ConversationRequestAlpha2{
-		Name:        request.Name,
-		ContextId:   request.ContextID,
-		Inputs:      inputs,
-		Parameters:  request.Parameters,
-		Metadata:    request.Metadata,
-		ScrubPii:    request.ScrubPII,
-		Temperature: request.Temperature,
-		Tools:       tools,
-		ToolChoice:  request.ToolChoice.toPtr(),
+		Name:                 request.Name,
+		ContextId:            request.ContextID,
+		Inputs:               inputs,
+		Parameters:           request.Parameters,
+		Metadata:             request.Metadata,
+		ScrubPii:             request.ScrubPII,
+		Temperature:          request.Temperature,
+		Tools:                tools,
+		ToolChoice:           request.ToolChoice.toPtr(),
+		ResponseFormat:       request.ResponseFormat,
+		PromptCacheRetention: request.PromptCacheRetention,
 	}
 
 	resp, err := c.protoClient.ConverseAlpha2(ctx, &req)
