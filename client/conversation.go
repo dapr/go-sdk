@@ -18,9 +18,9 @@ import (
 	"errors"
 	"reflect"
 
-	"google.golang.org/protobuf/types/known/structpb"
-
 	"google.golang.org/protobuf/types/known/anypb"
+	"google.golang.org/protobuf/types/known/durationpb"
+	"google.golang.org/protobuf/types/known/structpb"
 
 	runtimev1pb "github.com/dapr/dapr/pkg/proto/runtime/v1"
 )
@@ -437,15 +437,17 @@ type ConversationMessageOfToolAlpha2 struct {
 }
 
 type ConversationRequestAlpha2 struct {
-	Name        string // LLM component name
-	ContextID   *string
-	Inputs      []*ConversationInputAlpha2
-	Parameters  map[string]*anypb.Any
-	Metadata    map[string]string
-	ScrubPII    *bool // Scrub PII from the output
-	Temperature *float64
-	Tools       []*ConversationToolsAlpha2
-	ToolChoice  *ToolChoiceAlpha2
+	Name                 string // LLM component name
+	ContextID            *string
+	Inputs               []*ConversationInputAlpha2
+	Parameters           map[string]*anypb.Any
+	Metadata             map[string]string
+	ScrubPII             *bool
+	Temperature          *float64
+	Tools                []*ConversationToolsAlpha2
+	ToolChoice           *ToolChoiceAlpha2
+	ResponseFormat       *structpb.Struct
+	PromptCacheRetention *durationpb.Duration
 }
 
 type ConversationResponseAlpha2 struct {
@@ -455,6 +457,28 @@ type ConversationResponseAlpha2 struct {
 
 type ConversationResultAlpha2 struct {
 	Choices []*ConversationResultChoicesAlpha2
+	Model   *string
+	Usage   *ConversationResultAlpha2CompletionUsage
+}
+
+type ConversationResultAlpha2CompletionUsage struct {
+	CompletionTokens        uint64
+	PromptTokens            uint64
+	TotalTokens             uint64
+	CompletionTokensDetails *ConversationResultAlpha2CompletionUsageCompletionTokensDetails
+	PromptTokensDetails     *ConversationResultAlpha2CompletionUsagePromptTokensDetails
+}
+
+type ConversationResultAlpha2CompletionUsageCompletionTokensDetails struct {
+	AcceptedPredictionTokens uint64
+	AudioTokens              uint64
+	ReasoningTokens          uint64
+	RejectedPredictionTokens uint64
+}
+
+type ConversationResultAlpha2CompletionUsagePromptTokensDetails struct {
+	AudioTokens  uint64
+	CachedTokens uint64
 }
 
 type ConversationResultChoicesAlpha2 struct {
@@ -532,15 +556,17 @@ func (c *GRPCClient) ConverseAlpha2(ctx context.Context, request ConversationReq
 	}
 
 	req := runtimev1pb.ConversationRequestAlpha2{
-		Name:        request.Name,
-		ContextId:   request.ContextID,
-		Inputs:      inputs,
-		Parameters:  request.Parameters,
-		Metadata:    request.Metadata,
-		ScrubPii:    request.ScrubPII,
-		Temperature: request.Temperature,
-		Tools:       tools,
-		ToolChoice:  request.ToolChoice.toPtr(),
+		Name:                 request.Name,
+		ContextId:            request.ContextID,
+		Inputs:               inputs,
+		Parameters:           request.Parameters,
+		Metadata:             request.Metadata,
+		ScrubPii:             request.ScrubPII,
+		Temperature:          request.Temperature,
+		Tools:                tools,
+		ToolChoice:           request.ToolChoice.toPtr(),
+		ResponseFormat:       request.ResponseFormat,
+		PromptCacheRetention: request.PromptCacheRetention,
 	}
 
 	resp, err := c.protoClient.ConverseAlpha2(ctx, &req)
@@ -572,8 +598,41 @@ func (c *GRPCClient) ConverseAlpha2(ctx context.Context, request ConversationReq
 				},
 			}
 		}
+		var usage *ConversationResultAlpha2CompletionUsage
+		if u := o.GetUsage(); u != nil {
+			var completionTokensDetails *ConversationResultAlpha2CompletionUsageCompletionTokensDetails
+			if ctd := u.GetCompletionTokensDetails(); ctd != nil {
+				completionTokensDetails = &ConversationResultAlpha2CompletionUsageCompletionTokensDetails{
+					AcceptedPredictionTokens: ctd.GetAcceptedPredictionTokens(),
+					AudioTokens:              ctd.GetAudioTokens(),
+					ReasoningTokens:          ctd.GetReasoningTokens(),
+					RejectedPredictionTokens: ctd.GetRejectedPredictionTokens(),
+				}
+			}
+			var promptTokensDetails *ConversationResultAlpha2CompletionUsagePromptTokensDetails
+			if ptd := u.GetPromptTokensDetails(); ptd != nil {
+				promptTokensDetails = &ConversationResultAlpha2CompletionUsagePromptTokensDetails{
+					AudioTokens:  ptd.GetAudioTokens(),
+					CachedTokens: ptd.GetCachedTokens(),
+				}
+			}
+			usage = &ConversationResultAlpha2CompletionUsage{
+				CompletionTokens:        u.GetCompletionTokens(),
+				PromptTokens:            u.GetPromptTokens(),
+				TotalTokens:             u.GetTotalTokens(),
+				CompletionTokensDetails: completionTokensDetails,
+				PromptTokensDetails:     promptTokensDetails,
+			}
+		}
+		var model *string
+		if o.GetModel() != "" {
+			m := o.GetModel()
+			model = &m
+		}
 		outputs[i] = &ConversationResultAlpha2{
 			Choices: choices,
+			Model:   model,
+			Usage:   usage,
 		}
 	}
 
