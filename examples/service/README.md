@@ -51,14 +51,14 @@ Once one of the above services is running, launch the client:
 <!-- STEP
 name: Run publisher
 expected_stdout_lines:
-  - '== APP == data published'
-  - '== APP == saving data: { "message": "hello" }'
-  - '== APP == data saved'
-  - '== APP == data retrieved [key:key1 etag:1]: { "message": "hello" }'
-  - '== APP == data item saved'
-  - '== APP == data deleted'
-  - '== APP == service method invoked, response: hellow'
-  - '== APP == output binding invoked'
+  - 'data published'
+  - 'saving data: { "message": "hello" }'
+  - 'data saved'
+  - 'data retrieved [key:key1 etag:1]: { "message": "hello" }'
+  - 'data item saved'
+  - 'data deleted'
+  - 'service method invoked, response: hellow'
+  - 'output binding invoked'
 background: true
 sleep: 15
 timeout_seconds: 60
@@ -80,12 +80,12 @@ Launch the DAPR client with custom gRPC client to accept and receive payload siz
 <!-- STEP
 output_match_mode: substring
 expected_stdout_lines:
-  - '== APP == Writing large data blob'
-  - '== APP == Saved the large data blob'
-  - '== APP == Writing to statestore took'
-  - '== APP == Reading from statestore took'
-  - '== APP == Deleting key from statestore took'
-  - '== APP == DONE (CTRL+C to Exit)'
+  - 'Writing large data blob'
+  - 'Saved the large data blob'
+  - 'Writing to statestore took'
+  - 'Reading from statestore took'
+  - 'Deleting key from statestore took'
+  - 'DONE (CTRL+C to Exit)'
 -->
 
 ```bash
