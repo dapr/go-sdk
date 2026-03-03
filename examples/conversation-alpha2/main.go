@@ -18,9 +18,12 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 
 	dapr "github.com/dapr/go-sdk/client"
 )
+
+var logger = log.New(os.Stdout, "", log.LstdFlags)
 
 func main() {
 	client, err := dapr.NewClient()
@@ -68,7 +71,7 @@ func main() {
 
 	resp, err := client.ConverseAlpha2(context.Background(), request)
 	if err != nil {
-		log.Fatalf("err: %v", err)
+		logger.Fatalf("err: %v", err)
 	}
 
 	fmt.Printf("conversation output: %s\n", resp.Outputs[0].Choices[0].Message.Content)

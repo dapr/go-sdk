@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"log"
+	"os"
 	"time"
 
 	"google.golang.org/grpc"
@@ -14,11 +15,13 @@ const (
 	address = "localhost:50007"
 )
 
+var logger = log.New(os.Stdout, "", log.LstdFlags)
+
 func main() {
 	// Set up a connection to the server.
 	conn, err := grpc.Dial(address, grpc.WithInsecure(), grpc.WithBlock())
 	if err != nil {
-		log.Fatalf("did not connect: %v", err)
+		logger.Fatalf("did not connect: %v", err)
 	}
 	defer conn.Close()
 	c := pb.NewGreeterClient(conn)
@@ -29,8 +32,8 @@ func main() {
 	ctx = metadata.AppendToOutgoingContext(ctx, "dapr-app-id", "grpc-server")
 	r, err := c.SayHello(ctx, &pb.HelloRequest{Name: "Dapr"})
 	if err != nil {
-		log.Fatalf("could not greet: %v", err)
+		logger.Fatalf("could not greet: %v", err)
 	}
 
-	log.Printf("Greeting: %s", r.GetMessage())
+	logger.Printf("Greeting: %s", r.GetMessage())
 }

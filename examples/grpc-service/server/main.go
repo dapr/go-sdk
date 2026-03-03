@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"net"
+	"os"
 
 	daprd "github.com/dapr/go-sdk/service/grpc"
 	"google.golang.org/grpc"
@@ -14,6 +15,8 @@ const (
 	port = ":50051"
 )
 
+var logger = log.New(os.Stdout, "", log.LstdFlags)
+
 // server is used to implement helloworld.GreeterServer.
 type server struct {
 	pb.UnimplementedGreeterServer
@@ -21,14 +24,14 @@ type server struct {
 
 // SayHello implements helloworld.GreeterServer
 func (s *server) SayHello(ctx context.Context, in *pb.HelloRequest) (*pb.HelloReply, error) {
-	log.Printf("Received: %v", in.GetName())
+	logger.Printf("Received: %v", in.GetName())
 	return &pb.HelloReply{Message: "Hello " + in.GetName()}, nil
 }
 
 func main() {
 	lis, err := net.Listen("tcp", port)
 	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
+		logger.Fatalf("failed to listen: %v", err)
 	}
 
 	s := grpc.NewServer()
@@ -37,6 +40,6 @@ func main() {
 
 	// start the server
 	if err := daprServer.Start(); err != nil {
-		log.Fatalf("server error: %v", err)
+		logger.Fatalf("server error: %v", err)
 	}
 }
