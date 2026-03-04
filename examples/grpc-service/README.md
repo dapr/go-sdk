@@ -56,6 +56,7 @@ expected_return_code:
 
 ```bash
 dapr stop --app-id grpc-server
+(lsof -i:50051 | grep main) | awk '{print $2}' | xargs kill
 ```
 
 <!-- END_STEP -->
