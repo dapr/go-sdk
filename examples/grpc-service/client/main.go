@@ -26,14 +26,24 @@ func main() {
 	defer conn.Close()
 	c := pb.NewGreeterClient(conn)
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*2)
-	defer cancel()
-
-	ctx = metadata.AppendToOutgoingContext(ctx, "dapr-app-id", "grpc-server")
-	r, err := c.SayHello(ctx, &pb.HelloRequest{Name: "Dapr"})
+	var r *pb.HelloReply
+	for range 10 {
+		r, err = sendSayHello(c)
+		if err == nil {
+			break
+		}
+		time.Sleep(3 * time.Second)
+	}
 	if err != nil {
 		logger.Fatalf("could not greet: %v", err)
 	}
 
 	logger.Printf("Greeting: %s", r.GetMessage())
+}
+
+func sendSayHello(c pb.GreeterClient) (*pb.HelloReply, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*2)
+	defer cancel()
+	ctx = metadata.AppendToOutgoingContext(ctx, "dapr-app-id", "grpc-server")
+	return c.SayHello(ctx, &pb.HelloRequest{Name: "Dapr"})
 }
