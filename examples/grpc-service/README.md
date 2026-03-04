@@ -17,7 +17,6 @@ output_match_mode: substring
 expected_stdout_lines:
   - 'Received: Dapr'
 background: true
-sleep: 30
 timeout_seconds: 60
 -->
 
@@ -38,8 +37,6 @@ name: Run grpc client
 expected_stdout_lines:
   - 'Greeting: Hello Dapr'
 output_match_mode: substring
-background: true
-sleep: 15
 timeout_seconds: 60
 -->
 
@@ -52,6 +49,13 @@ dapr run --app-id grpc-client \
 
 ### Cleanup
 
+<!-- STEP
+name: Cleanup grpc server
+expected_return_code:
+-->
+
 ```bash
 dapr stop --app-id grpc-server
 ```
+
+<!-- END_STEP -->

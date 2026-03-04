@@ -20,7 +20,6 @@ expected_stdout_lines:
   - 'receive reminder =  testReminderName  state =  "hello"'
   - 'receive reminder =  testReminderName  state =  "hello"'
 background: true
-sleep: 30
 timeout_seconds: 60
 -->
 
@@ -53,8 +52,6 @@ expected_stdout_lines:
   - 'get user = {Name: Age:1}'
   - 'get user = {Name: Age:2}'
 
-background: true
-sleep: 40
 timeout_seconds: 60
 -->
 
@@ -69,10 +66,17 @@ dapr run --app-id actor-client \
 
 ### Cleanup
 
+<!-- STEP
+name: Cleanup grpc server
+expected_return_code:
+-->
+
 ```bash
 dapr stop --app-id  actor-serving
 (lsof -i:8080 | grep main) | awk '{print $2}' | xargs  kill
 ```
+
+<!-- END_STEP -->
 
 ## Result
 - client side

@@ -16,7 +16,6 @@ output_match_mode: substring
 expected_stdout_lines:
   - "ContentType:text/plain, Verb:POST, QueryString:, hellow"
 background: true
-sleep: 30
 timeout_seconds: 60
 -->
 
@@ -59,8 +58,6 @@ expected_stdout_lines:
   - 'data deleted'
   - 'service method invoked, response: hellow'
   - 'output binding invoked'
-background: true
-sleep: 15
 timeout_seconds: 60
 -->
 
@@ -69,6 +66,20 @@ dapr run --app-id caller \
          --resources-path ./config \
          --log-level debug \
          go run ./client/main.go
+```
+
+<!-- END_STEP -->
+
+### Cleanup
+
+<!-- STEP
+name: Cleanup serving server
+expected_return_code:
+-->
+
+```bash
+dapr stop --app-id serving
+(lsof -i:8080 | grep main) | awk '{print $2}' | xargs  kill
 ```
 
 <!-- END_STEP -->
@@ -155,9 +166,3 @@ curl -X DELETE \
 
 Uses the [config/cron.yaml](config/cron.yaml) component
 
-### Cleanup
-
-```bash
-dapr stop --app-id serving
-(lsof -i:8080 | grep main) | awk '{print $2}' | xargs  kill
-```

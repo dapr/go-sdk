@@ -20,7 +20,6 @@ output_match_mode: substring
 expected_stdout_lines:
   - 'event - PubsubName: messages, Topic: neworder'
 background: true
-sleep: 15
 timeout_seconds: 60
 -->
 
@@ -42,8 +41,6 @@ dapr run --app-id sub \
 name: Run publisher
 expected_stdout_lines:
   - 'data published'
-background: true
-sleep: 15
 timeout_seconds: 60
 -->
 
@@ -60,10 +57,17 @@ dapr run --app-id pub \
 
 ### Cleanup
 
+<!-- STEP
+name: Cleanup subscriber
+expected_return_code:
+-->
+
 ```bash
 dapr stop --app-id sub
 (lsof -i:8080 | grep sub) | awk '{print $2}' | xargs  kill
 ```
+
+<!-- END_STEP -->
 
 ## Result
 
