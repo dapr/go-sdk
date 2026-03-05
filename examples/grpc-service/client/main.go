@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"log"
+	"os"
 	"time"
 
 	"google.golang.org/grpc"
@@ -14,23 +15,35 @@ const (
 	address = "localhost:50007"
 )
 
+var logger = log.New(os.Stdout, "", log.LstdFlags)
+
 func main() {
 	// Set up a connection to the server.
 	conn, err := grpc.Dial(address, grpc.WithInsecure(), grpc.WithBlock())
 	if err != nil {
-		log.Fatalf("did not connect: %v", err)
+		logger.Fatalf("did not connect: %v", err)
 	}
 	defer conn.Close()
 	c := pb.NewGreeterClient(conn)
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*2)
-	defer cancel()
-
-	ctx = metadata.AppendToOutgoingContext(ctx, "dapr-app-id", "grpc-server")
-	r, err := c.SayHello(ctx, &pb.HelloRequest{Name: "Dapr"})
+	var r *pb.HelloReply
+	for range 10 {
+		r, err = sendSayHello(c)
+		if err == nil {
+			break
+		}
+		time.Sleep(3 * time.Second)
+	}
 	if err != nil {
-		log.Fatalf("could not greet: %v", err)
+		logger.Fatalf("could not greet: %v", err)
 	}
 
-	log.Printf("Greeting: %s", r.GetMessage())
+	logger.Printf("Greeting: %s", r.GetMessage())
+}
+
+func sendSayHello(c pb.GreeterClient) (*pb.HelloReply, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*2)
+	defer cancel()
+	ctx = metadata.AppendToOutgoingContext(ctx, "dapr-app-id", "grpc-server")
+	return c.SayHello(ctx, &pb.HelloRequest{Name: "Dapr"})
 }
