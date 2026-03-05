@@ -58,7 +58,7 @@ func main() {
 	}
 
 	if err := s.Start(); err != nil && err != http.ErrServerClosed {
-		logger.Fatalf("error listenning: %v", err)
+		logger.Fatalf("error listening: %v", err)
 	}
 }
 

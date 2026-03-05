@@ -140,6 +140,6 @@ func main() {
 	s := daprd.NewService(":8080")
 	s.RegisterActorImplFactoryContext(testActorFactory)
 	if err := s.Start(); err != nil && err != http.ErrServerClosed {
-		logger.Fatalf("error listenning: %v", err)
+		logger.Fatalf("error listening: %v", err)
 	}
 }
