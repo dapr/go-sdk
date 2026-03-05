@@ -12,13 +12,13 @@
 name: Run Workflow
 output_match_mode: substring
 expected_stdout_lines:
-  - '== APP == Workflow(s) and activities registered.'
-  - '== APP == Processing work item: 9'
-  - '== APP == Work item 9 processed. Result: 18'
-  - '== APP == Final result: 90'
-  - '== APP == workflow status: COMPLETED'
-  - '== APP == workflow terminated'
-  - '== APP == workflow purged'
+  - 'Workflow(s) and activities registered.'
+  - 'Processing work item: 9'
+  - 'Work item 9 processed. Result: 18'
+  - 'Final result: 90'
+  - 'workflow status: COMPLETED'
+  - 'workflow terminated'
+  - 'workflow purged'
 
 background: true
 sleep: 30
@@ -38,12 +38,12 @@ dapr run --app-id workflow-parallel \
 ## Result
 
 ```
-  - '== APP == Workflow(s) and activities registered.'
-  - '== APP == Processing work item: 9'
-  - '== APP == Work item 9 processed. Result: 18'
-  - '== APP == Final result: 90'
-  - '== APP == workflow status: COMPLETED'
-  - '== APP == workflow terminated'
-  - '== APP == workflow purged'
+  - 'Workflow(s) and activities registered.'
+  - 'Processing work item: 9'
+  - 'Work item 9 processed. Result: 18'
+  - 'Final result: 90'
+  - 'workflow status: COMPLETED'
+  - 'workflow terminated'
+  - 'workflow purged'
 ```
 

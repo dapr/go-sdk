@@ -16,7 +16,9 @@ package main
 import (
 	"context"
 	"fmt"
+	"net"
 	"os"
+	"time"
 
 	dapr "github.com/dapr/go-sdk/client"
 )
@@ -37,6 +39,15 @@ func main() {
 		panic(err)
 	}
 	defer client.Close()
+
+	// Wait for the subscriber to be ready before publishing
+	for range 30 {
+		if conn, err := net.DialTimeout("tcp", "localhost:8080", time.Second); err == nil {
+			conn.Close()
+			break
+		}
+		time.Sleep(time.Second)
+	}
 
 	// Publish a single event
 	if err := client.PublishEvent(ctx, pubsubName, topicName, publishEventData); err != nil {
