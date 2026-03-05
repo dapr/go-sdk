@@ -67,7 +67,7 @@ dapr run --app-id actor-client \
 ### Cleanup
 
 <!-- STEP
-name: Cleanup grpc server
+name: Cleanup actor server
 expected_return_code:
 -->
 

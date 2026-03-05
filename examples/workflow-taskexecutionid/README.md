@@ -52,7 +52,7 @@ dapr run --app-id workflow-taskexecutionid \
   - 'RetryN  2'
   - 'RetryN  3'
   - 'RetryN  4'
-  - 'workflow status: COMPELTED'
+  - 'workflow status: COMPLETED'
   - 'workflow terminated'
   - 'workflow purged'
 ```
