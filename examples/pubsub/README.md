@@ -20,7 +20,6 @@ output_match_mode: substring
 expected_stdout_lines:
   - 'event - PubsubName: messages, Topic: neworder'
 background: true
-sleep: 15
 timeout_seconds: 60
 -->
 
@@ -41,9 +40,7 @@ dapr run --app-id sub \
 <!-- STEP
 name: Run publisher
 expected_stdout_lines:
-  - '== APP == data published'
-background: true
-sleep: 15
+  - 'data published'
 timeout_seconds: 60
 -->
 
@@ -60,15 +57,22 @@ dapr run --app-id pub \
 
 ### Cleanup
 
+<!-- STEP
+name: Cleanup subscriber
+expected_return_code:
+-->
+
 ```bash
 dapr stop --app-id sub
 (lsof -i:8080 | grep sub) | awk '{print $2}' | xargs  kill
 ```
 
+<!-- END_STEP -->
+
 ## Result
 
 ```shell
-== APP == 2023/03/29 21:36:07 event - PubsubName: messages, Topic: neworder, ID: 82427280-1c18-4fab-b901-c7e68d295d31, Data: ping
-== APP == 2023/03/29 21:36:07 event - PubsubName: messages, Topic: neworder, ID: cc13829c-af77-4303-a4d7-55cdc0b0fa7d, Data: multi-pong
-== APP == 2023/03/29 21:36:07 event - PubsubName: messages, Topic: neworder, ID: 0147f10a-d6c3-4b16-ad5a-6776956757dd, Data: multi-ping
+2023/03/29 21:36:07 event - PubsubName: messages, Topic: neworder, ID: 82427280-1c18-4fab-b901-c7e68d295d31, Data: ping
+2023/03/29 21:36:07 event - PubsubName: messages, Topic: neworder, ID: cc13829c-af77-4303-a4d7-55cdc0b0fa7d, Data: multi-pong
+2023/03/29 21:36:07 event - PubsubName: messages, Topic: neworder, ID: 0147f10a-d6c3-4b16-ad5a-6776956757dd, Data: multi-ping
 ```

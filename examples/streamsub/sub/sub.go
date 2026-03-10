@@ -18,16 +18,19 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"os"
 	"time"
 
 	daprd "github.com/dapr/go-sdk/client"
 	"github.com/dapr/go-sdk/service/common"
 )
 
+var logger = log.New(os.Stdout, "", log.LstdFlags)
+
 func main() {
 	client, err := daprd.NewClient()
 	if err != nil {
-		log.Fatal(err)
+		logger.Fatal(err)
 	}
 
 	deadLetterTopic := "deadletter"
@@ -45,7 +48,7 @@ func main() {
 		eventHandler,
 	)
 	if err != nil {
-		log.Fatalf("failed to subscribe to topic: %v", err)
+		logger.Fatalf("failed to subscribe to topic: %v", err)
 	}
 	fmt.Printf(">>Created subscription messages/sendorder\n")
 
@@ -58,35 +61,35 @@ func main() {
 		DeadLetterTopic: &deadLetterTopic,
 	})
 	if err != nil {
-		log.Fatalf("failed to subscribe to topic: %v", err)
+		logger.Fatalf("failed to subscribe to topic: %v", err)
 	}
 	fmt.Printf(">>Created subscription messages/neworder\n")
 
 	for i := 0; i < 3; i++ {
 		msg, err := sub.Receive()
 		if err != nil {
-			log.Fatalf("Error receiving message: %v", err)
+			logger.Fatalf("Error receiving message: %v", err)
 		}
-		log.Printf(">>Received message\n")
-		log.Printf("event - PubsubName: %s, Topic: %s, ID: %s, Data: %s\n", msg.PubsubName, msg.Topic, msg.ID, msg.RawData)
+		logger.Printf(">>Received message\n")
+		logger.Printf("event - PubsubName: %s, Topic: %s, ID: %s, Data: %s\n", msg.PubsubName, msg.Topic, msg.ID, msg.RawData)
 
 		// Use _MUST_ always signal the result of processing the message, else the
 		// message will not be considered as processed and will be redelivered or
 		// dead lettered.
 		if err := msg.Success(); err != nil {
-			log.Fatalf("error sending message success: %v", err)
+			logger.Fatalf("error sending message success: %v", err)
 		}
 	}
 
 	time.Sleep(time.Second * 10)
 
 	if err := errors.Join(stop(), sub.Close()); err != nil {
-		log.Fatal(err)
+		logger.Fatal(err)
 	}
 }
 
 func eventHandler(e *common.TopicEvent) common.SubscriptionResponseStatus {
-	log.Printf(">>Received message\n")
-	log.Printf("event - PubsubName: %s, Topic: %s, ID: %s, Data: %s\n", e.PubsubName, e.Topic, e.ID, e.Data)
+	logger.Printf(">>Received message\n")
+	logger.Printf("event - PubsubName: %s, Topic: %s, ID: %s, Data: %s\n", e.PubsubName, e.Topic, e.ID, e.Data)
 	return common.SubscriptionResponseStatusSuccess
 }
