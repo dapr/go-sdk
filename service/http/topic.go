@@ -183,7 +183,7 @@ func (s *Server) registerBaseHandler() {
 			return
 		}
 		w.WriteHeader(http.StatusOK)
-		_, _ = w.Write(rspData)
+		_, _ = w.Write(rspData) //nolint:gosec
 	}
 	s.mux.Put("/actors/{actorType}/{actorId}/method/{methodName}", fInvoke)
 

@@ -42,7 +42,8 @@ type Service interface {
 	AddTopicEventSubscriber(sub *Subscription, subscriber TopicEventSubscriber) error
 	// AddBindingInvocationHandler appends provided binding invocation handler with its name to the service.
 	AddBindingInvocationHandler(name string, fn BindingInvocationHandler) error
-	// RegisterActorImplFactory Register a new actor to actor runtime of go sdk
+	// RegisterActorImplFactory Register a new actor to actor runtime of go sdk.
+	//
 	// Deprecated: use RegisterActorImplFactoryContext instead.
 	RegisterActorImplFactory(f actor.Factory, opts ...config.Option)
 	// RegisterActorImplFactoryContext Register a new actor to actor runtime of go sdk

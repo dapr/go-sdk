@@ -105,6 +105,7 @@ type Client interface {
 	PublishEvent(ctx context.Context, pubsubName, topicName string, data interface{}, opts ...PublishEventOption) error
 
 	// PublishEventfromCustomContent serializes an struct and publishes its contents as data (JSON) onto topic in specific pubsub component.
+	//
 	// Deprecated: This method is deprecated and will be removed in a future version of the SDK. Please use `PublishEvent` instead.
 	PublishEventfromCustomContent(ctx context.Context, pubsubName, topicName string, data interface{}) error
 
@@ -159,6 +160,7 @@ type Client interface {
 	SubscribeConfigurationItems(ctx context.Context, storeName string, keys []string, handler ConfigurationHandleFunction, opts ...ConfigurationOpt) (string, error)
 
 	// UnsubscribeConfigurationItems stops the subscription with target store's and ID.
+	//
 	// Deprecated: Closing the `SubscribeConfigurationItems` stream (closing the given context) will unsubscribe the client and should be used in favor of `UnsubscribeConfigurationItems`.
 	// UnsubscribeConfigurationItems can stop the subscription with target store's and id
 	UnsubscribeConfigurationItems(ctx context.Context, storeName string, id string, opts ...ConfigurationOpt) error
@@ -311,6 +313,7 @@ func NewClientWithPort(port string, dialOpts ...grpc.DialOption) (client Client,
 }
 
 // NewClientWithAddress instantiates Dapr using specific address (including port).
+//
 // Deprecated: use NewClientWithAddressContext instead.
 func NewClientWithAddress(address string, dialOpts ...grpc.DialOption) (client Client, err error) {
 	return NewClientWithAddressContext(context.Background(), address, dialOpts...)
@@ -389,13 +392,13 @@ func NewClientWithSocket(socket string, dialOpts ...grpc.DialOption) (client Cli
 	logger.Printf("dapr client initializing for: %s", socket)
 	addr := "unix://" + socket
 
-	opts := []grpc.DialOption{
+	opts := make([]grpc.DialOption, 0, 4+len(dialOpts))
+	opts = append(opts,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithUserAgent(userAgent()),
 		authTokenUnaryInterceptor(at),
 		authTokenStreamInterceptor(at),
-	}
-
+	)
 	opts = append(opts, dialOpts...)
 	conn, err := grpc.Dial( //nolint:staticcheck
 		addr,

@@ -85,7 +85,7 @@ func (s *Server) AddServiceInvocationHandler(route string, fn common.ServiceInvo
 				if o.ContentType != "" {
 					w.Header().Set("Content-type", o.ContentType)
 				}
-				if _, err := w.Write(o.Data); err != nil {
+				if _, err := w.Write(o.Data); err != nil { //nolint:gosec
 					http.Error(w, err.Error(), http.StatusInternalServerError)
 					return
 				}

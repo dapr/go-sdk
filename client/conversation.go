@@ -26,6 +26,7 @@ import (
 )
 
 // conversationRequest object - currently unexported as used in a functions option pattern
+//
 // Deprecated: use ConversationRequestAlpha2 and ConverseAlpha2 instead.
 type conversationRequest struct {
 	name        string
@@ -39,6 +40,7 @@ type conversationRequest struct {
 
 // NewConversationRequest defines a request with a component name and one or more inputs as a slice for the
 // ConverseAlpha1 method.
+//
 // Deprecated: use ConversationRequestAlpha2 and ConverseAlpha2 instead.
 func NewConversationRequest(llmName string, inputs []ConversationInput) conversationRequest {
 	return conversationRequest{
@@ -51,6 +53,7 @@ func NewConversationRequest(llmName string, inputs []ConversationInput) conversa
 type conversationRequestOption func(request *conversationRequest)
 
 // ConversationInput defines a single input for a conversation request for ConverseAlpha1.
+//
 // Deprecated: use ConversationInput in ConversationRequestAlpha2 instead.
 type ConversationInput struct {
 	// The content to send to the llm.
@@ -74,6 +77,7 @@ type ConversationResult struct {
 }
 
 // WithParameters should be used to provide parameters for custom fields.
+//
 // Deprecated: use ConversationRequestAlpha2.Parameters instead.
 func WithParameters(parameters map[string]*anypb.Any) conversationRequestOption {
 	return func(o *conversationRequest) {
@@ -82,6 +86,7 @@ func WithParameters(parameters map[string]*anypb.Any) conversationRequestOption 
 }
 
 // WithMetadata used to define metadata to be passed to components.
+//
 // Deprecated: use ConversationRequestAlpha2.Metadata instead.
 func WithMetadata(metadata map[string]string) conversationRequestOption {
 	return func(o *conversationRequest) {
@@ -90,6 +95,7 @@ func WithMetadata(metadata map[string]string) conversationRequestOption {
 }
 
 // WithContextID to provide a new context or continue an existing one.
+//
 // Deprecated: use ConversationRequestAlpha2.ContextID instead.
 func WithContextID(id string) conversationRequestOption {
 	return func(o *conversationRequest) {
@@ -98,6 +104,7 @@ func WithContextID(id string) conversationRequestOption {
 }
 
 // WithScrubPII to define whether the outputs should have PII removed.
+//
 // Deprecated: use ConversationRequestAlpha2.ScrubPII instead.
 func WithScrubPII(scrub bool) conversationRequestOption {
 	return func(o *conversationRequest) {
@@ -106,6 +113,7 @@ func WithScrubPII(scrub bool) conversationRequestOption {
 }
 
 // WithTemperature to specify which way the LLM leans.
+//
 // Deprecated: use ConversationRequestAlpha2.Temperature instead.
 func WithTemperature(temp float64) conversationRequestOption {
 	return func(o *conversationRequest) {
@@ -114,6 +122,7 @@ func WithTemperature(temp float64) conversationRequestOption {
 }
 
 // ConverseAlpha1 can invoke an LLM given a request created by the NewConversationRequest function.
+//
 // Deprecated: use ConverseAlpha2 instead.
 func (c *GRPCClient) ConverseAlpha1(ctx context.Context, req conversationRequest, options ...conversationRequestOption) (*ConversationResponse, error) {
 	//nolint:staticcheck
@@ -205,7 +214,7 @@ func (ci *ConversationInputAlpha2) toProto() *runtimev1pb.ConversationInputAlpha
 		}
 	}
 
-	if ci.Messages == nil || len(ci.Messages) == 0 {
+	if len(ci.Messages) == 0 {
 		return nil
 	}
 	messages := make([]*runtimev1pb.ConversationMessage, len(ci.Messages))
