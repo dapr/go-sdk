@@ -34,7 +34,7 @@ jobs:
         uses: codecov/codecov-action@v5
 
       - name: Lint
-        uses: golangci/golangci-lint-action@v7
+        uses: golangci/golangci-lint-action@v9
         with:
           version: ${{ env.GOLANGCILINT_VER }}
           skip-cache: true
