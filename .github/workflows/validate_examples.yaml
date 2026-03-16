@@ -12,6 +12,15 @@ on:
       - main
       - release-*
   workflow_dispatch:
+    inputs:
+      daprdapr_commit:
+        description: "Dapr/Dapr commit to build custom daprd from"
+        required: false
+        default: ""
+      daprcli_commit:
+        description: "Dapr/CLI commit to build custom dapr CLI from"
+        required: false
+        default: ""
   repository_dispatch:
     types: [validate-examples]
   merge_group:
@@ -103,9 +112,15 @@ jobs:
 
       - name: Set up Dapr CLI
         uses: dapr/.github/.github/actions/setup-dapr-cli@main
+        with:
+          commit: ${{ github.event.inputs.daprcli_commit }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Initialize Dapr runtime
         uses: dapr/.github/.github/actions/setup-dapr-runtime@main
+        with:
+          commit: ${{ github.event.inputs.daprdapr_commit }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Print scheduler logs
         run: |
