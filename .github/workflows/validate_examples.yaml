@@ -36,6 +36,7 @@ jobs:
     outputs:
       CHECKOUT_REPO: ${{ steps.outputs.outputs.CHECKOUT_REPO }}
       CHECKOUT_REF: ${{ steps.outputs.outputs.CHECKOUT_REF }}
+      DAPR_REF: ${{ steps.outputs.outputs.DAPR_REF }}
     steps:
       - name: Parse repository_dispatch payload
         if: github.event_name == 'repository_dispatch'
@@ -43,6 +44,7 @@ jobs:
           if [ ${{ github.event.client_payload.command }} = "ok-to-test" ]; then
             echo "CHECKOUT_REPO=${{ github.event.client_payload.pull_head_repo }}" >> $GITHUB_ENV
             echo "CHECKOUT_REF=${{ github.event.client_payload.pull_head_ref }}" >> $GITHUB_ENV
+            echo "DAPR_REF=master" >> $GITHUB_ENV
           fi
 
       - name: Check out code onto GOPATH
@@ -64,6 +66,7 @@ jobs:
         run: |
           echo "CHECKOUT_REPO=$CHECKOUT_REPO" >> "$GITHUB_OUTPUT"
           echo "CHECKOUT_REF=$CHECKOUT_REF" >> "$GITHUB_OUTPUT"
+          echo "DAPR_REF=$DAPR_REF" >> "$GITHUB_OUTPUT"
 
   validate-example:
     needs: setup
@@ -119,7 +122,7 @@ jobs:
       - name: Initialize Dapr runtime
         uses: dapr/.github/.github/actions/setup-dapr-runtime@main
         with:
-          commit: ${{ github.event.inputs.daprdapr_commit }}
+          commit: ${{ needs.setup.outputs.DAPR_REF || github.event.inputs.daprdapr_commit }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Print scheduler logs
