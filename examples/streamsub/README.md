@@ -18,14 +18,13 @@ This folder contains two Go files that use the Go SDK to invoke the Dapr Pub/Sub
 name: Run Subscriber Server
 output_match_mode: substring
 match_order: none
-expected_stdout_lines:
-  - 'event - PubsubName: messages, Topic: neworder'
-  - 'event - PubsubName: messages, Topic: neworder'
-  - 'event - PubsubName: messages, Topic: neworder'
-  - 'event - PubsubName: messages, Topic: sendorder'
-  - 'event - PubsubName: messages, Topic: sendorder'
-  - 'event - PubsubName: messages, Topic: sendorder'
 expected_stderr_lines:
+  - 'event - PubsubName: messages, Topic: neworder'
+  - 'event - PubsubName: messages, Topic: neworder'
+  - 'event - PubsubName: messages, Topic: neworder'
+  - 'event - PubsubName: messages, Topic: sendorder'
+  - 'event - PubsubName: messages, Topic: sendorder'
+  - 'event - PubsubName: messages, Topic: sendorder'
 background: true
 sleep: 15
 -->
@@ -45,12 +44,11 @@ dapr run --app-id sub \
 <!-- STEP
 name: Run publisher
 output_match_mode: substring
-expected_stdout_lines:
+expected_stderr_lines:
   - 'sending message'
   - 'message published'
   - 'sending multiple messages'
   - 'multiple messages published'
-expected_stderr_lines:
 background: true
 sleep: 15
 -->

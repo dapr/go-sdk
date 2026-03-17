@@ -84,9 +84,9 @@ background: true
 sleep: 5
 timeout_seconds: 60
 expected_stdout_lines:
-  - '== APP == dapr client initializing for: 127.0.0.1:3500'
-  - '== APP == Sending order ID 20'
-  - '== APP == Successfully persisted state'
+  - 'dapr client initializing for: 127.0.0.1:3500'
+  - 'Sending order ID 20'
+  - 'Successfully persisted state'
 -->
 
 ```bash
@@ -101,9 +101,9 @@ background: true
 sleep: 5
 timeout_seconds: 60
 expected_stdout_lines:
-  - '== APP == dapr client initializing for: 127.0.0.1:3500'
-  - '== APP == Getting order'
-  - '== APP == Order ID 20'
+  - 'dapr client initializing for: 127.0.0.1:3500'
+  - 'Getting order'
+  - 'Order ID 20'
 -->
 
 ```bash

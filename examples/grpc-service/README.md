@@ -14,7 +14,7 @@ The `examples/grpc-service` folder contains a Dapr enabled `server` app and a `c
 <!-- STEP
 name: Run grpc server with dapr proxy mode
 output_match_mode: substring
-expected_stdout_lines:
+expected_stderr_lines:
   - 'Received: Dapr'
 background: true
 sleep: 30
@@ -35,7 +35,7 @@ dapr run --app-id grpc-server \
 
 <!-- STEP
 name: Run grpc client
-expected_stdout_lines:
+expected_stderr_lines:
   - 'Greeting: Hello Dapr'
 output_match_mode: substring
 background: true

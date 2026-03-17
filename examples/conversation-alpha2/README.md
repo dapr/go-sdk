@@ -12,8 +12,8 @@
 name: Run Conversation
 output_match_mode: substring
 expected_stdout_lines:
-  - '== APP == conversation input: hello world'
-  - '== APP == conversation output: hello world'
+  - 'conversation input: hello world'
+  - 'conversation output: hello world'
 
 background: true
 sleep: 60
