@@ -342,7 +342,7 @@ func TestStateTransactions(t *testing.T) {
 	store := testStore
 	meta := map[string]string{}
 	keys := []string{"k1", "k2", "k3"}
-	adds := make([]*StateOperation, 0)
+	adds := make([]*StateOperation, 0, len(keys))
 
 	for _, k := range keys {
 		op := &StateOperation{
@@ -366,7 +366,7 @@ func TestStateTransactions(t *testing.T) {
 		assert.NotNil(t, items)
 		assert.Len(t, items, len(keys))
 
-		upserts := make([]*StateOperation, 0)
+		upserts := make([]*StateOperation, 0, len(items))
 		for _, item := range items {
 			op := &StateOperation{
 				Type: StateOperationTypeUpsert,

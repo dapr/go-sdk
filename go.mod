@@ -1,10 +1,10 @@
 module github.com/dapr/go-sdk
 
-go 1.24.13
+go 1.26.0
 
 require (
 	github.com/dapr/dapr v1.17.0
-	github.com/dapr/durabletask-go v0.11.0
+	github.com/dapr/durabletask-go v0.11.3
 	github.com/dapr/kit v0.17.0
 	github.com/go-chi/chi/v5 v5.2.2
 	github.com/golang/mock v1.6.0
