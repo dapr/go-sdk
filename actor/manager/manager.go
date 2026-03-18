@@ -75,6 +75,7 @@ type DefaultActorManagerContext struct {
 }
 
 // DefaultActorManager is to manage one type of actor.
+//
 // Deprecated: use DefaultActorManagerContext instead.
 type DefaultActorManager struct {
 	ctx ActorManagerContext
