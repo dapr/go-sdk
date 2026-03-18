@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -12,20 +13,22 @@ import (
 	"github.com/dapr/go-sdk/client"
 )
 
+var logger = log.New(os.Stdout, "", log.LstdFlags)
+
 func main() {
 	r := workflow.NewRegistry()
 
 	if err := r.AddWorkflow(TaskExecutionIdWorkflow); err != nil {
-		log.Fatalf("failed to register workflow: %v", err)
+		logger.Fatalf("failed to register workflow: %v", err)
 	}
 	if err := r.AddActivity(RetryN); err != nil {
-		log.Fatalf("failed to register activity: %v", err)
+		logger.Fatalf("failed to register activity: %v", err)
 	}
 	fmt.Println("Workflow(s) and activities registered.")
 
 	wclient, err := client.NewWorkflowClient()
 	if err != nil {
-		log.Fatal(err)
+		logger.Fatal(err)
 	}
 	fmt.Println("Worker initialized")
 
@@ -33,29 +36,29 @@ func main() {
 	defer cancel()
 
 	if err = wclient.StartWorker(ctx, r); err != nil {
-		log.Fatal(err)
+		logger.Fatal(err)
 	}
 
 	id, err := wclient.ScheduleWorkflow(ctx, "TaskExecutionIdWorkflow", workflow.WithInput(5))
 	if err != nil {
-		log.Fatalf("failed to schedule a new workflow: %v", err)
+		logger.Fatalf("failed to schedule a new workflow: %v", err)
 	}
 
 	metadata, err := wclient.WaitForWorkflowCompletion(ctx, id)
 	if err != nil {
-		log.Fatalf("failed to get workflow: %v", err)
+		logger.Fatalf("failed to get workflow: %v", err)
 	}
 	fmt.Printf("workflow status: %s\n", metadata.String())
 
 	err = wclient.TerminateWorkflow(ctx, id)
 	if err != nil {
-		log.Fatalf("failed to terminate workflow: %v", err)
+		logger.Fatalf("failed to terminate workflow: %v", err)
 	}
 	fmt.Println("workflow terminated")
 
 	err = wclient.PurgeWorkflowState(ctx, id)
 	if err != nil {
-		log.Fatalf("failed to purge workflow: %v", err)
+		logger.Fatalf("failed to purge workflow: %v", err)
 	}
 	fmt.Println("workflow purged")
 }
