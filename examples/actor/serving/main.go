@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/dapr/go-sdk/actor"
@@ -27,6 +28,8 @@ import (
 
 	daprd "github.com/dapr/go-sdk/service/http"
 )
+
+var logger = log.New(os.Stdout, "", log.LstdFlags)
 
 func testActorFactory() actor.ServerContext {
 	client, err := dapr.NewClient()
@@ -137,6 +140,6 @@ func main() {
 	s := daprd.NewService(":8080")
 	s.RegisterActorImplFactoryContext(testActorFactory)
 	if err := s.Start(); err != nil && err != http.ErrServerClosed {
-		log.Fatalf("error listenning: %v", err)
+		logger.Fatalf("error listening: %v", err)
 	}
 }
