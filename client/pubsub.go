@@ -102,6 +102,7 @@ func PublishEventWithRawPayload() PublishEventOption {
 }
 
 // PublishEventfromCustomContent serializes an struct and publishes its contents as data (JSON) onto topic in specific pubsub component.
+//
 // Deprecated: This method is deprecated and will be removed in a future version of the SDK. Please use `PublishEvent` instead.
 func (c *GRPCClient) PublishEventfromCustomContent(ctx context.Context, pubsubName, topicName string, data interface{}) error {
 	log.Println("DEPRECATED: client.PublishEventfromCustomContent is deprecated and will be removed in a future version of the SDK. Please use `PublishEvent` instead.")
