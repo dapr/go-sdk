@@ -158,11 +158,11 @@ func ParseGRPCEndpoint(endpoint string) (Parsed, error) {
 			// when real scheme is dns, keep the previous format (dns:hostname:port)
 			target = scheme + ":" + hostname + ":" + port
 		} else {
-			// Use passthrough resolver (just host:port) instead of dns: scheme.
-			// gRPC v1.78's DNS resolver is broken with grpc.DialContext() — it
-			// never fires regardless of URI format. The passthrough resolver
-			// works correctly and grpc.DialContext() defaults to it for bare
-			// host:port targets.
+			// Use passthrough resolver (just host:port) instead of the dns: scheme.
+			// In gRPC v1.78, targets of the form dns:host:port can be treated as
+			// opaque by grpc.DialContext(), so the DNS resolver is not invoked.
+			// Using a bare host:port target makes grpc.DialContext() fall back to
+			// the passthrough resolver, which resolves and connects correctly.
 			target = hostname + ":" + port
 		}
 
