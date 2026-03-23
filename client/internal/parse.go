@@ -37,6 +37,7 @@ func ParseGRPCEndpoint(endpoint string) (Parsed, error) {
 	var hostname string
 	var tls bool
 
+	noSchemeInEndpoint := false
 	urlSplit := strings.Split(target, ":")
 	if len(urlSplit) == 3 && !strings.Contains(target, "://") {
 		target = strings.Replace(target, ":", "://", 1)
@@ -46,6 +47,7 @@ func ParseGRPCEndpoint(endpoint string) (Parsed, error) {
 		urlSplit = strings.Split(target, "://")
 		if len(urlSplit) == 1 {
 			target = "dns://" + target
+			noSchemeInEndpoint = true
 		} else {
 			scheme := urlSplit[0]
 			if !schemeKnown(scheme) {
@@ -142,9 +144,18 @@ func ParseGRPCEndpoint(endpoint string) (Parsed, error) {
 			hostname = "[" + hostname + "]"
 		}
 		if len(dnsAuthority) > 0 {
-			dnsAuthority = "//" + dnsAuthority + "/"
+			target = scheme + "://" + dnsAuthority + "/" + hostname + ":" + port
+		} else if ptarget.Scheme == "dns" && !noSchemeInEndpoint {
+			// when real scheme is dns, keep the previous format (dns:hostname:port)
+			target = scheme + ":" + hostname + ":" + port
+		} else {
+			// Use passthrough resolver (just host:port) instead of dns: scheme.
+			// gRPC v1.78's DNS resolver is broken with grpc.DialContext() — it
+			// never fires regardless of URI format. The passthrough resolver
+			// works correctly and grpc.DialContext() defaults to it for bare
+			// host:port targets.
+			target = hostname + ":" + port
 		}
-		target = scheme + ":" + dnsAuthority + hostname + ":" + port
 
 	default:
 		return Parsed{}, fmt.Errorf("unsupported scheme: %q", scheme)
