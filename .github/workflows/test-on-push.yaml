@@ -11,7 +11,7 @@ jobs:
     name: Test
     runs-on: ubuntu-latest
     env:
-      GOLANGCILINT_VER: v1.64.6
+      GOLANGCILINT_VER: v2.10.1
 
     steps:
       - name: Checkout
@@ -34,7 +34,7 @@ jobs:
         uses: codecov/codecov-action@v5
 
       - name: Lint
-        uses: golangci/golangci-lint-action@v6
+        uses: golangci/golangci-lint-action@v9
         with:
           version: ${{ env.GOLANGCILINT_VER }}
           skip-cache: true
