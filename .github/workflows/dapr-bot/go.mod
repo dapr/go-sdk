@@ -5,7 +5,7 @@ go 1.23.3
 require (
 	github.com/google/go-github/v55 v55.0.0
 	github.com/jinzhu/copier v0.4.0
-	github.com/stretchr/testify v1.8.4
+	github.com/stretchr/testify v1.11.1
 )
 
 require (
