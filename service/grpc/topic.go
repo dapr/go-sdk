@@ -25,6 +25,7 @@ import (
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
+	"google.golang.org/protobuf/types/known/structpb"
 
 	runtimev1pb "github.com/dapr/dapr/pkg/proto/runtime/v1"
 	"github.com/dapr/go-sdk/service/common"
@@ -141,6 +142,8 @@ func (s *Server) OnTopicEvent(ctx context.Context, in *runtimev1pb.TopicEventReq
 			Topic:           in.GetTopic(),
 			PubsubName:      in.GetPubsubName(),
 			Metadata:        getCustomMetadataFromContext(ctx),
+			TraceID:         getStringValueFromExtension(in.GetExtensions(), "traceid"),
+			TraceParent:     getStringValueFromExtension(in.GetExtensions(), "traceparent"),
 		}
 		h := sub.DefaultHandler
 		if in.GetPath() != "" {
@@ -188,4 +191,19 @@ func (s *Server) OnBulkTopicEvent(ctx context.Context, in *runtimev1pb.TopicEven
 
 func (s *Server) OnBulkTopicEventAlpha1(ctx context.Context, in *runtimev1pb.TopicEventBulkRequest) (*runtimev1pb.TopicEventBulkResponse, error) {
 	return s.OnBulkTopicEvent(ctx, in)
+}
+
+func getStringValueFromExtension(extension *structpb.Struct, key string) string {
+	if extension == nil {
+		return ""
+	}
+	value, ok := extension.GetFields()[key]
+	if !ok {
+		return ""
+	}
+	typed, ok := value.GetKind().(*structpb.Value_StringValue)
+	if !ok {
+		return ""
+	}
+	return typed.StringValue
 }
