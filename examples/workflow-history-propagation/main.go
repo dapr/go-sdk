@@ -68,7 +68,7 @@ func main() {
 	//     Step 1.2.1: ValidateCard (activity)
 	//     Step 1.2.2: CheckSpendingLimits (activity)
 	//     Step 1.2.3: FraudDetection (grandchild wf, propagate lineage)
-	//     Step 1.2.4: SettlePayment (activity, propagate own history)
+	//     Step 1.2.4: SettlePayment (ProcessPayment activity, propagate own history)
 	if err := r.AddWorkflow(MerchantCheckout); err != nil {
 		logger.Fatal(err)
 	}
@@ -310,38 +310,32 @@ func FraudDetection(ctx *workflow.WorkflowContext) (any, error) {
 	}
 
 	fmt.Printf("  [FraudDetection] Received propagated history: %d events (scope: %s)\n",
-		len(history.Events), describeScope(history.Scope))
-
-	// Walk events and track which activities were both scheduled and completed.
-	// Correlate TaskScheduled and TaskCompleted by taskExecutionId, which is
-	// globally unique
-	scheduledByExecID := make(map[string]string) // key=taskExecutionId, val=activity name
-	completed := make(map[string]bool)           // key=activity name
-	for i, event := range history.Events {
-		fmt.Printf("  [FraudDetection]   event[%d]: %s\n", i, describeEventResolved(event, scheduledByExecID))
-		if ts := event.GetTaskScheduled(); ts != nil {
-			scheduledByExecID[ts.GetTaskExecutionId()] = ts.GetName()
-		}
-		if tc := event.GetTaskCompleted(); tc != nil {
-			if name, ok := scheduledByExecID[tc.GetTaskExecutionId()]; ok {
-				completed[name] = true
-			}
-		}
+		len(history.Events()), describeScope(history.Scope()))
+	fmt.Printf("  [FraudDetection] Apps in chain: %v\n", history.GetAppIDs())
+	for _, wf := range history.GetWorkflows() {
+		fmt.Printf("  [FraudDetection]   workflow: app=%s, name=%s, instance=%s\n",
+			wf.AppID, wf.Name, wf.InstanceID)
 	}
-	hasMerchantValidation := completed["ValidateMerchant"]
-	hasCardValidation := completed["ValidateCard"]
-	hasSpendingCheck := completed["CheckSpendingLimits"]
 
-	fmt.Printf("  [FraudDetection] Verification: ValidateMerchant=%v, ValidateCard=%v, CheckSpendingLimits=%v\n",
-		hasMerchantValidation, hasCardValidation, hasSpendingCheck)
+	merchant := history.GetWorkflowByName("MerchantCheckout").GetActivityByName("ValidateMerchant")
+	card := history.GetWorkflowByName("ProcessPayment").GetActivityByName("ValidateCard")
+	spending := history.GetWorkflowByName("ProcessPayment").GetActivityByName("CheckSpendingLimits")
 
-	if !hasMerchantValidation || !hasCardValidation || !hasSpendingCheck {
-		fmt.Println("  [FraudDetection] DENIED — required upstream checks missing")
+	fmt.Printf("  [FraudDetection] Verification:\n")
+	fmt.Printf("  [FraudDetection]   MerchantCheckout/ValidateMerchant: started=%v, completed=%v\n",
+		merchant.Started, merchant.Completed)
+	fmt.Printf("  [FraudDetection]   ProcessPayment/ValidateCard: started=%v, completed=%v\n",
+		card.Started, card.Completed)
+	fmt.Printf("  [FraudDetection]   ProcessPayment/CheckSpendingLimits: started=%v, completed=%v\n",
+		spending.Started, spending.Completed)
+
+	if !merchant.Completed || !card.Completed || !spending.Completed {
+		fmt.Println("  [FraudDetection] DENIED — required upstream checks not completed")
 		return FraudCheckResult{
 			RiskScore:  0.9,
 			Approved:   false,
-			Reason:     "required upstream checks missing from execution history",
-			EventCount: len(history.Events),
+			Reason:     "required upstream checks not completed in propagated history",
+			EventCount: len(history.Events()),
 		}, nil
 	}
 
@@ -355,7 +349,7 @@ func FraudDetection(ctx *workflow.WorkflowContext) (any, error) {
 		RiskScore:  riskScore,
 		Approved:   true,
 		Reason:     "all upstream checks verified in propagated history",
-		EventCount: len(history.Events),
+		EventCount: len(history.Events()),
 	}, nil
 }
 
@@ -400,9 +394,14 @@ func SettlePayment(ctx workflow.ActivityContext) (any, error) {
 
 	eventCount := 0
 	if ph != nil {
-		eventCount = len(ph.Events)
+		eventCount = len(ph.Events())
+		fmt.Printf("  [SettlePayment] Apps in chain: %v\n", ph.GetAppIDs())
+		for _, wf := range ph.GetWorkflows() {
+			fmt.Printf("  [SettlePayment]   workflow: app=%s, name=%s, instance=%s\n",
+				wf.AppID, wf.Name, wf.InstanceID)
+		}
 		scheduledNames := make(map[string]string) // key=taskExecutionId, val=activity name
-		for i, event := range ph.Events {
+		for i, event := range ph.Events() {
 			if ts := event.GetTaskScheduled(); ts != nil {
 				scheduledNames[ts.GetTaskExecutionId()] = ts.GetName()
 			}
@@ -447,7 +446,7 @@ func describeHistory(ph *workflow.PropagatedHistory) string {
 	if ph == nil {
 		return "none"
 	}
-	return fmt.Sprintf("%d events, scope=%s", len(ph.Events), describeScope(ph.Scope))
+	return fmt.Sprintf("%d events, scope=%s", len(ph.Events()), describeScope(ph.Scope()))
 }
 
 func describeScope(scope fmt.Stringer) string {
