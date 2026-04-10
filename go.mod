@@ -5,9 +5,9 @@ go 1.26.0
 require (
 	github.com/dapr/dapr v1.17.0
 	github.com/dapr/durabletask-go v0.11.3
-	github.com/dapr/kit v0.17.0
+	github.com/dapr/kit v0.17.1-0.20260316190405-af26c703b2b1
 	github.com/go-chi/chi/v5 v5.2.2
-	github.com/golang/mock v1.6.0
+	github.com/golang/mock v1.7.0-rc.1
 	github.com/google/uuid v1.6.0
 	github.com/stretchr/testify v1.11.1
 	google.golang.org/grpc v1.79.3
