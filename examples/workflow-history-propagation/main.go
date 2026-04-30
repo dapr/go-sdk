@@ -25,7 +25,9 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/signal"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/dapr/durabletask-go/api/protos"
@@ -96,7 +98,7 @@ func main() {
 		logger.Fatal(err)
 	}
 
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer cancel()
 
 	if err = wclient.StartWorker(ctx, r); err != nil {
@@ -140,7 +142,11 @@ func main() {
 
 	fmt.Println()
 	fmt.Println(banner("COMPLETE"))
-	cancel()
+
+	// Block until SIGINT/SIGTERM so the K8s pod stays Ready and `kubectl logs`
+	// keeps showing the demo. In standalone, Ctrl+C cancels ctx, the workflow
+	// worker stops cleanly, and this returns.
+	<-ctx.Done()
 }
 
 // MerchantCheckout is the top-level workflow. It validates the merchant,
@@ -170,7 +176,8 @@ func MerchantCheckout(ctx *workflow.WorkflowContext) (any, error) {
 	var result string
 	if err := ctx.CallChildWorkflow(ProcessPayment,
 		workflow.WithChildWorkflowInput(req),
-		workflow.WithHistoryPropagation(workflow.PropagateLineage()),
+		workflow.WithHistoryPropagation(
+			workflow.PropagateLineage()),
 	).Await(&result); err != nil {
 		return nil, fmt.Errorf("payment processing failed: %w", err)
 	}
@@ -317,9 +324,26 @@ func FraudDetection(ctx *workflow.WorkflowContext) (any, error) {
 			wf.AppID, wf.Name, wf.InstanceID)
 	}
 
-	merchant := history.GetWorkflowByName("MerchantCheckout").GetActivityByName("ValidateMerchant")
-	card := history.GetWorkflowByName("ProcessPayment").GetActivityByName("ValidateCard")
-	spending := history.GetWorkflowByName("ProcessPayment").GetActivityByName("CheckSpendingLimits")
+	merchantWf, err := history.GetWorkflowByName("MerchantCheckout")
+	if err != nil {
+		return FraudCheckResult{}, fmt.Errorf("expected MerchantCheckout in propagated history: %w", err)
+	}
+	processPaymentWf, err := history.GetWorkflowByName("ProcessPayment")
+	if err != nil {
+		return FraudCheckResult{}, fmt.Errorf("expected ProcessPayment in propagated history: %w", err)
+	}
+	merchant, err := merchantWf.GetActivityByName("ValidateMerchant")
+	if err != nil {
+		return FraudCheckResult{}, fmt.Errorf("expected ValidateMerchant in propagated history: %w", err)
+	}
+	card, err := processPaymentWf.GetActivityByName("ValidateCard")
+	if err != nil {
+		return FraudCheckResult{}, fmt.Errorf("expected ValidateCard in propagated history: %w", err)
+	}
+	spending, err := processPaymentWf.GetActivityByName("CheckSpendingLimits")
+	if err != nil {
+		return FraudCheckResult{}, fmt.Errorf("expected CheckSpendingLimits in propagated history: %w", err)
+	}
 
 	fmt.Printf("  [FraudDetection] Verification:\n")
 	fmt.Printf("  [FraudDetection]   MerchantCheckout/ValidateMerchant: started=%v, completed=%v\n",
