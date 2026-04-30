@@ -3,6 +3,8 @@ kind: Deployment
 metadata:
   name: payment-app-redis
   namespace: default
+  labels:
+    app: payment-app-redis
 spec:
   replicas: 1
   selector:
@@ -24,6 +26,8 @@ kind: Service
 metadata:
   name: payment-app-redis
   namespace: default
+  labels:
+    app: payment-app-redis
 spec:
   selector:
     app: payment-app-redis

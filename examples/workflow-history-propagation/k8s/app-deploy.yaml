@@ -3,6 +3,8 @@ kind: Deployment
 metadata:
   name: payment-app
   namespace: default
+  labels:
+    app: payment-app
 spec:
   replicas: 1
   selector:

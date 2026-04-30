@@ -3,6 +3,8 @@ kind: Configuration
 metadata:
   name: signing
   namespace: default
+  labels:
+    app: payment-app
 spec:
   features:
   - name: WorkflowHistorySigning

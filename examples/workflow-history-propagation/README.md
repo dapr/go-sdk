@@ -154,7 +154,7 @@ In this mode the daprd sidecar should NOT log
 
 - **FraudDetection reports 0 events** — the workflow code didn't request
   propagation. Confirm the parent calls `CallChildWorkflow` /
-  `CallActivity` with `task.WithHistoryPropagation(...)`.
+  `CallActivity` with `workflow.WithHistoryPropagation(...)`.
 - **`propagating unsigned workflow history` warnings in standalone** —
   expected; switch to the Kubernetes path above (or enable Sentry +
   `WorkflowHistorySigning`) if you want signed chunks.

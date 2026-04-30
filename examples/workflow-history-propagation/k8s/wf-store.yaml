@@ -3,6 +3,8 @@ kind: Component
 metadata:
   name: wf-store
   namespace: default
+  labels:
+    app: payment-app
 spec:
   type: state.redis
   version: v1

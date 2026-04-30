@@ -302,13 +302,17 @@ func FraudDetection(ctx *workflow.WorkflowContext) (any, error) {
 		return nil, err
 	}
 
-	fmt.Printf("  [FraudDetection] Checking payment: ****%s, %.2f %s\n",
-		req.CardLast4, req.Amount, req.Currency)
+	if !ctx.IsReplaying() {
+		fmt.Printf("  [FraudDetection] Checking payment: ****%s, %.2f %s\n",
+			req.CardLast4, req.Amount, req.Currency)
+	}
 
 	history := ctx.GetPropagatedHistory()
 	if history == nil {
-		fmt.Println("  [FraudDetection] WARNING: No propagated history received!")
-		fmt.Println("  [FraudDetection] DENIED — cannot verify caller pipeline without history")
+		if !ctx.IsReplaying() {
+			fmt.Println("  [FraudDetection] WARNING: No propagated history received!")
+			fmt.Println("  [FraudDetection] DENIED — cannot verify caller pipeline without history")
+		}
 		return FraudCheckResult{
 			RiskScore: 1.0,
 			Approved:  false,
@@ -316,12 +320,14 @@ func FraudDetection(ctx *workflow.WorkflowContext) (any, error) {
 		}, nil
 	}
 
-	fmt.Printf("  [FraudDetection] Received propagated history: %d events (scope: %s)\n",
-		len(history.Events()), describeScope(history.Scope()))
-	fmt.Printf("  [FraudDetection] Apps in chain: %v\n", history.GetAppIDs())
-	for _, wf := range history.GetWorkflows() {
-		fmt.Printf("  [FraudDetection]   workflow: app=%s, name=%s, instance=%s\n",
-			wf.AppID, wf.Name, wf.InstanceID)
+	if !ctx.IsReplaying() {
+		fmt.Printf("  [FraudDetection] Received propagated history: %d events (scope: %s)\n",
+			len(history.Events()), describeScope(history.Scope()))
+		fmt.Printf("  [FraudDetection] Apps in chain: %v\n", history.GetAppIDs())
+		for _, wf := range history.GetWorkflows() {
+			fmt.Printf("  [FraudDetection]   workflow: app=%s, name=%s, instance=%s\n",
+				wf.AppID, wf.Name, wf.InstanceID)
+		}
 	}
 
 	merchantWf, err := history.GetWorkflowByName("MerchantCheckout")
@@ -345,16 +351,20 @@ func FraudDetection(ctx *workflow.WorkflowContext) (any, error) {
 		return FraudCheckResult{}, fmt.Errorf("expected CheckSpendingLimits in propagated history: %w", err)
 	}
 
-	fmt.Printf("  [FraudDetection] Verification:\n")
-	fmt.Printf("  [FraudDetection]   MerchantCheckout/ValidateMerchant: started=%v, completed=%v\n",
-		merchant.Started, merchant.Completed)
-	fmt.Printf("  [FraudDetection]   ProcessPayment/ValidateCard: started=%v, completed=%v\n",
-		card.Started, card.Completed)
-	fmt.Printf("  [FraudDetection]   ProcessPayment/CheckSpendingLimits: started=%v, completed=%v\n",
-		spending.Started, spending.Completed)
+	if !ctx.IsReplaying() {
+		fmt.Printf("  [FraudDetection] Verification:\n")
+		fmt.Printf("  [FraudDetection]   MerchantCheckout/ValidateMerchant: started=%v, completed=%v\n",
+			merchant.Started, merchant.Completed)
+		fmt.Printf("  [FraudDetection]   ProcessPayment/ValidateCard: started=%v, completed=%v\n",
+			card.Started, card.Completed)
+		fmt.Printf("  [FraudDetection]   ProcessPayment/CheckSpendingLimits: started=%v, completed=%v\n",
+			spending.Started, spending.Completed)
+	}
 
 	if !merchant.Completed || !card.Completed || !spending.Completed {
-		fmt.Println("  [FraudDetection] DENIED — required upstream checks not completed")
+		if !ctx.IsReplaying() {
+			fmt.Println("  [FraudDetection] DENIED — required upstream checks not completed")
+		}
 		return FraudCheckResult{
 			RiskScore:  0.9,
 			Approved:   false,
@@ -368,7 +378,9 @@ func FraudDetection(ctx *workflow.WorkflowContext) (any, error) {
 		riskScore = 0.3
 	}
 
-	fmt.Printf("  [FraudDetection] APPROVED (risk=%.2f)\n", riskScore)
+	if !ctx.IsReplaying() {
+		fmt.Printf("  [FraudDetection] APPROVED (risk=%.2f)\n", riskScore)
+	}
 	return FraudCheckResult{
 		RiskScore:  riskScore,
 		Approved:   true,
