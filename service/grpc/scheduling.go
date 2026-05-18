@@ -26,7 +26,17 @@ func (s *Server) AddJobEventHandler(name string, fn common.JobEventHandler) erro
 
 // OnJobEvent is invoked by the sidecar following a scheduled job registered in
 // the scheduler
+func (s *Server) OnJobEvent(ctx context.Context, in *runtimepb.JobEventRequest) (*runtimepb.JobEventResponse, error) {
+	return s.onJobEvent(ctx, in)
+}
+
+// OnJobEventAlpha1 is invoked by older sidecars that still use the AppCallbackAlpha
+// service. Retained for backwards compatibility. New sidecars call OnJobEvent.
 func (s *Server) OnJobEventAlpha1(ctx context.Context, in *runtimepb.JobEventRequest) (*runtimepb.JobEventResponse, error) {
+	return s.onJobEvent(ctx, in)
+}
+
+func (s *Server) onJobEvent(ctx context.Context, in *runtimepb.JobEventRequest) (*runtimepb.JobEventResponse, error) {
 	// parse the job type from the method or name
 	jobType, found := strings.CutPrefix(in.GetMethod(), "job/")
 	if !found {

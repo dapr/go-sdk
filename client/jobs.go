@@ -18,6 +18,8 @@ import (
 	"errors"
 	"time"
 
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/anypb"
 	"google.golang.org/protobuf/types/known/durationpb"
 
@@ -173,10 +175,15 @@ func (c *GRPCClient) ScheduleJobAlpha1(ctx context.Context, job *Job) error {
 	if job.FailurePolicy != nil {
 		jobRequest.FailurePolicy = job.FailurePolicy.GetPBFailurePolicy()
 	}
-	_, err := c.protoClient.ScheduleJobAlpha1(ctx, &runtimepb.ScheduleJobRequest{
+	req := &runtimepb.ScheduleJobRequest{
 		Job:       jobRequest,
 		Overwrite: job.Overwrite,
-	})
+	}
+	_, err := c.protoClient.ScheduleJob(ctx, req)
+	if err != nil && status.Code(err) == codes.Unimplemented {
+		//nolint:staticcheck // SA1019 Deprecated: use ScheduleJob instead.
+		_, err = c.protoClient.ScheduleJobAlpha1(ctx, req)
+	}
 	return err
 }
 
@@ -186,9 +193,14 @@ func (c *GRPCClient) GetJobAlpha1(ctx context.Context, name string) (*Job, error
 		return nil, errors.New("job name is required")
 	}
 
-	resp, err := c.protoClient.GetJobAlpha1(ctx, &runtimepb.GetJobRequest{
+	req := &runtimepb.GetJobRequest{
 		Name: name,
-	})
+	}
+	resp, err := c.protoClient.GetJob(ctx, req)
+	if err != nil && status.Code(err) == codes.Unimplemented {
+		//nolint:staticcheck // SA1019 Deprecated: use GetJob instead.
+		resp, err = c.protoClient.GetJobAlpha1(ctx, req)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -222,8 +234,13 @@ func (c *GRPCClient) DeleteJobAlpha1(ctx context.Context, name string) error {
 		return errors.New("job name is required")
 	}
 
-	_, err := c.protoClient.DeleteJobAlpha1(ctx, &runtimepb.DeleteJobRequest{
+	req := &runtimepb.DeleteJobRequest{
 		Name: name,
-	})
+	}
+	_, err := c.protoClient.DeleteJob(ctx, req)
+	if err != nil && status.Code(err) == codes.Unimplemented {
+		//nolint:staticcheck // SA1019 Deprecated: use DeleteJob instead.
+		_, err = c.protoClient.DeleteJobAlpha1(ctx, req)
+	}
 	return err
 }
