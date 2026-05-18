@@ -69,11 +69,12 @@ jobs:
       - name: Run go mod tidy check diff
         run: make modtidy check-diff
 
-      - name: Determine latest Dapr Runtime version (including prerelease)
+      - name: Set Dapr Runtime version
+        # TODO: revert to release-detection (or shared action from PR #815) after dapr v1.18 GA
         run: |
-          RUNTIME_VERSION=$(curl -s "https://api.github.com/repos/dapr/dapr/releases" | grep '"tag_name"' | head -n 1 | cut -d ':' -f2 | tr -d '",v ')
+          RUNTIME_VERSION=1.18.0-rc.3
           echo "DAPR_RUNTIME_VER=$RUNTIME_VERSION" >> $GITHUB_ENV
-          echo "Found $RUNTIME_VERSION"
+          echo "Using $RUNTIME_VERSION"
 
       - name: Determine latest Dapr Cli version (including prerelease)
         run: |
