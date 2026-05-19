@@ -30,8 +30,9 @@ func (s *Server) OnJobEvent(ctx context.Context, in *runtimepb.JobEventRequest) 
 	return s.onJobEvent(ctx, in)
 }
 
-// OnJobEventAlpha1 is invoked by older sidecars that still use the AppCallbackAlpha
-// service. Retained for backwards compatibility. New sidecars call OnJobEvent.
+// Deprecated: OnJobEventAlpha1 is invoked by older sidecars that still use the AppCallbackAlpha
+// service. Retained for backwards compatibility. New sidecars call OnJobEvent. This will be
+// removed in a future release.
 func (s *Server) OnJobEventAlpha1(ctx context.Context, in *runtimepb.JobEventRequest) (*runtimepb.JobEventResponse, error) {
 	return s.onJobEvent(ctx, in)
 }

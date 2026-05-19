@@ -157,8 +157,9 @@ func WithJobDropFailurePolicy() JobOption {
 	}
 }
 
-// ScheduleJobAlpha1 raises and schedules a job.
-func (c *GRPCClient) ScheduleJobAlpha1(ctx context.Context, job *Job) error {
+// ScheduleJob creates and schedules a job. Calls the stable Dapr ScheduleJob
+// RPC and falls back to the alpha RPC if the sidecar does not yet implement it.
+func (c *GRPCClient) ScheduleJob(ctx context.Context, job *Job) error {
 	if job.Name == "" {
 		return errors.New("job name is required")
 	}
@@ -187,8 +188,14 @@ func (c *GRPCClient) ScheduleJobAlpha1(ctx context.Context, job *Job) error {
 	return err
 }
 
-// GetJobAlpha1 retrieves a scheduled job.
-func (c *GRPCClient) GetJobAlpha1(ctx context.Context, name string) (*Job, error) {
+// Deprecated: use ScheduleJob instead. ScheduleJobAlpha1 creates and schedules a job.
+func (c *GRPCClient) ScheduleJobAlpha1(ctx context.Context, job *Job) error {
+	return c.ScheduleJob(ctx, job)
+}
+
+// GetJob retrieves a scheduled job. Calls the stable Dapr GetJob RPC and
+// falls back to the alpha RPC if the sidecar does not yet implement it.
+func (c *GRPCClient) GetJob(ctx context.Context, name string) (*Job, error) {
 	if name == "" {
 		return nil, errors.New("job name is required")
 	}
@@ -228,8 +235,14 @@ func (c *GRPCClient) GetJobAlpha1(ctx context.Context, name string) (*Job, error
 	}, nil
 }
 
-// DeleteJobAlpha1 deletes a scheduled job.
-func (c *GRPCClient) DeleteJobAlpha1(ctx context.Context, name string) error {
+// Deprecated: use GetJob instead. GetJobAlpha1 retrieves a scheduled job.
+func (c *GRPCClient) GetJobAlpha1(ctx context.Context, name string) (*Job, error) {
+	return c.GetJob(ctx, name)
+}
+
+// DeleteJob deletes a scheduled job. Calls the stable Dapr DeleteJob RPC and
+// falls back to the alpha RPC if the sidecar does not yet implement it.
+func (c *GRPCClient) DeleteJob(ctx context.Context, name string) error {
 	if name == "" {
 		return errors.New("job name is required")
 	}
@@ -243,4 +256,9 @@ func (c *GRPCClient) DeleteJobAlpha1(ctx context.Context, name string) error {
 		_, err = c.protoClient.DeleteJobAlpha1(ctx, req)
 	}
 	return err
+}
+
+// Deprecated: use DeleteJob instead. DeleteJobAlpha1 deletes a scheduled job.
+func (c *GRPCClient) DeleteJobAlpha1(ctx context.Context, name string) error {
+	return c.DeleteJob(ctx, name)
 }

@@ -20,7 +20,7 @@ import (
 	actorErr "github.com/dapr/go-sdk/actor/error"
 	actorMock "github.com/dapr/go-sdk/actor/mock"
 
-	"github.com/golang/mock/gomock"
+	"go.uber.org/mock/gomock"
 	"github.com/stretchr/testify/assert"
 )
 
