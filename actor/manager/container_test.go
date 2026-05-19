@@ -16,9 +16,9 @@ package manager
 import (
 	"testing"
 
-	"go.uber.org/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/mock/gomock"
 
 	actorErr "github.com/dapr/go-sdk/actor/error"
 	actorMock "github.com/dapr/go-sdk/actor/mock"
