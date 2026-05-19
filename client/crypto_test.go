@@ -24,6 +24,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	commonv1 "github.com/dapr/dapr/pkg/proto/common/v1"
 	runtimev1pb "github.com/dapr/dapr/pkg/proto/runtime/v1"
@@ -133,7 +135,7 @@ func TestEncrypt(t *testing.T) {
 
 		_, err = io.ReadAll(out)
 		require.Error(t, err)
-		require.ErrorContains(t, err, "context deadline exceeded")
+		require.Equal(t, codes.DeadlineExceeded, status.Code(err))
 	})
 }
 
