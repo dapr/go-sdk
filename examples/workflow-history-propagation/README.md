@@ -48,12 +48,47 @@ Propagation works in either of two modes:
 
 ### Option A: Standalone (`dapr run`)
 
+First-time setup: run `dapr init` if you haven't already. The commands below assume
+you're in `examples/workflow-history-propagation`.
+
+Build the app binary:
+
+<!-- STEP
+name: Build payment-app
+timeout_seconds: 300
+-->
+
 ```bash
-dapr init                                              # if you haven't already
-cd examples/workflow-history-propagation
 go build -o payment-app .
+```
+
+<!-- END_STEP -->
+
+Run it under Dapr — propagation runs end-to-end:
+
+<!-- STEP
+name: Run history propagation demo
+output_match_mode: substring
+expected_stdout_lines:
+  - 'WORKFLOW HISTORY PROPAGATION DEMO'
+  - '[MerchantCheckout] Starting checkout'
+  - '[ValidateMerchant] Validating merchant'
+  - '[ProcessPayment] Starting payment'
+  - 'events (scope: LINEAGE)'
+  - '[FraudDetection] APPROVED'
+  - 'scope=OWN_HISTORY'
+  - '[SettlePayment] SETTLED'
+  - '= COMPLETE ='
+background: true
+sleep: 30
+timeout_seconds: 90
+-->
+
+```bash
 dapr run --app-id payment-app --resources-path config -- ./payment-app
 ```
+
+<!-- END_STEP -->
 
 Note: build the binary and run it directly rather than `go run .` to ensure Ctrl+C
 properly allows `dapr run` to exit.
