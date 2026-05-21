@@ -18,6 +18,8 @@ import (
 	"errors"
 	"time"
 
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/anypb"
 	"google.golang.org/protobuf/types/known/durationpb"
 
@@ -155,8 +157,9 @@ func WithJobDropFailurePolicy() JobOption {
 	}
 }
 
-// ScheduleJobAlpha1 raises and schedules a job.
-func (c *GRPCClient) ScheduleJobAlpha1(ctx context.Context, job *Job) error {
+// ScheduleJob creates and schedules a job. Calls the stable Dapr ScheduleJob
+// RPC and falls back to the alpha RPC if the sidecar does not yet implement it.
+func (c *GRPCClient) ScheduleJob(ctx context.Context, job *Job) error {
 	if job.Name == "" {
 		return errors.New("job name is required")
 	}
@@ -173,22 +176,38 @@ func (c *GRPCClient) ScheduleJobAlpha1(ctx context.Context, job *Job) error {
 	if job.FailurePolicy != nil {
 		jobRequest.FailurePolicy = job.FailurePolicy.GetPBFailurePolicy()
 	}
-	_, err := c.protoClient.ScheduleJobAlpha1(ctx, &runtimepb.ScheduleJobRequest{
+	req := &runtimepb.ScheduleJobRequest{
 		Job:       jobRequest,
 		Overwrite: job.Overwrite,
-	})
+	}
+	_, err := c.protoClient.ScheduleJob(ctx, req)
+	if err != nil && status.Code(err) == codes.Unimplemented {
+		//nolint:staticcheck // SA1019 Deprecated: use ScheduleJob instead.
+		_, err = c.protoClient.ScheduleJobAlpha1(ctx, req)
+	}
 	return err
 }
 
-// GetJobAlpha1 retrieves a scheduled job.
-func (c *GRPCClient) GetJobAlpha1(ctx context.Context, name string) (*Job, error) {
+// Deprecated: use ScheduleJob instead. ScheduleJobAlpha1 creates and schedules a job.
+func (c *GRPCClient) ScheduleJobAlpha1(ctx context.Context, job *Job) error {
+	return c.ScheduleJob(ctx, job)
+}
+
+// GetJob retrieves a scheduled job. Calls the stable Dapr GetJob RPC and
+// falls back to the alpha RPC if the sidecar does not yet implement it.
+func (c *GRPCClient) GetJob(ctx context.Context, name string) (*Job, error) {
 	if name == "" {
 		return nil, errors.New("job name is required")
 	}
 
-	resp, err := c.protoClient.GetJobAlpha1(ctx, &runtimepb.GetJobRequest{
+	req := &runtimepb.GetJobRequest{
 		Name: name,
-	})
+	}
+	resp, err := c.protoClient.GetJob(ctx, req)
+	if err != nil && status.Code(err) == codes.Unimplemented {
+		//nolint:staticcheck // SA1019 Deprecated: use GetJob instead.
+		resp, err = c.protoClient.GetJobAlpha1(ctx, req)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -216,14 +235,30 @@ func (c *GRPCClient) GetJobAlpha1(ctx context.Context, name string) (*Job, error
 	}, nil
 }
 
-// DeleteJobAlpha1 deletes a scheduled job.
-func (c *GRPCClient) DeleteJobAlpha1(ctx context.Context, name string) error {
+// Deprecated: use GetJob instead. GetJobAlpha1 retrieves a scheduled job.
+func (c *GRPCClient) GetJobAlpha1(ctx context.Context, name string) (*Job, error) {
+	return c.GetJob(ctx, name)
+}
+
+// DeleteJob deletes a scheduled job. Calls the stable Dapr DeleteJob RPC and
+// falls back to the alpha RPC if the sidecar does not yet implement it.
+func (c *GRPCClient) DeleteJob(ctx context.Context, name string) error {
 	if name == "" {
 		return errors.New("job name is required")
 	}
 
-	_, err := c.protoClient.DeleteJobAlpha1(ctx, &runtimepb.DeleteJobRequest{
+	req := &runtimepb.DeleteJobRequest{
 		Name: name,
-	})
+	}
+	_, err := c.protoClient.DeleteJob(ctx, req)
+	if err != nil && status.Code(err) == codes.Unimplemented {
+		//nolint:staticcheck // SA1019 Deprecated: use DeleteJob instead.
+		_, err = c.protoClient.DeleteJobAlpha1(ctx, req)
+	}
 	return err
+}
+
+// Deprecated: use DeleteJob instead. DeleteJobAlpha1 deletes a scheduled job.
+func (c *GRPCClient) DeleteJobAlpha1(ctx context.Context, name string) error {
+	return c.DeleteJob(ctx, name)
 }

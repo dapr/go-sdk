@@ -232,13 +232,31 @@ type Client interface {
 	// ImplActorClientStub is to impl user defined actor client stub
 	ImplActorClientStub(actorClientStub actor.Client, opt ...config.Option)
 
+	// ScheduleJob creates and schedules a job. Falls back to the alpha API
+	// if the sidecar does not yet implement the stable RPC.
+	ScheduleJob(ctx context.Context, req *Job) error
+
+	// GetJob returns a scheduled job. Falls back to the alpha API if the
+	// sidecar does not yet implement the stable RPC.
+	GetJob(ctx context.Context, name string) (*Job, error)
+
+	// DeleteJob deletes a scheduled job. Falls back to the alpha API if the
+	// sidecar does not yet implement the stable RPC.
+	DeleteJob(ctx context.Context, name string) error
+
 	// ScheduleJobAlpha1 creates and schedules a job.
+	//
+	// Deprecated: use ScheduleJob instead.
 	ScheduleJobAlpha1(ctx context.Context, req *Job) error
 
 	// GetJobAlpha1 returns a scheduled job.
+	//
+	// Deprecated: use GetJob instead.
 	GetJobAlpha1(ctx context.Context, name string) (*Job, error)
 
 	// DeleteJobAlpha1 deletes a scheduled job.
+	//
+	// Deprecated: use DeleteJob instead.
 	DeleteJobAlpha1(ctx context.Context, name string) error
 
 	// ConverseAlpha1 interacts with a conversational AI model.
