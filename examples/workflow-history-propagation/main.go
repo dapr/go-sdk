@@ -330,23 +330,23 @@ func FraudDetection(ctx *workflow.WorkflowContext) (any, error) {
 		}
 	}
 
-	merchantWf, err := history.GetWorkflowByName("MerchantCheckout")
+	merchantWf, err := history.GetLastWorkflowByName("MerchantCheckout")
 	if err != nil {
 		return FraudCheckResult{}, fmt.Errorf("expected MerchantCheckout in propagated history: %w", err)
 	}
-	processPaymentWf, err := history.GetWorkflowByName("ProcessPayment")
+	processPaymentWf, err := history.GetLastWorkflowByName("ProcessPayment")
 	if err != nil {
 		return FraudCheckResult{}, fmt.Errorf("expected ProcessPayment in propagated history: %w", err)
 	}
-	merchant, err := merchantWf.GetActivityByName("ValidateMerchant")
+	merchant, err := merchantWf.GetLastActivityByName("ValidateMerchant")
 	if err != nil {
 		return FraudCheckResult{}, fmt.Errorf("expected ValidateMerchant in propagated history: %w", err)
 	}
-	card, err := processPaymentWf.GetActivityByName("ValidateCard")
+	card, err := processPaymentWf.GetLastActivityByName("ValidateCard")
 	if err != nil {
 		return FraudCheckResult{}, fmt.Errorf("expected ValidateCard in propagated history: %w", err)
 	}
-	spending, err := processPaymentWf.GetActivityByName("CheckSpendingLimits")
+	spending, err := processPaymentWf.GetLastActivityByName("CheckSpendingLimits")
 	if err != nil {
 		return FraudCheckResult{}, fmt.Errorf("expected CheckSpendingLimits in propagated history: %w", err)
 	}
