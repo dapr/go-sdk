@@ -115,13 +115,14 @@ func (c *GRPCClient) ImplActorClientStub(actorClientStub actor.Client, opt ...co
 }
 
 type RegisterActorReminderRequest struct {
-	ActorType string
-	ActorID   string
-	Name      string
-	DueTime   string
-	Period    string
-	TTL       string
-	Data      []byte
+	ActorType     string
+	ActorID       string
+	Name          string
+	DueTime       string
+	Period        string
+	TTL           string
+	Data          []byte
+	FailurePolicy FailurePolicy
 }
 
 // RegisterActorReminder registers a new reminder to target actor. Then, a reminder would be created and
@@ -151,6 +152,10 @@ func (c *GRPCClient) RegisterActorReminder(ctx context.Context, in *RegisterActo
 		Period:    in.Period,
 		Ttl:       in.TTL,
 		Data:      in.Data,
+	}
+
+	if in.FailurePolicy != nil {
+		req.FailurePolicy = in.FailurePolicy.GetPBFailurePolicy()
 	}
 
 	_, err = c.protoClient.RegisterActorReminder(ctx, req)

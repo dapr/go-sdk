@@ -21,6 +21,15 @@ import (
 	"strings"
 )
 
+const (
+	dnsScheme          = "dns"
+	unixScheme         = "unix"
+	unixAbstractScheme = "unix-abstract"
+	vsockScheme        = "vsock"
+	httpScheme         = "http"
+	httpsScheme        = "https"
+)
+
 // Parsed represents a parsed gRPC endpoint.
 type Parsed struct {
 	Target string
@@ -37,6 +46,7 @@ func ParseGRPCEndpoint(endpoint string) (Parsed, error) {
 	var hostname string
 	var tls bool
 
+	noSchemeInEndpoint := false
 	urlSplit := strings.Split(target, ":")
 	if len(urlSplit) == 3 && !strings.Contains(target, "://") {
 		target = strings.Replace(target, ":", "://", 1)
@@ -46,13 +56,14 @@ func ParseGRPCEndpoint(endpoint string) (Parsed, error) {
 		urlSplit = strings.Split(target, "://")
 		if len(urlSplit) == 1 {
 			target = "dns://" + target
+			noSchemeInEndpoint = true
 		} else {
 			scheme := urlSplit[0]
 			if !schemeKnown(scheme) {
 				return Parsed{}, fmt.Errorf(("unknown scheme: %q"), scheme)
 			}
 
-			if scheme == "dns" {
+			if scheme == dnsScheme {
 				urlSplit = strings.Split(target, "/")
 				if len(urlSplit) < 4 {
 					return Parsed{}, fmt.Errorf("invalid dns scheme: %q", target)
@@ -79,7 +90,7 @@ func ParseGRPCEndpoint(endpoint string) (Parsed, error) {
 	}
 
 	if ptarget.Query().Has("tls") {
-		if ptarget.Scheme == "http" || ptarget.Scheme == "https" {
+		if ptarget.Scheme == httpScheme || ptarget.Scheme == httpsScheme {
 			return Parsed{}, errors.New("cannot use tls query parameter with http(s) scheme")
 		}
 
@@ -92,11 +103,11 @@ func ParseGRPCEndpoint(endpoint string) (Parsed, error) {
 	}
 
 	scheme := ptarget.Scheme
-	if scheme == "https" {
+	if scheme == httpsScheme {
 		tls = true
 	}
-	if scheme == "http" || scheme == "https" {
-		scheme = "dns"
+	if scheme == httpScheme || scheme == httpsScheme {
+		scheme = dnsScheme
 	}
 
 	hostname = ptarget.Host
@@ -112,7 +123,7 @@ func ParseGRPCEndpoint(endpoint string) (Parsed, error) {
 	}
 
 	if len(hostname) == 0 {
-		if scheme == "dns" {
+		if scheme == dnsScheme {
 			hostname = "localhost"
 		} else {
 			hostname = ptarget.Path
@@ -120,20 +131,20 @@ func ParseGRPCEndpoint(endpoint string) (Parsed, error) {
 	}
 
 	switch scheme {
-	case "unix":
+	case unixScheme:
 		separator := ":"
 		if strings.HasPrefix(endpoint, "unix://") {
 			separator = "://"
 		}
 		target = scheme + separator + hostname
 
-	case "vsock":
+	case vsockScheme:
 		target = scheme + ":" + hostname + ":" + port
 
-	case "unix-abstract":
+	case unixAbstractScheme:
 		target = scheme + ":" + hostname
 
-	case "dns":
+	case dnsScheme:
 		if len(ptarget.Path) > 0 {
 			return Parsed{}, fmt.Errorf("path is not allowed: %q", ptarget.Path)
 		}
@@ -142,9 +153,18 @@ func ParseGRPCEndpoint(endpoint string) (Parsed, error) {
 			hostname = "[" + hostname + "]"
 		}
 		if len(dnsAuthority) > 0 {
-			dnsAuthority = "//" + dnsAuthority + "/"
+			target = scheme + "://" + dnsAuthority + "/" + hostname + ":" + port
+		} else if ptarget.Scheme == dnsScheme && !noSchemeInEndpoint {
+			// when real scheme is dns, keep the previous format (dns:hostname:port)
+			target = scheme + ":" + hostname + ":" + port
+		} else {
+			// Use passthrough resolver (just host:port) instead of the dns: scheme.
+			// In gRPC v1.78, targets of the form dns:host:port can be treated as
+			// opaque by grpc.DialContext(), so the DNS resolver is not invoked.
+			// Using a bare host:port target makes grpc.DialContext() fall back to
+			// the passthrough resolver, which resolves and connects correctly.
+			target = hostname + ":" + port
 		}
-		target = scheme + ":" + dnsAuthority + hostname + ":" + port
 
 	default:
 		return Parsed{}, fmt.Errorf("unsupported scheme: %q", scheme)
@@ -158,12 +178,12 @@ func ParseGRPCEndpoint(endpoint string) (Parsed, error) {
 
 func schemeKnown(scheme string) bool {
 	for _, s := range []string{
-		"dns",
-		"unix",
-		"unix-abstract",
-		"vsock",
-		"http",
-		"https",
+		dnsScheme,
+		unixScheme,
+		unixAbstractScheme,
+		vsockScheme,
+		httpScheme,
+		httpsScheme,
 	} {
 		if scheme == s {
 			return true

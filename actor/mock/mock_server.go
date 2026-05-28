@@ -9,7 +9,7 @@ import (
 	reflect "reflect"
 
 	actor "github.com/dapr/go-sdk/actor"
-	gomock "github.com/golang/mock/gomock"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockClient is a mock of Client interface.

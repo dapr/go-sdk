@@ -17,6 +17,7 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/dapr/go-sdk/service/common"
 	daprd "github.com/dapr/go-sdk/service/http"
@@ -43,28 +44,30 @@ var importantSubscription = &common.Subscription{
 	Priority:   1,
 }
 
+var logger = log.New(os.Stdout, "", log.LstdFlags)
+
 func main() {
 	s := daprd.NewService(":8080")
 
 	if err := s.AddTopicEventHandler(defaultSubscription, eventHandler); err != nil {
-		log.Fatalf("error adding topic subscription: %v", err)
+		logger.Fatalf("error adding topic subscription: %v", err)
 	}
 
 	if err := s.AddTopicEventHandler(importantSubscription, importantEventHandler); err != nil {
-		log.Fatalf("error adding topic subscription: %v", err)
+		logger.Fatalf("error adding topic subscription: %v", err)
 	}
 
 	if err := s.Start(); err != nil && err != http.ErrServerClosed {
-		log.Fatalf("error listenning: %v", err)
+		logger.Fatalf("error listening: %v", err)
 	}
 }
 
 func eventHandler(ctx context.Context, e *common.TopicEvent) (retry bool, err error) {
-	log.Printf("event - PubsubName: %s, Topic: %s, ID: %s, Data: %s", e.PubsubName, e.Topic, e.ID, e.Data)
+	logger.Printf("event - PubsubName: %s, Topic: %s, ID: %s, Data: %s", e.PubsubName, e.Topic, e.ID, e.Data)
 	return false, nil
 }
 
 func importantEventHandler(ctx context.Context, e *common.TopicEvent) (retry bool, err error) {
-	log.Printf("important event - PubsubName: %s, Topic: %s, ID: %s, Data: %s", e.PubsubName, e.Topic, e.ID, e.Data)
+	logger.Printf("important event - PubsubName: %s, Topic: %s, ID: %s, Data: %s", e.PubsubName, e.Topic, e.ID, e.Data)
 	return false, nil
 }

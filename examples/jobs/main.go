@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"os"
 	"time"
 
 	"google.golang.org/protobuf/types/known/anypb"
@@ -15,20 +16,22 @@ import (
 	daprs "github.com/dapr/go-sdk/service/grpc"
 )
 
+var logger = log.New(os.Stdout, "", log.LstdFlags)
+
 func main() {
 	server, err := daprs.NewService(":50070")
 	if err != nil {
-		log.Fatalf("failed to start the server: %v", err)
+		logger.Fatalf("failed to start the server: %v", err)
 	}
 
 	if err = server.AddJobEventHandler("prod-db-backup", prodDBBackupHandler); err != nil {
-		log.Fatalf("failed to register job event handler: %v", err)
+		logger.Fatalf("failed to register job event handler: %v", err)
 	}
 
-	log.Println("starting server")
+	logger.Println("starting server")
 	go func() {
 		if err = server.Start(); err != nil {
-			log.Fatalf("failed to start server: %v", err)
+			logger.Fatalf("failed to start server: %v", err)
 		}
 	}()
 
@@ -90,7 +93,7 @@ func main() {
 	}
 
 	if err = server.Stop(); err != nil {
-		log.Fatalf("failed to stop server: %v\n", err)
+		logger.Fatalf("failed to stop server: %v\n", err)
 	}
 }
 

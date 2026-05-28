@@ -183,7 +183,9 @@ func (s *Server) registerBaseHandler() {
 			return
 		}
 		w.WriteHeader(http.StatusOK)
-		_, _ = w.Write(rspData)
+		if _, writeErr := w.Write(rspData); writeErr != nil { //nolint:gosec // G705 false positive: rspData is from internal handler, not user input
+			return
+		}
 	}
 	s.mux.Put("/actors/{actorType}/{actorId}/method/{methodName}", fInvoke)
 

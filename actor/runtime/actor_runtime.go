@@ -41,6 +41,7 @@ var (
 )
 
 // NewActorRuntime creates an empty ActorRuntime.
+//
 // Deprecated: use NewActorRuntimeContext instead.
 func NewActorRuntime() *ActorRunTime {
 	return &ActorRunTime{ctx: NewActorRuntimeContext()}
@@ -52,6 +53,7 @@ func NewActorRuntimeContext() *ActorRunTimeContext {
 }
 
 // GetActorRuntimeInstance gets or create runtime instance.
+//
 // Deprecated: use GetActorRuntimeInstanceContext instead.
 func GetActorRuntimeInstance() *ActorRunTime {
 	if actorRuntimeInstance == nil {

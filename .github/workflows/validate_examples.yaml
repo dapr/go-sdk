@@ -38,9 +38,9 @@ jobs:
       CHECKOUT_REF: ${{ github.ref }}
     outputs:
       DAPR_INSTALL_URL: ${{ env.DAPR_INSTALL_URL }}
-      DAPR_CLI_VER: 1.16.0-rc.1
+      DAPR_CLI_VER: ${{ steps.outputs.outputs.DAPR_CLI_VER }}
       DAPR_CLI_REF: ${{ steps.outputs.outputs.DAPR_CLI_REF }}
-      DAPR_RUNTIME_VER: 1.16.0-rc.3
+      DAPR_RUNTIME_VER: ${{ steps.outputs.outputs.DAPR_RUNTIME_VER }}
       CHECKOUT_REPO: ${{ steps.outputs.outputs.CHECKOUT_REPO }}
       CHECKOUT_REF: ${{ steps.outputs.outputs.CHECKOUT_REF }}
       DAPR_REF: ${{ steps.outputs.outputs.DAPR_REF }}
@@ -69,15 +69,16 @@ jobs:
       - name: Run go mod tidy check diff
         run: make modtidy check-diff
 
-      - name: Determine latest Dapr Runtime version
+      - name: Set Dapr Runtime version
+        # TODO: revert to release-detection (or shared action from PR #815) after dapr v1.18 GA
         run: |
-          RUNTIME_VERSION=$(curl -s "https://api.github.com/repos/dapr/dapr/releases/latest" | grep '"tag_name"' | cut -d ':' -f2 | tr -d '",v')
+          RUNTIME_VERSION=1.18.0-rc.4
           echo "DAPR_RUNTIME_VER=$RUNTIME_VERSION" >> $GITHUB_ENV
-          echo "Found $RUNTIME_VERSION"
+          echo "Using $RUNTIME_VERSION"
 
-      - name: Determine latest Dapr Cli version
+      - name: Determine latest Dapr Cli version (including prerelease)
         run: |
-          CLI_VERSION=$(curl -s "https://api.github.com/repos/dapr/cli/releases/latest" | grep '"tag_name"' | cut -d ':' -f2 | tr -d '",v')
+          CLI_VERSION=$(curl -s "https://api.github.com/repos/dapr/cli/releases" | grep '"tag_name"' | head -n 1 | cut -d ':' -f2 | tr -d '",v ')
           echo "DAPR_CLI_VER=$CLI_VERSION" >> $GITHUB_ENV
           echo "Found $CLI_VERSION"
 
@@ -164,7 +165,8 @@ jobs:
           [
             "actor",
             "configuration",
-            "conversation",
+            "conversation-alpha1",
+            "conversation-alpha2",
             "crypto",
             "jobs",
             "grpc-service",
@@ -174,6 +176,7 @@ jobs:
             "service",
             "socket",
             "workflow",
+            "workflow-history-propagation",
             "workflow-parallel",
             "workflow-taskexecutionid"
           ]

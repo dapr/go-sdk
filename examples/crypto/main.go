@@ -21,11 +21,13 @@ const (
 	SymmetricKeyName = "symmetric-key-256"
 )
 
+var logger = log.New(os.Stdout, "", log.LstdFlags)
+
 func main() {
 	// Create a new Dapr SDK client
 	client, err := dapr.NewClient()
 	if err != nil {
-		log.Fatalf("Failed to initialize the Dapr client: %v", err)
+		logger.Fatalf("Failed to initialize the Dapr client: %v", err)
 	}
 	defer client.Close()
 
@@ -51,13 +53,13 @@ func encryptDecryptString(client dapr.Client) {
 		},
 	)
 	if err != nil {
-		log.Fatalf("Failed to encrypt the message: %v", err)
+		logger.Fatalf("Failed to encrypt the message: %v", err)
 	}
 
 	// The method returns a readable stream, which we read in full in memory
 	encBytes, err := io.ReadAll(encStream)
 	if err != nil {
-		log.Fatalf("Failed to read the stream for the encrypted message: %v", err)
+		logger.Fatalf("Failed to read the stream for the encrypted message: %v", err)
 	}
 
 	fmt.Printf("Encrypted the message, got %d bytes\n", len(encBytes))
@@ -73,13 +75,13 @@ func encryptDecryptString(client dapr.Client) {
 		},
 	)
 	if err != nil {
-		log.Fatalf("Failed to decrypt the message: %v", err)
+		logger.Fatalf("Failed to decrypt the message: %v", err)
 	}
 
 	// The method returns a readable stream, which we read in full in memory
 	decBytes, err := io.ReadAll(decStream)
 	if err != nil {
-		log.Fatalf("Failed to read the stream for the decrypted message: %v", err)
+		logger.Fatalf("Failed to read the stream for the decrypted message: %v", err)
 	}
 
 	// Print the message on the console
@@ -93,7 +95,7 @@ func encryptDecryptFile(client dapr.Client) {
 	// Get a readable stream to the input file
 	plaintextF, err := os.Open(fileName)
 	if err != nil {
-		log.Fatalf("Failed to open plaintext file: %v", err)
+		logger.Fatalf("Failed to open plaintext file: %v", err)
 	}
 	defer plaintextF.Close()
 
@@ -109,17 +111,17 @@ func encryptDecryptFile(client dapr.Client) {
 		},
 	)
 	if err != nil {
-		log.Fatalf("Failed to encrypt the file: %v", err)
+		logger.Fatalf("Failed to encrypt the file: %v", err)
 	}
 
 	// Write the encrypted data to a file "encrypted.out"
 	encryptedF, err := os.Create("encrypted.out")
 	if err != nil {
-		log.Fatalf("Failed to open destination file: %v", err)
+		logger.Fatalf("Failed to open destination file: %v", err)
 	}
 	_, err = io.Copy(encryptedF, encStream)
 	if err != nil {
-		log.Fatalf("Failed to write encrypted stream to file: %v", err)
+		logger.Fatalf("Failed to write encrypted stream to file: %v", err)
 	}
 	encryptedF.Close()
 
@@ -129,7 +131,7 @@ func encryptDecryptFile(client dapr.Client) {
 	// First, open the file "encrypted.out" again, this time for reading
 	encryptedF, err = os.Open("encrypted.out")
 	if err != nil {
-		log.Fatalf("Failed to open encrypted file: %v", err)
+		logger.Fatalf("Failed to open encrypted file: %v", err)
 	}
 	defer encryptedF.Close()
 
@@ -144,17 +146,17 @@ func encryptDecryptFile(client dapr.Client) {
 		},
 	)
 	if err != nil {
-		log.Fatalf("Failed to decrypt the file: %v", err)
+		logger.Fatalf("Failed to decrypt the file: %v", err)
 	}
 
 	// Write the decrypted data to a file "decrypted.out.jpg"
 	decryptedF, err := os.Create("decrypted.out.jpg")
 	if err != nil {
-		log.Fatalf("Failed to open destination file: %v", err)
+		logger.Fatalf("Failed to open destination file: %v", err)
 	}
 	_, err = io.Copy(decryptedF, decStream)
 	if err != nil {
-		log.Fatalf("Failed to write decrypted stream to file: %v", err)
+		logger.Fatalf("Failed to write decrypted stream to file: %v", err)
 	}
 	decryptedF.Close()
 

@@ -76,7 +76,7 @@ func (s *Server) AddBindingInvocationHandler(route string, fn common.BindingInvo
 			}
 
 			w.Header().Add("Content-Type", "application/json")
-			if _, err := w.Write(out); err != nil {
+			if _, err := w.Write(out); err != nil { //nolint:gosec // G705 false positive: out is from internal handler, not user input
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
