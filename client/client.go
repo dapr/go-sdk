@@ -173,6 +173,13 @@ type Client interface {
 	// The returned cancel function must be called after  finishing with subscribing.
 	SubscribeWithHandler(ctx context.Context, opts SubscriptionOptions, handler SubscriptionHandleFunction) (func() error, error)
 
+	// SubscribeActorEvents registers the handler's actor types with the Dapr
+	// sidecar and hosts them over a bidirectional event stream, with no need
+	// to expose a server port for actor callbacks. The returned stop function
+	// must be called to stop hosting the actor types.
+	// This API is currently in Alpha.
+	SubscribeActorEvents(ctx context.Context, handler ActorEventHandler, opts ActorEventSubscriptionOptions) (func() error, error)
+
 	// DeleteBulkState deletes content for multiple keys from store.
 	DeleteBulkState(ctx context.Context, storeName string, keys []string, meta map[string]string) error
 
