@@ -72,7 +72,7 @@ jobs:
       - name: Set Dapr Runtime version
         # TODO: revert to release-detection (or shared action from PR #815) after dapr v1.18 GA
         run: |
-          RUNTIME_VERSION=1.18.0-rc.4
+          RUNTIME_VERSION=1.18.0
           echo "DAPR_RUNTIME_VER=$RUNTIME_VERSION" >> $GITHUB_ENV
           echo "Using $RUNTIME_VERSION"
 
