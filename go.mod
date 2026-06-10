@@ -1,9 +1,9 @@
 module github.com/dapr/go-sdk
 
-go 1.26.3
+go 1.26.4
 
 require (
-	github.com/dapr/dapr v1.18.0-rc.4
+	github.com/dapr/dapr v1.18.0
 	github.com/dapr/durabletask-go v0.12.1
 	github.com/dapr/kit v0.18.1
 	github.com/go-chi/chi/v5 v5.2.2
