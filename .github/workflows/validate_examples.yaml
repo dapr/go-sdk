@@ -164,6 +164,7 @@ jobs:
         examples:
           [
             "actor",
+            "actor-grpc",
             "configuration",
             "conversation-alpha1",
             "conversation-alpha2",

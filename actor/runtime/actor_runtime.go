@@ -93,6 +93,14 @@ func (r *ActorRunTimeContext) GetJSONSerializedConfig() ([]byte, error) {
 	return data, err
 }
 
+// RegisteredActorTypes returns the names of the actor types registered on
+// this runtime through RegisterActorFactory.
+func (r *ActorRunTimeContext) RegisteredActorTypes() []string {
+	types := make([]string, len(r.config.RegisteredActorTypes))
+	copy(types, r.config.RegisteredActorTypes)
+	return types
+}
+
 func (r *ActorRunTimeContext) InvokeActorMethod(ctx context.Context, actorTypeName, actorID, actorMethod string, payload []byte) ([]byte, actorErr.ActorErr) {
 	mng, ok := r.actorManagers.Load(actorTypeName)
 	if !ok {
