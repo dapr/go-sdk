@@ -70,3 +70,19 @@ jobs:
           description: Release
           webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
           avatarUrl: https://github.githubassets.com/images/modules/logos_page/Octocat.png
+
+  # Opens (or comments on) a tracking issue when the release fails. This
+  # workflow only triggers on v* tags, so failure() already implies a release.
+  notify-on-failure:
+    needs: [build]
+    if: failure()
+    permissions:
+      issues: write
+      actions: read
+    uses: dapr/.github/.github/workflows/open-issue-on-failure.yml@main
+    with:
+      title: "Release publish failed: ${{ github.workflow }} (${{ github.ref_name }})"
+      labels: "release,ci/publish-failure"
+      mention: "@dapr/maintainers-go-sdk @dapr/approvers-go-sdk"
+    secrets:
+      dapr_bot_token: ${{ secrets.DAPR_BOT_TOKEN }}
