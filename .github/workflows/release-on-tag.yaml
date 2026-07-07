@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    name: Create Release on Tag
+    name: Build and Test
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -34,10 +34,13 @@ jobs:
       - name: Test
         run: make test
 
-      - name: Version
-        run: |
-          echo "RELEASE_VERSION=$(echo ${GITHUB_REF:10})" >> $GITHUB_ENV
-
+  # Release creation, split out from build/test so the notifier can watch just
+  # this job.
+  release:
+    name: Create Release on Tag
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
       - name: Release Main
         uses: actions/create-release@v1
         if: ${{ !contains(github.ref , 'rc') }}
@@ -70,3 +73,17 @@ jobs:
           description: Release
           webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
           avatarUrl: https://github.githubassets.com/images/modules/logos_page/Octocat.png
+
+  # Opens (or comments on) a tracking issue only when the release job itself
+  # fails; build/test failures skip release, so its result isn't 'failure'.
+  notify-on-failure:
+    needs: [release]
+    if: always() && needs.release.result == 'failure'
+    permissions:
+      issues: write
+      actions: read
+    uses: dapr/.github/.github/workflows/open-issue-on-failure.yml@main
+    with:
+      title: "Release workflow failed: ${{ github.workflow }} (${{ github.ref_name }})"
+      labels: "release,ci/release-failure"
+      mention: "@dapr/maintainers-go-sdk @dapr/approvers-go-sdk"
