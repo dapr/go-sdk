@@ -152,6 +152,14 @@ func (mr *MockServerMockRecorder) Type() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Type", reflect.TypeOf((*MockServer)(nil).Type))
 }
 
+func (m *MockServer) Activate() error {
+	return nil
+}
+
+func (m *MockServer) Deactivate() error {
+	return nil
+}
+
 // WithContext mocks base method.
 func (m *MockServer) WithContext() actor.ServerContext {
 	m.ctrl.T.Helper()
