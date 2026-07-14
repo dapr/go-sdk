@@ -15,6 +15,7 @@ package grpc
 
 import (
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 
@@ -55,6 +56,7 @@ func startTestServer(server *Server) {
 			panic(err)
 		}
 	}()
+	time.Sleep(time.Second)
 }
 
 func stopTestServer(t *testing.T, server *Server) {
@@ -63,4 +65,53 @@ func stopTestServer(t *testing.T, server *Server) {
 	assert.NotNil(t, server)
 	err := server.Stop()
 	require.NoErrorf(t, err, "error stopping server")
+}
+
+func TestStartServerTimes(t *testing.T) {
+	server := getTestServer()
+
+	startTestServer(server)
+	assert.PanicsWithError(t, "a gRPC server can only be started once", func() {
+		if err := server.Start(); err != nil && err.Error() != "closed" {
+			panic(err)
+		}
+	})
+
+	time.Sleep(time.Second)
+
+	stopTestServer(t, server)
+}
+
+func TestStopServerTimes(t *testing.T) {
+	server := getTestServer()
+	startTestServer(server)
+
+	err := server.Stop()
+	assert.Nilf(t, err, "error stopping server")
+
+	err = server.Stop()
+	assert.Nilf(t, err, "error stopping server")
+}
+
+func TestStopServerBeforeStart(t *testing.T) {
+	server := getTestServer()
+	assert.NotNil(t, server)
+	err := server.Stop()
+	assert.NotNilf(t, err, "should return error when stopping server before starting")
+}
+
+func TestStartServerAfterStop(t *testing.T) {
+	server := getTestServer()
+	startTestServer(server)
+	stopTestServer(t, server)
+	err := server.Start()
+	assert.NotNil(t, err)
+}
+
+func TestGracefulStopServer(t *testing.T) {
+	server := getTestServer()
+	startTestServer(server)
+	assert.NotNil(t, server)
+	err := server.GracefulStop()
+	assert.Nilf(t, err, "error stopping server")
 }
