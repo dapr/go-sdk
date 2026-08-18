@@ -340,6 +340,24 @@ if err != nil {
 
 In addition to the client capabilities that allow you to call into the Dapr API, the Go SDK also provides `service` package to help you bootstrap Dapr callback services in either gRPC or HTTP. Instructions on how to use it are located [here](./service/Readme.md).
 
+## Usage Analytics
+
+The Go SDK reports an anonymous usage event the first time a client is created in a process. Unlike package registries such as npm or PyPI, the Go module proxy reports nothing back to the project, so this is the only signal maintainers have about SDK adoption.
+
+**What is sent:** SDK version, operating system, architecture, and Go version — sent once per process, in the background. No application data, configuration, app IDs, or hostnames are collected. The receiving service ([Scarf](https://scarf.sh)) uses the request IP to derive coarse company and location information and does not retain the raw IP.
+
+**Failure is silent by design:** the request runs on a background goroutine with a 2 second timeout and never blocks startup or surfaces an error, so blocked egress and air-gapped clusters behave normally.
+
+To opt out, set any of the following environment variables before starting your application:
+
+```bash
+export DO_NOT_TRACK=1
+# or
+export SCARF_NO_ANALYTICS=1
+# or
+export DAPR_DISABLE_ANALYTICS=1
+```
+
 ## Contributing to Dapr Go client
 
 See the [Contribution Guide](./CONTRIBUTING.md) to get started with building and developing.

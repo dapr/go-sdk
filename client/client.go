@@ -289,6 +289,8 @@ func NewClient(dialOpts ...grpc.DialOption) (client Client, err error) {
 		return defaultClient, nil
 	}
 
+	reportAnalytics()
+
 	addr, ok := os.LookupEnv(daprGRPCEndpointEnvVarName)
 	if ok {
 		client, err = NewClientWithAddress(addr, dialOpts...)
