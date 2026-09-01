@@ -71,7 +71,7 @@ func main() {
 	if err = wfClient.StartWorker(ctx, r); err != nil {
 		logger.Fatal(err)
 	}
-	fmt.Println("worker started")
+	fmt.Println("workflow worker started")
 
 	// Schedule a few instances so there is something to list and rerun.
 	ids := []string{idPrefix + "01", idPrefix + "02", idPrefix + "03"}

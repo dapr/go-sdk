@@ -28,7 +28,7 @@ name: Run Workflow Management
 output_match_mode: substring
 expected_stdout_lines:
   - 'OrderWorkflow registered'
-  - 'worker started'
+  - 'workflow worker started'
   - 'scheduled and completed 3 workflows'
   - '== ListInstanceIDs =='
   - 'listed 3 instances with prefix order- over 2 page(s)'
@@ -64,7 +64,7 @@ dapr run --app-id workflow-management \
 
 ```
 OrderWorkflow registered
-worker started
+workflow worker started
 scheduled and completed 3 workflows
 == ListInstanceIDs ==
 listed 3 instances with prefix order- over 2 page(s)
