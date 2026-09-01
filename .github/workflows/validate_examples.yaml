@@ -178,6 +178,7 @@ jobs:
             "socket",
             "workflow",
             "workflow-history-propagation",
+            "workflow-management",
             "workflow-parallel",
             "workflow-taskexecutionid"
           ]
