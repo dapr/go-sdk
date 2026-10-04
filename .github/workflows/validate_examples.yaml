@@ -248,3 +248,9 @@ jobs:
         run: |
           cd examples
           ./validate.sh ${{ matrix.examples }}
+
+      - name: Print placement and scheduler logs on failure
+        if: failure()
+        run: |
+          docker logs dapr_placement || true
+          docker logs dapr_scheduler || true
