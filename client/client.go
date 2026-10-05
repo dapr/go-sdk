@@ -273,6 +273,66 @@ type Client interface {
 	ConverseAlpha2(ctx context.Context, request ConversationRequestAlpha2,
 		options ...conversationRequestOptionAlpha2) (*ConversationResponseAlpha2, error)
 
+	// CreateIndexAlpha1 creates a search index.
+	CreateIndexAlpha1(ctx context.Context, storeName, index string, meta map[string]string) error
+
+	// GetIndexAlpha1 returns a search index.
+	GetIndexAlpha1(ctx context.Context, storeName, index string, meta map[string]string) (*SearchIndex, error)
+
+	// ListIndexesAlpha1 lists the indexes in a search store.
+	ListIndexesAlpha1(ctx context.Context, storeName string, meta map[string]string) ([]string, error)
+
+	// DeleteIndexAlpha1 deletes a search index.
+	DeleteIndexAlpha1(ctx context.Context, storeName, index string, meta map[string]string) error
+
+	// IndexDocumentsAlpha1 upserts documents into a search index, keyed by ID.
+	IndexDocumentsAlpha1(ctx context.Context, storeName, index string, documents []*SearchDocument,
+		meta map[string]string, opts ...IndexingOption) (*IndexingResponse, error)
+
+	// GetDocumentsAlpha1 returns documents from a search index by ID.
+	GetDocumentsAlpha1(ctx context.Context, storeName, index string, ids []string, includeContent bool,
+		meta map[string]string) ([]*SearchDocument, error)
+
+	// DeleteDocumentsAlpha1 deletes documents from a search index by ID.
+	DeleteDocumentsAlpha1(ctx context.Context, storeName, index string, ids []string,
+		meta map[string]string, opts ...IndexingOption) (IndexAck, error)
+
+	// SearchAlpha1 searches an index.
+	SearchAlpha1(ctx context.Context, storeName, index string, query *SearchQuery) (*SearchResponse, error)
+
+	// CreateCollectionAlpha1 creates a vector collection.
+	CreateCollectionAlpha1(ctx context.Context, storeName, collection string, dimensions uint32,
+		metric DistanceMetric, meta map[string]string) error
+
+	// GetCollectionAlpha1 returns a vector collection.
+	GetCollectionAlpha1(ctx context.Context, storeName, collection string, meta map[string]string) (*VectorCollection, error)
+
+	// ListCollectionsAlpha1 lists the collections in a vector store.
+	ListCollectionsAlpha1(ctx context.Context, storeName string, meta map[string]string) ([]string, error)
+
+	// DeleteCollectionAlpha1 deletes a vector collection.
+	DeleteCollectionAlpha1(ctx context.Context, storeName, collection string, meta map[string]string) error
+
+	// UpsertVectorsAlpha1 upserts records into a vector collection, keyed by ID.
+	UpsertVectorsAlpha1(ctx context.Context, storeName, collection string, records []*VectorRecord,
+		meta map[string]string, opts ...IndexingOption) (*IndexingResponse, error)
+
+	// DeleteVectorsAlpha1 deletes records from a vector collection by ID.
+	DeleteVectorsAlpha1(ctx context.Context, storeName, collection string, ids []string,
+		meta map[string]string, opts ...IndexingOption) (IndexAck, error)
+
+	// GetVectorsAlpha1 returns records from a vector collection by ID.
+	GetVectorsAlpha1(ctx context.Context, storeName, collection string, ids []string, includeValues bool,
+		meta map[string]string) ([]*VectorRecord, error)
+
+	// QueryVectorsAlpha1 runs a similarity query against a vector collection.
+	QueryVectorsAlpha1(ctx context.Context, storeName, collection string, query *VectorQuery) (*VectorQueryResponse, error)
+
+	// BatchQueryVectorsAlpha1 runs several similarity queries against the same
+	// vector collection, each succeeding or failing on its own.
+	BatchQueryVectorsAlpha1(ctx context.Context, storeName, collection string, queries []*VectorQuery,
+		meta map[string]string) ([]BatchQueryResult, error)
+
 	// GrpcClient returns the base grpc client if grpc is used and nil otherwise
 	GrpcClient() pb.DaprClient
 

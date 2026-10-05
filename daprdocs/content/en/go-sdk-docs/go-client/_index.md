@@ -696,5 +696,104 @@ out, err := client.Decrypt(context.Background(), rf, dapr.EncryptOptions{
 
 For a full guide on cryptography, visit [How-To: Use the cryptography APIs]({{% ref howto-cryptography.md %}}).
 
+### Search (Alpha)
+
+The search APIs store, retrieve and query JSON documents in a lexical search store.
+
+```go
+ctx := context.Background()
+
+// Create an index
+if err := client.CreateIndexAlpha1(ctx, "mysearch", "products", nil); err != nil {
+	panic(err)
+}
+
+// Index documents, waiting up to 5s for the provider to finish the write
+resp, err := client.IndexDocumentsAlpha1(ctx, "mysearch", "products", []*dapr.SearchDocument{
+	{ID: "headphones-123", Content: []byte(`{"title":"Wireless headphones","category":"audio","price":149}`)},
+}, nil, dapr.WithWaitForIndexCompletion(5*time.Second, dapr.IndexingWaitTimeoutContinueAsync))
+if err != nil {
+	panic(err)
+}
+for _, item := range resp.FailedItems {
+	fmt.Printf("document %s failed: %v\n", item.ID, item.Err)
+}
+
+// Search with the portable filter DSL
+result, err := client.SearchAlpha1(ctx, "mysearch", "products", &dapr.SearchQuery{
+	Text:           "wireless headphones",
+	Filter:         map[string]any{"category": map[string]any{"$in": []any{"audio"}}, "price": map[string]any{"$lt": 200}},
+	SearchFields:   []string{"title"},
+	TopK:           10,
+	IncludeContent: true,
+})
+if err != nil {
+	panic(err)
+}
+for _, hit := range result.Hits {
+	fmt.Printf("%s (%.2f): %s\n", hit.Document.ID, hit.Score, hit.Document.Content)
+}
+```
+
+Pass `result.ContinuationToken` in the next `SearchQuery` to fetch the following page. Writes return as soon as the provider accepts them unless `dapr.WithWaitForIndexCompletion` is passed; `dapr.WithReturnOnIndexAcceptance` selects that behaviour explicitly.
+
+For a full guide on search, visit [How-To: Search documents]({{% ref howto-search.md %}}).
+
+### Vector (Alpha)
+
+The vector APIs store, retrieve and query pre-embedded dense vectors.
+
+```go
+ctx := context.Background()
+
+// Create a collection of 4-dimensional vectors compared with cosine similarity
+if err := client.CreateCollectionAlpha1(ctx, "myvectors", "cars", 4, dapr.DistanceMetricCosine, nil); err != nil {
+	panic(err)
+}
+
+// Upsert records. Metadata is filterable; Payload is opaque.
+_, err := client.UpsertVectorsAlpha1(ctx, "myvectors", "cars", []*dapr.VectorRecord{
+	{ID: "car-1", Values: []float32{0.1, 0.9, 0.2, 0.4}, Metadata: map[string]any{"brand": "acme"}, Payload: []byte("sedan")},
+	{ID: "car-2", Values: []float32{0.8, 0.1, 0.3, 0.5}, Metadata: map[string]any{"brand": "zoom"}},
+}, nil, dapr.WithWaitForIndexCompletion(5*time.Second, dapr.IndexingWaitTimeoutFailRequest))
+if err != nil {
+	panic(err)
+}
+
+// Query by vector with a metadata filter and an inclusive score threshold
+threshold := 0.5
+result, err := client.QueryVectorsAlpha1(ctx, "myvectors", "cars", &dapr.VectorQuery{
+	Vector:         []float32{0.1, 0.8, 0.2, 0.4},
+	TopK:           5,
+	Filter:         map[string]any{"brand": "acme"},
+	IncludePayload: true,
+	ScoreThreshold: &threshold,
+})
+if err != nil {
+	panic(err)
+}
+for _, m := range result.Matches {
+	fmt.Printf("%s: %.3f (%s)\n", m.Record.ID, m.Score, result.Metric)
+}
+
+// Run several queries at once; each succeeds or fails on its own
+results, err := client.BatchQueryVectorsAlpha1(ctx, "myvectors", "cars", []*dapr.VectorQuery{
+	{ByID: "car-1", TopK: 3},
+	{Vector: []float32{0.8, 0.1, 0.3, 0.5}, TopK: 3},
+}, nil)
+if err != nil {
+	panic(err)
+}
+for i, r := range results {
+	if r.Err != nil {
+		fmt.Printf("query %d failed: %v\n", i, r.Err)
+		continue
+	}
+	fmt.Printf("query %d: %d matches\n", i, len(r.Response.Matches))
+}
+```
+
+For a full guide on vectors, visit [How-To: Store and query vectors]({{% ref howto-vector.md %}}).
+
 ## Related links
 [Go SDK Examples](https://github.com/dapr/go-sdk/tree/main/examples)
