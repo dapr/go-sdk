@@ -119,10 +119,12 @@ func TestEncrypt(t *testing.T) {
 
 		out, err := testClient.Encrypt(failingCtx,
 			&slowReader{
-				// Should take a lot longer than 1s
+				// Should take a lot longer than 1s. The first byte must arrive well after the
+				// deadline: otherwise the sender can close the pipe with ctx.Err() before the
+				// receiver gets the DeadlineExceeded status.
 				//nolint:dupword
 				data:  strings.NewReader("soft kitty, warm kitty, little ball of fur, happy kitty, sleepy kitty, purr purr purr"),
-				delay: time.Second,
+				delay: 3 * time.Second,
 			},
 			EncryptOptions{
 				ComponentName:    "mycomponent",
