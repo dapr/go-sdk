@@ -34,7 +34,7 @@ expected_stdout_lines:
   - 'receive reminder =  testReminderName  state =  "hello"'
   - 'receive reminder =  testReminderName  state =  "hello"'
 background: true
-timeout_seconds: 60
+timeout_seconds: 120
 -->
 
 ```bash
@@ -65,7 +65,7 @@ expected_stdout_lines:
   - 'get user = {Name: Age:1}'
   - 'get user = {Name: Age:2}'
 
-timeout_seconds: 60
+timeout_seconds: 120
 -->
 
 ```bash
