@@ -88,6 +88,7 @@ type Server struct {
 	authToken          string
 	grpcServer         *grpc.Server
 	started            uint32
+	stopped            uint32
 }
 
 // Deprecated: Use RegisterActorImplFactoryContext instead.
@@ -104,26 +105,33 @@ func (s *Server) Start() error {
 	if !atomic.CompareAndSwapUint32(&s.started, 0, 1) {
 		return errors.New("a gRPC server can only be started once")
 	}
+
 	return s.grpcServer.Serve(s.listener)
 }
 
 // Stop stops the previously-started service.
 func (s *Server) Stop() error {
-	if atomic.LoadUint32(&s.started) == 0 {
-		return nil
-	}
-	s.grpcServer.Stop()
-	s.grpcServer = nil
-	return nil
+	return s.gracefulStop(false)
 }
 
 // GrecefulStop stops the previously-started service gracefully.
 func (s *Server) GracefulStop() error {
+	return s.gracefulStop(true)
+}
+
+func (s *Server) gracefulStop(graceful bool) error {
 	if atomic.LoadUint32(&s.started) == 0 {
-		return nil
+		return errors.New("the server doesn't start")
 	}
-	s.grpcServer.GracefulStop()
-	s.grpcServer = nil
+
+	if atomic.CompareAndSwapUint32(&s.stopped, 0, 1) {
+		if graceful {
+			s.grpcServer.GracefulStop()
+		} else {
+			s.grpcServer.Stop()
+		}
+		s.grpcServer = nil
+	}
 	return nil
 }
 
