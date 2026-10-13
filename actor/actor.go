@@ -71,6 +71,22 @@ type ReminderCallee interface {
 	ReminderCall(string, []byte, string, string)
 }
 
+type activationIDCtxKey struct{}
+
+// WithActivationID carries the activation id daprd sent with an actor callback.
+func WithActivationID(ctx context.Context, activationID string) context.Context {
+	if activationID == "" {
+		return ctx
+	}
+	return context.WithValue(ctx, activationIDCtxKey{}, activationID)
+}
+
+// ActivationIDFromContext returns the activation id set by WithActivationID.
+func ActivationIDFromContext(ctx context.Context) string {
+	id, _ := ctx.Value(activationIDCtxKey{}).(string)
+	return id
+}
+
 type (
 	Factory        func() Server
 	FactoryContext func() ServerContext

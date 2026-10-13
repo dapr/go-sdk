@@ -34,6 +34,7 @@ import (
 	"google.golang.org/protobuf/types/known/wrapperspb"
 
 	pb "github.com/dapr/dapr/pkg/proto/runtime/v1"
+	"github.com/dapr/go-sdk/actor"
 	"github.com/dapr/go-sdk/actor/api"
 	actorErr "github.com/dapr/go-sdk/actor/error"
 )
@@ -682,6 +683,62 @@ func Test_reentrancyIDFromContext(t *testing.T) {
 	})
 }
 
+func TestSubscribeActorEventsActivationID(t *testing.T) {
+	t.Parallel()
+
+	srv, client := newTestActorEventsServer(t)
+	handler := &testActorEventHandler{actorTypes: []string{"testActorType"}}
+	stop, err := client.SubscribeActorEvents(t.Context(), handler, ActorEventSubscriptionOptions{})
+	require.NoError(t, err)
+	t.Cleanup(func() { _ = stop() })
+	session := recvWithTimeout(t, srv.sessions)
+
+	keys := []string{"Dapr-Actor-Activation-Id", "dapr-actor-activation-id", "DAPR-ACTOR-ACTIVATION-ID", ""}
+	for i, key := range keys {
+		var md map[string]string
+		want := ""
+		if key != "" {
+			want = "act-" + strconv.Itoa(i)
+			md = map[string]string{key: want, "content-type": "application/json"}
+		}
+
+		session.push(t, &pb.SubscribeActorEventsResponseAlpha1{
+			ResponseType: &pb.SubscribeActorEventsResponseAlpha1_InvokeRequest{
+				InvokeRequest: &pb.SubscribeActorEventsResponseInvokeRequestAlpha1{
+					Id: "i" + strconv.Itoa(i), ActorType: "testActorType", ActorId: "a", Method: "M", Metadata: md,
+				},
+			},
+		})
+		require.NotNil(t, recvWithTimeout(t, session.responses).GetInvokeResponse())
+
+		session.push(t, &pb.SubscribeActorEventsResponseAlpha1{
+			ResponseType: &pb.SubscribeActorEventsResponseAlpha1_ReminderRequest{
+				ReminderRequest: &pb.SubscribeActorEventsResponseReminderRequestAlpha1{
+					Id: "r" + strconv.Itoa(i), ActorType: "testActorType", ActorId: "a", Name: "r", Metadata: md,
+				},
+			},
+		})
+		require.NotNil(t, recvWithTimeout(t, session.responses).GetReminderResponse())
+
+		session.push(t, &pb.SubscribeActorEventsResponseAlpha1{
+			ResponseType: &pb.SubscribeActorEventsResponseAlpha1_TimerRequest{
+				TimerRequest: &pb.SubscribeActorEventsResponseTimerRequestAlpha1{
+					Id: "t" + strconv.Itoa(i), ActorType: "testActorType", ActorId: "a", Name: "t", Callback: "M", Metadata: md,
+				},
+			},
+		})
+		require.NotNil(t, recvWithTimeout(t, session.responses).GetTimerResponse())
+
+		invokes, reminders, timers := handler.invokeCalls(), handler.reminderCalls(), handler.timerCalls()
+		require.Len(t, invokes, i+1)
+		require.Len(t, reminders, i+1)
+		require.Len(t, timers, i+1)
+		assert.Equal(t, want, actor.ActivationIDFromContext(invokes[i].ctx), "invoke key %q", key)
+		assert.Equal(t, want, actor.ActivationIDFromContext(reminders[i].ctx), "reminder key %q", key)
+		assert.Equal(t, want, actor.ActivationIDFromContext(timers[i].ctx), "timer key %q", key)
+	}
+}
+
 // newTestActorEventsServer starts a dedicated in-memory Dapr server
 // implementing SubscribeActorEventsAlpha1 and returns it along with a client
 // connected to it.
@@ -812,6 +869,7 @@ type invokeCall struct {
 }
 
 type reminderCall struct {
+	ctx       context.Context
 	actorType string
 	actorID   string
 	name      string
@@ -864,14 +922,14 @@ func (h *testActorEventHandler) InvokeActorMethod(ctx context.Context, actorType
 func (h *testActorEventHandler) InvokeReminder(ctx context.Context, actorType, actorID, reminderName string, params []byte) actorErr.ActorErr {
 	h.lock.Lock()
 	defer h.lock.Unlock()
-	h.reminders = append(h.reminders, reminderCall{actorType: actorType, actorID: actorID, name: reminderName, params: params})
+	h.reminders = append(h.reminders, reminderCall{ctx: ctx, actorType: actorType, actorID: actorID, name: reminderName, params: params})
 	return h.reminderErr
 }
 
 func (h *testActorEventHandler) InvokeTimer(ctx context.Context, actorType, actorID, timerName string, params []byte) actorErr.ActorErr {
 	h.lock.Lock()
 	defer h.lock.Unlock()
-	h.timers = append(h.timers, reminderCall{actorType: actorType, actorID: actorID, name: timerName, params: params})
+	h.timers = append(h.timers, reminderCall{ctx: ctx, actorType: actorType, actorID: actorID, name: timerName, params: params})
 	return h.timerErr
 }
 

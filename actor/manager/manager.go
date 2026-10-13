@@ -67,7 +67,7 @@ type DefaultActorManagerContext struct {
 	// factory is the actor factory of specific type of actor
 	factory actor.FactoryContext
 
-	// activeActors stores the map actorID -> ActorContainer
+	// activeActors stores the map actorID -> *activeActor
 	activeActors sync.Map
 
 	// serializer is the param and response serializer of the actor
@@ -127,18 +127,27 @@ func (m *DefaultActorManagerContext) RegisterActorImplFactory(f actor.FactoryCon
 	m.factory = f
 }
 
-// getAndCreateActorContainerIfNotExist will.
+type activeActor struct {
+	container    ActorContainerContext
+	activationID string
+}
+
+// getAndCreateActorContainerIfNotExist replaces the live actor when ctx carries a different activation id.
 func (m *DefaultActorManagerContext) getAndCreateActorContainerIfNotExist(ctx context.Context, actorID string) (ActorContainerContext, actorErr.ActorErr) {
-	val, ok := m.activeActors.Load(actorID)
-	if !ok {
-		newContainer, aerr := NewDefaultActorContainerContext(ctx, actorID, m.factory(), m.serializer)
-		if aerr != actorErr.Success {
-			return nil, aerr
+	activationID := actor.ActivationIDFromContext(ctx)
+	if val, ok := m.activeActors.Load(actorID); ok {
+		active := val.(*activeActor)
+		if activationID == "" || active.activationID == activationID {
+			return active.container, actorErr.Success
 		}
-		m.activeActors.Store(actorID, newContainer)
-		val, _ = m.activeActors.Load(actorID)
+		m.DeactivateActor(ctx, actorID)
 	}
-	return val.(ActorContainerContext), actorErr.Success
+	newContainer, aerr := NewDefaultActorContainerContext(ctx, actorID, m.factory(), m.serializer)
+	if aerr != actorErr.Success {
+		return nil, aerr
+	}
+	m.activeActors.Store(actorID, &activeActor{container: newContainer, activationID: activationID})
+	return newContainer, actorErr.Success
 }
 
 // InvokeMethod to invoke local function by @actorID, @methodName and @request request param.

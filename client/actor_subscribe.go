@@ -31,6 +31,7 @@ import (
 	"google.golang.org/protobuf/types/known/wrapperspb"
 
 	pb "github.com/dapr/dapr/pkg/proto/runtime/v1"
+	"github.com/dapr/go-sdk/actor"
 	actorErr "github.com/dapr/go-sdk/actor/error"
 	"github.com/dapr/kit/events/loop"
 )
@@ -40,6 +41,8 @@ const (
 	// reentrancy id on actor invoke callbacks. It is propagated back on
 	// outbound actor invocations performed from within the callback context.
 	reentrancyIDMetadataKey = "Dapr-Reentrancy-Id"
+
+	activationIDMetadataKey = "Dapr-Actor-Activation-Id"
 
 	// contentTypeMetadataKey carries the payload content type on actor
 	// invoke callbacks and responses.
@@ -378,6 +381,7 @@ func (s *actorEventSubscription) handleInvoke(stream pb.Dapr_SubscribeActorEvent
 	// available to the actor code: InvokeActor propagates the reentrancy id
 	// from this context on outbound actor invocations.
 	ctx := withActorCallbackMetadata(s.ctx, req.GetMetadata())
+	ctx = withActivationIDFromMetadata(ctx, req.GetMetadata())
 
 	data, aerr := s.handler.InvokeActorMethod(ctx, req.GetActorType(), req.GetActorId(), req.GetMethod(), req.GetData())
 	if aerr != actorErr.Success {
@@ -410,8 +414,16 @@ func (s *actorEventSubscription) handleInvoke(stream pb.Dapr_SubscribeActorEvent
 // contentTypeFromMetadata returns the content-type entry from actor callback
 // metadata, matching the key case-insensitively.
 func contentTypeFromMetadata(md map[string]string) string {
+	return metadataValue(md, contentTypeMetadataKey)
+}
+
+func withActivationIDFromMetadata(ctx context.Context, md map[string]string) context.Context {
+	return actor.WithActivationID(ctx, metadataValue(md, activationIDMetadataKey))
+}
+
+func metadataValue(md map[string]string, key string) string {
 	for k, v := range md {
-		if strings.EqualFold(k, contentTypeMetadataKey) {
+		if strings.EqualFold(k, key) {
 			return v
 		}
 	}
@@ -436,7 +448,7 @@ func (s *actorEventSubscription) handleReminder(stream pb.Dapr_SubscribeActorEve
 		return
 	}
 
-	aerr := s.handler.InvokeReminder(s.ctx, req.GetActorType(), req.GetActorId(), req.GetName(), params)
+	aerr := s.handler.InvokeReminder(withActivationIDFromMetadata(s.ctx, req.GetMetadata()), req.GetActorType(), req.GetActorId(), req.GetName(), params)
 	if aerr != actorErr.Success {
 		s.sendRequestFailed(stream, req.GetId(), aerr)
 		return
@@ -469,7 +481,7 @@ func (s *actorEventSubscription) handleTimer(stream pb.Dapr_SubscribeActorEvents
 		return
 	}
 
-	aerr := s.handler.InvokeTimer(s.ctx, req.GetActorType(), req.GetActorId(), req.GetName(), params)
+	aerr := s.handler.InvokeTimer(withActivationIDFromMetadata(s.ctx, req.GetMetadata()), req.GetActorType(), req.GetActorId(), req.GetName(), params)
 	if aerr != actorErr.Success {
 		s.sendRequestFailed(stream, req.GetId(), aerr)
 		return
