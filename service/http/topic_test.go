@@ -28,6 +28,7 @@ import (
 	"strings"
 	"sync/atomic"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -600,6 +601,7 @@ func TestActorActivationIDHeader(t *testing.T) {
 	s.registerBaseHandler()
 	s.RegisterActorImplFactoryContext(func() actor.ServerContext { return &ActivationEchoActor{} })
 
+	run := strconv.FormatInt(time.Now().UnixNano(), 36)
 	reminder, err := json.Marshal(api.ActorReminderParams{DueTime: "1s", Period: "1s"})
 	require.NoError(t, err)
 	timer, err := json.Marshal(api.ActorTimerParam{CallBack: "Count", DueTime: "1s", Period: "1s"})
@@ -607,20 +609,20 @@ func TestActorActivationIDHeader(t *testing.T) {
 
 	count := func(t *testing.T, actorID, header string) string {
 		t.Helper()
-		return rawActorRequest(t, s, http.MethodPut, "/actors/activationEchoActor/"+actorID+"/method/Count", header, "")
+		return rawActorRequest(t, s, http.MethodPut, "/actors/activationEchoActor/"+run+actorID+"/method/Count", header, "")
 	}
 
 	for _, name := range []string{"Dapr-Actor-Activation-Id", "dapr-actor-activation-id", "DAPR-ACTOR-ACTIVATION-ID"} {
 		t.Run("header plumbed as "+name, func(t *testing.T) {
 			t.Parallel()
-			body := rawActorRequest(t, s, http.MethodPut, "/actors/activationEchoActor/echo-"+name+"/method/ActivationID", name+": act-1", "")
+			body := rawActorRequest(t, s, http.MethodPut, "/actors/activationEchoActor/"+run+"echo-"+name+"/method/ActivationID", name+": act-1", "")
 			assert.JSONEq(t, `"act-1"`, body)
 		})
 	}
 
 	t.Run("missing header", func(t *testing.T) {
 		t.Parallel()
-		body := rawActorRequest(t, s, http.MethodPut, "/actors/activationEchoActor/echo-none/method/ActivationID", "", "")
+		body := rawActorRequest(t, s, http.MethodPut, "/actors/activationEchoActor/"+run+"echo-none/method/ActivationID", "", "")
 		assert.JSONEq(t, `""`, body)
 	})
 
@@ -635,21 +637,21 @@ func TestActorActivationIDHeader(t *testing.T) {
 	t.Run("reminder header resets actor", func(t *testing.T) {
 		t.Parallel()
 		assert.Equal(t, "1", count(t, "reminder", "Dapr-Actor-Activation-Id: a"))
-		rawActorRequest(t, s, http.MethodPut, "/actors/activationEchoActor/reminder/method/remind/r", "dapr-actor-activation-id: b", string(reminder))
+		rawActorRequest(t, s, http.MethodPut, "/actors/activationEchoActor/"+run+"reminder/method/remind/r", "dapr-actor-activation-id: b", string(reminder))
 		assert.Equal(t, "2", count(t, "reminder", "Dapr-Actor-Activation-Id: b"))
 	})
 
 	t.Run("timer header resets actor", func(t *testing.T) {
 		t.Parallel()
 		assert.Equal(t, "1", count(t, "timer", "Dapr-Actor-Activation-Id: a"))
-		rawActorRequest(t, s, http.MethodPut, "/actors/activationEchoActor/timer/method/timer/t", "dapr-actor-activation-id: b", string(timer))
+		rawActorRequest(t, s, http.MethodPut, "/actors/activationEchoActor/"+run+"timer/method/timer/t", "dapr-actor-activation-id: b", string(timer))
 		assert.Equal(t, "2", count(t, "timer", "Dapr-Actor-Activation-Id: b"))
 	})
 
 	t.Run("delete unchanged", func(t *testing.T) {
 		t.Parallel()
 		assert.Equal(t, "1", count(t, "delete", "Dapr-Actor-Activation-Id: a"))
-		rawActorRequest(t, s, http.MethodDelete, "/actors/activationEchoActor/delete", "", "")
+		rawActorRequest(t, s, http.MethodDelete, "/actors/activationEchoActor/"+run+"delete", "", "")
 		assert.Equal(t, "1", count(t, "delete", "Dapr-Actor-Activation-Id: a"))
 	})
 }

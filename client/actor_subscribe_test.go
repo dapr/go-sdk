@@ -699,7 +699,7 @@ func TestSubscribeActorEventsActivationID(t *testing.T) {
 		want := ""
 		if key != "" {
 			want = "act-" + strconv.Itoa(i)
-			md = map[string]string{key: want, "content-type": "application/json"}
+			md = map[string]string{key: want, "content-type": "application/json", "Dapr-Reentrancy-Id": "re-" + want}
 		}
 
 		session.push(t, &pb.SubscribeActorEventsResponseAlpha1{
@@ -736,6 +736,13 @@ func TestSubscribeActorEventsActivationID(t *testing.T) {
 		assert.Equal(t, want, actor.ActivationIDFromContext(invokes[i].ctx), "invoke key %q", key)
 		assert.Equal(t, want, actor.ActivationIDFromContext(reminders[i].ctx), "reminder key %q", key)
 		assert.Equal(t, want, actor.ActivationIDFromContext(timers[i].ctx), "timer key %q", key)
+		for kind, ctx := range map[string]context.Context{"invoke": invokes[i].ctx, "reminder": reminders[i].ctx, "timer": timers[i].ctx} {
+			reentrancyID, ok := reentrancyIDFromContext(ctx)
+			assert.Equal(t, key != "", ok, "%s key %q", kind, key)
+			if key != "" {
+				assert.Equal(t, "re-"+want, reentrancyID, "%s key %q", kind, key)
+			}
+		}
 	}
 }
 

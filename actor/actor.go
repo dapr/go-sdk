@@ -73,6 +73,9 @@ type ReminderCallee interface {
 
 type activationIDCtxKey struct{}
 
+// ActivationIDHeader is the callback header and metadata key daprd sends the activation id under.
+const ActivationIDHeader = "Dapr-Actor-Activation-Id"
+
 // WithActivationID carries the activation id daprd sent with an actor callback.
 func WithActivationID(ctx context.Context, activationID string) context.Context {
 	if activationID == "" {

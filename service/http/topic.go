@@ -43,8 +43,6 @@ const (
 
 	// HealthzRoute Health check default route used by the server
 	HealthzRoute = "healthz"
-
-	actorActivationIDHeader = "Dapr-Actor-Activation-Id"
 )
 
 // topicEventJSON is identical to `common.TopicEvent`
@@ -362,5 +360,5 @@ func writeStatus(w http.ResponseWriter, s common.SubscriptionResponseStatus) {
 }
 
 func actorCallbackContext(r *http.Request) context.Context {
-	return actor.WithActivationID(r.Context(), r.Header.Get(actorActivationIDHeader))
+	return actor.WithActivationID(r.Context(), r.Header.Get(actor.ActivationIDHeader))
 }

@@ -163,6 +163,7 @@ func TestInvokeTimer(t *testing.T) {
 type ActivationTestActor struct {
 	actor.ServerImplBaseCtx
 	count atomic.Int64
+	hold  func()
 }
 
 func (a *ActivationTestActor) Type() string {
@@ -170,6 +171,13 @@ func (a *ActivationTestActor) Type() string {
 }
 
 func (a *ActivationTestActor) Count(context.Context) (int64, error) {
+	return a.count.Add(1), nil
+}
+
+func (a *ActivationTestActor) Hold(context.Context) (int64, error) {
+	if a.hold != nil {
+		a.hold()
+	}
 	return a.count.Add(1), nil
 }
 
@@ -269,6 +277,64 @@ func TestActivationIDNewIDResetsActor(t *testing.T) {
 
 	assert.Equal(t, int64(2), m.count(t, actor.WithActivationID(t.Context(), "b"), "id"))
 	assert.Equal(t, 2, m.createdCount())
+}
+
+func TestActivationIDRetiredIDRejected(t *testing.T) {
+	t.Parallel()
+	m := newActivationTestManager(t)
+
+	assert.Equal(t, int64(1), m.count(t, actor.WithActivationID(t.Context(), "a"), "id"))
+	assert.Equal(t, int64(1), m.count(t, actor.WithActivationID(t.Context(), "b"), "id"))
+	live, _ := m.live(t, "id")
+
+	_, aerr := m.InvokeMethod(actor.WithActivationID(t.Context(), "a"), "id", "Count", nil)
+	assert.Equal(t, actorErr.ErrActorIDNotFound, aerr)
+	params, err := json.Marshal(&api.ActorReminderParams{DueTime: "1s", Period: "1s"})
+	require.NoError(t, err)
+	assert.Equal(t, actorErr.ErrActorIDNotFound, m.InvokeReminder(actor.WithActivationID(t.Context(), "a"), "id", "r", params))
+
+	after, activationID := m.live(t, "id")
+	assert.Same(t, live, after)
+	assert.Equal(t, "b", activationID)
+	assert.Equal(t, int64(1), live.count.Load())
+	assert.Equal(t, 2, m.createdCount())
+
+	assert.Equal(t, int64(1), m.count(t, actor.WithActivationID(t.Context(), "c"), "id"))
+	assert.Equal(t, 3, m.createdCount())
+	_, aerr = m.InvokeMethod(actor.WithActivationID(t.Context(), "b"), "id", "Count", nil)
+	assert.Equal(t, actorErr.ErrActorIDNotFound, aerr)
+	assert.Equal(t, int64(2), m.count(t, actor.WithActivationID(t.Context(), "c"), "id"))
+	assert.Equal(t, 3, m.createdCount())
+}
+
+func TestActivationIDReplacedCallSkipsSave(t *testing.T) {
+	t.Parallel()
+	m := newActivationTestManager(t)
+
+	assert.Equal(t, int64(1), m.count(t, actor.WithActivationID(t.Context(), "a"), "id"))
+	old, _ := m.live(t, "id")
+	held := make(chan struct{})
+	release := make(chan struct{})
+	old.hold = func() {
+		close(held)
+		<-release
+	}
+
+	done := make(chan actorErr.ActorErr, 1)
+	go func() {
+		_, aerr := m.InvokeMethod(actor.WithActivationID(t.Context(), "a"), "id", "Hold", nil)
+		done <- aerr
+	}()
+	<-held
+
+	assert.Equal(t, int64(1), m.count(t, actor.WithActivationID(t.Context(), "b"), "id"))
+	close(release)
+	assert.Equal(t, actorErr.ErrSaveStateFailed, <-done)
+
+	fresh, activationID := m.live(t, "id")
+	assert.NotSame(t, old, fresh)
+	assert.Equal(t, "b", activationID)
+	assert.Equal(t, int64(2), m.count(t, actor.WithActivationID(t.Context(), "b"), "id"))
 }
 
 func TestActivationIDEmptyNeverResets(t *testing.T) {
