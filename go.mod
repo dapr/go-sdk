@@ -3,9 +3,9 @@ module github.com/dapr/go-sdk
 go 1.26.9
 
 require (
-	github.com/dapr/dapr v1.19.0-rc.2
-	github.com/dapr/durabletask-go v0.15.0
-	github.com/dapr/kit v0.18.3-0.20261002162430-f2a7561ba0de
+	github.com/dapr/dapr v1.19.0-rc.3
+	github.com/dapr/durabletask-go v0.15.1-0.20261012153102-a89450ad839c
+	github.com/dapr/kit v0.18.3-0.20261013150804-579f006d8ebc
 	github.com/go-chi/chi/v5 v5.3.2
 	github.com/google/uuid v1.6.0
 	github.com/stretchr/testify v1.11.1
