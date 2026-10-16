@@ -28,6 +28,14 @@ type ActorImpl struct {
 	actor.ServerImplBase
 }
 
+func (t *ActorImpl) Activate() error {
+	return nil
+}
+
+func (t *ActorImpl) Deactivate() error {
+	return nil
+}
+
 func (t *ActorImpl) Type() string {
 	return "testActorType"
 }
@@ -68,6 +76,14 @@ func NotReminderCalleeActorFactory() actor.ServerContext {
 
 type NotReminderCalleeActor struct {
 	actor.ServerImplBaseCtx
+}
+
+func (t *NotReminderCalleeActor) Activate() error {
+	return nil
+}
+
+func (t *NotReminderCalleeActor) Deactivate() error {
+	return nil
 }
 
 func (t *NotReminderCalleeActor) Type() string {
