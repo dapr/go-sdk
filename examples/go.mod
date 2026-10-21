@@ -1,14 +1,14 @@
 module github.com/dapr/go-sdk/examples
 
-go 1.26.9
+go 1.26.10
 
 replace github.com/dapr/go-sdk => ../
 
 require (
 	github.com/alecthomas/kingpin/v2 v2.4.0
-	github.com/dapr/durabletask-go v0.15.1-0.20261012153102-a89450ad839c
+	github.com/dapr/durabletask-go v0.15.1
 	github.com/dapr/go-sdk v0.0.0-00010101000000-000000000000
-	github.com/dapr/kit v0.18.3-0.20261013150804-579f006d8ebc
+	github.com/dapr/kit v0.19.0
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/google/uuid v1.6.0
 	google.golang.org/grpc v1.83.2
@@ -20,7 +20,7 @@ require (
 	github.com/alecthomas/units v0.0.0-20211218093645-b94a6e3cc137 // indirect
 	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
-	github.com/dapr/dapr v1.19.0-rc.3 // indirect
+	github.com/dapr/dapr v1.19.0-rc.5 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/go-chi/chi/v5 v5.3.2 // indirect
 	github.com/go-jose/go-jose/v4 v4.1.4 // indirect
