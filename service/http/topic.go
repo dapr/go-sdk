@@ -14,6 +14,7 @@ limitations under the License.
 package http
 
 import (
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
@@ -23,6 +24,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
+	"github.com/dapr/go-sdk/actor"
 	actorErr "github.com/dapr/go-sdk/actor/error"
 	"github.com/dapr/go-sdk/actor/runtime"
 	"github.com/dapr/go-sdk/service/common"
@@ -173,7 +175,7 @@ func (s *Server) registerBaseHandler() {
 		actorID := chi.URLParam(r, "actorId")
 		methodName := chi.URLParam(r, "methodName")
 		reqData, _ := io.ReadAll(r.Body)
-		rspData, err := runtime.GetActorRuntimeInstanceContext().InvokeActorMethod(r.Context(), actorType, actorID, methodName, reqData)
+		rspData, err := runtime.GetActorRuntimeInstanceContext().InvokeActorMethod(actorCallbackContext(r), actorType, actorID, methodName, reqData)
 		if err == actorErr.ErrActorTypeNotFound {
 			w.WriteHeader(http.StatusNotFound)
 			return
@@ -212,7 +214,7 @@ func (s *Server) registerBaseHandler() {
 		actorID := chi.URLParam(r, "actorId")
 		reminderName := chi.URLParam(r, "reminderName")
 		reqData, _ := io.ReadAll(r.Body)
-		err := runtime.GetActorRuntimeInstanceContext().InvokeReminder(r.Context(), actorType, actorID, reminderName, reqData)
+		err := runtime.GetActorRuntimeInstanceContext().InvokeReminder(actorCallbackContext(r), actorType, actorID, reminderName, reqData)
 		if err == actorErr.ErrActorTypeNotFound {
 			w.WriteHeader(http.StatusNotFound)
 			return
@@ -231,7 +233,7 @@ func (s *Server) registerBaseHandler() {
 		actorID := chi.URLParam(r, "actorId")
 		timerName := chi.URLParam(r, "timerName")
 		reqData, _ := io.ReadAll(r.Body)
-		err := runtime.GetActorRuntimeInstanceContext().InvokeTimer(r.Context(), actorType, actorID, timerName, reqData)
+		err := runtime.GetActorRuntimeInstanceContext().InvokeTimer(actorCallbackContext(r), actorType, actorID, timerName, reqData)
 		if err == actorErr.ErrActorTypeNotFound {
 			w.WriteHeader(http.StatusNotFound)
 			return
@@ -355,4 +357,8 @@ func writeStatus(w http.ResponseWriter, s common.SubscriptionResponseStatus) {
 	if err := json.NewEncoder(w).Encode(status); err != nil {
 		http.Error(w, err.Error(), PubSubHandlerRetryStatusCode)
 	}
+}
+
+func actorCallbackContext(r *http.Request) context.Context {
+	return actor.WithActivationID(r.Context(), r.Header.Get(actor.ActivationIDHeader))
 }

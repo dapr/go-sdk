@@ -67,7 +67,7 @@ type DefaultActorManagerContext struct {
 	// factory is the actor factory of specific type of actor
 	factory actor.FactoryContext
 
-	// activeActors stores the map actorID -> ActorContainer
+	// activeActors stores the map actorID -> *activeActor
 	activeActors sync.Map
 
 	// serializer is the param and response serializer of the actor
@@ -127,18 +127,38 @@ func (m *DefaultActorManagerContext) RegisterActorImplFactory(f actor.FactoryCon
 	m.factory = f
 }
 
-// getAndCreateActorContainerIfNotExist will.
+type activeActor struct {
+	container    ActorContainerContext
+	activationID string
+	retiredID    string
+}
+
+// getAndCreateActorContainerIfNotExist replaces the live actor when ctx carries a different activation id.
 func (m *DefaultActorManagerContext) getAndCreateActorContainerIfNotExist(ctx context.Context, actorID string) (ActorContainerContext, actorErr.ActorErr) {
-	val, ok := m.activeActors.Load(actorID)
-	if !ok {
-		newContainer, aerr := NewDefaultActorContainerContext(ctx, actorID, m.factory(), m.serializer)
-		if aerr != actorErr.Success {
-			return nil, aerr
+	activationID := actor.ActivationIDFromContext(ctx)
+	var retiredID string
+	if val, ok := m.activeActors.Load(actorID); ok {
+		active := val.(*activeActor)
+		if activationID == "" || active.activationID == activationID {
+			return active.container, actorErr.Success
 		}
-		m.activeActors.Store(actorID, newContainer)
-		val, _ = m.activeActors.Load(actorID)
+		if active.retiredID != "" && active.retiredID == activationID {
+			return nil, actorErr.ErrActorIDNotFound
+		}
+		m.activeActors.CompareAndDelete(actorID, val)
+		retiredID = active.activationID
 	}
-	return val.(ActorContainerContext), actorErr.Success
+	newContainer, aerr := NewDefaultActorContainerContext(ctx, actorID, m.factory(), m.serializer)
+	if aerr != actorErr.Success {
+		return nil, aerr
+	}
+	m.activeActors.Store(actorID, &activeActor{container: newContainer, activationID: activationID, retiredID: retiredID})
+	return newContainer, actorErr.Success
+}
+
+func (m *DefaultActorManagerContext) isLive(actorID string, container ActorContainerContext) bool {
+	val, ok := m.activeActors.Load(actorID)
+	return ok && val.(*activeActor).container == container
 }
 
 // InvokeMethod to invoke local function by @actorID, @methodName and @request request param.
@@ -176,6 +196,9 @@ func (m *DefaultActorManagerContext) InvokeMethod(ctx context.Context, actorID, 
 	if err != nil {
 		return nil, actorErr.ErrActorMethodSerializeFailed
 	}
+	if !m.isLive(actorID, actorContainer) {
+		return nil, actorErr.ErrSaveStateFailed
+	}
 	if err := actorContainer.GetActor().SaveState(ctx); err != nil {
 		return nil, actorErr.ErrSaveStateFailed
 	}
@@ -184,11 +207,9 @@ func (m *DefaultActorManagerContext) InvokeMethod(ctx context.Context, actorID, 
 
 // DeactivateActor removes actor from actor manager.
 func (m *DefaultActorManagerContext) DeactivateActor(_ context.Context, actorID string) actorErr.ActorErr {
-	_, ok := m.activeActors.Load(actorID)
-	if !ok {
+	if _, ok := m.activeActors.LoadAndDelete(actorID); !ok {
 		return actorErr.ErrActorIDNotFound
 	}
-	m.activeActors.Delete(actorID)
 	return actorErr.Success
 }
 
