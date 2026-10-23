@@ -51,6 +51,10 @@ type TopicEvent struct {
 	TraceID string `json:"traceid"`
 	// TraceParent is name of the parent trace identifier for the incoming event
 	TraceParent string `json:"traceparent"`
+	// Extensions holds the CloudEvents extension attributes (non-standard
+	// context attributes) that came with the event. It is nil when the event
+	// carries none.
+	Extensions map[string]any `json:"-"`
 }
 
 func (e *TopicEvent) Struct(target interface{}) error {
