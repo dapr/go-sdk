@@ -23,6 +23,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/types/known/emptypb"
+	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/dapr/dapr/pkg/proto/runtime/v1"
 	"github.com/dapr/go-sdk/service/common"
@@ -161,6 +162,42 @@ func TestTopic(t *testing.T) {
 		ctx := metadata.NewIncomingContext(t.Context(), metadata.New(map[string]string{"Metadata.key1": "value1"}))
 		_, err = server.OnTopicEvent(ctx, in)
 		require.NoError(t, err)
+	})
+
+	t.Run("topic event with cloud event extensions", func(t *testing.T) {
+		sub3 := &common.Subscription{
+			PubsubName: "messages",
+			Topic:      "test3",
+		}
+		var got *common.TopicEvent
+		err := server.AddTopicEventHandler(sub3, func(ctx context.Context, e *common.TopicEvent) (retry bool, err error) {
+			got = e
+			return false, nil
+		})
+		require.NoError(t, err)
+
+		ext, err := structpb.NewStruct(map[string]any{"comexampleextension1": "value", "comexampleothervalue": 5})
+		require.NoError(t, err)
+		in := &runtime.TopicEventRequest{
+			Id:              "a123",
+			Source:          "test",
+			Type:            "test",
+			SpecVersion:     "v1.0",
+			DataContentType: "text/plain",
+			Data:            []byte("test"),
+			Topic:           sub3.Topic,
+			PubsubName:      sub3.PubsubName,
+			Extensions:      ext,
+		}
+		_, err = server.OnTopicEvent(ctx, in)
+		require.NoError(t, err)
+		require.NotNil(t, got)
+		assert.Equal(t, map[string]any{"comexampleextension1": "value", "comexampleothervalue": float64(5)}, got.Extensions)
+
+		in.Extensions = nil
+		_, err = server.OnTopicEvent(ctx, in)
+		require.NoError(t, err)
+		assert.Nil(t, got.Extensions)
 	})
 
 	stopTestServer(t, server)

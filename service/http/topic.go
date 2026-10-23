@@ -73,6 +73,42 @@ type topicEventJSON struct {
 	TraceID string `json:"traceid"`
 	// TraceParent is name of the parent trace identifier for the incoming event
 	TraceParent string `json:"traceparent"`
+	// Extensions are the CloudEvents extension attributes, i.e. every
+	// attribute of the envelope that is not handled by one of the fields above.
+	Extensions map[string]any `json:"-"`
+}
+
+// knownEventAttributes lists the envelope attributes that are not exposed as
+// CloudEvents extensions: the ones mapped to a field of topicEventJSON plus
+// the other attributes defined by the CloudEvents spec and added by Dapr.
+var knownEventAttributes = map[string]struct{}{
+	"id": {}, "specversion": {}, "type": {}, "source": {}, "datacontenttype": {},
+	"data": {}, "data_base64": {}, "subject": {}, "topic": {}, "pubsubname": {},
+	"traceid": {}, "traceparent": {}, "tracestate": {}, "time": {}, "expiration": {},
+}
+
+// UnmarshalJSON decodes the envelope and collects the extension attributes.
+func (in *topicEventJSON) UnmarshalJSON(b []byte) error {
+	type plain topicEventJSON
+	if err := json.Unmarshal(b, (*plain)(in)); err != nil {
+		return err
+	}
+
+	var all map[string]any
+	if err := json.Unmarshal(b, &all); err != nil {
+		return err
+	}
+	in.Extensions = nil
+	for k, v := range all {
+		if _, ok := knownEventAttributes[k]; ok {
+			continue
+		}
+		if in.Extensions == nil {
+			in.Extensions = make(map[string]any)
+		}
+		in.Extensions[k] = v
+	}
+	return nil
 }
 
 func (in topicEventJSON) getData() (data any, rawData []byte) {
@@ -317,6 +353,7 @@ func (s *Server) AddTopicEventSubscriber(sub *common.Subscription, subscriber co
 				Metadata:        getCustomMetdataFromHeaders(r),
 				TraceID:         in.TraceID,
 				TraceParent:     in.TraceParent,
+				Extensions:      in.Extensions,
 			}
 
 			w.Header().Add("Content-Type", "application/json")
