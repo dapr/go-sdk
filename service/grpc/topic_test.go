@@ -159,8 +159,8 @@ func TestTopic(t *testing.T) {
 			Topic:           sub2.Topic,
 			PubsubName:      sub2.PubsubName,
 		}
-		ctx := metadata.NewIncomingContext(t.Context(), metadata.New(map[string]string{"Metadata.key1": "value1"}))
-		_, err = server.OnTopicEvent(ctx, in)
+		mdCtx := metadata.NewIncomingContext(t.Context(), metadata.New(map[string]string{"Metadata.key1": "value1"}))
+		_, err = server.OnTopicEvent(mdCtx, in)
 		require.NoError(t, err)
 	})
 
