@@ -765,6 +765,17 @@ func TestEventHandlerExtensions(t *testing.T) {
 		}, e.Extensions)
 	})
 
+	t.Run("data is not decoded to collect extensions", func(t *testing.T) {
+		e := post(t, `{
+			"specversion": "1.0", "type": "t", "source": "s", "id": "1",
+			"datacontenttype": "application/json", "data": {"amount":1e400},
+			"pubsubname": "messages", "topic": "test",
+			"comexampleextension1": "value"
+		}`)
+		assert.Equal(t, []byte(`{"amount":1e400}`), e.RawData)
+		assert.Equal(t, map[string]any{"comexampleextension1": "value"}, e.Extensions)
+	})
+
 	t.Run("no extensions", func(t *testing.T) {
 		e := post(t, `{
 			"specversion": "1.0", "type": "t", "source": "s", "id": "1",

@@ -96,14 +96,20 @@ func (in *topicEventJSON) UnmarshalJSON(b []byte) error {
 		return err
 	}
 
-	var all map[string]any
+	// Keep the attributes raw and decode only the extensions, so that the
+	// payload in data is not decoded here.
+	var all map[string]json.RawMessage
 	if err := json.Unmarshal(b, &all); err != nil {
 		return err
 	}
 	in.Extensions = nil
-	for k, v := range all {
+	for k, raw := range all {
 		if _, ok := knownEventAttributes[k]; ok {
 			continue
+		}
+		var v any
+		if err := json.Unmarshal(raw, &v); err != nil {
+			return err
 		}
 		if in.Extensions == nil {
 			in.Extensions = make(map[string]any)
