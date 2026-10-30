@@ -75,6 +75,9 @@ func hasRequiredInvokeArgs(appID, methodName, verb string) error {
 }
 
 // InvokeMethod invokes service without raw data ([]byte).
+//
+// Deprecated: Use a native HTTP or gRPC client for service invocation.
+// See https://docs.dapr.io/developing-applications/building-blocks/service-invocation/howto-invoke-discover-services/.
 func (c *GRPCClient) InvokeMethod(ctx context.Context, appID, methodName, verb string) (out []byte, err error) {
 	if err := hasRequiredInvokeArgs(appID, methodName, verb); err != nil {
 		return nil, fmt.Errorf("missing required parameter: %w", err)
@@ -91,6 +94,9 @@ func (c *GRPCClient) InvokeMethod(ctx context.Context, appID, methodName, verb s
 }
 
 // InvokeMethodWithContent invokes service with content (data + content type).
+//
+// Deprecated: Use a native HTTP or gRPC client for service invocation.
+// See https://docs.dapr.io/developing-applications/building-blocks/service-invocation/howto-invoke-discover-services/.
 func (c *GRPCClient) InvokeMethodWithContent(ctx context.Context, appID, methodName, verb string, content *DataContent) (out []byte, err error) {
 	if err := hasRequiredInvokeArgs(appID, methodName, verb); err != nil {
 		return nil, fmt.Errorf("missing required parameter: %w", err)
@@ -112,6 +118,9 @@ func (c *GRPCClient) InvokeMethodWithContent(ctx context.Context, appID, methodN
 }
 
 // InvokeMethodWithCustomContent invokes service with custom content (struct + content type).
+//
+// Deprecated: Use a native HTTP or gRPC client for service invocation.
+// See https://docs.dapr.io/developing-applications/building-blocks/service-invocation/howto-invoke-discover-services/.
 func (c *GRPCClient) InvokeMethodWithCustomContent(ctx context.Context, appID, methodName, verb string, contentType string, content interface{}) ([]byte, error) {
 	if err := hasRequiredInvokeArgs(appID, methodName, verb); err != nil {
 		return nil, fmt.Errorf("missing required parameter: %w", err)

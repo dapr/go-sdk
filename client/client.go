@@ -87,12 +87,21 @@ type Client interface {
 	InvokeOutputBinding(ctx context.Context, in *InvokeBindingRequest) error
 
 	// InvokeMethod invokes service without raw data
+	//
+	// Deprecated: Use a native HTTP or gRPC client for service invocation.
+	// See https://docs.dapr.io/developing-applications/building-blocks/service-invocation/howto-invoke-discover-services/.
 	InvokeMethod(ctx context.Context, appID, methodName, verb string) (out []byte, err error)
 
 	// InvokeMethodWithContent invokes service with content
+	//
+	// Deprecated: Use a native HTTP or gRPC client for service invocation.
+	// See https://docs.dapr.io/developing-applications/building-blocks/service-invocation/howto-invoke-discover-services/.
 	InvokeMethodWithContent(ctx context.Context, appID, methodName, verb string, content *DataContent) (out []byte, err error)
 
 	// InvokeMethodWithCustomContent invokes app with custom content (struct + content type).
+	//
+	// Deprecated: Use a native HTTP or gRPC client for service invocation.
+	// See https://docs.dapr.io/developing-applications/building-blocks/service-invocation/howto-invoke-discover-services/.
 	InvokeMethodWithCustomContent(ctx context.Context, appID, methodName, verb string, contentType string, content interface{}) (out []byte, err error)
 
 	// GetMetadata returns metadata from the sidecar.
