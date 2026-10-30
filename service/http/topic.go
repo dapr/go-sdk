@@ -18,6 +18,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"mime"
 	"net/http"
 	"strings"
 
@@ -110,7 +111,8 @@ func (in topicEventJSON) getData() (data any, rawData []byte) {
 		rawData, err = base64.StdEncoding.DecodeString(in.DataBase64)
 		if err == nil {
 			data = rawData
-			if in.DataContentType == "application/json" {
+			// Compare only the media type so parameters such as charset are ignored.
+			if mediaType, _, mErr := mime.ParseMediaType(in.DataContentType); mErr == nil && mediaType == "application/json" {
 				if err = json.Unmarshal(rawData, &v); err == nil {
 					data = v
 				}

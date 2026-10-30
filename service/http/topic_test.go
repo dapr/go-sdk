@@ -206,6 +206,21 @@ func TestEventDataHandling(t *testing.T) {
 				"message": "hello",
 			},
 		},
+		"JSON base64 encoded in data_base64 with charset": {
+			data: `{
+				"specversion" : "1.0",
+				"type" : "com.github.pull.create",
+				"source" : "https://github.com/cloudevents/spec/pull",
+				"subject" : "123",
+				"id" : "A234-1234-1234",
+				"time" : "2018-04-05T17:31:00Z",
+				"datacontenttype" : "application/json; charset=utf-8",
+				"data_base64" : "eyJtZXNzYWdlIjoiaGVsbG8ifQ=="
+			}`,
+			expectedData: map[string]interface{}{
+				"message": "hello",
+			},
+		},
 		"Binary base64 encoded in data_base64": {
 			data: `{
 				"specversion" : "1.0",
