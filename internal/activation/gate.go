@@ -26,7 +26,7 @@ import (
 const lookupTimeout = 5 * time.Second
 
 // Older sidecars forward caller headers, so a caller could forge the activation id.
-var minVersion = []int{1, 19, 1}
+var minVersion = []int{1, 19, 0}
 
 // Gate trusts activation ids only from a sidecar that sets them itself.
 type Gate struct {
@@ -71,10 +71,10 @@ func (g *Gate) isTrusted(ctx context.Context) bool {
 	return g.trusted
 }
 
-// Supported reports whether version is at least 1.19.1, ignoring any prerelease or build suffix.
+// Supported reports whether version is at least 1.19.0, ignoring any build suffix.
 func Supported(version string) bool {
 	core, _, _ := strings.Cut(version, "+")
-	core, _, _ = strings.Cut(core, "-")
+	core, pre, _ := strings.Cut(core, "-")
 	parts := strings.Split(core, ".")
 	if len(parts) != len(minVersion) {
 		return false
@@ -88,5 +88,9 @@ func Supported(version string) bool {
 		}
 		v[i] = n
 	}
-	return slices.Compare(v, minVersion) >= 0
+	// Release candidates of the minimum version came before the activation id shipped.
+	if c := slices.Compare(v, minVersion); c != 0 {
+		return c > 0
+	}
+	return pre == ""
 }

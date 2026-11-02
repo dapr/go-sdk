@@ -27,14 +27,15 @@ func TestSupported(t *testing.T) {
 	t.Parallel()
 
 	for version, want := range map[string]bool{
+		"1.19.0":       true,
 		"1.19.1":       true,
 		"1.19.1-rc.1":  true,
 		"1.19.2":       true,
 		"1.20.0":       true,
 		"2.0.0":        true,
-		"1.19.1+build": true,
-		"1.19.0":       false,
+		"1.19.0+build": true,
 		"1.19.0-rc.2":  false,
+		"1.19.0-rc.7":  false,
 		"1.18.9":       false,
 		"0.99.99":      false,
 		"edge":         false,
@@ -71,7 +72,7 @@ func TestGate(t *testing.T) {
 	t.Run("old sidecar drops the id and caches it", func(t *testing.T) {
 		t.Parallel()
 		var calls atomic.Int32
-		g := NewGate(fixed("1.19.0", &calls))
+		g := NewGate(fixed("1.19.0-rc.3", &calls))
 		assert.Empty(t, g.ID(t.Context(), "a"))
 		assert.Empty(t, g.ID(t.Context(), "b"))
 		assert.Equal(t, int32(1), calls.Load())

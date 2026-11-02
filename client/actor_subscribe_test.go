@@ -720,7 +720,7 @@ func TestSubscribeActorEventsActivationIDOldSidecar(t *testing.T) {
 	t.Parallel()
 
 	srv, client := newTestActorEventsServer(t)
-	srv.runtimeVersion.Store(new("1.19.0"))
+	srv.runtimeVersion.Store(new("1.19.0-rc.3"))
 	handler := &testActorEventHandler{actorTypes: []string{"testActorType"}}
 	stop, err := client.SubscribeActorEvents(t.Context(), handler, ActorEventSubscriptionOptions{})
 	require.NoError(t, err)
@@ -866,7 +866,7 @@ type fakeActorEventsServer struct {
 
 func (s *fakeActorEventsServer) GetMetadata(context.Context, *pb.GetMetadataRequest) (*pb.GetMetadataResponse, error) {
 	s.metadataCalls.Add(1)
-	version := "1.19.1"
+	version := "1.19.0"
 	if v := s.runtimeVersion.Load(); v != nil {
 		version = *v
 	}
