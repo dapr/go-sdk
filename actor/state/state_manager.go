@@ -197,7 +197,11 @@ func (s *stateManagerCtx) Remove(ctx context.Context, stateName string) error {
 		})
 		return nil
 	}
-	if exist, err := s.stateAsyncProvider.ContainsContext(ctx, s.actorTypeName, s.actorID, stateName); err != nil && exist {
+	exist, err := s.stateAsyncProvider.ContainsContext(ctx, s.actorTypeName, s.actorID, stateName)
+	if err != nil {
+		return err
+	}
+	if exist {
 		s.stateChangeTracker.Store(stateName, &ChangeMetadata{
 			Kind:  Remove,
 			Value: nil,
