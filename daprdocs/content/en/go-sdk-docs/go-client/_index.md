@@ -162,6 +162,35 @@ func main() {
 }
 ```
 
+#### Staged operations
+
+When the `WorkflowsStagedOperations` preview feature is on, a Dapr sidecar with no workflow worker connected can accept a workflow operation, save it, and run it once a worker connects. Such an operation is staged.
+
+Each client operation that can be staged has a `WithResult` variant whose result has a `Staged` field:
+
+```go
+res, err := client.ScheduleWorkflowWithResult(ctx, "ExampleWorkflow")
+if err != nil {
+	log.Fatal(err)
+}
+if res.Staged {
+	fmt.Printf("workflow %s will start once a worker connects\n", res.InstanceID)
+}
+```
+
+The variants are `ScheduleWorkflowWithResult`, `RaiseEventWithResult`, `TerminateWorkflowWithResult`, `SuspendWorkflowWithResult`, `ResumeWorkflowWithResult` and `RerunWorkflowFromEventWithResult`.
+
+To keep the existing call, pass the matching option instead. It sets a `bool` once the call returns without an error:
+
+```go
+var staged bool
+err := client.TerminateWorkflow(ctx, id, workflow.WithTerminateStaged(&staged))
+```
+
+The options are `WithStartStaged`, `WithRaiseEventStaged`, `WithTerminateStaged`, `WithSuspendStaged`, `WithResumeStaged` and `WithRerunStaged`.
+
+`Staged` is always false when the operation ran at once, and when the sidecar does not stage operations. Purging a workflow is never staged.
+
 - For a more comprehensive guide on workflows visit these How-To guides:
   - [How-To: Author a workflow]({{% ref howto-author-workflow.md %}}).
   - [How-To: Manage a workflow]({{% ref howto-manage-workflow.md %}}).
