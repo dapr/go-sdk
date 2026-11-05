@@ -19,6 +19,7 @@ import (
 	"sync"
 	"sync/atomic"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -91,19 +92,32 @@ func TestGate(t *testing.T) {
 		assert.Zero(t, calls.Load())
 	})
 
-	t.Run("failed lookup drops the id then retries", func(t *testing.T) {
+	t.Run("failed lookups drop the id and retry with backoff", func(t *testing.T) {
 		t.Parallel()
+		const failures = 7
 		var calls atomic.Int32
 		g := NewGate(func(context.Context) (string, error) {
-			if calls.Add(1) == 1 {
+			if calls.Add(1) <= failures {
 				return "", errors.New("unavailable")
 			}
 			return "1.19.1", nil
 		})
-		assert.Empty(t, g.ID(t.Context(), "a"))
+		now := time.Now()
+		g.now = func() time.Time { return now }
+
+		for i, wait := range []time.Duration{time.Second, 2 * time.Second, 4 * time.Second, 8 * time.Second, 16 * time.Second, 30 * time.Second, 30 * time.Second} {
+			assert.Empty(t, g.ID(t.Context(), "a"))
+			assert.Equal(t, int32(i+1), calls.Load())
+
+			now = now.Add(wait - time.Millisecond)
+			assert.Empty(t, g.ID(t.Context(), "a"))
+			assert.Equal(t, int32(i+1), calls.Load(), "retried before %s", wait)
+			now = now.Add(time.Millisecond)
+		}
+
 		assert.Equal(t, "a", g.ID(t.Context(), "a"))
 		assert.Equal(t, "a", g.ID(t.Context(), "a"))
-		assert.Equal(t, int32(2), calls.Load())
+		assert.Equal(t, int32(failures+1), calls.Load())
 	})
 
 	t.Run("concurrent callers share one lookup", func(t *testing.T) {

@@ -684,7 +684,7 @@ func (a *LateCreatorActor) ReminderCall(string, []byte, string, string) {}
 
 func TestActorActivationIDOldSidecar(t *testing.T) {
 	s := newServer("", nil)
-	s.activation = sidecarVersion("1.19.0")
+	s.activation = sidecarVersion("1.19.0-rc.3")
 	s.registerBaseHandler()
 	s.RegisterActorImplFactoryContext(func() actor.ServerContext { return &ActivationEchoActor{} })
 
