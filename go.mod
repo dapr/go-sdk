@@ -4,7 +4,7 @@ go 1.26.10
 
 require (
 	github.com/dapr/dapr v1.19.0
-	github.com/dapr/durabletask-go v0.15.1
+	github.com/dapr/durabletask-go v0.16.0
 	github.com/dapr/kit v0.19.0
 	github.com/go-chi/chi/v5 v5.3.2
 	github.com/google/uuid v1.6.0
@@ -33,5 +33,3 @@ require (
 	golang.org/x/text v0.43.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20260803160001-6ac0973c030d // indirect
 )
-
-replace github.com/dapr/durabletask-go => github.com/famarting/durabletask-go v0.0.0-20261105110749-95cdef62a923

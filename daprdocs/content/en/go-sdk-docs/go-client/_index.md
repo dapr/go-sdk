@@ -180,15 +180,6 @@ if res.Staged {
 
 The variants are `ScheduleWorkflowWithResult`, `RaiseEventWithResult`, `TerminateWorkflowWithResult`, `SuspendWorkflowWithResult`, `ResumeWorkflowWithResult` and `RerunWorkflowFromEventWithResult`.
 
-To keep the existing call, pass the matching option instead. It sets a `bool` once the call returns without an error:
-
-```go
-var staged bool
-err := client.TerminateWorkflow(ctx, id, workflow.WithTerminateStaged(&staged))
-```
-
-The options are `WithStartStaged`, `WithRaiseEventStaged`, `WithTerminateStaged`, `WithSuspendStaged`, `WithResumeStaged` and `WithRerunStaged`.
-
 `Staged` is always false when the operation ran at once, and when the sidecar does not stage operations. Purging a workflow is never staged.
 
 - For a more comprehensive guide on workflows visit these How-To guides:
