@@ -34,6 +34,11 @@ const (
 type Parsed struct {
 	Target string
 	TLS    bool
+	// Authority, from the authority query parameter, replaces the target's
+	// host as the HTTP/2 :authority and the TLS server name (SNI), so a
+	// gateway can route the connection on it while the target only has to
+	// reach the gateway. Empty means no override.
+	Authority string
 }
 
 func ParseGRPCEndpoint(endpoint string) (Parsed, error) {
@@ -81,7 +86,7 @@ func ParseGRPCEndpoint(endpoint string) (Parsed, error) {
 
 	var errs []string
 	for k := range ptarget.Query() {
-		if k != "tls" {
+		if k != "tls" && k != "authority" {
 			errs = append(errs, fmt.Sprintf("unrecognized query parameter: %q", k))
 		}
 	}
@@ -100,6 +105,14 @@ func ParseGRPCEndpoint(endpoint string) (Parsed, error) {
 		}
 
 		tls = qtls == "true"
+	}
+
+	var authority string
+	if ptarget.Query().Has("authority") {
+		authority = ptarget.Query().Get("authority")
+		if authority == "" || strings.ContainsAny(authority, "/?#@ ") {
+			return Parsed{}, fmt.Errorf("invalid value for authority query parameter: %q", authority)
+		}
 	}
 
 	scheme := ptarget.Scheme
@@ -171,8 +184,9 @@ func ParseGRPCEndpoint(endpoint string) (Parsed, error) {
 	}
 
 	return Parsed{
-		Target: target,
-		TLS:    tls,
+		Target:    target,
+		TLS:       tls,
+		Authority: authority,
 	}, nil
 }
 

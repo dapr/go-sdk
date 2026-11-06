@@ -15,7 +15,6 @@ package client
 
 import (
 	"context"
-	"crypto/tls"
 	"errors"
 	"fmt"
 	"io"
@@ -367,14 +366,26 @@ func NewClientWithAddressContext(ctx context.Context, address string, dialOpts .
 	opts := []grpc.DialOption{
 		grpc.WithUserAgent(userAgent()),
 		grpc.WithBlock(), //nolint:staticcheck
+		// A dial that times out reports why the last attempt failed, such as
+		// a refused TLS handshake, not only the deadline.
+		grpc.WithReturnConnectionError(), //nolint:staticcheck
 		authTokenUnaryInterceptor(at),
 		authTokenStreamInterceptor(at),
+	}
+
+	// Ahead of dialOpts, so a caller's own grpc.WithAuthority still wins.
+	if parsedAddress.Authority != "" {
+		opts = append(opts, grpc.WithAuthority(parsedAddress.Authority))
 	}
 
 	opts = append(opts, dialOpts...)
 
 	if parsedAddress.TLS {
-		opts = append(opts, grpc.WithTransportCredentials(credentials.NewTLS(new(tls.Config))))
+		tlsConfig, tlsErr := clientTLSConfig()
+		if tlsErr != nil {
+			return nil, fmt.Errorf("error configuring TLS for '%s': %w", address, tlsErr)
+		}
+		opts = append(opts, grpc.WithTransportCredentials(credentials.NewTLS(tlsConfig)))
 	} else {
 		opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	}
