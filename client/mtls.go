@@ -23,89 +23,94 @@ import (
 )
 
 const (
-	clientTLSCertFileEnvVarName   = "DAPR_CLIENT_TLS_CERT_FILE"
-	clientTLSKeyFileEnvVarName    = "DAPR_CLIENT_TLS_KEY_FILE"
-	tlsTrustAnchorsFileEnvVarName = "DAPR_TLS_TRUST_ANCHORS_FILE"
-	serverSPIFFEIDEnvVarName      = "DAPR_SERVER_SPIFFE_ID"
+	grpcTLSCertPathEnvVarName       = "DAPR_GRPC_TLS_CERT_PATH"
+	grpcTLSKeyPathEnvVarName        = "DAPR_GRPC_TLS_KEY_PATH"
+	grpcTLSCAPathEnvVarName         = "DAPR_GRPC_TLS_CA_PATH"
+	grpcTLSServerSPIFFEIDEnvVarName = "DAPR_GRPC_TLS_SERVER_SPIFFE_ID"
 )
 
-// clientTLSConfig is the TLS config for a TLS endpoint. Without a client
-// certificate it is the default: the server is checked against the system
-// roots and the host name.
+// clientTLSConfig reads the TLS settings of the gRPC connection, which mean
+// what they do in the Java SDK:
 //
-// With DAPR_CLIENT_TLS_CERT_FILE and DAPR_CLIENT_TLS_KEY_FILE set, the client
-// presents that certificate, and the server is held to a SPIFFE identity
-// instead of a host name: its chain must lead to DAPR_TLS_TRUST_ANCHORS_FILE,
-// and its certificate must carry DAPR_SERVER_SPIFFE_ID, or by default the
-// client certificate's own SPIFFE ID. That is the shape of a daprd reached
-// over mTLS, whose SVID names no host. The files are read again on every
-// handshake, so a rotated certificate or bundle is picked up without a
-// restart.
+//   - DAPR_GRPC_TLS_CERT_PATH and DAPR_GRPC_TLS_KEY_PATH, set together, are
+//     the certificate the client presents.
+//   - DAPR_GRPC_TLS_CA_PATH is the CA the server's certificate must chain to,
+//     in place of the system roots.
+//
+// The server's certificate must also name the host dialed, or the authority
+// when one is set. DAPR_GRPC_TLS_SERVER_SPIFFE_ID replaces that check with a
+// SPIFFE ID one, for a server whose certificate names no host, such as a
+// daprd reached over mTLS: the certificate must carry that ID, and chain to
+// DAPR_GRPC_TLS_CA_PATH, which is then required.
+//
+// The client certificate, and the CA when a SPIFFE ID is checked, are read
+// again on every handshake, so a rotated one is picked up without a restart.
+// It returns nil when none of the settings is set.
 func clientTLSConfig() (*tls.Config, error) {
-	certFile := os.Getenv(clientTLSCertFileEnvVarName)
-	keyFile := os.Getenv(clientTLSKeyFileEnvVarName)
-	if certFile == "" && keyFile == "" {
-		return new(tls.Config), nil
-	}
-	if certFile == "" || keyFile == "" {
-		return nil, fmt.Errorf("%s and %s must be set together", clientTLSCertFileEnvVarName, clientTLSKeyFileEnvVarName)
-	}
-	anchorsFile := os.Getenv(tlsTrustAnchorsFileEnvVarName)
-	if anchorsFile == "" {
-		return nil, fmt.Errorf("%s is required with a client certificate", tlsTrustAnchorsFileEnvVarName)
+	certFile := os.Getenv(grpcTLSCertPathEnvVarName)
+	keyFile := os.Getenv(grpcTLSKeyPathEnvVarName)
+	caFile := os.Getenv(grpcTLSCAPathEnvVarName)
+	serverID := os.Getenv(grpcTLSServerSPIFFEIDEnvVarName)
+	if certFile == "" && keyFile == "" && caFile == "" && serverID == "" {
+		return nil, nil
 	}
 
-	// Load both once now, so a bad path or file fails here rather than on
-	// the first call.
-	cert, err := tls.LoadX509KeyPair(certFile, keyFile)
-	if err != nil {
-		return nil, fmt.Errorf("loading the client certificate: %w", err)
-	}
-	if _, err = loadTrustAnchors(anchorsFile); err != nil {
-		return nil, err
-	}
+	cfg := &tls.Config{MinVersion: tls.VersionTLS12}
 
-	serverID := os.Getenv(serverSPIFFEIDEnvVarName)
-	if serverID != "" {
-		u, parseErr := url.Parse(serverID)
-		if parseErr != nil || u.Scheme != "spiffe" || u.Host == "" {
-			return nil, fmt.Errorf("%s %q is not a SPIFFE ID, such as spiffe://<trust domain>/<path>", serverSPIFFEIDEnvVarName, serverID)
+	if certFile != "" || keyFile != "" {
+		if certFile == "" || keyFile == "" {
+			return nil, fmt.Errorf("%s and %s must be set together", grpcTLSCertPathEnvVarName, grpcTLSKeyPathEnvVarName)
 		}
-	} else {
-		leaf, parseErr := x509.ParseCertificate(cert.Certificate[0])
-		if parseErr != nil {
-			return nil, fmt.Errorf("parsing the client certificate: %w", parseErr)
+		// Load it once now, so a bad path or file fails here rather than on
+		// the first call.
+		if _, err := tls.LoadX509KeyPair(certFile, keyFile); err != nil {
+			return nil, fmt.Errorf("loading the client certificate: %w", err)
 		}
-		if serverID, err = spiffeID(leaf); err != nil {
-			return nil, fmt.Errorf("the client certificate gives no server SPIFFE ID to expect, set %s: %w", serverSPIFFEIDEnvVarName, err)
-		}
-	}
-
-	return &tls.Config{
-		MinVersion: tls.VersionTLS12,
-		GetClientCertificate: func(*tls.CertificateRequestInfo) (*tls.Certificate, error) {
-			c, loadErr := tls.LoadX509KeyPair(certFile, keyFile)
+		cfg.GetClientCertificate = func(*tls.CertificateRequestInfo) (*tls.Certificate, error) {
+			cert, loadErr := tls.LoadX509KeyPair(certFile, keyFile)
 			if loadErr != nil {
 				return nil, fmt.Errorf("loading the client certificate: %w", loadErr)
 			}
-			return &c, nil
-		},
+			return &cert, nil
+		}
+	}
+
+	switch {
+	case serverID != "":
+		u, parseErr := url.Parse(serverID)
+		if parseErr != nil || u.Scheme != "spiffe" || u.Host == "" {
+			return nil, fmt.Errorf("%s %q is not a SPIFFE ID, such as spiffe://<trust domain>/<path>", grpcTLSServerSPIFFEIDEnvVarName, serverID)
+		}
+		if caFile == "" {
+			return nil, fmt.Errorf("%s requires %s", grpcTLSServerSPIFFEIDEnvVarName, grpcTLSCAPathEnvVarName)
+		}
+		if _, err := loadCA(caFile); err != nil {
+			return nil, err
+		}
 		// The server's certificate names a SPIFFE ID, not a host, so Go's
 		// host name check is replaced by VerifyPeerCertificate.
-		InsecureSkipVerify: true, //nolint:gosec // VerifyPeerCertificate checks the chain and the SPIFFE ID.
-		VerifyPeerCertificate: func(rawCerts [][]byte, _ [][]*x509.Certificate) error {
-			return verifyServer(rawCerts, anchorsFile, serverID)
-		},
-	}, nil
+		cfg.InsecureSkipVerify = true //nolint:gosec // VerifyPeerCertificate checks the chain and the SPIFFE ID.
+		cfg.VerifyPeerCertificate = func(rawCerts [][]byte, _ [][]*x509.Certificate) error {
+			return verifyServer(rawCerts, caFile, serverID)
+		}
+	case caFile != "":
+		roots, err := loadCA(caFile)
+		if err != nil {
+			return nil, err
+		}
+		cfg.RootCAs = roots
+	}
+
+	return cfg, nil
 }
 
-// verifyServer checks that the server's chain leads to the trust anchors and
-// that its certificate carries serverID.
-func verifyServer(rawCerts [][]byte, anchorsFile, serverID string) error {
+// verifyServer checks that the server's chain leads to the CA and that its
+// certificate carries serverID.
+func verifyServer(rawCerts [][]byte, caFile, serverID string) error {
 	if len(rawCerts) == 0 {
 		return errors.New("the server presented no certificate")
 	}
-	roots, err := loadTrustAnchors(anchorsFile)
+	roots, err := loadCA(caFile)
 	if err != nil {
 		return err
 	}
@@ -136,14 +141,14 @@ func verifyServer(rawCerts [][]byte, anchorsFile, serverID string) error {
 	return nil
 }
 
-func loadTrustAnchors(file string) (*x509.CertPool, error) {
+func loadCA(file string) (*x509.CertPool, error) {
 	data, err := os.ReadFile(file)
 	if err != nil {
-		return nil, fmt.Errorf("reading the trust anchors: %w", err)
+		return nil, fmt.Errorf("reading the CA: %w", err)
 	}
 	roots := x509.NewCertPool()
 	if !roots.AppendCertsFromPEM(data) {
-		return nil, fmt.Errorf("no certificates in the trust anchors file %s", file)
+		return nil, fmt.Errorf("no certificates in the CA file %s", file)
 	}
 	return roots, nil
 }

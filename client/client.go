@@ -15,6 +15,7 @@ package client
 
 import (
 	"context"
+	"crypto/tls"
 	"errors"
 	"fmt"
 	"io"
@@ -380,11 +381,16 @@ func NewClientWithAddressContext(ctx context.Context, address string, dialOpts .
 
 	opts = append(opts, dialOpts...)
 
-	if parsedAddress.TLS {
-		tlsConfig, tlsErr := clientTLSConfig()
-		if tlsErr != nil {
-			return nil, fmt.Errorf("error configuring TLS for '%s': %w", address, tlsErr)
-		}
+	// The TLS settings turn TLS on whatever the endpoint says, as they do in
+	// the Java SDK.
+	tlsConfig, tlsErr := clientTLSConfig()
+	if tlsErr != nil {
+		return nil, fmt.Errorf("error configuring TLS for '%s': %w", address, tlsErr)
+	}
+	if tlsConfig == nil && parsedAddress.TLS {
+		tlsConfig = new(tls.Config)
+	}
+	if tlsConfig != nil {
 		opts = append(opts, grpc.WithTransportCredentials(credentials.NewTLS(tlsConfig)))
 	} else {
 		opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))

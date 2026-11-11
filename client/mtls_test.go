@@ -14,6 +14,7 @@ limitations under the License.
 package client
 
 import (
+	"context"
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
@@ -36,29 +37,72 @@ const (
 	testOtherID  = "spiffe://example.org/ns/prj-1/app2"
 )
 
-func TestClientTLSConfigWithoutAClientCertificate(t *testing.T) {
+func TestClientTLSConfigIsNilWithNothingSet(t *testing.T) {
 	setClientTLSEnv(t, "", "", "", "")
 
 	cfg, err := clientTLSConfig()
 	require.NoError(t, err)
-	assert.False(t, cfg.InsecureSkipVerify, "without a client certificate the server is checked by host name")
-	assert.Nil(t, cfg.GetClientCertificate)
+	assert.Nil(t, cfg, "the endpoint alone decides whether to use TLS")
+}
+
+func TestTheTLSSettingsAreReadForAPlaintextEndpoint(t *testing.T) {
+	setClientTLSEnv(t, "", "", "", "ola")
+
+	_, err := NewClientWithAddressContext(context.Background(), "localhost:50001")
+	assert.ErrorContains(t, err, "error configuring TLS")
+}
+
+func TestClientTLSConfigChecksTheHostNameWithoutAServerID(t *testing.T) {
+	ca := newTestCA(t)
+	_, cert, key := ca.svid(t, testClientID)
+	caFile := ca.bundleFile(t)
+	roots := x509.NewCertPool()
+	roots.AddCert(ca.cert)
+
+	tests := map[string]struct {
+		cert, key, ca string
+		roots         *x509.CertPool
+		clientCert    bool
+	}{
+		"a CA alone":                    {ca: caFile, roots: roots},
+		"a client certificate alone":    {cert: cert, key: key, clientCert: true},
+		"a client certificate and a CA": {cert: cert, key: key, ca: caFile, roots: roots, clientCert: true},
+	}
+	for name, tc := range tests {
+		t.Run(name, func(t *testing.T) {
+			setClientTLSEnv(t, tc.cert, tc.key, tc.ca, "")
+			cfg, err := clientTLSConfig()
+			require.NoError(t, err)
+			require.NotNil(t, cfg)
+
+			assert.False(t, cfg.InsecureSkipVerify, "Go checks the chain and the host name")
+			assert.Nil(t, cfg.VerifyPeerCertificate)
+			if tc.roots == nil {
+				assert.Nil(t, cfg.RootCAs, "the system roots")
+			} else {
+				assert.True(t, tc.roots.Equal(cfg.RootCAs), "the CA set")
+			}
+			assert.Equal(t, tc.clientCert, cfg.GetClientCertificate != nil)
+		})
+	}
 }
 
 func TestClientTLSConfigRefusesAnIncompleteSetup(t *testing.T) {
 	ca := newTestCA(t)
 	_, cert, key := ca.svid(t, testClientID)
-	bundle := ca.bundleFile(t)
+	caFile := ca.bundleFile(t)
+	absent := filepath.Join(t.TempDir(), "absent.crt")
 
-	tests := map[string]struct{ cert, key, anchors string }{
-		"a certificate without its key": {cert: cert, anchors: bundle},
-		"a key without its certificate": {key: key, anchors: bundle},
-		"no trust anchors":              {cert: cert, key: key},
-		"a missing trust anchors file":  {cert: cert, key: key, anchors: filepath.Join(t.TempDir(), "absent.crt")},
+	tests := map[string]struct{ cert, key, ca, serverID string }{
+		"a certificate without its key":      {cert: cert, ca: caFile},
+		"a key without its certificate":      {key: key, ca: caFile},
+		"a missing CA file":                  {cert: cert, key: key, ca: absent},
+		"a server ID without a CA":           {cert: cert, key: key, serverID: testOtherID},
+		"a server ID with a missing CA file": {cert: cert, key: key, ca: absent, serverID: testOtherID},
 	}
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
-			setClientTLSEnv(t, tc.cert, tc.key, tc.anchors, "")
+			setClientTLSEnv(t, tc.cert, tc.key, tc.ca, tc.serverID)
 			_, err := clientTLSConfig()
 			assert.Error(t, err)
 		})
@@ -68,11 +112,11 @@ func TestClientTLSConfigRefusesAnIncompleteSetup(t *testing.T) {
 func TestClientTLSConfigRefusesAServerIDThatIsNotASPIFFEID(t *testing.T) {
 	ca := newTestCA(t)
 	_, cert, key := ca.svid(t, testClientID)
-	bundle := ca.bundleFile(t)
+	caFile := ca.bundleFile(t)
 
 	for _, id := range []string{"ola", "https://example.org/ns/prj-1/app1", "spiffe:///ns/prj-1/app1"} {
 		t.Run(id, func(t *testing.T) {
-			setClientTLSEnv(t, cert, key, bundle, id)
+			setClientTLSEnv(t, cert, key, caFile, id)
 			_, err := clientTLSConfig()
 			assert.ErrorContains(t, err, "is not a SPIFFE ID")
 		})
@@ -92,29 +136,27 @@ func TestClientTLSConfigPresentsTheClientCertificate(t *testing.T) {
 	assert.Equal(t, der, got.Certificate[0])
 }
 
-func TestClientTLSConfigHoldsTheServerToASPIFFEID(t *testing.T) {
+func TestClientTLSConfigHoldsTheServerToTheSPIFFEIDSet(t *testing.T) {
 	ca := newTestCA(t)
 	_, clientCert, clientKey := ca.svid(t, testClientID)
-	sameID, _, _ := ca.svid(t, testClientID)
-	otherID, _, _ := ca.svid(t, testOtherID)
-	otherCA, _, _ := newTestCA(t).svid(t, testClientID)
+	wantID, _, _ := ca.svid(t, testOtherID)
+	clientID, _, _ := ca.svid(t, testClientID)
+	otherCA, _, _ := newTestCA(t).svid(t, testOtherID)
 
 	tests := map[string]struct {
-		serverIDEnv string
-		server      []byte
-		ok          bool
+		server []byte
+		ok     bool
 	}{
-		"the client's own ID":                  {server: sameID, ok: true},
-		"another ID":                           {server: otherID},
-		"the client's own ID from another CA":  {server: otherCA},
-		"the ID DAPR_SERVER_SPIFFE_ID names":   {serverIDEnv: testOtherID, server: otherID, ok: true},
-		"the client's own ID when another set": {serverIDEnv: testOtherID, server: sameID},
+		"the ID set":                  {server: wantID, ok: true},
+		"the client's own ID":         {server: clientID},
+		"the ID set, from another CA": {server: otherCA},
 	}
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
-			setClientTLSEnv(t, clientCert, clientKey, ca.bundleFile(t), tc.serverIDEnv)
+			setClientTLSEnv(t, clientCert, clientKey, ca.bundleFile(t), testOtherID)
 			cfg, err := clientTLSConfig()
 			require.NoError(t, err)
+			assert.True(t, cfg.InsecureSkipVerify, "the SPIFFE ID check replaces Go's host name check")
 
 			err = cfg.VerifyPeerCertificate([][]byte{tc.server}, nil)
 			if tc.ok {
@@ -126,12 +168,12 @@ func TestClientTLSConfigHoldsTheServerToASPIFFEID(t *testing.T) {
 	}
 }
 
-func setClientTLSEnv(t *testing.T, cert, key, anchors, serverID string) {
+func setClientTLSEnv(t *testing.T, cert, key, ca, serverID string) {
 	t.Helper()
-	t.Setenv(clientTLSCertFileEnvVarName, cert)
-	t.Setenv(clientTLSKeyFileEnvVarName, key)
-	t.Setenv(tlsTrustAnchorsFileEnvVarName, anchors)
-	t.Setenv(serverSPIFFEIDEnvVarName, serverID)
+	t.Setenv(grpcTLSCertPathEnvVarName, cert)
+	t.Setenv(grpcTLSKeyPathEnvVarName, key)
+	t.Setenv(grpcTLSCAPathEnvVarName, ca)
+	t.Setenv(grpcTLSServerSPIFFEIDEnvVarName, serverID)
 }
 
 type testCA struct {
