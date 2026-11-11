@@ -34,7 +34,7 @@ func ProcessEvent(eventType string, eventPath string, data []byte) (e Event, err
 }
 
 func (e *Event) GetIssueAssignees() []string {
-	assignees := make([]string, 0)
+	assignees := make([]string, 0, len(e.IssueCommentEvent.Issue.Assignees))
 	for _, assignee := range e.IssueCommentEvent.Issue.Assignees {
 		assignees = append(assignees, assignee.GetLogin())
 	}

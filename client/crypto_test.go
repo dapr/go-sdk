@@ -24,6 +24,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	commonv1 "github.com/dapr/dapr/pkg/proto/common/v1"
 	runtimev1pb "github.com/dapr/dapr/pkg/proto/runtime/v1"
@@ -117,10 +119,12 @@ func TestEncrypt(t *testing.T) {
 
 		out, err := testClient.Encrypt(failingCtx,
 			&slowReader{
-				// Should take a lot longer than 1s
+				// Should take a lot longer than 1s. The first byte must arrive well after the
+				// deadline: otherwise the sender can close the pipe with ctx.Err() before the
+				// receiver gets the DeadlineExceeded status.
 				//nolint:dupword
 				data:  strings.NewReader("soft kitty, warm kitty, little ball of fur, happy kitty, sleepy kitty, purr purr purr"),
-				delay: time.Second,
+				delay: 3 * time.Second,
 			},
 			EncryptOptions{
 				ComponentName:    "mycomponent",
@@ -133,7 +137,7 @@ func TestEncrypt(t *testing.T) {
 
 		_, err = io.ReadAll(out)
 		require.Error(t, err)
-		require.ErrorContains(t, err, "context deadline exceeded")
+		require.Equal(t, codes.DeadlineExceeded, status.Code(err))
 	})
 }
 

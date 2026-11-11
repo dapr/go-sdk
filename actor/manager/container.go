@@ -39,6 +39,7 @@ type ActorContainerContext interface {
 
 // DefaultActorContainer contains actor instance and methods type info
 // generated from actor.
+//
 // Deprecated: use DefaultActorContainerContext instead.
 type DefaultActorContainer struct {
 	//nolint:staticcheck
@@ -55,6 +56,7 @@ type DefaultActorContainerContext struct {
 }
 
 // NewDefaultActorContainer creates a new ActorContainer with provider impl actor and serializer.
+//
 // Deprecated: use NewDefaultActorContainerContext instead.
 //
 //nolint:staticcheck
@@ -69,6 +71,7 @@ func (d *DefaultActorContainer) GetActor() actor.Server {
 }
 
 // Invoke call actor method with given methodName and param.
+//
 // Deprecated: use NewDefaultActorContainerContext instead.
 func (d *DefaultActorContainer) Invoke(methodName string, param []byte) ([]reflect.Value, actorErr.ActorErr) {
 	return d.ctx.Invoke(context.Background(), methodName, param)

@@ -66,6 +66,17 @@ func (c *GRPCClient) InvokeActor(ctx context.Context, in *InvokeActorRequest) (o
 		Data:      in.Data,
 	}
 
+	// Propagate the reentrancy id when invoking from within an actor callback
+	// received over the actor event stream, so reentrant calls share the
+	// caller's reentrancy stack. Only the reentrancy key is set, preserving any
+	// other metadata already on the request.
+	if id, ok := reentrancyIDFromContext(ctx); ok {
+		if req.Metadata == nil {
+			req.Metadata = make(map[string]string)
+		}
+		req.Metadata[reentrancyIDMetadataKey] = id
+	}
+
 	resp, err := c.protoClient.InvokeActor(ctx, req)
 	if err != nil {
 		return nil, fmt.Errorf("error invoking binding %s/%s: %w", in.ActorType, in.ActorID, err)
@@ -115,13 +126,14 @@ func (c *GRPCClient) ImplActorClientStub(actorClientStub actor.Client, opt ...co
 }
 
 type RegisterActorReminderRequest struct {
-	ActorType string
-	ActorID   string
-	Name      string
-	DueTime   string
-	Period    string
-	TTL       string
-	Data      []byte
+	ActorType     string
+	ActorID       string
+	Name          string
+	DueTime       string
+	Period        string
+	TTL           string
+	Data          []byte
+	FailurePolicy FailurePolicy
 }
 
 // RegisterActorReminder registers a new reminder to target actor. Then, a reminder would be created and
@@ -151,6 +163,10 @@ func (c *GRPCClient) RegisterActorReminder(ctx context.Context, in *RegisterActo
 		Period:    in.Period,
 		Ttl:       in.TTL,
 		Data:      in.Data,
+	}
+
+	if in.FailurePolicy != nil {
+		req.FailurePolicy = in.FailurePolicy.GetPBFailurePolicy()
 	}
 
 	_, err = c.protoClient.RegisterActorReminder(ctx, req)

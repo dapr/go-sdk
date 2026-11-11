@@ -41,6 +41,7 @@ var (
 )
 
 // NewActorRuntime creates an empty ActorRuntime.
+//
 // Deprecated: use NewActorRuntimeContext instead.
 func NewActorRuntime() *ActorRunTime {
 	return &ActorRunTime{ctx: NewActorRuntimeContext()}
@@ -52,6 +53,7 @@ func NewActorRuntimeContext() *ActorRunTimeContext {
 }
 
 // GetActorRuntimeInstance gets or create runtime instance.
+//
 // Deprecated: use GetActorRuntimeInstanceContext instead.
 func GetActorRuntimeInstance() *ActorRunTime {
 	if actorRuntimeInstance == nil {
@@ -89,6 +91,14 @@ func (r *ActorRunTimeContext) RegisterActorFactory(f actor.FactoryContext, opt .
 func (r *ActorRunTimeContext) GetJSONSerializedConfig() ([]byte, error) {
 	data, err := json.Marshal(&r.config)
 	return data, err
+}
+
+// RegisteredActorTypes returns the names of the actor types registered on
+// this runtime through RegisterActorFactory.
+func (r *ActorRunTimeContext) RegisteredActorTypes() []string {
+	types := make([]string, len(r.config.RegisteredActorTypes))
+	copy(types, r.config.RegisteredActorTypes)
+	return types
 }
 
 func (r *ActorRunTimeContext) InvokeActorMethod(ctx context.Context, actorTypeName, actorID, actorMethod string, payload []byte) ([]byte, actorErr.ActorErr) {

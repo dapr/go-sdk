@@ -1,0 +1,11 @@
+apiVersion: dapr.io/v1alpha1
+kind: Configuration
+metadata:
+  name: signing
+  namespace: default
+  labels:
+    app: payment-app
+spec:
+  features:
+  - name: WorkflowHistorySigning
+    enabled: true

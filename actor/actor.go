@@ -36,7 +36,8 @@ type Server interface {
 	SetID(string)
 	// Type is defined by user
 	Type() string
-	// SetStateManager is impl by ServerImplBase to inject StateManager to this actor instance
+	// SetStateManager is impl by ServerImplBase to inject StateManager to this actor instance.
+	//
 	// Deprecated: SetStateManager is deprecated in favour of SetStateManagerContext.
 	SetStateManager(StateManager)
 	// SaveState is impl by ServerImplBase, It saves the state cache of this actor instance to state store component by calling api of daprd.
@@ -101,6 +102,7 @@ func (b *ServerImplBase) SetStateManager(stateManager StateManager) {
 
 // GetStateManager can be called by user-defined-method, to get state manager
 // of this actor instance.
+//
 // Deprecated: Use ServerImplBaseCtx instead.
 func (b *ServerImplBase) GetStateManager() StateManager {
 	b.ctx.lock.RLock()
@@ -124,6 +126,7 @@ func (b *ServerImplBase) SetID(id string) {
 
 // SaveState is to saves the state cache of this actor instance to state store
 // component by calling api of daprd.
+//
 // Deprecated: Use ServerImplBaseCtx instead.
 func (b *ServerImplBase) SaveState() error {
 	b.lock.RLock()

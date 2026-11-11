@@ -18,13 +18,18 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
+	"time"
 
 	"github.com/dapr/go-sdk/actor"
 	dapr "github.com/dapr/go-sdk/client"
 	"github.com/dapr/go-sdk/examples/actor/api"
+	"github.com/dapr/kit/ptr"
 
 	daprd "github.com/dapr/go-sdk/service/http"
 )
+
+var logger = log.New(os.Stdout, "", log.LstdFlags)
 
 func testActorFactory() actor.ServerContext {
 	client, err := dapr.NewClient()
@@ -74,6 +79,10 @@ func (t *TestActor) StartReminder(ctx context.Context, req *api.ReminderRequest)
 		DueTime:   req.Duration,
 		Period:    req.Period,
 		Data:      []byte(req.Data),
+		FailurePolicy: &dapr.JobFailurePolicyConstant{
+			MaxRetries: nil,
+			Interval:   ptr.Of(time.Second * 1),
+		},
 	})
 }
 
@@ -131,6 +140,6 @@ func main() {
 	s := daprd.NewService(":8080")
 	s.RegisterActorImplFactoryContext(testActorFactory)
 	if err := s.Start(); err != nil && err != http.ErrServerClosed {
-		log.Fatalf("error listenning: %v", err)
+		logger.Fatalf("error listening: %v", err)
 	}
 }

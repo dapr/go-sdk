@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payment-app
+  namespace: default
+  labels:
+    app: payment-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: payment-app
+  template:
+    metadata:
+      labels:
+        app: payment-app
+      annotations:
+        dapr.io/enabled: "true"
+        dapr.io/app-id: "payment-app"
+        dapr.io/config: "signing"
+        dapr.io/log-level: "info"
+    spec:
+      containers:
+        - name: payment-app
+          image: payment-app:dev
+          imagePullPolicy: IfNotPresent

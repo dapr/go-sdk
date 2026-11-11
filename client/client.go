@@ -27,6 +27,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/dapr/durabletask-go/workflow"
 	"github.com/dapr/go-sdk/actor"
 	"github.com/dapr/go-sdk/actor/config"
 	"github.com/dapr/go-sdk/client/internal"
@@ -104,6 +105,7 @@ type Client interface {
 	PublishEvent(ctx context.Context, pubsubName, topicName string, data interface{}, opts ...PublishEventOption) error
 
 	// PublishEventfromCustomContent serializes an struct and publishes its contents as data (JSON) onto topic in specific pubsub component.
+	//
 	// Deprecated: This method is deprecated and will be removed in a future version of the SDK. Please use `PublishEvent` instead.
 	PublishEventfromCustomContent(ctx context.Context, pubsubName, topicName string, data interface{}) error
 
@@ -158,6 +160,7 @@ type Client interface {
 	SubscribeConfigurationItems(ctx context.Context, storeName string, keys []string, handler ConfigurationHandleFunction, opts ...ConfigurationOpt) (string, error)
 
 	// UnsubscribeConfigurationItems stops the subscription with target store's and ID.
+	//
 	// Deprecated: Closing the `SubscribeConfigurationItems` stream (closing the given context) will unsubscribe the client and should be used in favor of `UnsubscribeConfigurationItems`.
 	// UnsubscribeConfigurationItems can stop the subscription with target store's and id
 	UnsubscribeConfigurationItems(ctx context.Context, storeName string, id string, opts ...ConfigurationOpt) error
@@ -169,6 +172,13 @@ type Client interface {
 	// SubscribeWithHandler subscribes to a pubsub topic and calls the given handler on topic events.
 	// The returned cancel function must be called after  finishing with subscribing.
 	SubscribeWithHandler(ctx context.Context, opts SubscriptionOptions, handler SubscriptionHandleFunction) (func() error, error)
+
+	// SubscribeActorEvents registers the handler's actor types with the Dapr
+	// sidecar and hosts them over a bidirectional event stream, with no need
+	// to expose a server port for actor callbacks. The returned stop function
+	// must be called to stop hosting the actor types.
+	// This API is currently in Alpha.
+	SubscribeActorEvents(ctx context.Context, handler ActorEventHandler, opts ActorEventSubscriptionOptions) (func() error, error)
 
 	// DeleteBulkState deletes content for multiple keys from store.
 	DeleteBulkState(ctx context.Context, storeName string, keys []string, meta map[string]string) error
@@ -229,52 +239,39 @@ type Client interface {
 	// ImplActorClientStub is to impl user defined actor client stub
 	ImplActorClientStub(actorClientStub actor.Client, opt ...config.Option)
 
-	// StartWorkflowBeta1 starts a workflow.
-	// Deprecated: Please use the workflow client (github.com/dapr/go-sdk/workflow).
-	// These methods for managing workflows are no longer supported and will be removed in the 1.16 release.
-	StartWorkflowBeta1(ctx context.Context, req *StartWorkflowRequest) (*StartWorkflowResponse, error)
+	// ScheduleJob creates and schedules a job. Falls back to the alpha API
+	// if the sidecar does not yet implement the stable RPC.
+	ScheduleJob(ctx context.Context, req *Job) error
 
-	// GetWorkflowBeta1 gets a workflow.
-	// Deprecated: Please use the workflow client (github.com/dapr/go-sdk/workflow).
-	// These methods for managing workflows are no longer supported and will be removed in the 1.16 release.
-	GetWorkflowBeta1(ctx context.Context, req *GetWorkflowRequest) (*GetWorkflowResponse, error)
+	// GetJob returns a scheduled job. Falls back to the alpha API if the
+	// sidecar does not yet implement the stable RPC.
+	GetJob(ctx context.Context, name string) (*Job, error)
 
-	// PurgeWorkflowBeta1 purges a workflow.
-	// Deprecated: Please use the workflow client (github.com/dapr/go-sdk/workflow).
-	// These methods for managing workflows are no longer supported and will be removed in the 1.16 release.
-	PurgeWorkflowBeta1(ctx context.Context, req *PurgeWorkflowRequest) error
-
-	// TerminateWorkflowBeta1 terminates a workflow.
-	// Deprecated: Please use the workflow client (github.com/dapr/go-sdk/workflow).
-	// These methods for managing workflows are no longer supported and will be removed in the 1.16 release.
-	TerminateWorkflowBeta1(ctx context.Context, req *TerminateWorkflowRequest) error
-
-	// PauseWorkflowBeta1 pauses a workflow.
-	// Deprecated: Please use the workflow client (github.com/dapr/go-sdk/workflow).
-	// These methods for managing workflows are no longer supported and will be removed in the 1.16 release.
-	PauseWorkflowBeta1(ctx context.Context, req *PauseWorkflowRequest) error
-
-	// ResumeWorkflowBeta1 resumes a workflow.
-	// Deprecated: Please use the workflow client (github.com/dapr/go-sdk/workflow).
-	// These methods for managing workflows are no longer supported and will be removed in the 1.16 release.
-	ResumeWorkflowBeta1(ctx context.Context, req *ResumeWorkflowRequest) error
-
-	// RaiseEventWorkflowBeta1 raises an event for a workflow.
-	// Deprecated: Please use the workflow client (github.com/dapr/go-sdk/workflow).
-	// These methods for managing workflows are no longer supported and will be removed in the 1.16 release.
-	RaiseEventWorkflowBeta1(ctx context.Context, req *RaiseEventWorkflowRequest) error
+	// DeleteJob deletes a scheduled job. Falls back to the alpha API if the
+	// sidecar does not yet implement the stable RPC.
+	DeleteJob(ctx context.Context, name string) error
 
 	// ScheduleJobAlpha1 creates and schedules a job.
+	//
+	// Deprecated: use ScheduleJob instead.
 	ScheduleJobAlpha1(ctx context.Context, req *Job) error
 
 	// GetJobAlpha1 returns a scheduled job.
+	//
+	// Deprecated: use GetJob instead.
 	GetJobAlpha1(ctx context.Context, name string) (*Job, error)
 
 	// DeleteJobAlpha1 deletes a scheduled job.
+	//
+	// Deprecated: use DeleteJob instead.
 	DeleteJobAlpha1(ctx context.Context, name string) error
 
 	// ConverseAlpha1 interacts with a conversational AI model.
 	ConverseAlpha1(ctx context.Context, request conversationRequest, options ...conversationRequestOption) (*ConversationResponse, error)
+
+	// ConverseAlpha2 interacts with a conversational AI model.
+	ConverseAlpha2(ctx context.Context, request ConversationRequestAlpha2,
+		options ...conversationRequestOptionAlpha2) (*ConversationResponseAlpha2, error)
 
 	// GrpcClient returns the base grpc client if grpc is used and nil otherwise
 	GrpcClient() pb.DaprClient
@@ -287,11 +284,11 @@ type Client interface {
 // will return the already created instance. To create multiple instances of the Dapr client,
 // use one of the parameterized factory functions:
 //
-//	NewClientWithPort(port string) (client Client, err error)
-//	NewClientWithAddress(address string) (client Client, err error)
-//	NewClientWithConnection(conn *grpc.ClientConn) Client
-//	NewClientWithSocket(socket string) (client Client, err error)
-func NewClient() (client Client, err error) {
+//	NewClientWithPort(port string, dialOpts ...grpc.DialOption) (client Client, err error)
+//	NewClientWithAddress(address string, dialOpts ...grpc.DialOption) (client Client, err error)
+//	NewClientWithConnection(conn *grpc.ClientConn, dialOpts ...grpc.DialOption) Client
+//	NewClientWithSocket(socket string, dialOpts ...grpc.DialOption) (client Client, err error)
+func NewClient(dialOpts ...grpc.DialOption) (client Client, err error) {
 	lock.Lock()
 	defer lock.Unlock()
 
@@ -301,7 +298,7 @@ func NewClient() (client Client, err error) {
 
 	addr, ok := os.LookupEnv(daprGRPCEndpointEnvVarName)
 	if ok {
-		client, err = NewClientWithAddress(addr)
+		client, err = NewClientWithAddress(addr, dialOpts...)
 		if err != nil {
 			return nil, fmt.Errorf("error creating %q client: %w", daprGRPCEndpointEnvVarName, err)
 		}
@@ -314,7 +311,7 @@ func NewClient() (client Client, err error) {
 		port = daprPortDefault
 	}
 
-	c, err := NewClientWithPort(port)
+	c, err := NewClientWithPort(port, dialOpts...)
 	if err != nil {
 		return nil, fmt.Errorf("error creating default client: %w", err)
 	}
@@ -323,23 +320,33 @@ func NewClient() (client Client, err error) {
 	return defaultClient, nil
 }
 
+func NewWorkflowClient(dialOpts ...grpc.DialOption) (*workflow.Client, error) {
+	dclient, err := NewClient(dialOpts...)
+	if err != nil {
+		return nil, err
+	}
+
+	return workflow.NewClient(dclient.GrpcClientConn()), nil
+}
+
 // NewClientWithPort instantiates Dapr using specific gRPC port.
-func NewClientWithPort(port string) (client Client, err error) {
+func NewClientWithPort(port string, dialOpts ...grpc.DialOption) (client Client, err error) {
 	if port == "" {
 		return nil, errors.New("nil port")
 	}
-	return NewClientWithAddress(net.JoinHostPort("127.0.0.1", port))
+	return NewClientWithAddress(net.JoinHostPort("127.0.0.1", port), dialOpts...)
 }
 
 // NewClientWithAddress instantiates Dapr using specific address (including port).
+//
 // Deprecated: use NewClientWithAddressContext instead.
-func NewClientWithAddress(address string) (client Client, err error) {
-	return NewClientWithAddressContext(context.Background(), address)
+func NewClientWithAddress(address string, dialOpts ...grpc.DialOption) (client Client, err error) {
+	return NewClientWithAddressContext(context.Background(), address, dialOpts...)
 }
 
 // NewClientWithAddressContext instantiates Dapr using specific address (including port).
 // Uses the provided context to create the connection.
-func NewClientWithAddressContext(ctx context.Context, address string) (client Client, err error) {
+func NewClientWithAddressContext(ctx context.Context, address string, dialOpts ...grpc.DialOption) (client Client, err error) {
 	if address == "" {
 		return nil, errors.New("empty address")
 	}
@@ -363,6 +370,8 @@ func NewClientWithAddressContext(ctx context.Context, address string) (client Cl
 		authTokenUnaryInterceptor(at),
 		authTokenStreamInterceptor(at),
 	}
+
+	opts = append(opts, dialOpts...)
 
 	if parsedAddress.TLS {
 		opts = append(opts, grpc.WithTransportCredentials(credentials.NewTLS(new(tls.Config))))
@@ -400,19 +409,25 @@ func getClientTimeoutSeconds() (int, error) {
 }
 
 // NewClientWithSocket instantiates Dapr using specific socket.
-func NewClientWithSocket(socket string) (client Client, err error) {
+func NewClientWithSocket(socket string, dialOpts ...grpc.DialOption) (client Client, err error) {
 	if socket == "" {
 		return nil, errors.New("nil socket")
 	}
 	at := newAuthToken()
 	logger.Printf("dapr client initializing for: %s", socket)
 	addr := "unix://" + socket
-	conn, err := grpc.Dial( //nolint:staticcheck
-		addr,
+
+	opts := make([]grpc.DialOption, 0, 4+len(dialOpts))
+	opts = append(opts,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithUserAgent(userAgent()),
 		authTokenUnaryInterceptor(at),
 		authTokenStreamInterceptor(at),
+	)
+	opts = append(opts, dialOpts...)
+	conn, err := grpc.Dial( //nolint:staticcheck
+		addr,
+		opts...,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("error creating connection to '%s': %w", addr, err)

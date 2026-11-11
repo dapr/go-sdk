@@ -4,56 +4,61 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 	"sync"
 	"sync/atomic"
 	"time"
 
-	"github.com/dapr/go-sdk/workflow"
+	"github.com/dapr/durabletask-go/workflow"
+	"github.com/dapr/go-sdk/client"
 )
 
-func main() {
-	w, err := workflow.NewWorker()
-	if err != nil {
-		log.Fatalf("failed to initialise worker: %v", err)
-	}
+var logger = log.New(os.Stdout, "", log.LstdFlags)
 
-	if err := w.RegisterWorkflow(TaskExecutionIdWorkflow); err != nil {
-		log.Fatalf("failed to register workflow: %v", err)
+func main() {
+	r := workflow.NewRegistry()
+
+	if err := r.AddWorkflow(TaskExecutionIdWorkflow); err != nil {
+		logger.Fatalf("failed to register workflow: %v", err)
 	}
-	if err := w.RegisterActivity(RetryN); err != nil {
-		log.Fatalf("failed to register activity: %v", err)
+	if err := r.AddActivity(RetryN); err != nil {
+		logger.Fatalf("failed to register activity: %v", err)
 	}
 	fmt.Println("Workflow(s) and activities registered.")
 
-	if err := w.Start(); err != nil {
-		log.Fatalf("failed to start worker")
+	wclient, err := client.NewWorkflowClient()
+	if err != nil {
+		logger.Fatal(err)
+	}
+	fmt.Println("Worker initialized")
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	if err = wclient.StartWorker(ctx, r); err != nil {
+		logger.Fatal(err)
 	}
 
-	wfClient, err := workflow.NewClient()
+	id, err := wclient.ScheduleWorkflow(ctx, "TaskExecutionIdWorkflow", workflow.WithInput(5))
 	if err != nil {
-		log.Fatalf("failed to initialise client: %v", err)
-	}
-	ctx := context.Background()
-	id, err := wfClient.ScheduleNewWorkflow(ctx, "TaskExecutionIdWorkflow", workflow.WithInput(5))
-	if err != nil {
-		log.Fatalf("failed to schedule a new workflow: %v", err)
+		logger.Fatalf("failed to schedule a new workflow: %v", err)
 	}
 
-	metadata, err := wfClient.WaitForWorkflowCompletion(ctx, id)
+	metadata, err := wclient.WaitForWorkflowCompletion(ctx, id)
 	if err != nil {
-		log.Fatalf("failed to get workflow: %v", err)
+		logger.Fatalf("failed to get workflow: %v", err)
 	}
-	fmt.Printf("workflow status: %s\n", metadata.RuntimeStatus.String())
+	fmt.Printf("workflow status: %s\n", metadata.String())
 
-	err = wfClient.TerminateWorkflow(ctx, id)
+	err = wclient.TerminateWorkflow(ctx, id)
 	if err != nil {
-		log.Fatalf("failed to terminate workflow: %v", err)
+		logger.Fatalf("failed to terminate workflow: %v", err)
 	}
 	fmt.Println("workflow terminated")
 
-	err = wfClient.PurgeWorkflow(ctx, id)
+	err = wclient.PurgeWorkflowState(ctx, id)
 	if err != nil {
-		log.Fatalf("failed to purge workflow: %v", err)
+		logger.Fatalf("failed to purge workflow: %v", err)
 	}
 	fmt.Println("workflow purged")
 }
@@ -67,21 +72,21 @@ func TaskExecutionIdWorkflow(ctx *workflow.WorkflowContext) (any, error) {
 	}
 
 	var workBatch []int
-	if err := ctx.CallActivity(RetryN, workflow.ActivityRetryPolicy(workflow.RetryPolicy{
+	if err := ctx.CallActivity(RetryN, workflow.WithActivityRetryPolicy(&workflow.RetryPolicy{
 		MaxAttempts:          retries,
 		InitialRetryInterval: 100 * time.Millisecond,
 		BackoffCoefficient:   2,
 		MaxRetryInterval:     1 * time.Second,
-	}), workflow.ActivityInput(retries)).Await(&workBatch); err != nil {
+	}), workflow.WithActivityInput(retries)).Await(&workBatch); err != nil {
 		return 0, err
 	}
 
-	if err := ctx.CallActivity(RetryN, workflow.ActivityRetryPolicy(workflow.RetryPolicy{
+	if err := ctx.CallActivity(RetryN, workflow.WithActivityRetryPolicy(&workflow.RetryPolicy{
 		MaxAttempts:          retries,
 		InitialRetryInterval: 100 * time.Millisecond,
 		BackoffCoefficient:   2,
 		MaxRetryInterval:     1 * time.Second,
-	}), workflow.ActivityInput(retries)).Await(&workBatch); err != nil {
+	}), workflow.WithActivityInput(retries)).Await(&workBatch); err != nil {
 		return 0, err
 	}
 

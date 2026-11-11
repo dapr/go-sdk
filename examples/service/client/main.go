@@ -87,7 +87,15 @@ func main() {
 		ContentType: "text/plain",
 		Data:        []byte("hellow"),
 	}
-	resp, err := client.InvokeMethodWithContent(ctx, "serving", "echo", "post", content)
+	var resp []byte
+	// Retry up to 10 times with 3 second delay until the invocation succeeds
+	for range 10 {
+		resp, err = client.InvokeMethodWithContent(ctx, "serving", "echo", "post", content)
+		if err == nil {
+			break
+		}
+		time.Sleep(3 * time.Second)
+	}
 	if err != nil {
 		panic(err)
 	}

@@ -20,8 +20,8 @@ import (
 	actorErr "github.com/dapr/go-sdk/actor/error"
 	actorMock "github.com/dapr/go-sdk/actor/mock"
 
-	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
+	"go.uber.org/mock/gomock"
 )
 
 func TestNewActorRuntime(t *testing.T) {
@@ -32,6 +32,27 @@ func TestNewActorRuntime(t *testing.T) {
 func TestGetActorRuntime(t *testing.T) {
 	rt := GetActorRuntimeInstance()
 	assert.NotNil(t, rt)
+}
+
+func TestRegisteredActorTypes(t *testing.T) {
+	rt := NewActorRuntimeContext()
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	assert.Empty(t, rt.RegisteredActorTypes())
+
+	mockServer := actorMock.NewMockActorManagerContext(ctrl)
+	rt.actorManagers.Store("testActorType", mockServer)
+
+	mockServer.EXPECT().RegisterActorImplFactory(gomock.Any())
+	rt.RegisterActorFactory(actorMock.ActorImplFactoryCtx)
+
+	types := rt.RegisteredActorTypes()
+	assert.Equal(t, []string{"testActorType"}, types)
+
+	// Mutating the returned slice must not affect the runtime config.
+	types[0] = "mutated"
+	assert.Equal(t, []string{"testActorType"}, rt.RegisteredActorTypes())
 }
 
 func TestRegisterActorFactoryAndInvokeMethod(t *testing.T) {

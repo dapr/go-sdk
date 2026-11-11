@@ -124,6 +124,30 @@ func TestNewClient(t *testing.T) {
 		ctx := c.WithTraceID(t.Context(), "")
 		_ = c.WithTraceID(ctx, "test")
 	})
+
+	t.Run("new client with extra dial options", func(t *testing.T) {
+		_, err := os.Stat(testSocket)
+		if err != nil {
+			return
+		}
+
+		c, err := NewClientWithSocket(testSocket, grpc.WithUserAgent("test"))
+		require.NoError(t, err)
+		defer c.Close()
+
+		ctx, cancel := context.WithTimeout(t.Context(), 30*time.Second)
+		defer cancel()
+
+		addr := "unix:" + testSocket
+		c, err = NewClientWithAddressContext(ctx, addr, grpc.WithUserAgent("test"))
+		require.NoError(t, err)
+		defer c.Close()
+
+		t.Setenv(daprGRPCEndpointEnvVarName, addr)
+		c, err = NewClient(grpc.WithUserAgent("test"))
+		require.NoError(t, err)
+		defer c.Close()
+	})
 }
 
 func TestShutdown(t *testing.T) {
@@ -359,10 +383,18 @@ func (s *testDaprServer) PublishEvent(ctx context.Context, req *pb.PublishEventR
 	return &emptypb.Empty{}, nil
 }
 
+func (s *testDaprServer) BulkPublishEvent(ctx context.Context, req *pb.BulkPublishRequest) (*pb.BulkPublishResponse, error) {
+	return s.bulkPublishEvent(req)
+}
+
 // BulkPublishEventAlpha1 mocks the BulkPublishEventAlpha1 API.
+func (s *testDaprServer) BulkPublishEventAlpha1(ctx context.Context, req *pb.BulkPublishRequest) (*pb.BulkPublishResponse, error) {
+	return s.bulkPublishEvent(req)
+}
+
 // It will fail to publish events that start with "fail".
 // It will fail the entire request if an event starts with "failall".
-func (s *testDaprServer) BulkPublishEventAlpha1(ctx context.Context, req *pb.BulkPublishRequest) (*pb.BulkPublishResponse, error) {
+func (s *testDaprServer) bulkPublishEvent(req *pb.BulkPublishRequest) (*pb.BulkPublishResponse, error) {
 	failedEntries := make([]*pb.BulkPublishResponseFailedEntry, 0)
 	for _, entry := range req.GetEntries() {
 		if bytes.HasPrefix(entry.GetEvent(), []byte("failall")) {
@@ -502,62 +534,6 @@ func (s *testDaprServer) UnsubscribeConfiguration(ctx context.Context, in *pb.Un
 	return &pb.UnsubscribeConfigurationResponse{Ok: true}, nil
 }
 
-func (s *testDaprServer) StartWorkflowBeta1(ctx context.Context, in *pb.StartWorkflowRequest) (*pb.StartWorkflowResponse, error) {
-	if in.GetInstanceId() == testWorkflowFailureID {
-		return nil, errors.New("test failure")
-	}
-	return &pb.StartWorkflowResponse{
-		InstanceId: in.GetInstanceId(),
-	}, nil
-}
-
-func (s *testDaprServer) GetWorkflowBeta1(ctx context.Context, in *pb.GetWorkflowRequest) (*pb.GetWorkflowResponse, error) {
-	if in.GetInstanceId() == testWorkflowFailureID {
-		return nil, errors.New("test failure")
-	}
-	return &pb.GetWorkflowResponse{
-		InstanceId:    in.GetInstanceId(),
-		WorkflowName:  "TestWorkflowName",
-		RuntimeStatus: "Running",
-		Properties:    make(map[string]string),
-	}, nil
-}
-
-func (s *testDaprServer) PurgeWorkflowBeta1(ctx context.Context, in *pb.PurgeWorkflowRequest) (*emptypb.Empty, error) {
-	if in.GetInstanceId() == testWorkflowFailureID {
-		return nil, errors.New("test failure")
-	}
-	return &emptypb.Empty{}, nil
-}
-
-func (s *testDaprServer) TerminateWorkflowBeta1(ctx context.Context, in *pb.TerminateWorkflowRequest) (*emptypb.Empty, error) {
-	if in.GetInstanceId() == testWorkflowFailureID {
-		return nil, errors.New("test failure")
-	}
-	return &emptypb.Empty{}, nil
-}
-
-func (s *testDaprServer) PauseWorkflowBeta1(ctx context.Context, in *pb.PauseWorkflowRequest) (*emptypb.Empty, error) {
-	if in.GetInstanceId() == testWorkflowFailureID {
-		return nil, errors.New("test failure")
-	}
-	return &emptypb.Empty{}, nil
-}
-
-func (s *testDaprServer) ResumeWorkflowBeta1(ctx context.Context, in *pb.ResumeWorkflowRequest) (*emptypb.Empty, error) {
-	if in.GetInstanceId() == testWorkflowFailureID {
-		return nil, errors.New("test failure")
-	}
-	return &emptypb.Empty{}, nil
-}
-
-func (s *testDaprServer) RaiseEventWorkflowBeta1(ctx context.Context, in *pb.RaiseEventWorkflowRequest) (*emptypb.Empty, error) {
-	if in.GetInstanceId() == testWorkflowFailureID {
-		return nil, errors.New("test failure")
-	}
-	return &emptypb.Empty{}, nil
-}
-
 func (s *testDaprServer) ScheduleJobAlpha1(ctx context.Context, in *pb.ScheduleJobRequest) (*pb.ScheduleJobResponse, error) {
 	return &pb.ScheduleJobResponse{}, nil
 }
@@ -592,6 +568,22 @@ func (s *testDaprServer) GetJobAlpha1(ctx context.Context, in *pb.GetJobRequest)
 
 func (s *testDaprServer) DeleteJobAlpha1(ctx context.Context, in *pb.DeleteJobRequest) (*pb.DeleteJobResponse, error) {
 	return &pb.DeleteJobResponse{}, nil
+}
+
+// TODO: remove in 1.17
+//
+//nolint:staticcheck
+func (s *testDaprServer) ConverseAlpha1(ctx context.Context, in *pb.ConversationRequest) (*pb.ConversationResponse,
+	error,
+) {
+	return &pb.ConversationResponse{}, nil
+}
+
+func (s *testDaprServer) ConverseAlpha2(ctx context.Context, in *pb.ConversationRequestAlpha2) (*pb.
+	ConversationResponseAlpha2,
+	error,
+) {
+	return &pb.ConversationResponseAlpha2{}, nil
 }
 
 func TestGrpcClient(t *testing.T) {

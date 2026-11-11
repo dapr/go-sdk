@@ -72,9 +72,9 @@ background: true
 sleep: 5
 timeout_seconds: 60
 expected_stdout_lines:
-  - '== APP == dapr client initializing for: /tmp/dapr-order-app-grpc.socket'
-  - '== APP == Sending order ID 20'
-  - '== APP == Successfully persisted state'
+  - 'dapr client initializing for: /tmp/dapr-order-app-grpc.socket'
+  - 'Sending order ID 20'
+  - 'Successfully persisted state'
 -->
 
 ```bash
@@ -89,9 +89,9 @@ background: true
 sleep: 5
 timeout_seconds: 60
 expected_stdout_lines:
-  - '== APP == dapr client initializing for: /tmp/dapr-order-app-grpc.socket'
-  - '== APP == Getting order'
-  - '== APP == Order ID 20'
+  - 'dapr client initializing for: /tmp/dapr-order-app-grpc.socket'
+  - 'Getting order'
+  - 'Order ID 20'
 -->
 
 ```bash

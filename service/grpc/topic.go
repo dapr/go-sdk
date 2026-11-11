@@ -21,7 +21,9 @@ import (
 	"mime"
 	"strings"
 
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
 
 	runtimev1pb "github.com/dapr/dapr/pkg/proto/runtime/v1"
@@ -49,7 +51,7 @@ func (s *Server) AddTopicEventSubscriber(sub *common.Subscription, subscriber co
 
 // ListTopicSubscriptions is called by Dapr to get the list of topics in a pubsub component the app wants to subscribe to.
 func (s *Server) ListTopicSubscriptions(ctx context.Context, in *emptypb.Empty) (*runtimev1pb.ListTopicSubscriptionsResponse, error) {
-	subs := make([]*runtimev1pb.TopicSubscription, 0)
+	subs := make([]*runtimev1pb.TopicSubscription, 0, len(s.topicRegistrar))
 	for _, v := range s.topicRegistrar {
 		s := v.Subscription
 		sub := &runtimev1pb.TopicSubscription{
@@ -180,6 +182,10 @@ func getCustomMetadataFromContext(ctx context.Context) map[string]string {
 	return md
 }
 
+func (s *Server) OnBulkTopicEvent(ctx context.Context, in *runtimev1pb.TopicEventBulkRequest) (*runtimev1pb.TopicEventBulkResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "bulk pubsub callback is not supported")
+}
+
 func (s *Server) OnBulkTopicEventAlpha1(ctx context.Context, in *runtimev1pb.TopicEventBulkRequest) (*runtimev1pb.TopicEventBulkResponse, error) {
-	panic("This API callback is not supported.")
+	return s.OnBulkTopicEvent(ctx, in)
 }

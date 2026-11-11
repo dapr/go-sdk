@@ -16,6 +16,7 @@ package main
 import (
 	"context"
 	"log"
+	"os"
 
 	dapr "github.com/dapr/go-sdk/client"
 )
@@ -25,6 +26,7 @@ var (
 	pubsubName = "messages"
 	topicName1 = "sendorder"
 	topicName2 = "neworder"
+	logger     = log.New(os.Stdout, "", log.LstdFlags)
 )
 
 func main() {
@@ -34,27 +36,27 @@ func main() {
 
 	client, err := dapr.NewClient()
 	if err != nil {
-		log.Fatalf("error creating dapr client: %v", err)
+		logger.Fatalf("error creating dapr client: %v", err)
 	}
 	defer client.Close()
 
 	// Publish a single event
-	log.Println("sending message")
+	logger.Println("sending message")
 	if err := client.PublishEvent(ctx, pubsubName, topicName1, publishEventData); err != nil {
-		log.Fatalf("error publishing event: %v", err)
+		logger.Fatalf("error publishing event: %v", err)
 	}
 	if err := client.PublishEvent(ctx, pubsubName, topicName2, publishEventData); err != nil {
-		log.Fatalf("error publishing event: %v", err)
+		logger.Fatalf("error publishing event: %v", err)
 	}
-	log.Println("message published")
+	logger.Println("message published")
 
 	// Publish multiple events
-	log.Println("sending multiple messages")
+	logger.Println("sending multiple messages")
 	if res := client.PublishEvents(ctx, pubsubName, topicName1, publishEventsData); res.Error != nil {
-		log.Fatalf("error publishing events: %v", res.Error)
+		logger.Fatalf("error publishing events: %v", res.Error)
 	}
 	if res := client.PublishEvents(ctx, pubsubName, topicName2, publishEventsData); res.Error != nil {
-		log.Fatalf("error publishing events: %v", res.Error)
+		logger.Fatalf("error publishing events: %v", res.Error)
 	}
-	log.Println("multiple messages published")
+	logger.Println("multiple messages published")
 }
