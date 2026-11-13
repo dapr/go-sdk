@@ -255,3 +255,80 @@ jobs:
         run: |
           docker logs dapr_placement || true
           docker logs dapr_scheduler || true
+
+  # Validates examples of runtime features no Dapr release carries yet, against
+  # a daprd built from dapr master (or the daprdapr_commit input).
+  validate-example-dapr-master:
+    runs-on: ubuntu-latest
+    env:
+      CHECKOUT_REPO: ${{ github.repository }}
+      CHECKOUT_REF: ${{ github.ref }}
+    strategy:
+      fail-fast: false
+      matrix:
+        examples: ["workflow-schedule"]
+    steps:
+      - name: Parse repository_dispatch payload
+        if: github.event_name == 'repository_dispatch'
+        run: |
+          if [ ${{ github.event.client_payload.command }} = "ok-to-test" ]; then
+            echo "CHECKOUT_REPO=${{ github.event.client_payload.pull_head_repo }}" >> $GITHUB_ENV
+            echo "CHECKOUT_REF=${{ github.event.client_payload.pull_head_ref }}" >> $GITHUB_ENV
+          fi
+
+      - name: Check out code onto GOPATH
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ env.CHECKOUT_REPO }}
+          ref: ${{ env.CHECKOUT_REF }}
+
+      # setup-dapr-runtime builds daprd in its own clone of dapr/dapr, so the Go
+      # toolchain has to satisfy that repo's `go` directive, not this one's, and
+      # setup-go exports GOTOOLCHAIN=local, which stops Go from downloading a
+      # newer one. Read the exact requirement from the ref being built. The file
+      # must be named `go.mod`, or setup-go treats its contents as a version.
+      - name: Fetch go.mod of the dapr ref under test
+        env:
+          DAPR_REF: ${{ github.event.inputs.daprdapr_commit || 'master' }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/dapr-mod"
+          curl -fsSL "https://raw.githubusercontent.com/dapr/dapr/$DAPR_REF/go.mod" \
+            -o "$RUNNER_TEMP/dapr-mod/go.mod"
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: ${{ runner.temp }}/dapr-mod/go.mod
+          cache: false
+
+      - name: Set up Dapr CLI
+        uses: dapr/.github/.github/actions/setup-dapr-cli@main
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Dapr runtime from dapr master
+        uses: dapr/.github/.github/actions/setup-dapr-runtime@main
+        with:
+          commit: ${{ github.event.inputs.daprdapr_commit || 'master' }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Mechanical Markdown
+        run: |
+          python -m pip install --upgrade pip
+          pip install mechanical-markdown
+
+      - name: Check Example
+        run: |
+          cd examples
+          ./validate.sh ${{ matrix.examples }}
+
+      - name: Print placement and scheduler logs on failure
+        if: failure()
+        run: |
+          docker logs dapr_placement || true
+          docker logs dapr_scheduler || true
