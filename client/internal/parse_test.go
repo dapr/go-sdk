@@ -21,10 +21,27 @@ import (
 
 func TestParse(t *testing.T) {
 	tests := map[string]struct {
-		expTarget string
-		expTLS    bool
-		expError  bool
+		expTarget    string
+		expTLS       bool
+		expError     bool
+		expAuthority string
 	}{
+		"https://api.example.com:443?authority=app1.prj1.example.com": {
+			expTarget:    "api.example.com:443",
+			expTLS:       true,
+			expAuthority: "app1.prj1.example.com",
+		},
+		"api.example.com:443?tls=true&authority=app1.prj1.example.com": {
+			expTarget:    "api.example.com:443",
+			expTLS:       true,
+			expAuthority: "app1.prj1.example.com",
+		},
+		"https://api.example.com:443?authority=": {
+			expError: true,
+		},
+		"https://api.example.com:443?authority=app1.prj1.example.com/path": {
+			expError: true,
+		},
 		"": {
 			expTarget: "",
 			expTLS:    false,
@@ -288,6 +305,7 @@ func TestParse(t *testing.T) {
 			assert.Equalf(t, tc.expError, err != nil, "%v", err)
 			assert.Equal(t, tc.expTarget, parsed.Target)
 			assert.Equal(t, tc.expTLS, parsed.TLS)
+			assert.Equal(t, tc.expAuthority, parsed.Authority)
 		})
 	}
 }
