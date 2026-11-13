@@ -64,6 +64,10 @@ func main() {
 	}
 	fmt.Println("workflow worker started")
 
+	// Runs left by an earlier, interrupted execution would be listed and
+	// counted with this one's.
+	purgeRuns(ctx, wfClient, scheduleName, manualName)
+
 	// Two runs one second apart, then the schedule completes. Overwrite makes
 	// the example rerunnable: creating a schedule that already exists fails
 	// with AlreadyExists otherwise.
@@ -91,11 +95,10 @@ func main() {
 
 	// Each run is a workflow instance named "<schedule>_<owner>_<fire time>",
 	// so the schedule name is a prefix to list them by.
-	resp, err := wfClient.ListInstanceIDs(ctx, workflow.WithListInstanceIDsInstanceIDPrefix(scheduleName+"_"))
-	if err != nil {
-		logger.Fatalf("failed to list runs of %s: %v", scheduleName, err)
+	runs := runsOf(ctx, wfClient, scheduleName)
+	if len(runs) == 0 {
+		logger.Fatalf("no runs listed for %s", scheduleName)
 	}
-	runs := resp.InstanceIds
 	var meta *workflow.WorkflowMetadata
 	for _, id := range runs {
 		if meta, err = wfClient.WaitForWorkflowCompletion(ctx, id, workflow.WithFetchPayloads(true)); err != nil {
@@ -105,13 +108,22 @@ func main() {
 	fmt.Printf("listed %d runs\n", len(runs))
 	fmt.Printf("run output: %s\n", meta.Output.GetValue())
 
-	list, err := wfClient.ListWorkflowSchedules(ctx)
-	if err != nil {
-		logger.Fatalf("failed to list schedules: %v", err)
-	}
+	// Like ListInstanceIDs, a page of schedules can be short while more remain,
+	// so follow the continuation token to the end.
 	listed := false
-	for _, s := range list.GetSchedules() {
-		listed = listed || s.GetName() == scheduleName
+	var lopts []workflow.ListWorkflowSchedulesOptions
+	for {
+		list, lerr := wfClient.ListWorkflowSchedules(ctx, lopts...)
+		if lerr != nil {
+			logger.Fatalf("failed to list schedules: %v", lerr)
+		}
+		for _, s := range list.GetSchedules() {
+			listed = listed || s.GetName() == scheduleName
+		}
+		if list.ContinuationToken == nil {
+			break
+		}
+		lopts = []workflow.ListWorkflowSchedulesOptions{workflow.WithListWorkflowSchedulesContinuationToken(list.GetContinuationToken())}
 	}
 	fmt.Printf("schedule listed: %t\n", listed)
 
@@ -128,7 +140,6 @@ func main() {
 	if err != nil {
 		logger.Fatalf("failed to trigger schedule %s: %v", manualName, err)
 	}
-	runs = append(runs, trig.GetInstanceId())
 	if meta, err = wfClient.WaitForWorkflowCompletion(ctx, trig.GetInstanceId(), workflow.WithFetchPayloads(true)); err != nil {
 		logger.Fatalf("failed to wait for triggered run %s: %v", trig.GetInstanceId(), err)
 	}
@@ -151,14 +162,47 @@ func main() {
 	}
 	fmt.Println("schedules deleted")
 
-	for _, id := range runs {
-		if err = wfClient.PurgeWorkflowState(ctx, id); err != nil {
-			logger.Fatalf("failed to purge run %s: %v", id, err)
-		}
-	}
+	purgeRuns(ctx, wfClient, scheduleName, manualName)
 	fmt.Println("runs purged")
 
 	fmt.Println("workflow schedule example completed")
+}
+
+// runsOf lists the instance IDs of a schedule's runs, which start with the
+// schedule name and "_". daprd matches the prefix only up to its first LIKE
+// wildcard, here the "_", and filters the rest, so a page can come back short,
+// even empty, while more remain: follow the continuation token to the end.
+func runsOf(ctx context.Context, wfClient *workflow.Client, schedule string) []string {
+	prefix := workflow.WithListInstanceIDsInstanceIDPrefix(schedule + "_")
+	opts := []workflow.ListInstanceIDsOptions{prefix}
+	var ids []string
+	for {
+		resp, err := wfClient.ListInstanceIDs(ctx, opts...)
+		if err != nil {
+			logger.Fatalf("failed to list runs of %s: %v", schedule, err)
+		}
+		ids = append(ids, resp.InstanceIds...)
+		// ListInstanceIDsResponse is a defined type over the protobuf message,
+		// so it has no generated getters.
+		if resp.ContinuationToken == nil {
+			return ids
+		}
+		opts = []workflow.ListInstanceIDsOptions{prefix, workflow.WithListInstanceIDsContinuationToken(*resp.ContinuationToken)}
+	}
+}
+
+// purgeRuns waits for every run of the schedules to finish, then purges it.
+func purgeRuns(ctx context.Context, wfClient *workflow.Client, schedules ...string) {
+	for _, schedule := range schedules {
+		for _, id := range runsOf(ctx, wfClient, schedule) {
+			if _, err := wfClient.WaitForWorkflowCompletion(ctx, id); err != nil {
+				logger.Fatalf("failed to wait for run %s: %v", id, err)
+			}
+			if err := wfClient.PurgeWorkflowState(ctx, id); err != nil {
+				logger.Fatalf("failed to purge run %s: %v", id, err)
+			}
+		}
+	}
 }
 
 // waitForSchedule polls the schedule until ready reports it is, or 30s pass.

@@ -13,7 +13,8 @@ Demonstrates the workflow schedule APIs exposed by the Dapr Go SDK:
 The example creates a schedule that runs `ReportWorkflow` twice, one second
 apart, waits for it to complete, lists and inspects its runs, then creates a
 second schedule and triggers a run of it by hand. It deletes both schedules and
-purges every run on the way out.
+purges every run on the way out, and on the way in purges any runs an earlier,
+interrupted execution left behind.
 
 ## Step
 
