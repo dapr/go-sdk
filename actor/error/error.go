@@ -30,4 +30,5 @@ const (
 	ErrTimerParamsInvalid         = ActorErr(10)
 	ErrSaveStateFailed            = ActorErr(11)
 	ErrActorServerInvalid         = ActorErr(12)
+	ErrActivationSuperseded       = ActorErr(13)
 )

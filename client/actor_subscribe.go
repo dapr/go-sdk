@@ -31,7 +31,9 @@ import (
 	"google.golang.org/protobuf/types/known/wrapperspb"
 
 	pb "github.com/dapr/dapr/pkg/proto/runtime/v1"
+	"github.com/dapr/go-sdk/actor"
 	actorErr "github.com/dapr/go-sdk/actor/error"
+	"github.com/dapr/go-sdk/internal/activation"
 	"github.com/dapr/kit/events/loop"
 )
 
@@ -135,7 +137,8 @@ type actorEventSubscription struct {
 	ctx    context.Context
 	cancel context.CancelFunc
 
-	handler ActorEventHandler
+	handler    ActorEventHandler
+	activation *activation.Gate
 
 	// sendLoop serializes all writes to the stream on a single goroutine, so a
 	// blocking Send never stalls the read loop or the dispatch goroutines.
@@ -189,6 +192,7 @@ func (c *GRPCClient) SubscribeActorEvents(ctx context.Context, handler ActorEven
 		ctx:          streamCtx,
 		cancel:       cancel,
 		handler:      handler,
+		activation:   activation.NewGate(c.runtimeVersion),
 		stream:       stream,
 		createStream: createStream,
 	}
@@ -198,6 +202,14 @@ func (c *GRPCClient) SubscribeActorEvents(ctx context.Context, handler ActorEven
 	go s.run()
 
 	return s.Close, nil
+}
+
+func (c *GRPCClient) runtimeVersion(ctx context.Context) (string, error) {
+	md, err := c.GetMetadata(ctx)
+	if err != nil {
+		return "", err
+	}
+	return md.RuntimeVersion, nil
 }
 
 // subscribeActorEventsInitialRequest opens the actor events stream, sends the
@@ -377,7 +389,7 @@ func (s *actorEventSubscription) handleInvoke(stream pb.Dapr_SubscribeActorEvent
 	// Make the callback metadata (content-type, Dapr-Reentrancy-Id, ...)
 	// available to the actor code: InvokeActor propagates the reentrancy id
 	// from this context on outbound actor invocations.
-	ctx := withActorCallbackMetadata(s.ctx, req.GetMetadata())
+	ctx := s.callbackContext(req.GetMetadata())
 
 	data, aerr := s.handler.InvokeActorMethod(ctx, req.GetActorType(), req.GetActorId(), req.GetMethod(), req.GetData())
 	if aerr != actorErr.Success {
@@ -392,7 +404,7 @@ func (s *actorEventSubscription) handleInvoke(stream pb.Dapr_SubscribeActorEvent
 	// caller sent none mirrors the HTTP actor callback, which sets no explicit
 	// response content-type either.
 	var metadata map[string]string
-	if ct := contentTypeFromMetadata(req.GetMetadata()); ct != "" {
+	if ct := metadataValue(req.GetMetadata(), contentTypeMetadataKey); ct != "" {
 		metadata = map[string]string{contentTypeMetadataKey: ct}
 	}
 
@@ -407,11 +419,14 @@ func (s *actorEventSubscription) handleInvoke(stream pb.Dapr_SubscribeActorEvent
 	})
 }
 
-// contentTypeFromMetadata returns the content-type entry from actor callback
-// metadata, matching the key case-insensitively.
-func contentTypeFromMetadata(md map[string]string) string {
+func (s *actorEventSubscription) callbackContext(md map[string]string) context.Context {
+	ctx := withActorCallbackMetadata(s.ctx, md)
+	return actor.WithActivationID(ctx, s.activation.ID(ctx, metadataValue(md, actor.ActivationIDHeader)))
+}
+
+func metadataValue(md map[string]string, key string) string {
 	for k, v := range md {
-		if strings.EqualFold(k, contentTypeMetadataKey) {
+		if v != "" && strings.EqualFold(k, key) {
 			return v
 		}
 	}
@@ -436,7 +451,7 @@ func (s *actorEventSubscription) handleReminder(stream pb.Dapr_SubscribeActorEve
 		return
 	}
 
-	aerr := s.handler.InvokeReminder(s.ctx, req.GetActorType(), req.GetActorId(), req.GetName(), params)
+	aerr := s.handler.InvokeReminder(s.callbackContext(req.GetMetadata()), req.GetActorType(), req.GetActorId(), req.GetName(), params)
 	if aerr != actorErr.Success {
 		s.sendRequestFailed(stream, req.GetId(), aerr)
 		return
@@ -469,7 +484,7 @@ func (s *actorEventSubscription) handleTimer(stream pb.Dapr_SubscribeActorEvents
 		return
 	}
 
-	aerr := s.handler.InvokeTimer(s.ctx, req.GetActorType(), req.GetActorId(), req.GetName(), params)
+	aerr := s.handler.InvokeTimer(s.callbackContext(req.GetMetadata()), req.GetActorType(), req.GetActorId(), req.GetName(), params)
 	if aerr != actorErr.Success {
 		s.sendRequestFailed(stream, req.GetId(), aerr)
 		return
@@ -589,6 +604,8 @@ func actorErrMessage(aerr actorErr.ActorErr) string {
 		return "actor factory not set"
 	case actorErr.ErrSaveStateFailed:
 		return "failed to save actor state"
+	case actorErr.ErrActivationSuperseded:
+		return "actor was activated by another activation, retry"
 	default:
 		return fmt.Sprintf("actor error %d", aerr)
 	}
@@ -661,10 +678,6 @@ func reentrancyIDFromContext(ctx context.Context) (string, bool) {
 	if !ok {
 		return "", false
 	}
-	for k, v := range md {
-		if strings.EqualFold(k, reentrancyIDMetadataKey) && v != "" {
-			return v, true
-		}
-	}
-	return "", false
+	v := metadataValue(md, reentrancyIDMetadataKey)
+	return v, v != ""
 }

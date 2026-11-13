@@ -20,6 +20,7 @@ import (
 	"net"
 	"strconv"
 	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -34,6 +35,7 @@ import (
 	"google.golang.org/protobuf/types/known/wrapperspb"
 
 	pb "github.com/dapr/dapr/pkg/proto/runtime/v1"
+	"github.com/dapr/go-sdk/actor"
 	"github.com/dapr/go-sdk/actor/api"
 	actorErr "github.com/dapr/go-sdk/actor/error"
 )
@@ -608,6 +610,7 @@ func Test_actorErrToStatusCode(t *testing.T) {
 		{"actor type not found", actorErr.ErrActorTypeNotFound, codes.NotFound},
 		{"actor method not found", actorErr.ErrActorMethodNoFound, codes.NotFound},
 		{"actor id not found", actorErr.ErrActorIDNotFound, codes.NotFound},
+		{"activation superseded", actorErr.ErrActivationSuperseded, codes.Internal},
 		{"reminder func undefined", actorErr.ErrReminderFuncUndefined, codes.NotFound},
 		{"reminder params invalid", actorErr.ErrRemindersParamsInvalid, codes.InvalidArgument},
 		{"timer params invalid", actorErr.ErrTimerParamsInvalid, codes.InvalidArgument},
@@ -680,6 +683,140 @@ func Test_reentrancyIDFromContext(t *testing.T) {
 		assert.True(t, ok)
 		assert.Equal(t, "id-2", id)
 	})
+
+	t.Run("empty duplicate skipped", func(t *testing.T) {
+		for range 100 {
+			ctx := withActorCallbackMetadata(t.Context(), map[string]string{"dapr-reentrancy-id": "", "Dapr-Reentrancy-Id": "id-3"})
+			id, ok := reentrancyIDFromContext(ctx)
+			require.True(t, ok)
+			require.Equal(t, "id-3", id)
+		}
+	})
+}
+
+func Test_metadataValue(t *testing.T) {
+	t.Run("missing", func(t *testing.T) {
+		assert.Empty(t, metadataValue(nil, "Dapr-Actor-Activation-Id"))
+		assert.Empty(t, metadataValue(map[string]string{"content-type": "application/json"}, "Dapr-Actor-Activation-Id"))
+	})
+
+	t.Run("case insensitive", func(t *testing.T) {
+		assert.Equal(t, "a1", metadataValue(map[string]string{"DAPR-ACTOR-ACTIVATION-ID": "a1"}, "Dapr-Actor-Activation-Id"))
+	})
+
+	t.Run("empty value", func(t *testing.T) {
+		assert.Empty(t, metadataValue(map[string]string{"Dapr-Actor-Activation-Id": ""}, "Dapr-Actor-Activation-Id"))
+	})
+
+	t.Run("empty duplicate skipped", func(t *testing.T) {
+		for range 100 {
+			md := map[string]string{"dapr-actor-activation-id": "", "Dapr-Actor-Activation-Id": "a1"}
+			require.Equal(t, "a1", metadataValue(md, "Dapr-Actor-Activation-Id"))
+		}
+	})
+}
+
+func TestSubscribeActorEventsActivationIDOldSidecar(t *testing.T) {
+	t.Parallel()
+
+	srv, client := newTestActorEventsServer(t)
+	srv.runtimeVersion.Store(new("1.19.0-rc.3"))
+	handler := &testActorEventHandler{actorTypes: []string{"testActorType"}}
+	stop, err := client.SubscribeActorEvents(t.Context(), handler, ActorEventSubscriptionOptions{})
+	require.NoError(t, err)
+	t.Cleanup(func() { _ = stop() })
+	session := recvWithTimeout(t, srv.sessions)
+
+	md := map[string]string{"Dapr-Actor-Activation-Id": "a", "Dapr-Reentrancy-Id": "re"}
+	for i := range 2 {
+		session.push(t, &pb.SubscribeActorEventsResponseAlpha1{
+			ResponseType: &pb.SubscribeActorEventsResponseAlpha1_InvokeRequest{
+				InvokeRequest: &pb.SubscribeActorEventsResponseInvokeRequestAlpha1{
+					Id: "i" + strconv.Itoa(i), ActorType: "testActorType", ActorId: "a", Method: "M", Metadata: md,
+				},
+			},
+		})
+		require.NotNil(t, recvWithTimeout(t, session.responses).GetInvokeResponse())
+	}
+
+	invokes := handler.invokeCalls()
+	require.Len(t, invokes, 2)
+	for _, call := range invokes {
+		assert.Empty(t, actor.ActivationIDFromContext(call.ctx))
+		reentrancyID, ok := reentrancyIDFromContext(call.ctx)
+		assert.True(t, ok)
+		assert.Equal(t, "re", reentrancyID)
+	}
+	assert.Equal(t, int32(1), srv.metadataCalls.Load())
+}
+
+func TestSubscribeActorEventsActivationID(t *testing.T) {
+	t.Parallel()
+
+	srv, client := newTestActorEventsServer(t)
+	handler := &testActorEventHandler{actorTypes: []string{"testActorType"}}
+	stop, err := client.SubscribeActorEvents(t.Context(), handler, ActorEventSubscriptionOptions{})
+	require.NoError(t, err)
+	t.Cleanup(func() { _ = stop() })
+	session := recvWithTimeout(t, srv.sessions)
+
+	keys := []string{"Dapr-Actor-Activation-Id", "dapr-actor-activation-id", "DAPR-ACTOR-ACTIVATION-ID", "", "empty duplicate"}
+	for i, key := range keys {
+		var md map[string]string
+		want := ""
+		if key != "" {
+			want = "act-" + strconv.Itoa(i)
+			md = map[string]string{"content-type": "application/json", "Dapr-Reentrancy-Id": "re-" + want}
+			if key == "empty duplicate" {
+				md["dapr-actor-activation-id"] = ""
+				md["Dapr-Actor-Activation-Id"] = want
+			} else {
+				md[key] = want
+			}
+		}
+
+		session.push(t, &pb.SubscribeActorEventsResponseAlpha1{
+			ResponseType: &pb.SubscribeActorEventsResponseAlpha1_InvokeRequest{
+				InvokeRequest: &pb.SubscribeActorEventsResponseInvokeRequestAlpha1{
+					Id: "i" + strconv.Itoa(i), ActorType: "testActorType", ActorId: "a", Method: "M", Metadata: md,
+				},
+			},
+		})
+		require.NotNil(t, recvWithTimeout(t, session.responses).GetInvokeResponse())
+
+		session.push(t, &pb.SubscribeActorEventsResponseAlpha1{
+			ResponseType: &pb.SubscribeActorEventsResponseAlpha1_ReminderRequest{
+				ReminderRequest: &pb.SubscribeActorEventsResponseReminderRequestAlpha1{
+					Id: "r" + strconv.Itoa(i), ActorType: "testActorType", ActorId: "a", Name: "r", Metadata: md,
+				},
+			},
+		})
+		require.NotNil(t, recvWithTimeout(t, session.responses).GetReminderResponse())
+
+		session.push(t, &pb.SubscribeActorEventsResponseAlpha1{
+			ResponseType: &pb.SubscribeActorEventsResponseAlpha1_TimerRequest{
+				TimerRequest: &pb.SubscribeActorEventsResponseTimerRequestAlpha1{
+					Id: "t" + strconv.Itoa(i), ActorType: "testActorType", ActorId: "a", Name: "t", Callback: "M", Metadata: md,
+				},
+			},
+		})
+		require.NotNil(t, recvWithTimeout(t, session.responses).GetTimerResponse())
+
+		invokes, reminders, timers := handler.invokeCalls(), handler.reminderCalls(), handler.timerCalls()
+		require.Len(t, invokes, i+1)
+		require.Len(t, reminders, i+1)
+		require.Len(t, timers, i+1)
+		assert.Equal(t, want, actor.ActivationIDFromContext(invokes[i].ctx), "invoke key %q", key)
+		assert.Equal(t, want, actor.ActivationIDFromContext(reminders[i].ctx), "reminder key %q", key)
+		assert.Equal(t, want, actor.ActivationIDFromContext(timers[i].ctx), "timer key %q", key)
+		for kind, ctx := range map[string]context.Context{"invoke": invokes[i].ctx, "reminder": reminders[i].ctx, "timer": timers[i].ctx} {
+			reentrancyID, ok := reentrancyIDFromContext(ctx)
+			assert.Equal(t, key != "", ok, "%s key %q", kind, key)
+			if key != "" {
+				assert.Equal(t, "re-"+want, reentrancyID, "%s key %q", kind, key)
+			}
+		}
+	}
 }
 
 // newTestActorEventsServer starts a dedicated in-memory Dapr server
@@ -723,6 +860,17 @@ type fakeActorEventsServer struct {
 
 	initialRequests chan *pb.SubscribeActorEventsRequestInitialAlpha1
 	sessions        chan *actorEventsTestSession
+	runtimeVersion  atomic.Pointer[string]
+	metadataCalls   atomic.Int32
+}
+
+func (s *fakeActorEventsServer) GetMetadata(context.Context, *pb.GetMetadataRequest) (*pb.GetMetadataResponse, error) {
+	s.metadataCalls.Add(1)
+	version := "1.19.0"
+	if v := s.runtimeVersion.Load(); v != nil {
+		version = *v
+	}
+	return &pb.GetMetadataResponse{RuntimeVersion: version}, nil
 }
 
 // actorEventsTestSession represents one established actor events stream. The
@@ -812,6 +960,7 @@ type invokeCall struct {
 }
 
 type reminderCall struct {
+	ctx       context.Context
 	actorType string
 	actorID   string
 	name      string
@@ -864,14 +1013,14 @@ func (h *testActorEventHandler) InvokeActorMethod(ctx context.Context, actorType
 func (h *testActorEventHandler) InvokeReminder(ctx context.Context, actorType, actorID, reminderName string, params []byte) actorErr.ActorErr {
 	h.lock.Lock()
 	defer h.lock.Unlock()
-	h.reminders = append(h.reminders, reminderCall{actorType: actorType, actorID: actorID, name: reminderName, params: params})
+	h.reminders = append(h.reminders, reminderCall{ctx: ctx, actorType: actorType, actorID: actorID, name: reminderName, params: params})
 	return h.reminderErr
 }
 
 func (h *testActorEventHandler) InvokeTimer(ctx context.Context, actorType, actorID, timerName string, params []byte) actorErr.ActorErr {
 	h.lock.Lock()
 	defer h.lock.Unlock()
-	h.timers = append(h.timers, reminderCall{actorType: actorType, actorID: actorID, name: timerName, params: params})
+	h.timers = append(h.timers, reminderCall{ctx: ctx, actorType: actorType, actorID: actorID, name: timerName, params: params})
 	return h.timerErr
 }
 
