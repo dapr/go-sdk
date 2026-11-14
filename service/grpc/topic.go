@@ -142,6 +142,9 @@ func (s *Server) OnTopicEvent(ctx context.Context, in *runtimev1pb.TopicEventReq
 			PubsubName:      in.GetPubsubName(),
 			Metadata:        getCustomMetadataFromContext(ctx),
 		}
+		if ext := in.GetExtensions(); len(ext.GetFields()) > 0 {
+			e.Extensions = ext.AsMap()
+		}
 		h := sub.DefaultHandler
 		if in.GetPath() != "" {
 			if pathHandler, ok := sub.RouteHandlers[in.GetPath()]; ok {

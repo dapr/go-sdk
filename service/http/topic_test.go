@@ -728,3 +728,60 @@ func TestActorLateCreatorRetryable(t *testing.T) {
 		})
 	}
 }
+
+func TestEventHandlerExtensions(t *testing.T) {
+	post := func(t *testing.T, body string) *common.TopicEvent {
+		t.Helper()
+		s := newServer("", nil)
+		var got *common.TopicEvent
+		sub := &common.Subscription{PubsubName: "messages", Topic: "test", Route: "/"}
+		require.NoError(t, s.AddTopicEventHandler(sub, func(ctx context.Context, e *common.TopicEvent) (bool, error) {
+			got = e
+			return false, nil
+		}))
+		s.registerBaseHandler()
+
+		req, err := http.NewRequest(http.MethodPost, "/", strings.NewReader(body))
+		require.NoError(t, err)
+		req.Header.Set("Content-Type", "application/json")
+		rr := httptest.NewRecorder()
+		s.mux.ServeHTTP(rr, req)
+		require.Equal(t, http.StatusOK, rr.Code)
+		require.NotNil(t, got)
+		return got
+	}
+
+	t.Run("extensions are exposed", func(t *testing.T) {
+		e := post(t, `{
+			"specversion": "1.0", "type": "t", "source": "s", "id": "1",
+			"time": "2018-04-05T17:31:00Z", "tracestate": "x",
+			"datacontenttype": "application/json", "data": {"a": 1},
+			"pubsubname": "messages", "topic": "test",
+			"comexampleextension1": "value", "comexampleothervalue": 5
+		}`)
+		assert.Equal(t, map[string]any{
+			"comexampleextension1": "value",
+			"comexampleothervalue": float64(5),
+		}, e.Extensions)
+	})
+
+	t.Run("data is not decoded to collect extensions", func(t *testing.T) {
+		e := post(t, `{
+			"specversion": "1.0", "type": "t", "source": "s", "id": "1",
+			"datacontenttype": "application/json", "data": {"amount":1e400},
+			"pubsubname": "messages", "topic": "test",
+			"comexampleextension1": "value"
+		}`)
+		assert.Equal(t, []byte(`{"amount":1e400}`), e.RawData)
+		assert.Equal(t, map[string]any{"comexampleextension1": "value"}, e.Extensions)
+	})
+
+	t.Run("no extensions", func(t *testing.T) {
+		e := post(t, `{
+			"specversion": "1.0", "type": "t", "source": "s", "id": "1",
+			"datacontenttype": "application/json", "data": {"a": 1},
+			"pubsubname": "messages", "topic": "test"
+		}`)
+		assert.Nil(t, e.Extensions)
+	})
+}
