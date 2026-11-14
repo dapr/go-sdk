@@ -3,11 +3,13 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"os"
 	"time"
 
+	"github.com/dapr/durabletask-go/api"
 	"github.com/dapr/durabletask-go/workflow"
 	"github.com/dapr/go-sdk/client"
 )
@@ -15,12 +17,12 @@ import (
 var logger = log.New(os.Stdout, "", log.LstdFlags)
 
 const (
-	// hostAppID is the app ID of the app that registered CrossAppWorkflow and
+	// hostAppID is the app ID of the app that registered MultiAppWorkflow and
 	// runs the worker. Every client call below targets it explicitly.
-	hostAppID = "cross-app-host"
+	hostAppID = "multi-app-host"
 
-	firstInstanceID  = "cross-app-workflow-1"
-	secondInstanceID = "cross-app-workflow-2"
+	firstInstanceID  = "multi-app-workflow-1"
+	secondInstanceID = "multi-app-workflow-2"
 )
 
 // The client app drives the whole workflow lifecycle on a different app. It
@@ -41,7 +43,7 @@ func main() {
 	runLifecycle(ctx, wfclient)
 	runTerminate(ctx, wfclient)
 
-	fmt.Println("client: all cross-app operations completed")
+	fmt.Println("client: all multi-app operations completed")
 }
 
 // runLifecycle schedules a workflow on the host app, then suspends, resumes,
@@ -99,7 +101,7 @@ func runTerminate(ctx context.Context, wfclient *workflow.Client) {
 
 // schedule creates the instance on the host app rather than locally.
 func schedule(ctx context.Context, wfclient *workflow.Client, instanceID string) string {
-	id, err := wfclient.ScheduleWorkflow(ctx, "CrossAppWorkflow",
+	id, err := wfclient.ScheduleWorkflow(ctx, "MultiAppWorkflow",
 		workflow.WithAppID(hostAppID),
 		workflow.WithInstanceID(instanceID),
 		workflow.WithInput("dapr"),
@@ -152,9 +154,8 @@ func purge(ctx context.Context, wfclient *workflow.Client, id string) {
 		logger.Fatalf("failed to purge workflow: %v", err)
 	}
 
-	meta, err := wfclient.FetchWorkflowMetadata(ctx, id, workflow.WithFetchAppID(hostAppID))
-	if err == nil || meta != nil {
-		logger.Fatalf("workflow %s still exists after purge", id)
+	if _, err := wfclient.FetchWorkflowMetadata(ctx, id, workflow.WithFetchAppID(hostAppID)); !errors.Is(err, api.ErrInstanceNotFound) {
+		logger.Fatalf("workflow %s still exists after purge: %v", id, err)
 	}
 
 	fmt.Printf("client: workflow %s purged on app %s\n", id, hostAppID)

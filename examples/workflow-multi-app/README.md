@@ -1,13 +1,13 @@
-# Dapr Cross-App Workflow Operations Example with go-sdk
+# Dapr Multi-App Workflow Operations Example with go-sdk
 
 This example runs two Dapr apps:
 
-- `host`: registers `CrossAppWorkflow` and its activities and runs the workflow
+- `host`: registers `MultiAppWorkflow` and its activities and runs the workflow
   worker. It owns every workflow instance created in this example.
 - `client`: registers nothing and runs no worker. It drives the full workflow
   lifecycle on the host app by naming the host's app ID on each call.
 
-Every client call uses one of the cross-app options from the
+Every client call uses one of the multi-app options from the
 `github.com/dapr/durabletask-go/workflow` package:
 
 | Operation                | Option                     |
@@ -24,7 +24,7 @@ Every client call uses one of the cross-app options from the
 | `RerunWorkflowFromEvent` | `WithRerunAppID`           |
 
 These options select the target app only. There is deliberately no namespace
-option at the client level: cross-app operations are always resolved within the
+option at the client level: multi-app operations are always resolved within the
 caller's own namespace.
 
 The workflow parks on an external event, so suspending, resuming, raising an
@@ -52,7 +52,7 @@ timeout_seconds: 60
 -->
 
 ```bash
-dapr run --app-id cross-app-host \
+dapr run --app-id multi-app-host \
          --log-level debug \
          --resources-path ./config \
          -- go run ./host
@@ -66,23 +66,23 @@ dapr run --app-id cross-app-host \
 name: Run workflow client app
 output_match_mode: substring
 expected_stdout_lines:
-  - 'client: scheduled workflow cross-app-workflow-1 on app cross-app-host'
-  - 'client: workflow cross-app-workflow-1 running on app cross-app-host'
-  - 'client: workflow cross-app-workflow-1 suspended on app cross-app-host'
-  - 'client: workflow cross-app-workflow-1 resumed on app cross-app-host'
-  - 'client: raised event approval on workflow cross-app-workflow-1 on app cross-app-host'
-  - 'client: workflow cross-app-workflow-1 completed on app cross-app-host with output: confirmed: hello dapr, approved'
-  - 'client: workflow cross-app-workflow-1 purged on app cross-app-host'
-  - 'client: scheduled workflow cross-app-workflow-2 on app cross-app-host'
-  - 'client: workflow cross-app-workflow-2 running on app cross-app-host'
-  - 'client: workflow cross-app-workflow-2 terminated on app cross-app-host'
-  - 'client: workflow cross-app-workflow-2 purged on app cross-app-host'
-  - 'client: all cross-app operations completed'
+  - 'client: scheduled workflow multi-app-workflow-1 on app multi-app-host'
+  - 'client: workflow multi-app-workflow-1 running on app multi-app-host'
+  - 'client: workflow multi-app-workflow-1 suspended on app multi-app-host'
+  - 'client: workflow multi-app-workflow-1 resumed on app multi-app-host'
+  - 'client: raised event approval on workflow multi-app-workflow-1 on app multi-app-host'
+  - 'client: workflow multi-app-workflow-1 completed on app multi-app-host with output: confirmed: hello dapr, approved'
+  - 'client: workflow multi-app-workflow-1 purged on app multi-app-host'
+  - 'client: scheduled workflow multi-app-workflow-2 on app multi-app-host'
+  - 'client: workflow multi-app-workflow-2 running on app multi-app-host'
+  - 'client: workflow multi-app-workflow-2 terminated on app multi-app-host'
+  - 'client: workflow multi-app-workflow-2 purged on app multi-app-host'
+  - 'client: all multi-app operations completed'
 timeout_seconds: 120
 -->
 
 ```bash
-dapr run --app-id cross-app-client \
+dapr run --app-id multi-app-client \
          --log-level debug \
          --resources-path ./config \
          -- go run ./client
@@ -98,7 +98,7 @@ expected_return_code:
 -->
 
 ```bash
-dapr stop --app-id cross-app-host
+dapr stop --app-id multi-app-host
 ```
 
 <!-- END_STEP -->
@@ -108,28 +108,28 @@ dapr stop --app-id cross-app-host
 The client app prints:
 
 ```
-client: scheduled workflow cross-app-workflow-1 on app cross-app-host
-client: workflow cross-app-workflow-1 running on app cross-app-host
-client: workflow cross-app-workflow-1 suspended on app cross-app-host
-client: workflow cross-app-workflow-1 resumed on app cross-app-host
-client: raised event approval on workflow cross-app-workflow-1 on app cross-app-host
-client: workflow cross-app-workflow-1 completed on app cross-app-host with output: confirmed: hello dapr, approved
-client: workflow cross-app-workflow-1 purged on app cross-app-host
-client: scheduled workflow cross-app-workflow-2 on app cross-app-host
-client: workflow cross-app-workflow-2 running on app cross-app-host
-client: workflow cross-app-workflow-2 terminated on app cross-app-host
-client: workflow cross-app-workflow-2 purged on app cross-app-host
-client: all cross-app operations completed
+client: scheduled workflow multi-app-workflow-1 on app multi-app-host
+client: workflow multi-app-workflow-1 running on app multi-app-host
+client: workflow multi-app-workflow-1 suspended on app multi-app-host
+client: workflow multi-app-workflow-1 resumed on app multi-app-host
+client: raised event approval on workflow multi-app-workflow-1 on app multi-app-host
+client: workflow multi-app-workflow-1 completed on app multi-app-host with output: confirmed: hello dapr, approved
+client: workflow multi-app-workflow-1 purged on app multi-app-host
+client: scheduled workflow multi-app-workflow-2 on app multi-app-host
+client: workflow multi-app-workflow-2 running on app multi-app-host
+client: workflow multi-app-workflow-2 terminated on app multi-app-host
+client: workflow multi-app-workflow-2 purged on app multi-app-host
+client: all multi-app operations completed
 ```
 
 The host app prints its registration lines and then stays quiet, since it never
 initiates anything itself:
 
 ```
-host: CrossAppWorkflow registered
+host: MultiAppWorkflow registered
 host: GreetActivity registered
 host: ConfirmActivity registered
-host: worker started, waiting for cross-app operations
+host: worker started, waiting for multi-app operations
 ```
 
 Host output is not asserted on above because the two processes run

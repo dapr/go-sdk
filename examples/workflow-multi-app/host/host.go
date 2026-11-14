@@ -22,10 +22,10 @@ var logger = log.New(os.Stdout, "", log.LstdFlags)
 func main() {
 	r := workflow.NewRegistry()
 
-	if err := r.AddWorkflow(CrossAppWorkflow); err != nil {
+	if err := r.AddWorkflow(MultiAppWorkflow); err != nil {
 		logger.Fatal(err)
 	}
-	fmt.Println("host: CrossAppWorkflow registered")
+	fmt.Println("host: MultiAppWorkflow registered")
 
 	if err := r.AddActivity(GreetActivity); err != nil {
 		logger.Fatal(err)
@@ -50,7 +50,7 @@ func main() {
 	if err := wfclient.StartWorker(ctx, r); err != nil {
 		logger.Fatal(err)
 	}
-	fmt.Println("host: worker started, waiting for cross-app operations")
+	fmt.Println("host: worker started, waiting for multi-app operations")
 
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, syscall.SIGINT, syscall.SIGTERM)
@@ -60,9 +60,9 @@ func main() {
 	fmt.Println("host: worker shutdown")
 }
 
-// CrossAppWorkflow blocks on an external event so that the client app can
+// MultiAppWorkflow blocks on an external event so that the client app can
 // meaningfully suspend, resume, raise an event against, and terminate it.
-func CrossAppWorkflow(ctx *workflow.WorkflowContext) (any, error) {
+func MultiAppWorkflow(ctx *workflow.WorkflowContext) (any, error) {
 	var name string
 	if err := ctx.GetInput(&name); err != nil {
 		return nil, err
