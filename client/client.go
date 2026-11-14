@@ -200,6 +200,17 @@ type Client interface {
 	// This method returns an error if the initial call fails. Errors performed during the encryption are received by the out stream.
 	Decrypt(ctx context.Context, in io.Reader, opts DecryptOptions) (io.Reader, error)
 
+	// SetBinaryFileAlpha1 stores the data read from in as fileName in a binary store.
+	// If overwrite is false and the file already exists, the returned error has code codes.AlreadyExists.
+	SetBinaryFileAlpha1(ctx context.Context, storeName, fileName string, in io.Reader, overwrite bool) error
+
+	// GetBinaryFileAlpha1 returns a reader that streams fileName from a binary store.
+	// Errors such as codes.NotFound are returned by this method. The caller must Close the reader.
+	GetBinaryFileAlpha1(ctx context.Context, storeName, fileName string) (io.ReadCloser, error)
+
+	// DeleteBinaryFileAlpha1 deletes fileName from a binary store.
+	DeleteBinaryFileAlpha1(ctx context.Context, storeName, fileName string) error
+
 	// Shutdown the sidecar.
 	Shutdown(ctx context.Context) error
 

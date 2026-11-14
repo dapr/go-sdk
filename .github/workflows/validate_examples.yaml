@@ -165,6 +165,7 @@ jobs:
           [
             "actor",
             "actor-grpc",
+            "binary-store",
             "configuration",
             "conversation-alpha1",
             "conversation-alpha2",
