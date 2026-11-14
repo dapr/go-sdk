@@ -31,4 +31,7 @@ const (
 	ErrSaveStateFailed            = ActorErr(11)
 	ErrActorServerInvalid         = ActorErr(12)
 	ErrActivationSuperseded       = ActorErr(13)
+	// ErrActorTurnCanceled means the call stopped waiting for the actor's turn
+	// because its context was canceled. The actor method was not invoked.
+	ErrActorTurnCanceled = ActorErr(14)
 )

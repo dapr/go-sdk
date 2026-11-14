@@ -17,6 +17,8 @@ import (
 	"context"
 	"sync"
 	"time"
+
+	"github.com/dapr/go-sdk/actor/config"
 )
 
 // Client is the interface that should be impl by user's actor client.
@@ -88,6 +90,35 @@ func WithActivationID(ctx context.Context, activationID string) context.Context 
 func ActivationIDFromContext(ctx context.Context) string {
 	id, _ := ctx.Value(activationIDCtxKey{}).(string)
 	return id
+}
+
+type reentrancyIDCtxKey struct{}
+
+// ReentrancyIDHeader is the actor callback metadata key daprd uses for the
+// reentrancy id of the call chain. HTTP sends it as a header; the gRPC actor
+// callback stream sends it as request metadata. The match is case-insensitive.
+const ReentrancyIDHeader = "Dapr-Reentrancy-Id"
+
+// WithReentrancyID carries the reentrancy id daprd sent with an actor callback.
+// An empty id leaves ctx unchanged, matching WithActivationID.
+func WithReentrancyID(ctx context.Context, reentrancyID string) context.Context {
+	if reentrancyID == "" {
+		return ctx
+	}
+	return context.WithValue(ctx, reentrancyIDCtxKey{}, reentrancyID)
+}
+
+// ReentrancyIDFromContext returns the reentrancy id set by WithReentrancyID.
+func ReentrancyIDFromContext(ctx context.Context) string {
+	id, _ := ctx.Value(reentrancyIDCtxKey{}).(string)
+	return id
+}
+
+// ReentrancyConfigurer is implemented by an actor host that enforces a local
+// turn lock. SubscribeActorEvents uses it to apply the same reentrancy
+// settings it registers with daprd.
+type ReentrancyConfigurer interface {
+	ConfigureReentrancy(global *config.ReentrancyConfig, entities []config.EntityConfig)
 }
 
 type (

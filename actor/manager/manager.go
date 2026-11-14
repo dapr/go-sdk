@@ -21,6 +21,7 @@ import (
 	"reflect"
 	"slices"
 	"sync"
+	"sync/atomic"
 	"unicode"
 	"unicode/utf8"
 
@@ -72,6 +73,13 @@ type DefaultActorManagerContext struct {
 
 	// serializer is the param and response serializer of the actor
 	serializer codec.Codec
+
+	// turns serializes calls for one actor id. Reentrancy, when enabled, lets
+	// a later InvokeMethod, reminder, or timer with the same reentrancy id
+	// enter the active turn after the actor container exists. Deactivation
+	// never reenters.
+	turns             *turnLock
+	reentrancyEnabled atomic.Bool
 }
 
 // DefaultActorManager is to manage one type of actor.
@@ -119,7 +127,14 @@ func NewDefaultActorManagerContext(serializerType string) (ActorManagerContext, 
 	}
 	return &DefaultActorManagerContext{
 		serializer: serializer,
+		turns:      newTurnLock(),
 	}, actorErr.Success
+}
+
+// SetReentrancyEnabled records whether this actor type accepts reentrant calls.
+// The runtime sets it from the global reentrancy config and per-entity overrides.
+func (m *DefaultActorManagerContext) SetReentrancyEnabled(enabled bool) {
+	m.reentrancyEnabled.Store(enabled)
 }
 
 // RegisterActorImplFactory registers the action factory f.
@@ -188,10 +203,19 @@ func (m *DefaultActorManagerContext) InvokeMethod(ctx context.Context, actorID, 
 		return nil, actorErr.ErrActorFactoryNotSet
 	}
 
+	lease, aerr := m.lockTurn(ctx, actorID, true)
+	if aerr != actorErr.Success {
+		return nil, aerr
+	}
+	defer lease.release()
+
 	actorContainer, aerr := m.getAndCreateActorContainerIfNotExist(ctx, actorID)
 	if aerr != actorErr.Success {
 		return nil, aerr
 	}
+	// The container exists now, so a call with the same reentrancy id may enter
+	// while this method and its state save are still running.
+	lease.allowReentrancy()
 	returnValue, aerr := actorContainer.Invoke(ctx, methodName, request)
 	if aerr != actorErr.Success {
 		return nil, aerr
@@ -230,7 +254,13 @@ func (m *DefaultActorManagerContext) InvokeMethod(ctx context.Context, actorID, 
 }
 
 // DeactivateActor removes actor from actor manager.
-func (m *DefaultActorManagerContext) DeactivateActor(_ context.Context, actorID string) actorErr.ActorErr {
+// Deactivation takes the turn exclusively and ignores any reentrancy id.
+func (m *DefaultActorManagerContext) DeactivateActor(ctx context.Context, actorID string) actorErr.ActorErr {
+	lease, aerr := m.lockTurn(ctx, actorID, false)
+	if aerr != actorErr.Success {
+		return aerr
+	}
+	defer lease.release()
 	if _, ok := m.activeActors.LoadAndDelete(actorID); !ok {
 		return actorErr.ErrActorIDNotFound
 	}
@@ -247,10 +277,16 @@ func (m *DefaultActorManagerContext) InvokeReminder(ctx context.Context, actorID
 		log.Printf("failed to unmarshal reminder param, err: %v ", err)
 		return actorErr.ErrRemindersParamsInvalid
 	}
+	lease, aerr := m.lockTurn(ctx, actorID, true)
+	if aerr != actorErr.Success {
+		return aerr
+	}
+	defer lease.release()
 	actorContainer, aerr := m.getAndCreateActorContainerIfNotExist(ctx, actorID)
 	if aerr != actorErr.Success {
 		return aerr
 	}
+	lease.allowReentrancy()
 
 	targetActor, ok := actorContainer.GetActor().(actor.ReminderCallee)
 	if !ok {
@@ -270,10 +306,16 @@ func (m *DefaultActorManagerContext) InvokeTimer(ctx context.Context, actorID, t
 		log.Printf("failed to unmarshal reminder param, err: %v ", err)
 		return actorErr.ErrTimerParamsInvalid
 	}
+	lease, aerr := m.lockTurn(ctx, actorID, true)
+	if aerr != actorErr.Success {
+		return aerr
+	}
+	defer lease.release()
 	actorContainer, aerr := m.getAndCreateActorContainerIfNotExist(ctx, actorID)
 	if aerr != actorErr.Success {
 		return aerr
 	}
+	lease.allowReentrancy()
 	returnValue, aerr := actorContainer.Invoke(ctx, timerParams.CallBack, timerParams.Data)
 	if aerr != actorErr.Success {
 		return aerr
@@ -282,6 +324,22 @@ func (m *DefaultActorManagerContext) InvokeTimer(ctx context.Context, actorID, t
 		return actorErr.Success
 	}
 	return m.saveState(ctx, actorID, actorContainer)
+}
+
+// lockTurn waits for this actor id's turn. reentrant is false for deactivation,
+// which must not share a turn even when the caller carries a reentrancy id.
+// A canceled wait returns before the actor runs. After the lease is returned,
+// the caller has to release it only once the method and its state save return.
+func (m *DefaultActorManagerContext) lockTurn(ctx context.Context, actorID string, reentrant bool) (*turnLease, actorErr.ActorErr) {
+	reentrancyID := ""
+	if reentrant && m.reentrancyEnabled.Load() {
+		reentrancyID = actor.ReentrancyIDFromContext(ctx)
+	}
+	lease, err := m.turns.acquire(ctx, actorID, reentrancyID)
+	if err != nil {
+		return nil, actorErr.ErrActorTurnCanceled
+	}
+	return lease, actorErr.Success
 }
 
 func getAbsctractMethodMap(rcvr interface{}) (map[string]*MethodType, error) {

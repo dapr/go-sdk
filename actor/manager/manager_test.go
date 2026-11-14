@@ -22,6 +22,7 @@ import (
 	"sync"
 	"sync/atomic"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -163,13 +164,18 @@ func TestInvokeTimer(t *testing.T) {
 
 type ActivationTestActor struct {
 	actor.ServerImplBaseCtx
-	count atomic.Int64
-	saves atomic.Int64
-	hold  func()
+	count  atomic.Int64
+	saves  atomic.Int64
+	hold   func()
+	remind func()
+	onSave func()
 }
 
 func (a *ActivationTestActor) SaveState(ctx context.Context) error {
 	a.saves.Add(1)
+	if a.onSave != nil {
+		a.onSave()
+	}
 	return a.ServerImplBaseCtx.SaveState(ctx)
 }
 
@@ -201,6 +207,10 @@ func (a *ActivationTestActor) Fail(context.Context) error {
 }
 
 func (a *ActivationTestActor) ReminderCall(string, []byte, string, string) {
+	if a.remind != nil {
+		a.remind()
+		return
+	}
 	if a.hold != nil {
 		a.hold()
 	}
@@ -301,7 +311,7 @@ func TestActivationIDNewIDResetsActor(t *testing.T) {
 	assert.Equal(t, 2, m.createdCount())
 }
 
-func TestActivationIDReplacedCallSkipsSave(t *testing.T) {
+func TestActivationIDReplacedCallWaitsForTurn(t *testing.T) {
 	t.Parallel()
 	m := newActivationTestManager(t)
 
@@ -309,9 +319,15 @@ func TestActivationIDReplacedCallSkipsSave(t *testing.T) {
 	old, _ := m.live(t, "id")
 	held := make(chan struct{})
 	release := make(chan struct{})
+	saving := make(chan struct{})
+	releaseSave := make(chan struct{})
 	old.hold = func() {
 		close(held)
 		<-release
+	}
+	old.onSave = func() {
+		close(saving)
+		<-releaseSave
 	}
 
 	done := make(chan actorErr.ActorErr, 1)
@@ -321,9 +337,28 @@ func TestActivationIDReplacedCallSkipsSave(t *testing.T) {
 	}()
 	<-held
 
-	assert.Equal(t, int64(1), m.count(t, actor.WithActivationID(t.Context(), "b"), "id"))
+	second := make(chan struct{})
+	go func() {
+		assert.Equal(t, int64(1), m.count(t, actor.WithActivationID(t.Context(), "b"), "id"))
+		close(second)
+	}()
+	waitForTurnWaiter(t, m, "id")
+	select {
+	case <-second:
+		t.Fatal("second activation ran while the first turn was in its method")
+	default:
+	}
+
 	close(release)
-	assert.Equal(t, actorErr.ErrSaveStateFailed, <-done)
+	<-saving
+	select {
+	case <-second:
+		t.Fatal("second activation ran while the first turn was saving state")
+	default:
+	}
+	close(releaseSave)
+	assert.Equal(t, actorErr.Success, <-done)
+	<-second
 
 	fresh, activationID := m.live(t, "id")
 	assert.NotSame(t, old, fresh)
@@ -367,10 +402,19 @@ func TestActivationIDReplacedCallExplicitSaveRefused(t *testing.T) {
 	}()
 	<-held
 
-	assert.Equal(t, int64(1), m.count(t, actor.WithActivationID(t.Context(), "b"), "id"))
+	second := make(chan struct{})
+	go func() {
+		assert.Equal(t, int64(1), m.count(t, actor.WithActivationID(t.Context(), "b"), "id"))
+		close(second)
+	}()
+	waitForTurnWaiter(t, m, "id")
 	close(release)
-	require.ErrorContains(t, <-saveErr, "replaced by a newer activation")
-	assert.Equal(t, actorErr.ErrSaveStateFailed, <-done)
+	// The explicit save runs before the first turn releases, so the replacement
+	// has not happened yet. It is refused only after the next activation lands.
+	require.NoError(t, <-saveErr)
+	assert.Equal(t, actorErr.Success, <-done)
+	<-second
+	require.ErrorContains(t, old.GetStateManager().Save(t.Context()), "replaced by a newer activation")
 }
 
 func TestActivationIDDeactivatedActorCanStillSave(t *testing.T) {
@@ -384,7 +428,7 @@ func TestActivationIDDeactivatedActorCanStillSave(t *testing.T) {
 	require.NoError(t, old.GetStateManager().Save(t.Context()))
 }
 
-func TestActivationIDDeactivatedCallSkipsSave(t *testing.T) {
+func TestActivationIDDeactivateWaitsForTurn(t *testing.T) {
 	t.Parallel()
 	m := newActivationTestManager(t)
 
@@ -405,10 +449,16 @@ func TestActivationIDDeactivatedCallSkipsSave(t *testing.T) {
 	}()
 	<-held
 
-	assert.Equal(t, actorErr.Success, m.DeactivateActor(t.Context(), "id"))
-	close(release)
-	assert.Equal(t, actorErr.ErrSaveStateFailed, <-done)
+	deactivated := make(chan actorErr.ActorErr, 1)
+	go func() {
+		deactivated <- m.DeactivateActor(actor.WithReentrancyID(t.Context(), "same-chain"), "id")
+	}()
+	waitForTurnWaiter(t, m, "id")
 	assert.Equal(t, saves, old.saves.Load())
+	close(release)
+	assert.Equal(t, actorErr.Success, <-done)
+	assert.Equal(t, actorErr.Success, <-deactivated)
+	assert.Equal(t, saves+1, old.saves.Load())
 
 	assert.Equal(t, int64(1), m.count(t, actor.WithActivationID(t.Context(), "a"), "id"))
 	fresh, _ := m.live(t, "id")
@@ -439,19 +489,23 @@ func TestActivationIDLateCreatorDoesNotOverwrite(t *testing.T) {
 	}()
 	<-held
 
-	assert.Equal(t, int64(1), m.count(t, actor.WithActivationID(t.Context(), "b"), "id"))
-	live, _ := m.live(t, "id")
+	second := make(chan struct{})
+	go func() {
+		assert.Equal(t, int64(1), m.count(t, actor.WithActivationID(t.Context(), "b"), "id"))
+		close(second)
+	}()
+	waitForTurnWaiter(t, m, "id")
+	select {
+	case <-second:
+		t.Fatal("second call entered while the first actor was still being created")
+	default:
+	}
 	close(release)
-	assert.Equal(t, actorErr.ErrActivationSuperseded, <-done)
+	assert.Equal(t, actorErr.Success, <-done)
+	<-second
 
-	after, activationID := m.live(t, "id")
-	assert.Same(t, live, after)
+	_, activationID := m.live(t, "id")
 	assert.Equal(t, "b", activationID)
-	m.lock.Lock()
-	late := m.created[0]
-	m.lock.Unlock()
-	assert.Equal(t, int64(0), late.count.Load())
-	require.ErrorContains(t, late.GetStateManager().Save(t.Context()), "replaced by a newer activation")
 	assert.Equal(t, int64(2), m.count(t, actor.WithActivationID(t.Context(), "b"), "id"))
 }
 
@@ -478,19 +532,20 @@ func TestActivationIDLateCreatorReusesSameID(t *testing.T) {
 	}()
 	<-held
 
-	assert.Equal(t, int64(1), m.count(t, actor.WithActivationID(t.Context(), "a"), "id"))
-	live, _ := m.live(t, "id")
+	second := make(chan struct{})
+	go func() {
+		assert.Equal(t, int64(2), m.count(t, actor.WithActivationID(t.Context(), "a"), "id"))
+		close(second)
+	}()
+	waitForTurnWaiter(t, m, "id")
 	close(release)
 	assert.Equal(t, actorErr.Success, <-done)
+	<-second
 
 	after, _ := m.live(t, "id")
-	assert.Same(t, live, after)
-	assert.Equal(t, int64(2), live.count.Load())
-	m.lock.Lock()
-	late := m.created[0]
-	m.lock.Unlock()
-	require.ErrorContains(t, late.GetStateManager().Save(t.Context()), "replaced by a newer activation")
-	require.NoError(t, live.GetStateManager().Save(t.Context()))
+	assert.Equal(t, int64(2), after.count.Load())
+	assert.Equal(t, 1, m.createdCount())
+	require.NoError(t, after.GetStateManager().Save(t.Context()))
 }
 
 func TestActivationIDEmptyNeverResets(t *testing.T) {
@@ -606,7 +661,7 @@ func TestErrorOnlyMethodSaves(t *testing.T) {
 	assert.Equal(t, int64(2), a.saves.Load())
 }
 
-func TestActivationIDReplacedErrorOnlyCallSkipsSave(t *testing.T) {
+func TestActivationIDReplacedErrorOnlyCallWaitsForTurn(t *testing.T) {
 	t.Parallel()
 	m := newActivationTestManager(t)
 
@@ -626,12 +681,21 @@ func TestActivationIDReplacedErrorOnlyCallSkipsSave(t *testing.T) {
 	}()
 	<-held
 
-	assert.Equal(t, int64(1), m.count(t, actor.WithActivationID(t.Context(), "b"), "id"))
+	second := make(chan struct{})
+	go func() {
+		assert.Equal(t, int64(1), m.count(t, actor.WithActivationID(t.Context(), "b"), "id"))
+		close(second)
+	}()
+	waitForTurnWaiter(t, m, "id")
 	close(release)
-	assert.Equal(t, actorErr.ErrSaveStateFailed, <-done)
+	assert.Equal(t, actorErr.Success, <-done)
+	<-second
+	fresh, activationID := m.live(t, "id")
+	assert.NotSame(t, old, fresh)
+	assert.Equal(t, "b", activationID)
 }
 
-func TestActivationIDReplacedCallbackSkipsSave(t *testing.T) {
+func TestActivationIDReplacedCallbackWaitsForTurn(t *testing.T) {
 	t.Parallel()
 	reminder, err := json.Marshal(&api.ActorReminderParams{DueTime: "1s", Period: "1s"})
 	require.NoError(t, err)
@@ -663,12 +727,28 @@ func TestActivationIDReplacedCallbackSkipsSave(t *testing.T) {
 			go func() { done <- invoke(m, actor.WithActivationID(t.Context(), "a")) }()
 			<-held
 
-			assert.Equal(t, int64(1), m.count(t, actor.WithActivationID(t.Context(), "b"), "id"))
+			second := make(chan struct{})
+			go func() {
+				assert.Equal(t, int64(1), m.count(t, actor.WithActivationID(t.Context(), "b"), "id"))
+				close(second)
+			}()
+			waitForTurnWaiter(t, m, "id")
 			close(release)
-			assert.Equal(t, actorErr.ErrSaveStateFailed, <-done)
-			assert.Equal(t, int64(2), old.saves.Load())
+			assert.Equal(t, actorErr.Success, <-done)
+			<-second
+			fresh, activationID := m.live(t, "id")
+			assert.NotSame(t, old, fresh)
+			assert.Equal(t, "b", activationID)
 		})
 	}
+}
+
+func waitForTurnWaiter(t *testing.T, m *activationTestManager, actorID string) {
+	t.Helper()
+	require.Eventually(t, func() bool {
+		_, waiters, ok := m.turns.state(actorID)
+		return ok && waiters > 0
+	}, 5*time.Second, time.Millisecond)
 }
 
 func TestActivationIDDeactivateUnchanged(t *testing.T) {
@@ -732,4 +812,106 @@ func TestActivationIDConcurrent(t *testing.T) {
 		}
 		assert.Equal(t, 2*actors, m.createdCount())
 	})
+}
+
+// The turn lock keeps two Invoke calls out of getAndCreate together. Call the
+// container path directly so a late factory still loses to the activation that
+// stored first, and the discarded container cannot save.
+func TestGetAndCreateActivationRaceBypassesTurn(t *testing.T) {
+	t.Parallel()
+
+	t.Run("different activation is superseded", func(t *testing.T) {
+		t.Parallel()
+		m := newActivationTestManager(t)
+		started, resume := pauseFirstFactory(m)
+		defer resume()
+
+		type result struct {
+			container ActorContainerContext
+			err       actorErr.ActorErr
+		}
+		done := make(chan result, 1)
+		go func() {
+			container, err := m.getAndCreateActorContainerIfNotExist(actor.WithActivationID(t.Context(), "a"), "id")
+			done <- result{container, err}
+		}()
+		<-started
+
+		winner, err := m.getAndCreateActorContainerIfNotExist(actor.WithActivationID(t.Context(), "b"), "id")
+		require.Equal(t, actorErr.Success, err)
+		resume()
+
+		first := <-done
+		require.Equal(t, actorErr.ErrActivationSuperseded, first.err)
+		require.Nil(t, first.container)
+
+		live, activationID := m.live(t, "id")
+		assert.Equal(t, "b", activationID)
+		assert.Same(t, winner.GetActor(), live)
+
+		loser, winnerActor := m.createdPair(t)
+		require.ErrorContains(t, loser.SaveState(t.Context()), "replaced by a newer activation")
+		require.NoError(t, winnerActor.SaveState(t.Context()))
+	})
+
+	t.Run("same activation keeps the stored container", func(t *testing.T) {
+		t.Parallel()
+		m := newActivationTestManager(t)
+		started, resume := pauseFirstFactory(m)
+		defer resume()
+
+		type result struct {
+			container ActorContainerContext
+			err       actorErr.ActorErr
+		}
+		done := make(chan result, 1)
+		go func() {
+			container, err := m.getAndCreateActorContainerIfNotExist(actor.WithActivationID(t.Context(), "a"), "id")
+			done <- result{container, err}
+		}()
+		<-started
+
+		winner, err := m.getAndCreateActorContainerIfNotExist(actor.WithActivationID(t.Context(), "a"), "id")
+		require.Equal(t, actorErr.Success, err)
+		resume()
+
+		first := <-done
+		require.Equal(t, actorErr.Success, first.err)
+		require.Same(t, winner, first.container)
+
+		again, err := m.getAndCreateActorContainerIfNotExist(actor.WithActivationID(t.Context(), "a"), "id")
+		require.Equal(t, actorErr.Success, err)
+		require.Same(t, winner, again)
+
+		loser, winnerActor := m.createdPair(t)
+		assert.Same(t, winnerActor, winner.GetActor())
+		require.ErrorContains(t, loser.SaveState(t.Context()), "replaced by a newer activation")
+		require.NoError(t, winnerActor.SaveState(t.Context()))
+		assert.Equal(t, 2, m.createdCount())
+	})
+}
+
+func pauseFirstFactory(m *activationTestManager) (<-chan struct{}, func()) {
+	orig := m.factory
+	started := make(chan struct{})
+	resumeCh := make(chan struct{})
+	var once sync.Once
+	var first atomic.Bool
+	m.RegisterActorImplFactory(func() actor.ServerContext {
+		impl := orig()
+		if first.CompareAndSwap(false, true) {
+			close(started)
+			<-resumeCh
+		}
+		return impl
+	})
+	return started, func() { once.Do(func() { close(resumeCh) }) }
+}
+
+func (m *activationTestManager) createdPair(t *testing.T) (*ActivationTestActor, *ActivationTestActor) {
+	t.Helper()
+	m.lock.Lock()
+	defer m.lock.Unlock()
+	require.Len(t, m.created, 2)
+	return m.created[0], m.created[1]
 }

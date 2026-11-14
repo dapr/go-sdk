@@ -32,6 +32,7 @@ import (
 
 	pb "github.com/dapr/dapr/pkg/proto/runtime/v1"
 	"github.com/dapr/go-sdk/actor"
+	"github.com/dapr/go-sdk/actor/config"
 	actorErr "github.com/dapr/go-sdk/actor/error"
 	"github.com/dapr/go-sdk/internal/activation"
 	"github.com/dapr/kit/events/loop"
@@ -41,7 +42,7 @@ const (
 	// reentrancyIDMetadataKey is the metadata key under which daprd sends the
 	// reentrancy id on actor invoke callbacks. It is propagated back on
 	// outbound actor invocations performed from within the callback context.
-	reentrancyIDMetadataKey = "Dapr-Reentrancy-Id"
+	reentrancyIDMetadataKey = actor.ReentrancyIDHeader
 
 	// contentTypeMetadataKey carries the payload content type on actor
 	// invoke callbacks and responses.
@@ -188,6 +189,13 @@ func (c *GRPCClient) SubscribeActorEvents(ctx context.Context, handler ActorEven
 		return nil, err
 	}
 
+	// Apply reentrancy before callbacks are dispatched. The handler enforces the
+	// same per-type rules daprd applied to this registration: a listed entity
+	// replaces the global setting, and a nil per-entity block disables it.
+	if configured, ok := handler.(actor.ReentrancyConfigurer); ok {
+		configured.ConfigureReentrancy(reentrancyToConfig(opts.Reentrancy), entityReentrancyConfigs(opts.EntitiesConfig))
+	}
+
 	s := &actorEventSubscription{
 		ctx:          streamCtx,
 		cancel:       cancel,
@@ -265,6 +273,32 @@ func actorEventsInitialRequest(entities []string, opts ActorEventSubscriptionOpt
 		})
 	}
 	return req
+}
+
+func reentrancyToConfig(r *ActorReentrancyConfig) *config.ReentrancyConfig {
+	if r == nil {
+		return nil
+	}
+	out := &config.ReentrancyConfig{Enabled: r.Enabled}
+	if r.MaxStackDepth != nil {
+		depth := int(*r.MaxStackDepth)
+		out.MaxStackDepth = &depth
+	}
+	return out
+}
+
+func entityReentrancyConfigs(entities []ActorEntityConfig) []config.EntityConfig {
+	if len(entities) == 0 {
+		return nil
+	}
+	out := make([]config.EntityConfig, len(entities))
+	for i, entity := range entities {
+		out[i] = config.EntityConfig{
+			Entities:   append([]string(nil), entity.Entities...),
+			Reentrancy: reentrancyToConfig(entity.Reentrancy),
+		}
+	}
+	return out
 }
 
 func (r *ActorReentrancyConfig) proto() *pb.ActorReentrancyConfig {
@@ -421,7 +455,8 @@ func (s *actorEventSubscription) handleInvoke(stream pb.Dapr_SubscribeActorEvent
 
 func (s *actorEventSubscription) callbackContext(md map[string]string) context.Context {
 	ctx := withActorCallbackMetadata(s.ctx, md)
-	return actor.WithActivationID(ctx, s.activation.ID(ctx, metadataValue(md, actor.ActivationIDHeader)))
+	ctx = actor.WithActivationID(ctx, s.activation.ID(ctx, metadataValue(md, actor.ActivationIDHeader)))
+	return actor.WithReentrancyID(ctx, metadataValue(md, reentrancyIDMetadataKey))
 }
 
 func metadataValue(md map[string]string, key string) string {
@@ -606,6 +641,8 @@ func actorErrMessage(aerr actorErr.ActorErr) string {
 		return "failed to save actor state"
 	case actorErr.ErrActivationSuperseded:
 		return "actor was activated by another activation, retry"
+	case actorErr.ErrActorTurnCanceled:
+		return "actor turn canceled"
 	default:
 		return fmt.Sprintf("actor error %d", aerr)
 	}
@@ -672,8 +709,13 @@ func withActorCallbackMetadata(ctx context.Context, md map[string]string) contex
 }
 
 // reentrancyIDFromContext returns the reentrancy id of the actor callback in
-// flight on this context, if any.
+// flight on this context, if any. HTTP callbacks carry it with
+// actor.WithReentrancyID; the gRPC callback stream also stores the raw metadata
+// map, which is checked so a context built before that helper still propagates.
 func reentrancyIDFromContext(ctx context.Context) (string, bool) {
+	if id := actor.ReentrancyIDFromContext(ctx); id != "" {
+		return id, true
+	}
 	md, ok := ctx.Value(actorCallbackMetadataCtxKey{}).(map[string]string)
 	if !ok {
 		return "", false
