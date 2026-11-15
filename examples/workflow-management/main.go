@@ -110,7 +110,7 @@ func main() {
 		logger.Fatalf("failed to wait for %s to start: %v", terminatedID, err)
 	}
 	if err = wfClient.TerminateWorkflow(ctx, terminatedID,
-		workflow.WithTerminateReason(terminationReason),
+		client.WithTerminateReason(terminationReason),
 	); err != nil {
 		logger.Fatalf("failed to terminate %s: %v", terminatedID, err)
 	}
@@ -121,10 +121,20 @@ func main() {
 	if terminated.RuntimeStatus != workflow.StatusTerminated {
 		logger.Fatalf("expected %s to be terminated, got %s", terminatedID, terminated.String())
 	}
-	if terminated.TerminationReason == nil || terminated.TerminationReason.GetValue() != terminationReason {
-		logger.Fatalf("expected termination reason %q for %s, got %v", terminationReason, terminatedID, terminated.TerminationReason)
+
+	terminationHistory, err := wfClient.GetInstanceHistory(ctx, terminatedID)
+	if err != nil {
+		logger.Fatalf("failed to fetch termination history for %s: %v", terminatedID, err)
 	}
-	fmt.Printf("terminated workflow %s with reason: %s\n", terminatedID, terminated.TerminationReason.GetValue())
+	recordedReason, found, err := client.GetWorkflowTerminationReason(terminationHistory)
+	if err != nil {
+		logger.Fatalf("failed to read termination reason for %s: %v", terminatedID, err)
+	}
+	if !found || recordedReason != terminationReason {
+		logger.Fatalf("expected termination reason %q for %s, got %q (found=%t)",
+			terminationReason, terminatedID, recordedReason, found)
+	}
+	fmt.Printf("terminated workflow %s with reason: %s\n", terminatedID, recordedReason)
 
 	// Purge everything this example created, including the rerun and terminated
 	// instances. A leftover rerun instance from an earlier failed run also
