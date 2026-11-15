@@ -360,5 +360,8 @@ func writeStatus(w http.ResponseWriter, s common.SubscriptionResponseStatus) {
 }
 
 func (s *Server) actorCallbackContext(r *http.Request) context.Context {
-	return actor.WithActivationID(r.Context(), s.activation.ID(r.Context(), r.Header.Get(actor.ActivationIDHeader)))
+	ctx := actor.WithActivationID(r.Context(), s.activation.ID(r.Context(), r.Header.Get(actor.ActivationIDHeader)))
+	// Header.Get is case-insensitive. Deactivation does not use this context;
+	// it takes the turn exclusively and ignores any reentrancy id.
+	return actor.WithReentrancyID(ctx, r.Header.Get(actor.ReentrancyIDHeader))
 }

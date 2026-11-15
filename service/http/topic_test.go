@@ -26,6 +26,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 	"sync/atomic"
 	"testing"
 	"time"
@@ -35,7 +36,9 @@ import (
 
 	"github.com/dapr/go-sdk/actor"
 	"github.com/dapr/go-sdk/actor/api"
+	"github.com/dapr/go-sdk/actor/config"
 	"github.com/dapr/go-sdk/actor/mock"
+	"github.com/dapr/go-sdk/actor/runtime"
 	"github.com/dapr/go-sdk/internal/activation"
 	"github.com/dapr/go-sdk/service/common"
 	"github.com/dapr/go-sdk/service/internal"
@@ -588,17 +591,27 @@ func rawActorRequest(t *testing.T, s *Server, method, path, header, body string)
 
 func rawActorCall(t *testing.T, s *Server, method, path, header, body string) *httptest.ResponseRecorder {
 	t.Helper()
+	rr, err := rawActorCallContext(context.Background(), s, method, path, header, body)
+	require.NoError(t, err)
+	return rr
+}
+
+func rawActorCallContext(ctx context.Context, s *Server, method, path, header, body string) (*httptest.ResponseRecorder, error) {
 	raw := method + " " + path + " HTTP/1.1\r\nHost: localhost\r\n"
 	if header != "" {
 		raw += header + "\r\n"
 	}
 	raw += "Content-Length: " + strconv.Itoa(len(body)) + "\r\n\r\n" + body
 	req, err := http.ReadRequest(bufio.NewReader(strings.NewReader(raw)))
-	require.NoError(t, err)
-
+	if err != nil {
+		return nil, err
+	}
+	if ctx != nil {
+		req = req.WithContext(ctx)
+	}
 	rr := httptest.NewRecorder()
 	s.mux.ServeHTTP(rr, req)
-	return rr
+	return rr, nil
 }
 
 func sidecarVersion(version string) *activation.Gate {
@@ -695,7 +708,7 @@ func TestActorActivationIDOldSidecar(t *testing.T) {
 	assert.Equal(t, "2", rawActorRequest(t, s, http.MethodPut, base+"Count", "Dapr-Actor-Activation-Id: b", ""))
 }
 
-func TestActorLateCreatorRetryable(t *testing.T) {
+func TestActorLateCreatorSecondCallWaits(t *testing.T) {
 	s := newServer("", nil)
 	s.activation = sidecarVersion("1.19.1")
 	s.registerBaseHandler()
@@ -719,12 +732,172 @@ func TestActorLateCreatorRetryable(t *testing.T) {
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			base := "/actors/lateCreatorActor/" + tc.name
+			nestedDone := make(chan *httptest.ResponseRecorder, 1)
+			nestedErr := make(chan error, 1)
 			f := func() {
-				rawActorRequest(t, s, http.MethodPut, base+"/method/Count", "Dapr-Actor-Activation-Id: b", "")
+				go func() {
+					ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+					defer cancel()
+					rr, err := rawActorCallContext(ctx, s, http.MethodPut, base+"/method/Count", "Dapr-Actor-Activation-Id: b", "")
+					nestedErr <- err
+					nestedDone <- rr
+				}()
 			}
 			nested.Store(&f)
 			rr := rawActorCall(t, s, http.MethodPut, base+tc.path, "Dapr-Actor-Activation-Id: a", tc.body)
-			assert.Equal(t, http.StatusInternalServerError, rr.Code)
+			assert.Equal(t, http.StatusOK, rr.Code)
+			require.NoError(t, <-nestedErr)
+			nestedRR := <-nestedDone
+			require.NotNil(t, nestedRR)
+			assert.Equal(t, http.StatusOK, nestedRR.Code)
 		})
 	}
+}
+
+type TurnLockHTTPActor struct {
+	actor.ServerImplBaseCtx
+	hold func()
+	hits atomic.Int32
+}
+
+func (a *TurnLockHTTPActor) Type() string { return "turnLockHTTPActor" }
+
+func (a *TurnLockHTTPActor) ReentrancyID(ctx context.Context) (string, error) {
+	return actor.ReentrancyIDFromContext(ctx), nil
+}
+
+func (a *TurnLockHTTPActor) Hold(context.Context) error {
+	if a.hold != nil {
+		a.hold()
+	}
+	return nil
+}
+
+func (a *TurnLockHTTPActor) Count(context.Context) (int64, error) {
+	return int64(a.hits.Add(1)), nil
+}
+
+func TestActorTurnReentrancyOverHTTP(t *testing.T) {
+	s := newServer("", nil)
+	s.activation = sidecarVersion("1.19.1")
+	s.registerBaseHandler()
+
+	var hold atomic.Value
+	hold.Store(func() {})
+	var latest atomic.Pointer[TurnLockHTTPActor]
+	s.RegisterActorImplFactoryContext(func() actor.ServerContext {
+		a := &TurnLockHTTPActor{hold: hold.Load().(func())}
+		latest.Store(a)
+		return a
+	})
+	rt := runtime.GetActorRuntimeInstanceContext()
+	t.Cleanup(func() {
+		hold.Store(func() {})
+		rt.ConfigureReentrancy(nil, nil)
+	})
+
+	depth := 4
+	headers := func(reentrancyID string) string {
+		return "Dapr-Actor-Activation-Id: act\r\nDapr-Reentrancy-Id: " + reentrancyID
+	}
+
+	t.Run("header is case insensitive", func(t *testing.T) {
+		for _, name := range []string{"Dapr-Reentrancy-Id", "dapr-reentrancy-id"} {
+			body := rawActorRequest(t, s, http.MethodPut, "/actors/turnLockHTTPActor/"+name+"/method/ReentrancyID", name+": chain-1", "")
+			assert.JSONEq(t, `"chain-1"`, body)
+		}
+	})
+
+	overlap := func(t *testing.T, actorID string, wantOverlap bool) {
+		t.Helper()
+		started := make(chan struct{})
+		releaseCh := make(chan struct{})
+		var once sync.Once
+		release := func() { once.Do(func() { close(releaseCh) }) }
+		t.Cleanup(release)
+		var first atomic.Bool
+		hold.Store(func() {
+			if first.CompareAndSwap(false, true) {
+				close(started)
+				<-releaseCh
+			}
+		})
+		defer hold.Store(func() {})
+
+		holdDone := make(chan *httptest.ResponseRecorder, 1)
+		go func() {
+			rr, err := rawActorCallContext(context.Background(), s, http.MethodPut, "/actors/turnLockHTTPActor/"+actorID+"/method/Hold", headers("chain"), "")
+			if err != nil {
+				holdDone <- nil
+				return
+			}
+			holdDone <- rr
+		}()
+		select {
+		case <-started:
+		case <-time.After(5 * time.Second):
+			t.Fatal("hold did not start")
+		}
+		current := latest.Load()
+		require.NotNil(t, current)
+		before := current.hits.Load()
+
+		count := func(ctx context.Context) *httptest.ResponseRecorder {
+			t.Helper()
+			rr, err := rawActorCallContext(ctx, s, http.MethodPut, "/actors/turnLockHTTPActor/"+actorID+"/method/Count", headers("chain"), "")
+			require.NoError(t, err)
+			return rr
+		}
+		if wantOverlap {
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
+			rr := count(ctx)
+			assert.Equal(t, http.StatusOK, rr.Code)
+			assert.Equal(t, before+1, current.hits.Load())
+		} else {
+			ctx, cancel := context.WithTimeout(context.Background(), 500*time.Millisecond)
+			defer cancel()
+			rr := count(ctx)
+			assert.Equal(t, http.StatusInternalServerError, rr.Code)
+			assert.Equal(t, before, current.hits.Load())
+		}
+
+		release()
+		holdRR := <-holdDone
+		require.NotNil(t, holdRR)
+		assert.Equal(t, http.StatusOK, holdRR.Code)
+	}
+
+	t.Run("global", func(t *testing.T) {
+		rt.ConfigureReentrancy(&config.ReentrancyConfig{Enabled: true, MaxStackDepth: &depth}, nil)
+		t.Cleanup(func() { rt.ConfigureReentrancy(nil, nil) })
+
+		rr := rawActorCall(t, s, http.MethodGet, "/dapr/config", "", "")
+		assert.Equal(t, http.StatusOK, rr.Code)
+		var cfg api.ActorRuntimeConfig
+		require.NoError(t, json.Unmarshal(rr.Body.Bytes(), &cfg))
+		require.NotNil(t, cfg.Reentrancy)
+		assert.True(t, cfg.Reentrancy.Enabled)
+		require.NotNil(t, cfg.Reentrancy.MaxStackDepth)
+		assert.Equal(t, depth, *cfg.Reentrancy.MaxStackDepth)
+
+		overlap(t, "global", true)
+	})
+
+	t.Run("per entity enables", func(t *testing.T) {
+		rt.ConfigureReentrancy(nil, []config.EntityConfig{{
+			Entities:   []string{"turnLockHTTPActor"},
+			Reentrancy: &config.ReentrancyConfig{Enabled: true, MaxStackDepth: &depth},
+		}})
+		t.Cleanup(func() { rt.ConfigureReentrancy(nil, nil) })
+		overlap(t, "entity-on", true)
+	})
+
+	t.Run("per entity nil disables global", func(t *testing.T) {
+		rt.ConfigureReentrancy(&config.ReentrancyConfig{Enabled: true}, []config.EntityConfig{{
+			Entities: []string{"turnLockHTTPActor"},
+		}})
+		t.Cleanup(func() { rt.ConfigureReentrancy(nil, nil) })
+		overlap(t, "entity-off", false)
+	})
 }

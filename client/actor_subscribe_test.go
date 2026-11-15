@@ -37,6 +37,7 @@ import (
 	pb "github.com/dapr/dapr/pkg/proto/runtime/v1"
 	"github.com/dapr/go-sdk/actor"
 	"github.com/dapr/go-sdk/actor/api"
+	"github.com/dapr/go-sdk/actor/config"
 	actorErr "github.com/dapr/go-sdk/actor/error"
 )
 
@@ -92,6 +93,37 @@ func TestSubscribeActorEventsInitialRequest(t *testing.T) {
 	assert.Equal(t, []string{"otherActorType"}, initial.GetEntitiesConfig()[0].GetEntities())
 	assert.Equal(t, time.Minute, initial.GetEntitiesConfig()[0].GetActorIdleTimeout().AsDuration())
 	assert.Nil(t, initial.GetEntitiesConfig()[0].GetReentrancy())
+}
+
+func TestSubscribeActorEventsConfiguresReentrancy(t *testing.T) {
+	srv, client := newTestActorEventsServer(t)
+
+	depth := int32(12)
+	handler := &reentrancyRecordingHandler{testActorEventHandler: &testActorEventHandler{actorTypes: []string{"listedOn", "listedOff"}}}
+	stop, err := client.SubscribeActorEvents(t.Context(), handler, ActorEventSubscriptionOptions{
+		Reentrancy: &ActorReentrancyConfig{Enabled: true, MaxStackDepth: &depth},
+		EntitiesConfig: []ActorEntityConfig{
+			{Entities: []string{"listedOff"}},
+			{Entities: []string{"listedOn"}, Reentrancy: &ActorReentrancyConfig{Enabled: true}},
+		},
+	})
+	require.NoError(t, err)
+	defer stop() //nolint:errcheck
+	recvWithTimeout(t, srv.initialRequests)
+
+	require.NotNil(t, handler.gotGlobal)
+	assert.True(t, handler.gotGlobal.Enabled)
+	require.NotNil(t, handler.gotGlobal.MaxStackDepth)
+	assert.Equal(t, 12, *handler.gotGlobal.MaxStackDepth)
+	depth = 99
+	assert.Equal(t, 12, *handler.gotGlobal.MaxStackDepth)
+
+	require.Len(t, handler.gotEntities, 2)
+	assert.Equal(t, []string{"listedOff"}, handler.gotEntities[0].Entities)
+	assert.Nil(t, handler.gotEntities[0].Reentrancy)
+	assert.Equal(t, []string{"listedOn"}, handler.gotEntities[1].Entities)
+	require.NotNil(t, handler.gotEntities[1].Reentrancy)
+	assert.True(t, handler.gotEntities[1].Reentrancy.Enabled)
 }
 
 func TestSubscribeActorEventsInitialRequestDefaults(t *testing.T) {
@@ -159,6 +191,7 @@ func TestSubscribeActorEventsInvoke(t *testing.T) {
 		id, ok := reentrancyIDFromContext(calls[0].ctx)
 		assert.True(t, ok)
 		assert.Equal(t, "reentrancy-id-1", id)
+		assert.Equal(t, "reentrancy-id-1", actor.ReentrancyIDFromContext(calls[0].ctx))
 	})
 
 	t.Run("response echoes a non-json content-type", func(t *testing.T) {
@@ -616,6 +649,7 @@ func Test_actorErrToStatusCode(t *testing.T) {
 		{"timer params invalid", actorErr.ErrTimerParamsInvalid, codes.InvalidArgument},
 		{"invoke failed", actorErr.ErrActorInvokeFailed, codes.Internal},
 		{"save state failed", actorErr.ErrSaveStateFailed, codes.Internal},
+		{"turn canceled", actorErr.ErrActorTurnCanceled, codes.Internal},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -682,6 +716,14 @@ func Test_reentrancyIDFromContext(t *testing.T) {
 		id, ok := reentrancyIDFromContext(ctx)
 		assert.True(t, ok)
 		assert.Equal(t, "id-2", id)
+	})
+
+	t.Run("actor context wins over metadata", func(t *testing.T) {
+		ctx := actor.WithReentrancyID(t.Context(), "from-actor")
+		ctx = withActorCallbackMetadata(ctx, map[string]string{"Dapr-Reentrancy-Id": "from-metadata"})
+		id, ok := reentrancyIDFromContext(ctx)
+		assert.True(t, ok)
+		assert.Equal(t, "from-actor", id)
 	})
 
 	t.Run("empty duplicate skipped", func(t *testing.T) {
@@ -814,6 +856,9 @@ func TestSubscribeActorEventsActivationID(t *testing.T) {
 			assert.Equal(t, key != "", ok, "%s key %q", kind, key)
 			if key != "" {
 				assert.Equal(t, "re-"+want, reentrancyID, "%s key %q", kind, key)
+				assert.Equal(t, "re-"+want, actor.ReentrancyIDFromContext(ctx), "%s key %q", kind, key)
+			} else {
+				assert.Empty(t, actor.ReentrancyIDFromContext(ctx), "%s key %q", kind, key)
 			}
 		}
 	}
@@ -970,6 +1015,17 @@ type reminderCall struct {
 type deactivateCall struct {
 	actorType string
 	actorID   string
+}
+
+type reentrancyRecordingHandler struct {
+	*testActorEventHandler
+	gotGlobal   *config.ReentrancyConfig
+	gotEntities []config.EntityConfig
+}
+
+func (h *reentrancyRecordingHandler) ConfigureReentrancy(global *config.ReentrancyConfig, entities []config.EntityConfig) {
+	h.gotGlobal = global
+	h.gotEntities = entities
 }
 
 // testActorEventHandler is a configurable ActorEventHandler recording every

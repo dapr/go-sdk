@@ -21,6 +21,28 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestReentrancyEnabled(t *testing.T) {
+	t.Parallel()
+	on := &ReentrancyConfig{Enabled: true}
+	off := &ReentrancyConfig{Enabled: false}
+
+	assert.False(t, ReentrancyEnabled("a", nil, nil))
+	assert.True(t, ReentrancyEnabled("a", on, nil))
+	assert.False(t, ReentrancyEnabled("a", off, nil))
+	assert.False(t, ReentrancyEnabled("a", on, []EntityConfig{{Entities: []string{"a"}}}))
+	assert.True(t, ReentrancyEnabled("b", on, []EntityConfig{{Entities: []string{"a"}}}))
+	assert.False(t, ReentrancyEnabled("a", on, []EntityConfig{{Entities: []string{"a"}, Reentrancy: off}}))
+	assert.True(t, ReentrancyEnabled("a", nil, []EntityConfig{
+		{Entities: []string{"a"}},
+		{Entities: []string{"a"}, Reentrancy: on},
+	}))
+	assert.False(t, ReentrancyEnabled("a", on, []EntityConfig{
+		{Entities: []string{"a"}, Reentrancy: on},
+		{Entities: []string{"a", "b"}},
+	}))
+	assert.True(t, ReentrancyEnabled("c", on, []EntityConfig{{Entities: []string{"a"}}}))
+}
+
 func TestRegisterActorTimer(t *testing.T) {
 	t.Run("get default config without options", func(t *testing.T) {
 		config := GetConfigFromOptions()
