@@ -160,6 +160,29 @@ func TestGetWorkflowTerminationReasonRejectsMalformedUnknownField(t *testing.T) 
 	assert.False(t, found)
 }
 
+
+func TestGetWorkflowTerminationReasonRejectsUnexpectedEndGroup(t *testing.T) {
+	terminated := &protos.ExecutionTerminatedEvent{}
+	// Field 3 with the end-group wire type is invalid at this message level.
+	terminated.ProtoReflect().SetUnknown([]byte{0x1c})
+
+	history := workflow.GetInstanceHistoryResponse{
+		Events: []*protos.HistoryEvent{
+			{
+				EventId: 43,
+				EventType: &protos.HistoryEvent_ExecutionTerminated{
+					ExecutionTerminated: terminated,
+				},
+			},
+		},
+	}
+
+	_, found, err := GetWorkflowTerminationReason(&history)
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "history event 43")
+	assert.False(t, found)
+}
+
 func terminationEvent(eventID int32, reason *string) *protos.HistoryEvent {
 	terminated := &protos.ExecutionTerminatedEvent{}
 	if reason != nil {
