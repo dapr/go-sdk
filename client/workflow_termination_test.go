@@ -16,14 +16,15 @@ limitations under the License.
 package client
 
 import (
+	"bytes"
 	"testing"
 
 	"github.com/dapr/durabletask-go/api/protos"
 	"github.com/dapr/durabletask-go/workflow"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/encoding/protowire"
+	"google.golang.org/protobuf/proto"
 )
 
 func TestWithTerminateReasonPreservesUnknownFields(t *testing.T) {
@@ -51,7 +52,7 @@ func TestWithTerminateReasonPreservesUnknownFields(t *testing.T) {
 	require.NoError(t, err)
 	require.True(t, found)
 	assert.Equal(t, reason, got)
-	assert.Equal(t, unrelated, decoded.ProtoReflect().GetUnknown()[:len(unrelated)])
+	assert.True(t, bytes.HasPrefix(decoded.ProtoReflect().GetUnknown(), unrelated))
 }
 
 func TestWithTerminateReasonEmptyValueIsPresent(t *testing.T) {
@@ -72,10 +73,16 @@ func TestWithTerminateReasonEmptyValueIsPresent(t *testing.T) {
 func TestGetWorkflowTerminationReason(t *testing.T) {
 	const reason = "operator requested termination"
 
+	encoded, err := proto.Marshal(terminationEvent(2, &reason))
+	require.NoError(t, err)
+
+	decoded := new(protos.HistoryEvent)
+	require.NoError(t, proto.Unmarshal(encoded, decoded))
+
 	history := workflow.GetInstanceHistoryResponse{
 		Events: []*protos.HistoryEvent{
 			{EventId: 1},
-			terminationEvent(2, &reason),
+			decoded,
 		},
 	}
 
