@@ -9,11 +9,11 @@ Demonstrates the advanced workflow management APIs exposed by the Dapr Go SDK:
 | `RerunWorkflowFromEvent` | Rerun ("rewind") an instance from one of its history events |
 | `TerminateWorkflow` + `WithTerminateReason` | Terminate a running instance and retain the supplied reason in workflow metadata |
 
-The three compose naturally, and the example uses them that way: list the
-instances, read one instance's history to find an event worth rerunning from,
-then rerun from that event with a fresh input. It also terminates a workflow that
-is waiting for an external event and verifies that the supplied termination
-reason is returned in workflow metadata.
+The listing, history, and rerun APIs compose naturally: the example lists
+instances, inspects one instance's history, and reruns it from a selected event
+with fresh input. It also terminates a workflow that is waiting for an external
+event and verifies that the supplied termination reason is returned in
+workflow metadata.
 
 ## Step
 
@@ -70,6 +70,7 @@ dapr run --app-id workflow-management \
 
 ```
 OrderWorkflow registered
+AwaitApprovalWorkflow registered
 workflow worker started
 scheduled and completed 3 workflows
 == ListInstanceIDs ==
