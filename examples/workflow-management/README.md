@@ -7,17 +7,21 @@ Demonstrates the advanced workflow management APIs exposed by the Dapr Go SDK:
 | `ListInstanceIDs` | Enumerate the app's workflow instance IDs, with pagination |
 | `GetInstanceHistory` | Read an instance's full execution history |
 | `RerunWorkflowFromEvent` | Rerun ("rewind") an instance from one of its history events |
+| `TerminateWorkflow` + `WithTerminateReason` | Terminate a running instance and retain the supplied reason in workflow metadata |
 
 The three compose naturally, and the example uses them that way: list the
 instances, read one instance's history to find an event worth rerunning from,
-then rerun from that event with a fresh input.
+then rerun from that event with a fresh input. It also terminates a workflow that
+is waiting for an external event and verifies that the supplied termination
+reason is returned in workflow metadata.
 
 ## Step
 
 ### Prepare
 
-- Dapr 1.18 or later. All three APIs were added in 1.18, and `ListInstanceIDs`
-  additionally needs a state store that supports key listing.
+- Dapr 1.18 or later for the listing, history, and rerun APIs. The termination
+  scenario additionally requires a Dapr runtime that supports the workflow
+  termination-reason protocol field.
 - A state store with actor support that can list keys. The Redis store in
   `./config` does.
 
@@ -28,6 +32,7 @@ name: Run Workflow Management
 output_match_mode: substring
 expected_stdout_lines:
   - 'OrderWorkflow registered'
+  - 'AwaitApprovalWorkflow registered'
   - 'workflow worker started'
   - 'scheduled and completed 3 workflows'
   - '== ListInstanceIDs =='
@@ -41,6 +46,7 @@ expected_stdout_lines:
   - '== RerunWorkflowFromEvent =='
   - 'rerunning order-01 from its ChargeCard activity as order-01-rerun'
   - 'rerun instance order-01-rerun finished with status: COMPLETED, output: "charged 25"'
+  - 'terminated workflow order-terminated with reason: operator requested termination'
   - 'purged all instances'
   - 'history for purged instance is gone'
   - 'workflow management example completed'
@@ -78,6 +84,7 @@ instance order-01 has 9 history events
 == RerunWorkflowFromEvent ==
 rerunning order-01 from its ChargeCard activity as order-01-rerun
 rerun instance order-01-rerun finished with status: COMPLETED, output: "charged 25"
+terminated workflow order-terminated with reason: operator requested termination
 purged all instances
 history for purged instance is gone
 workflow management example completed
@@ -106,3 +113,5 @@ returns exactly two pages.
   target event.
 - `WithRerunInput` is invalid on a timer event, and `WithRerunNewChildInstanceID`
   is only valid on a child-workflow event.
+- A termination reason is optional metadata associated with the termination
+  event. It does not change the workflow's termination semantics.
