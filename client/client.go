@@ -320,6 +320,9 @@ func NewClient(dialOpts ...grpc.DialOption) (client Client, err error) {
 	return defaultClient, nil
 }
 
+// NewWorkflowClient creates a Durable Task workflow client using the Dapr
+// client's configured gRPC connection. Workflow-management options and
+// metadata are provided by the linked durabletask-go version.
 func NewWorkflowClient(dialOpts ...grpc.DialOption) (*workflow.Client, error) {
 	dclient, err := NewClient(dialOpts...)
 	if err != nil {
