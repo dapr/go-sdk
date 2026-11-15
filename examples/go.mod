@@ -4,6 +4,9 @@ go 1.26.10
 
 replace github.com/dapr/go-sdk => ../
 
+// Keep examples on the same workflow protocol implementation as the SDK.
+replace github.com/dapr/durabletask-go => github.com/ep0ll/dapr-durabletask-go v0.0.0-20261115202136-122bdb6d4dae
+
 require (
 	github.com/alecthomas/kingpin/v2 v2.4.0
 	github.com/dapr/durabletask-go v0.15.1
