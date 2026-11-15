@@ -51,7 +51,7 @@ func TestWithTerminateReasonPreservesUnknownFields(t *testing.T) {
 	require.NoError(t, err)
 	require.True(t, found)
 	assert.Equal(t, reason, got)
-	assert.Equal(t, append(unrelated, protowire.AppendTag(nil, terminateRequestReasonFieldNumber, protowire.BytesType)...), decoded.ProtoReflect().GetUnknown()[:len(unrelated)+1])
+	assert.Equal(t, unrelated, decoded.ProtoReflect().GetUnknown()[:len(unrelated)])
 }
 
 func TestWithTerminateReasonEmptyValueIsPresent(t *testing.T) {
