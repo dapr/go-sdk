@@ -176,6 +176,9 @@ func getStringWrapperFieldFromUnknown(unknown []byte, number protowire.Number) (
 			if n < 0 {
 				return "", false, protowire.ParseError(n)
 			}
+			if n == 0 {
+				return "", false, errors.New("unexpected end-group marker in protobuf unknown fields")
+			}
 			unknown = unknown[n:]
 			continue
 		}
@@ -210,6 +213,9 @@ func getStringValue(wrapper []byte) (string, error) {
 			n = protowire.ConsumeFieldValue(fieldNumber, wireType, wrapper)
 			if n < 0 {
 				return "", protowire.ParseError(n)
+			}
+			if n == 0 {
+				return "", errors.New("unexpected end-group marker in string wrapper")
 			}
 			wrapper = wrapper[n:]
 			continue
