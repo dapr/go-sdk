@@ -52,6 +52,9 @@ func main() {
 	if err := r.AddWorkflow(OrderWorkflow); err != nil {
 		logger.Fatal(err)
 	}
+	if err := r.AddWorkflow(AwaitApprovalWorkflow); err != nil {
+		logger.Fatal(err)
+	}
 	if err := r.AddActivity(ReserveStock); err != nil {
 		logger.Fatal(err)
 	}
@@ -59,6 +62,7 @@ func main() {
 		logger.Fatal(err)
 	}
 	fmt.Println("OrderWorkflow registered")
+	fmt.Println("AwaitApprovalWorkflow registered")
 
 	wfClient, err := client.NewWorkflowClient()
 	if err != nil {
@@ -92,10 +96,40 @@ func main() {
 	eventID, activity := findRerunTarget(ctx, wfClient, ids[0])
 	rerunID := rerun(ctx, wfClient, ids[0], eventID, activity)
 
-	// Purge everything this example created, including the rerun instance. A
+	// Terminate a workflow that is waiting for an external event. This keeps
+	// the instance running until the termination request is sent.
+	terminatedID := idPrefix + "terminated"
+	const terminationReason = "operator requested termination"
+	if _, err = wfClient.ScheduleWorkflow(ctx, "AwaitApprovalWorkflow",
+		workflow.WithInstanceID(terminatedID),
+	); err != nil {
+		logger.Fatalf("failed to schedule termination example %s: %v", terminatedID, err)
+	}
+	if _, err = wfClient.WaitForWorkflowStart(ctx, terminatedID); err != nil {
+		logger.Fatalf("failed to wait for %s to start: %v", terminatedID, err)
+	}
+	if err = wfClient.TerminateWorkflow(ctx, terminatedID,
+		workflow.WithTerminateReason(terminationReason),
+	); err != nil {
+		logger.Fatalf("failed to terminate %s: %v", terminatedID, err)
+	}
+	terminated, err := wfClient.WaitForWorkflowCompletion(ctx, terminatedID)
+	if err != nil {
+		logger.Fatalf("failed to wait for terminated workflow %s: %v", terminatedID, err)
+	}
+	if terminated.RuntimeStatus != workflow.StatusTerminated {
+		logger.Fatalf("expected %s to be terminated, got %s", terminatedID, terminated.String())
+	}
+	if terminated.TerminationReason == nil || terminated.TerminationReason.GetValue() != terminationReason {
+		logger.Fatalf("expected termination reason %q for %s, got %v", terminationReason, terminatedID, terminated.TerminationReason)
+	}
+	fmt.Printf("terminated workflow %s with reason: %s\n", terminatedID, terminated.TerminationReason.GetValue())
+
+	// Purge everything this example created, including the rerun and
+	// terminated instances. A
 	// leftover rerun instance from an earlier failed run also matches idPrefix,
 	// so it can already be in `instances`; purging the same ID twice fails.
-	for _, id := range dedupe(append(instances, rerunID)) {
+	for _, id := range dedupe(append(append(instances, rerunID), terminatedID)) {
 		if err = wfClient.PurgeWorkflowState(ctx, id); err != nil {
 			logger.Fatalf("failed to purge %s: %v", id, err)
 		}
@@ -251,6 +285,17 @@ func dedupe(ids []string) []string {
 	}
 
 	return out
+}
+
+// AwaitApprovalWorkflow remains pending until it receives an external event,
+ // allowing the example to terminate it and read the recorded reason.
+func AwaitApprovalWorkflow(ctx *workflow.WorkflowContext) (any, error) {
+	var approval string
+	if err := ctx.WaitForExternalEvent("approval", -1).Await(&approval); err != nil {
+		return nil, err
+	}
+
+	return approval, nil
 }
 
 func OrderWorkflow(ctx *workflow.WorkflowContext) (any, error) {
