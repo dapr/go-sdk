@@ -136,10 +136,9 @@ func main() {
 	}
 	fmt.Printf("terminated workflow %s with reason: %s\n", terminatedID, recordedReason)
 
-	// Purge everything this example created, including the rerun and terminated
-	// instances. A leftover rerun instance from an earlier failed run also
-	// matches idPrefix,
-	// so it can already be in `instances`; purging the same ID twice fails.
+	// Purge everything this example created, including the rerun and
+	// terminated instances. A leftover rerun instance from an earlier failed
+	// run can already be in `instances`, so deduplicate before purging.
 	for _, id := range dedupe(append(append(instances, rerunID), terminatedID)) {
 		if err = wfClient.PurgeWorkflowState(ctx, id); err != nil {
 			logger.Fatalf("failed to purge %s: %v", id, err)
