@@ -338,19 +338,18 @@ if err != nil {
 
 ##### Workflow termination reason
 
-The workflow client is backed by `durabletask-go`. A running workflow can be
-terminated with an optional reason, which is then available in the returned
-workflow metadata. This requires a Dapr runtime and `durabletask-go` version
-that support the termination-reason protocol field.
+The workflow client is backed by \`durabletask-go\`. A running workflow can be
+terminated with an optional reason, which is stored on its execution-terminated
+history event. This requires a Dapr runtime that supports the
+termination-reason protocol field.
 
-```go
+\`\`\`go
 package main
 
 import (
 	"context"
 	"fmt"
 
-	"github.com/dapr/durabletask-go/workflow"
 	dapr "github.com/dapr/go-sdk/client"
 )
 
@@ -361,21 +360,30 @@ func terminateWorkflow(ctx context.Context, instanceID string) error {
 	}
 
 	const reason = "operator requested termination"
-	if err = wfClient.TerminateWorkflow(ctx, instanceID, workflow.WithTerminateReason(reason)); err != nil {
+	if err = wfClient.TerminateWorkflow(ctx, instanceID, dapr.WithTerminateReason(reason)); err != nil {
 		return err
 	}
 
-	metadata, err := wfClient.WaitForWorkflowCompletion(ctx, instanceID)
+	if _, err = wfClient.WaitForWorkflowCompletion(ctx, instanceID); err != nil {
+		return err
+	}
+
+	history, err := wfClient.GetInstanceHistory(ctx, instanceID)
 	if err != nil {
 		return err
 	}
-	if metadata.TerminationReason != nil {
-		fmt.Printf("workflow terminated: %s\n", metadata.TerminationReason.GetValue())
+	recordedReason, found, err := dapr.GetWorkflowTerminationReason(history)
+	if err != nil {
+		return err
+	}
+	if !found {
+		return fmt.Errorf("workflow %s has no recorded termination reason", instanceID)
 	}
 
+	fmt.Printf("workflow terminated: %s\n", recordedReason)
 	return nil
 }
-```
+\`\`\`
 
 ### Service (callback)
 
