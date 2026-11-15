@@ -18,9 +18,10 @@ limitations under the License.
 //	ListInstanceIDs        - enumerate instance IDs, with pagination
 //	GetInstanceHistory     - read an instance's full execution history
 //	RerunWorkflowFromEvent - rerun ("rewind") an instance from a history event
+//	WithTerminateReason   - record why a running workflow is being terminated
 //
-// The three compose naturally: list the instances, read one instance's history
-// to find an event worth rerunning from, then rerun from it.
+// Listing, history inspection, and rerunning compose naturally. The example
+// also verifies that a supplied termination reason is returned in metadata.
 package main
 
 import (
@@ -125,9 +126,9 @@ func main() {
 	}
 	fmt.Printf("terminated workflow %s with reason: %s\n", terminatedID, terminated.TerminationReason.GetValue())
 
-	// Purge everything this example created, including the rerun and
-	// terminated instances. A
-	// leftover rerun instance from an earlier failed run also matches idPrefix,
+	// Purge everything this example created, including the rerun and terminated
+	// instances. A leftover rerun instance from an earlier failed run also
+	// matches idPrefix,
 	// so it can already be in `instances`; purging the same ID twice fails.
 	for _, id := range dedupe(append(append(instances, rerunID), terminatedID)) {
 		if err = wfClient.PurgeWorkflowState(ctx, id); err != nil {
@@ -288,7 +289,7 @@ func dedupe(ids []string) []string {
 }
 
 // AwaitApprovalWorkflow remains pending until it receives an external event,
- // allowing the example to terminate it and read the recorded reason.
+// allowing the example to terminate it and read the recorded reason.
 func AwaitApprovalWorkflow(ctx *workflow.WorkflowContext) (any, error) {
 	var approval string
 	if err := ctx.WaitForExternalEvent("approval", -1).Await(&approval); err != nil {
