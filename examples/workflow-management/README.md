@@ -114,5 +114,8 @@ returns exactly two pages.
   target event.
 - `WithRerunInput` is invalid on a timer event, and `WithRerunNewChildInstanceID`
   is only valid on a child-workflow event.
-- A termination reason is optional metadata associated with the termination
-  event. It does not change the workflow's termination semantics.
+- A termination reason is optional data on the execution-terminated history
+  event. It does not change the workflow's termination semantics. Use
+  `client.GetWorkflowTerminationReason` to read it from
+  `GetInstanceHistory`, including when the SDK's generated protobuf types
+  predate the reason field.
