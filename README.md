@@ -336,6 +336,47 @@ if err != nil {
 }
 ```
 
+##### Workflow termination reason
+
+The workflow client is backed by `durabletask-go`. A running workflow can be
+terminated with an optional reason, which is then available in the returned
+workflow metadata. This requires a Dapr runtime and `durabletask-go` version
+that support the termination-reason protocol field.
+
+```go
+package main
+
+import (
+	"context"
+	"fmt"
+
+	"github.com/dapr/durabletask-go/workflow"
+	dapr "github.com/dapr/go-sdk/client"
+)
+
+func terminateWorkflow(ctx context.Context, instanceID string) error {
+	wfClient, err := dapr.NewWorkflowClient()
+	if err != nil {
+		return err
+	}
+
+	const reason = "operator requested termination"
+	if err = wfClient.TerminateWorkflow(ctx, instanceID, workflow.WithTerminateReason(reason)); err != nil {
+		return err
+	}
+
+	metadata, err := wfClient.WaitForWorkflowCompletion(ctx, instanceID)
+	if err != nil {
+		return err
+	}
+	if metadata.TerminationReason != nil {
+		fmt.Printf("workflow terminated: %s\\n", metadata.TerminationReason.GetValue())
+	}
+
+	return nil
+}
+```
+
 ### Service (callback)
 
 In addition to the client capabilities that allow you to call into the Dapr API, the Go SDK also provides `service` package to help you bootstrap Dapr callback services in either gRPC or HTTP. Instructions on how to use it are located [here](./service/Readme.md).
