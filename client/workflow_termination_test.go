@@ -31,7 +31,10 @@ func TestWithTerminateReasonPreservesUnknownFields(t *testing.T) {
 	const reason = "operator requested termination"
 	const unrelatedField protowire.Number = 100
 
-	request := &protos.TerminateRequest{InstanceId: "workflow-1"}
+	request := &protos.TerminateRequest{
+		InstanceId: "workflow-1",
+		Recursive:  true,
+	}
 	unrelated := protowire.AppendTag(nil, unrelatedField, protowire.VarintType)
 	unrelated = protowire.AppendVarint(unrelated, 7)
 	request.ProtoReflect().SetUnknown(unrelated)
@@ -43,6 +46,8 @@ func TestWithTerminateReasonPreservesUnknownFields(t *testing.T) {
 
 	decoded := new(protos.TerminateRequest)
 	require.NoError(t, proto.Unmarshal(encoded, decoded))
+	assert.Equal(t, "workflow-1", decoded.GetInstanceId())
+	assert.True(t, decoded.GetRecursive())
 
 	got, found, err := getStringWrapperField(
 		decoded.ProtoReflect(),
