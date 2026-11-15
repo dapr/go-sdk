@@ -16,6 +16,7 @@ package http
 import (
 	"bufio"
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -274,6 +275,96 @@ func TestEventDataHandling(t *testing.T) {
 			makeEventRequest(t, s, "/test", tt.data, http.StatusOK)
 			<-recv
 			assert.Equal(t, tt.expectedData, topicEvent.Data)
+		})
+	}
+}
+
+func TestEventDataHandling_DataBase64MediaType(t *testing.T) {
+	jsonRaw := []byte(`{"message":"hello"}`)
+	jsonB64 := base64.StdEncoding.EncodeToString(jsonRaw)
+	notJSON := []byte("not json")
+	notJSONB64 := base64.StdEncoding.EncodeToString(notJSON)
+	decoded := map[string]interface{}{"message": "hello"}
+
+	tests := map[string]struct {
+		contentType  string
+		dataBase64   string
+		expectedData interface{}
+		expectedRaw  []byte
+	}{
+		"JSON data_base64 with charset parameter": {
+			contentType:  "application/json; charset=utf-8",
+			dataBase64:   jsonB64,
+			expectedData: decoded,
+			expectedRaw:  jsonRaw,
+		},
+		"uppercase media type and mixed-case parameter": {
+			contentType:  "Application/JSON; CharSet=UTF-8",
+			dataBase64:   jsonB64,
+			expectedData: decoded,
+			expectedRaw:  jsonRaw,
+		},
+		"invalid datacontenttype": {
+			contentType:  "application/json; charset",
+			dataBase64:   jsonB64,
+			expectedData: jsonRaw,
+			expectedRaw:  jsonRaw,
+		},
+		"non-JSON data_base64 with parameters": {
+			contentType:  "text/plain; charset=utf-8",
+			dataBase64:   jsonB64,
+			expectedData: jsonRaw,
+			expectedRaw:  jsonRaw,
+		},
+		"invalid JSON in data_base64 falls back to raw bytes": {
+			contentType:  "application/json; charset=utf-8",
+			dataBase64:   notJSONB64,
+			expectedData: notJSON,
+			expectedRaw:  notJSON,
+		},
+	}
+
+	s := newServer("", nil)
+
+	sub := &common.Subscription{
+		PubsubName: "messages",
+		Topic:      "test",
+		Route:      "/test",
+		Metadata:   map[string]string{},
+	}
+
+	recv := make(chan struct{}, 1)
+	var topicEvent *common.TopicEvent
+	handler := func(ctx context.Context, e *common.TopicEvent) (retry bool, err error) {
+		topicEvent = e
+		recv <- struct{}{}
+
+		return false, nil
+	}
+	err := s.AddTopicEventHandler(sub, handler)
+	require.NoErrorf(t, err, "error adding event handler")
+
+	s.registerBaseHandler()
+
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
+			body := fmt.Sprintf(`{
+				"specversion" : "1.0",
+				"type" : "com.github.pull.create",
+				"source" : "https://github.com/cloudevents/spec/pull",
+				"subject" : "123",
+				"id" : "A234-1234-1234",
+				"time" : "2018-04-05T17:31:00Z",
+				"datacontenttype" : %q,
+				"data_base64" : %q
+			}`, tt.contentType, tt.dataBase64)
+
+			makeEventRequest(t, s, "/test", body, http.StatusOK)
+			<-recv
+			assert.Equal(t, tt.contentType, topicEvent.DataContentType)
+			assert.Equal(t, tt.expectedData, topicEvent.Data)
+			assert.Equal(t, tt.expectedRaw, topicEvent.RawData)
+			assert.Equal(t, tt.dataBase64, topicEvent.DataBase64)
 		})
 	}
 }
