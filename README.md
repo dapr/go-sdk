@@ -370,7 +370,7 @@ func terminateWorkflow(ctx context.Context, instanceID string) error {
 		return err
 	}
 	if metadata.TerminationReason != nil {
-		fmt.Printf("workflow terminated: %s\\n", metadata.TerminationReason.GetValue())
+		fmt.Printf("workflow terminated: %s\n", metadata.TerminationReason.GetValue())
 	}
 
 	return nil
