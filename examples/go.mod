@@ -4,7 +4,6 @@ go 1.26.10
 
 replace github.com/dapr/go-sdk => ../
 
-
 require (
 	github.com/alecthomas/kingpin/v2 v2.4.0
 	github.com/dapr/durabletask-go v0.15.1
