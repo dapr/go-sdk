@@ -34,6 +34,3 @@ require (
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20260803160001-6ac0973c030d // indirect
 )
 
-// Use the in-progress termination-reason implementation until it is available
-// in an upstream durabletask-go release.
-replace github.com/dapr/durabletask-go => github.com/ep0ll/dapr-durabletask-go v0.0.0-20261115202136-122bdb6d4dae
