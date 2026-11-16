@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"reflect"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/dapr/go-sdk/actor"
@@ -33,6 +34,7 @@ type stateManagerCtx struct {
 	actorID            string
 	stateChangeTracker sync.Map // map[string]*ChangeMetadata
 	stateAsyncProvider *DaprStateAsyncProvider
+	discarded          atomic.Bool
 }
 
 // Deprecated: use NewActorStateManagerContext instead.
@@ -221,6 +223,9 @@ func (s *stateManagerCtx) Contains(ctx context.Context, stateName string) (bool,
 }
 
 func (s *stateManagerCtx) Save(ctx context.Context) error {
+	if s.discarded.Load() {
+		return fmt.Errorf("actor %s of type %s was replaced by a newer activation, state not saved", s.actorID, s.actorTypeName)
+	}
 	changes := make([]*ActorStateChange, 0)
 	s.stateChangeTracker.Range(func(key, value any) bool {
 		stateName := key.(string)
@@ -233,6 +238,11 @@ func (s *stateManagerCtx) Save(ctx context.Context) error {
 	}
 	s.Flush(ctx)
 	return nil
+}
+
+// Discard makes every later Save fail, so an actor replaced by a newer activation can't overwrite newer state.
+func (s *stateManagerCtx) Discard() {
+	s.discarded.Store(true)
 }
 
 func (s *stateManagerCtx) Flush(_ context.Context) {

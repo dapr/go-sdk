@@ -50,9 +50,10 @@ type DefaultActorContainer struct {
 // DefaultActorContainerContext contains actor instance and methods type info
 // generated from actor.
 type DefaultActorContainerContext struct {
-	methodType map[string]*MethodType
-	actor      actor.ServerContext
-	serializer codec.Codec
+	methodType   map[string]*MethodType
+	actor        actor.ServerContext
+	serializer   codec.Codec
+	stateManager actor.StateManagerContext
 }
 
 // NewDefaultActorContainer creates a new ActorContainer with provider impl actor and serializer.
@@ -82,7 +83,8 @@ func NewDefaultActorContainerContext(ctx context.Context, actorID string, impl a
 	impl.SetID(actorID)
 	daprClient, _ := dapr.NewClient()
 	// create state manager for this new actor
-	impl.SetStateManager(state.NewActorStateManagerContext(impl.Type(), actorID, state.NewDaprStateAsyncProvider(daprClient)))
+	stateManager := state.NewActorStateManagerContext(impl.Type(), actorID, state.NewDaprStateAsyncProvider(daprClient))
+	impl.SetStateManager(stateManager)
 	// save state of this actor
 	err := impl.SaveState(ctx)
 	if err != nil {
@@ -94,9 +96,10 @@ func NewDefaultActorContainerContext(ctx context.Context, actorID string, impl a
 		return nil, actorErr.ErrActorServerInvalid
 	}
 	return &DefaultActorContainerContext{
-		methodType: methodType,
-		actor:      impl,
-		serializer: serializer,
+		methodType:   methodType,
+		actor:        impl,
+		serializer:   serializer,
+		stateManager: stateManager,
 	}, actorErr.Success
 }
 
@@ -119,6 +122,13 @@ func (d *DefaultActorContainerContext) Invoke(ctx context.Context, methodName st
 	}
 	returnValue := methodType.method.Func.Call(argsValues)
 	return returnValue, actorErr.Success
+}
+
+// discard makes the actor's state manager refuse every later save.
+func (d *DefaultActorContainerContext) discard() {
+	if sm, ok := d.stateManager.(interface{ Discard() }); ok {
+		sm.Discard()
+	}
 }
 
 func (d *DefaultActorContainerContext) GetActor() actor.ServerContext {

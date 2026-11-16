@@ -24,6 +24,8 @@ import (
 	"github.com/dapr/go-sdk/actor"
 	"github.com/dapr/go-sdk/actor/config"
 	"github.com/dapr/go-sdk/actor/runtime"
+	dapr "github.com/dapr/go-sdk/client"
+	"github.com/dapr/go-sdk/internal/activation"
 	"github.com/dapr/go-sdk/service/common"
 	"github.com/dapr/go-sdk/service/internal"
 )
@@ -51,7 +53,20 @@ func newServer(address string, router *chi.Mux) *Server {
 		mux:            router,
 		topicRegistrar: make(internal.TopicRegistrar),
 		authToken:      os.Getenv(common.AppAPITokenEnvVar),
+		activation:     activation.NewGate(sidecarRuntimeVersion),
 	}
+}
+
+func sidecarRuntimeVersion(ctx context.Context) (string, error) {
+	c, err := dapr.NewClient()
+	if err != nil {
+		return "", err
+	}
+	md, err := c.GetMetadata(ctx)
+	if err != nil {
+		return "", err
+	}
+	return md.RuntimeVersion, nil
 }
 
 // Server is the HTTP server wrapping mux many Dapr helpers.
@@ -61,6 +76,7 @@ type Server struct {
 	httpServer     *http.Server
 	topicRegistrar internal.TopicRegistrar
 	authToken      string
+	activation     *activation.Gate
 }
 
 // Deprecated: Use RegisterActorImplFactoryContext instead.
