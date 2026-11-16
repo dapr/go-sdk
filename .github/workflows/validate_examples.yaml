@@ -179,6 +179,7 @@ jobs:
             "workflow",
             "workflow-history-propagation",
             "workflow-management",
+            "workflow-multi-app",
             "workflow-parallel",
             "workflow-taskexecutionid"
           ]
