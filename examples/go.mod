@@ -6,7 +6,7 @@ replace github.com/dapr/go-sdk => ../
 
 require (
 	github.com/alecthomas/kingpin/v2 v2.4.0
-	github.com/dapr/durabletask-go v0.15.1
+	github.com/dapr/durabletask-go v0.16.1-0.20261109153237-98658f38d8cb
 	github.com/dapr/go-sdk v0.0.0-00010101000000-000000000000
 	github.com/dapr/kit v0.19.0
 	github.com/go-redis/redis/v8 v8.11.5
