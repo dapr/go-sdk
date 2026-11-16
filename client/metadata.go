@@ -15,6 +15,7 @@ type GetMetadataResponse struct {
 	ExtendedMetadata     map[string]string
 	Subscriptions        []*MetadataSubscription
 	HTTPEndpoints        []*MetadataHTTPEndpoint
+	RuntimeVersion       string
 }
 
 type MetadataActiveActorsCount struct {
@@ -104,6 +105,7 @@ func (c *GRPCClient) GetMetadata(ctx context.Context) (metadata *GetMetadataResp
 			ExtendedMetadata:     resp.GetExtendedMetadata(),
 			Subscriptions:        subscriptions,
 			HTTPEndpoints:        httpEndpoints,
+			RuntimeVersion:       resp.GetRuntimeVersion(),
 		}
 	}
 

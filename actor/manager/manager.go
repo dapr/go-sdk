@@ -67,7 +67,7 @@ type DefaultActorManagerContext struct {
 	// factory is the actor factory of specific type of actor
 	factory actor.FactoryContext
 
-	// activeActors stores the map actorID -> ActorContainer
+	// activeActors stores the map actorID -> *activeActor
 	activeActors sync.Map
 
 	// serializer is the param and response serializer of the actor
@@ -127,18 +127,59 @@ func (m *DefaultActorManagerContext) RegisterActorImplFactory(f actor.FactoryCon
 	m.factory = f
 }
 
-// getAndCreateActorContainerIfNotExist will.
+type activeActor struct {
+	container    ActorContainerContext
+	activationID string
+}
+
+// getAndCreateActorContainerIfNotExist replaces the live actor when ctx carries a different activation id.
 func (m *DefaultActorManagerContext) getAndCreateActorContainerIfNotExist(ctx context.Context, actorID string) (ActorContainerContext, actorErr.ActorErr) {
-	val, ok := m.activeActors.Load(actorID)
-	if !ok {
-		newContainer, aerr := NewDefaultActorContainerContext(ctx, actorID, m.factory(), m.serializer)
-		if aerr != actorErr.Success {
-			return nil, aerr
+	activationID := actor.ActivationIDFromContext(ctx)
+	if val, ok := m.activeActors.Load(actorID); ok {
+		active := val.(*activeActor)
+		if activationID == "" || active.activationID == activationID {
+			return active.container, actorErr.Success
 		}
-		m.activeActors.Store(actorID, newContainer)
-		val, _ = m.activeActors.Load(actorID)
+		if m.activeActors.CompareAndDelete(actorID, val) {
+			discard(active.container)
+		}
 	}
-	return val.(ActorContainerContext), actorErr.Success
+	newContainer, aerr := NewDefaultActorContainerContext(ctx, actorID, m.factory(), m.serializer)
+	if aerr != actorErr.Success {
+		return nil, aerr
+	}
+	val, loaded := m.activeActors.LoadOrStore(actorID, &activeActor{container: newContainer, activationID: activationID})
+	if !loaded {
+		return newContainer, actorErr.Success
+	}
+	discard(newContainer)
+	active := val.(*activeActor)
+	if activationID == "" || active.activationID == activationID {
+		return active.container, actorErr.Success
+	}
+	return nil, actorErr.ErrActivationSuperseded
+}
+
+// discard runs as soon as a newer activation drops the container, so nothing can save through it after.
+func discard(container ActorContainerContext) {
+	if c, ok := container.(*DefaultActorContainerContext); ok {
+		c.discard()
+	}
+}
+
+func (m *DefaultActorManagerContext) isLive(actorID string, container ActorContainerContext) bool {
+	val, ok := m.activeActors.Load(actorID)
+	return ok && val.(*activeActor).container == container
+}
+
+func (m *DefaultActorManagerContext) saveState(ctx context.Context, actorID string, container ActorContainerContext) actorErr.ActorErr {
+	if !m.isLive(actorID, container) {
+		return actorErr.ErrSaveStateFailed
+	}
+	if err := container.GetActor().SaveState(ctx); err != nil {
+		return actorErr.ErrSaveStateFailed
+	}
+	return actorErr.Success
 }
 
 // InvokeMethod to invoke local function by @actorID, @methodName and @request request param.
@@ -156,6 +197,12 @@ func (m *DefaultActorManagerContext) InvokeMethod(ctx context.Context, actorID, 
 		return nil, aerr
 	}
 	if len(returnValue) == 1 {
+		if returnValue[0].Interface() != nil {
+			return nil, actorErr.ErrActorInvokeFailed
+		}
+		if aerr := m.saveState(ctx, actorID, actorContainer); aerr != actorErr.Success {
+			return nil, aerr
+		}
 		return nil, actorErr.Success
 	}
 
@@ -176,19 +223,17 @@ func (m *DefaultActorManagerContext) InvokeMethod(ctx context.Context, actorID, 
 	if err != nil {
 		return nil, actorErr.ErrActorMethodSerializeFailed
 	}
-	if err := actorContainer.GetActor().SaveState(ctx); err != nil {
-		return nil, actorErr.ErrSaveStateFailed
+	if aerr := m.saveState(ctx, actorID, actorContainer); aerr != actorErr.Success {
+		return nil, aerr
 	}
 	return rspData, actorErr.Success
 }
 
 // DeactivateActor removes actor from actor manager.
 func (m *DefaultActorManagerContext) DeactivateActor(_ context.Context, actorID string) actorErr.ActorErr {
-	_, ok := m.activeActors.Load(actorID)
-	if !ok {
+	if _, ok := m.activeActors.LoadAndDelete(actorID); !ok {
 		return actorErr.ErrActorIDNotFound
 	}
-	m.activeActors.Delete(actorID)
 	return actorErr.Success
 }
 
@@ -212,7 +257,7 @@ func (m *DefaultActorManagerContext) InvokeReminder(ctx context.Context, actorID
 		return actorErr.ErrReminderFuncUndefined
 	}
 	targetActor.ReminderCall(reminderName, reminderParams.Data, reminderParams.DueTime, reminderParams.Period)
-	return actorErr.Success
+	return m.saveState(ctx, actorID, actorContainer)
 }
 
 // InvokeTimer invoke timer callback function with given params.
@@ -229,8 +274,14 @@ func (m *DefaultActorManagerContext) InvokeTimer(ctx context.Context, actorID, t
 	if aerr != actorErr.Success {
 		return aerr
 	}
-	_, aerr = actorContainer.Invoke(ctx, timerParams.CallBack, timerParams.Data)
-	return aerr
+	returnValue, aerr := actorContainer.Invoke(ctx, timerParams.CallBack, timerParams.Data)
+	if aerr != actorErr.Success {
+		return aerr
+	}
+	if n := len(returnValue); n > 0 && returnValue[n-1].Interface() != nil {
+		return actorErr.Success
+	}
+	return m.saveState(ctx, actorID, actorContainer)
 }
 
 func getAbsctractMethodMap(rcvr interface{}) (map[string]*MethodType, error) {
