@@ -21,7 +21,7 @@ execution-terminated history event.
 
 - Dapr 1.18 or later for the listing, history, and rerun APIs. The termination
   scenario additionally requires a Dapr runtime that supports the workflow
-  termination-reason protocol field.
+  termination input field.
 - A state store with actor support that can list keys. The Redis store in
   `./config` does.
 
