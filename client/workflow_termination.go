@@ -29,6 +29,9 @@ func WithTerminateReason(reason string) workflow.TerminateOptions {
 		if req == nil {
 			return errors.New("terminate request is nil")
 		}
+		if req.GetOutput() != nil {
+			return errors.New("termination output and reason cannot be supplied together")
+		}
 
 		req.Output = wrapperspb.String(reason)
 		return nil
