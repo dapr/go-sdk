@@ -341,7 +341,7 @@ if err != nil {
 The workflow client is backed by \`durabletask-go\`. A running workflow can be
 terminated with an optional reason, which is stored on its execution-terminated
 history event. This requires a Dapr runtime that supports the
-termination-reason protocol field.
+existing termination input field.
 
 \`\`\`go
 package main
