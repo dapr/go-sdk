@@ -26,11 +26,8 @@ import (
 
 func TestWithTerminateReasonUsesExistingOutputField(t *testing.T) {
 	const reason = "operator requested termination"
-	const output = "pre-existing output"
-
 	request := &protos.TerminateRequest{
 		InstanceId: "workflow-1",
-		Output:     wrapperspb.String(output),
 		Recursive:  true,
 	}
 	require.NoError(t, WithTerminateReason(reason)(request))
@@ -44,6 +41,17 @@ func TestWithTerminateReasonUsesExistingOutputField(t *testing.T) {
 	decoded := new(protos.TerminateRequest)
 	require.NoError(t, proto.Unmarshal(encoded, decoded))
 	assert.Equal(t, wrapperspb.String(reason), decoded.GetOutput())
+}
+
+
+func TestWithTerminateReasonRejectsExistingOutput(t *testing.T) {
+	request := &protos.TerminateRequest{
+		Output: wrapperspb.String("existing output"),
+	}
+
+	err := WithTerminateReason("operator requested termination")(request)
+	require.ErrorContains(t, err, "termination output and reason cannot be supplied together")
+	assert.Equal(t, "existing output", request.GetOutput().GetValue())
 }
 
 func TestWithTerminateReasonPreservesExplicitEmptyValue(t *testing.T) {
