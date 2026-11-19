@@ -24,7 +24,7 @@ expected_stdout_lines:
   - 'deletejob - success'
 
 background: true
-sleep: 30
+sleep: 45
 
 -->
 
