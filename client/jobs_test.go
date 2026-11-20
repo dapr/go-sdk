@@ -20,6 +20,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/protobuf/types/known/anypb"
+
+	commonpb "github.com/dapr/dapr/pkg/proto/common/v1"
 )
 
 func TestSchedulingAlpha1(t *testing.T) {
@@ -116,4 +118,35 @@ func TestJobBuilder(t *testing.T) {
 		_, ok := job.FailurePolicy.(*JobFailurePolicyDrop)
 		require.True(t, ok)
 	})
+}
+
+func TestJobFailurePolicyConstantGetPBFailurePolicy(t *testing.T) {
+	t.Run("no retries or interval set", func(t *testing.T) {
+		fp := &JobFailurePolicyConstant{}
+		pb := fp.GetPBFailurePolicy()
+		constant := pb.GetConstant()
+		require.NotNil(t, constant)
+		assert.Nil(t, constant.MaxRetries)
+		assert.Nil(t, constant.Interval)
+	})
+
+	t.Run("retries and interval set", func(t *testing.T) {
+		maxRetries := uint32(3)
+		interval := time.Minute * 2
+		fp := &JobFailurePolicyConstant{MaxRetries: &maxRetries, Interval: &interval}
+		pb := fp.GetPBFailurePolicy()
+		constant := pb.GetConstant()
+		require.NotNil(t, constant)
+		require.NotNil(t, constant.MaxRetries)
+		assert.Equal(t, maxRetries, *constant.MaxRetries)
+		require.NotNil(t, constant.Interval)
+		assert.Equal(t, interval, constant.Interval.AsDuration())
+	})
+}
+
+func TestJobFailurePolicyDropGetPBFailurePolicy(t *testing.T) {
+	fp := &JobFailurePolicyDrop{}
+	pb := fp.GetPBFailurePolicy()
+	_, ok := pb.GetPolicy().(*commonpb.JobFailurePolicy_Drop)
+	require.True(t, ok)
 }
