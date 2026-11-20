@@ -20,6 +20,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/stretchr/testify/assert"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -159,6 +160,42 @@ func TestTopic(t *testing.T) {
 			PubsubName:      sub2.PubsubName,
 		}
 		ctx := metadata.NewIncomingContext(t.Context(), metadata.New(map[string]string{"Metadata.key1": "value1"}))
+		_, err = server.OnTopicEvent(ctx, in)
+		require.NoError(t, err)
+	})
+
+	t.Run("topic event with traceid and traceparent", func(t *testing.T) {
+		sub2 := &common.Subscription{
+			PubsubName: "messages",
+			Topic:      "test2",
+		}
+
+		err := server.AddTopicEventHandler(sub2,
+			func(ctx context.Context, e *common.TopicEvent) (retry bool, err error) {
+				assert.Equal(t, "expected-traceid-value", e.TraceID)
+				assert.Equal(t, "expected-traceparent-value", e.TraceParent)
+				return false, nil
+			})
+		require.NoError(t, err)
+
+		extensions, err := structpb.NewStruct(map[string]any{
+			"traceid":     "expected-traceid-value",
+			"traceparent": "expected-traceparent-value",
+		})
+		require.NoError(t, err)
+
+		in := &runtime.TopicEventRequest{
+			Id:              "a123",
+			Source:          "test",
+			Type:            "test",
+			SpecVersion:     "v1.0",
+			DataContentType: "text/plain",
+			Data:            []byte("test"),
+			Topic:           sub2.Topic,
+			PubsubName:      sub2.PubsubName,
+			Extensions:      extensions,
+		}
+		ctx := context.Background()
 		_, err = server.OnTopicEvent(ctx, in)
 		require.NoError(t, err)
 	})
