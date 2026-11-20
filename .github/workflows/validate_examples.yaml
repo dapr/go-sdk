@@ -177,6 +177,7 @@ jobs:
             "service",
             "socket",
             "workflow",
+            "workflow-compensation",
             "workflow-history-propagation",
             "workflow-management",
             "workflow-parallel",
